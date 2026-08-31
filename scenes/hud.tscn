@@ -27,7 +27,11 @@ text = "2D SPACE — BASE SYSTEM"
 
 [node name="Controls" type="Label" parent="Margin/Panel/Rows"]
 layout_mode = 2
-text = "MOVE: A/D or arrows   JUMP: Space/W/Up   RESET: R"
+text = "MOVE: A/D or arrows / Stick/D-pad   JUMP: Space/W/Up or A/×"
+
+[node name="WallControls" type="Label" parent="Margin/Panel/Rows"]
+layout_mode = 2
+text = "GRAB: Shift/ZL/ZR   CLIMB: Up/Down   RESET: R/Start"
 
 [node name="Gravity" type="Label" parent="Margin/Panel/Rows"]
 layout_mode = 2
