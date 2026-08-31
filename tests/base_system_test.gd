@@ -15,6 +15,7 @@ func _run() -> void:
 	await process_frame
 	var player := main.get_node("Player") as PlayerController
 	_check(player != null, "Player scene is missing")
+	_assert_starfield(main.get_node("Background/Starfield") as Node2D)
 
 	await _wait_for_floor(player)
 	_check(player.is_on_floor(), "Player did not land")
@@ -55,19 +56,25 @@ func _assert_input_map() -> void:
 	_check(_has_joy_button(&"reset", JOY_BUTTON_START), "Gamepad reset is not mapped")
 	_check(_has_joy_button(&"move_left", JOY_BUTTON_DPAD_LEFT), "Gamepad D-pad movement is not mapped")
 	_check(_has_joy_motion(&"move_left", JOY_AXIS_LEFT_X, -1.0), "Gamepad stick movement is not mapped")
+	_check(_has_joy_motion(&"wall_grab", JOY_AXIS_TRIGGER_LEFT, 1.0), "ZL wall grab is not mapped")
 	_check(_has_joy_motion(&"wall_grab", JOY_AXIS_TRIGGER_RIGHT, 1.0), "ZR wall grab is not mapped")
 
 
 func _assert_wall_actions(player: PlayerController) -> void:
+	await _assert_wall_slide_requires_input(player)
+
 	player.respawn()
 	player.global_position = Vector2(850.0, 540.0)
 	player.velocity = Vector2.ZERO
+	await physics_frame
 	Input.action_press("move_right")
-	Input.action_press("wall_grab")
-	for _frame in 20:
+	for _frame in 12:
 		await physics_frame
-		if player.is_wall_grabbing():
+		if player.is_on_wall_only():
 			break
+	_check(player.is_on_wall_only(), "Player could not reach the wall")
+	Input.action_press("wall_grab")
+	await physics_frame
 	Input.action_release("move_right")
 	_check(player.is_wall_grabbing(), "Player could not grab the wall")
 
@@ -86,6 +93,7 @@ func _assert_wall_actions(player: PlayerController) -> void:
 	player.respawn()
 	player.global_position = Vector2(930.0, 500.0)
 	player.velocity = Vector2.ZERO
+	await physics_frame
 	Input.action_press("move_left")
 	Input.action_press("wall_grab")
 	Input.action_press("move_up")
@@ -99,6 +107,55 @@ func _assert_wall_actions(player: PlayerController) -> void:
 	Input.action_release("move_up")
 	Input.action_release("wall_grab")
 	_check(mantled, "Player did not mantle over the wall edge: pos=%s wall=%s grab=%s" % [player.global_position, player.is_on_wall(), player.is_wall_grabbing()])
+
+
+func _assert_wall_slide_requires_input(player: PlayerController) -> void:
+	player.respawn()
+	player.global_position = Vector2(850.0, 500.0)
+	player.velocity = Vector2.ZERO
+	Input.action_press("move_right")
+	for _frame in 12:
+		await physics_frame
+		if player.is_on_wall_only():
+			break
+	_check(player.is_on_wall_only(), "Wall slide test could not reach the wall")
+
+	player.velocity.y = player.max_fall_speed
+	await physics_frame
+	_check(player.velocity.y <= player.wall_slide_speed + 1.0, "Wall slide did not activate while pressing toward the wall")
+
+	Input.action_release("move_right")
+	player.velocity.y = player.wall_slide_speed + 100.0
+	await physics_frame
+	_check(player.velocity.y > player.wall_slide_speed + 1.0, "Wall slide stayed active without wall input")
+
+
+func _assert_starfield(starfield: Node2D) -> void:
+	_check(starfield != null, "Starfield is missing")
+	if starfield == null:
+		return
+
+	var stars: Array = starfield.get("_stars")
+	_check(stars.size() == starfield.get("star_count"), "Starfield did not populate the viewport")
+	var bounds := starfield.get_viewport_rect().size
+	var quadrant_mask := 0
+	for value in stars:
+		var star: Vector3 = value
+		_check(star.x >= 0.0 and star.x < bounds.x and star.y >= 0.0 and star.y < bounds.y, "A star was placed outside the viewport")
+		var quadrant := 0
+		if star.x >= bounds.x * 0.5:
+			quadrant += 1
+		if star.y >= bounds.y * 0.5:
+			quadrant += 2
+		quadrant_mask |= 1 << quadrant
+	_check(quadrant_mask == 15, "Stars do not cover the whole viewport")
+
+	var wrapping_star: Vector3 = stars[0]
+	wrapping_star.x = 0.0
+	stars[0] = wrapping_star
+	starfield.call("_process", 1.0)
+	var wrapped_star: Vector3 = stars[0]
+	_check(wrapped_star.x > bounds.x * 0.9, "Starfield did not wrap at the viewport edge")
 
 
 func _wait_for_floor(player: PlayerController) -> void:

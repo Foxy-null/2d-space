@@ -57,7 +57,8 @@ func _physics_process(delta: float) -> void:
 		var falling_speed := velocity.dot(down)
 		if falling_speed > max_fall_speed:
 			velocity += down * (max_fall_speed - falling_speed)
-		if is_on_wall_only() and falling_speed > wall_slide_speed:
+		var pressing_into_wall := is_on_wall_only() and input_axis * get_wall_normal().x < -0.1
+		if pressing_into_wall and falling_speed > wall_slide_speed:
 			velocity += down * (wall_slide_speed - falling_speed)
 
 	if _jump_buffer_left > 0.0:
