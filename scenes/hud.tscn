@@ -23,7 +23,7 @@ theme_override_constants/separation = 4
 [node name="Title" type="Label" parent="Margin/Panel/Rows"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "2D SPACE — BASE SYSTEM"
+text = "2D SPACE — PHASE 1"
 
 [node name="Controls" type="Label" parent="Margin/Panel/Rows"]
 layout_mode = 2
@@ -31,9 +31,24 @@ text = "MOVE: A/D or arrows / Stick/D-pad   JUMP: Space/W/Up or A/×"
 
 [node name="WallControls" type="Label" parent="Margin/Panel/Rows"]
 layout_mode = 2
-text = "GRAB: Shift/ZL/ZR   CLIMB: Up/Down   RESET: R/Start"
+text = "GRAB: Shift/ZL/ZR   CLIMB: Up/Down   DASH: X/B/○   RESET: R/Start"
 
 [node name="Gravity" type="Label" parent="Margin/Panel/Rows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.95, 1, 1)
 text = "GRAVITY: DOWN"
+
+[node name="Resources" type="Label" parent="Margin/Panel/Rows"]
+layout_mode = 2
+text = "DASH: READY   AIR JUMP: NONE"
+
+[node name="StaminaLabel" type="Label" parent="Margin/Panel/Rows"]
+layout_mode = 2
+text = "WALL STAMINA"
+
+[node name="Stamina" type="ProgressBar" parent="Margin/Panel/Rows"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+max_value = 3.0
+value = 3.0
+show_percentage = false
