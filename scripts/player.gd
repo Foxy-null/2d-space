@@ -45,6 +45,12 @@ var _ready_color: Color
 var _last_resources: Array = []
 # Ignore cached contacts immediately after teleporting or changing up_direction.
 var _contacts_valid := false
+var _spring_refill_frame := -1
+var _motion_velocity := Vector2.ZERO
+var _motion_frame := -2
+var _impact_velocity := Vector2.ZERO
+var _impact_frame := -2
+var _winds: Dictionary = {}
 
 @onready var visuals: Node2D = $Visuals
 
@@ -94,6 +100,7 @@ func _physics_process(delta: float) -> void:
 			velocity = Vector2(-_last_wall_normal.x * wall_stick_speed, climb_axis * wall_climb_speed)
 		else:
 			velocity += down * gravity_acceleration * delta
+			_apply_wind(delta)
 			var falling_speed := velocity.dot(down)
 			if falling_speed > max_fall_speed:
 				velocity += down * (max_fall_speed - falling_speed)
@@ -102,7 +109,7 @@ func _physics_process(delta: float) -> void:
 				velocity += down * (wall_slide_speed - minf(falling_speed, max_fall_speed))
 		_try_jump(grounded, on_wall)
 		var was_wall_grabbing := _wall_grabbing
-		move_and_slide()
+		_move_player()
 		if was_wall_grabbing and not is_on_wall() and climb_axis * gravity_direction < -0.5 and Input.is_action_pressed("wall_grab"):
 			_try_mantle()
 	_contacts_valid = true
@@ -114,6 +121,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _start_dash(grounded: bool) -> void:
+	_impact_frame = -2
 	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	if direction.is_zero_approx():
 		_dash_direction = Vector2(facing_direction, 0.0)
@@ -136,9 +144,9 @@ func _tick_dash(delta: float, grounded: bool) -> void:
 	if grounded and _superdash_left > 0.0 and _jump_buffer_left > 0.0:
 		_dash_left = 0.0
 		_try_jump(true, false)
-		move_and_slide()
+		_move_player()
 		return
-	move_and_slide()
+	_move_player()
 	_dash_left = maxf(_dash_left - delta, 0.0)
 	if not is_dashing():
 		# Use collision-resolved velocity so a blocked component is not restored.
@@ -172,7 +180,84 @@ func _refill_on_landing() -> void:
 	_wall_stamina = wall_stamina_max
 	_grab_exhausted = false
 	_dash_ready = true
-	_air_jump_ready = false
+	_air_jump_ready = _spring_refill_frame == Engine.get_physics_frames()
+
+
+func refill_movement_resources() -> void:
+	_dash_ready = true
+	_air_jump_ready = true
+	_wall_stamina = wall_stamina_max
+	_grab_exhausted = false
+	_spring_refill_frame = Engine.get_physics_frames()
+	_notify_resources()
+
+
+func launch_from_spring(launch_velocity: Vector2) -> void:
+	_dash_left = 0.0
+	_dash_direction = Vector2.ZERO
+	_superdash_left = 0.0
+	_superdash_speed = 0.0
+	_wall_grabbing = false
+	_consume_jump()
+	# Cached floor/wall contacts must not turn this launch into a floor jump/grab.
+	_contacts_valid = false
+	velocity = launch_velocity
+	_motion_velocity = launch_velocity
+	_motion_frame = Engine.get_physics_frames()
+	_impact_frame = -2
+	refill_movement_resources()
+
+
+func get_environment_velocity() -> Vector2:
+	# Area signals arrive after physics synchronization. Preserve incident velocity
+	# even if move_and_slide already removed its floor/wall normal component.
+	if _impact_frame >= 0 and _impact_frame >= Engine.get_physics_frames() - 2:
+		return _impact_velocity
+	if _motion_frame >= Engine.get_physics_frames() - 1:
+		return _motion_velocity
+	return velocity
+
+
+func _move_player() -> void:
+	var had_floor := _contacts_valid and is_on_floor()
+	var had_wall := _contacts_valid and is_on_wall()
+	var had_ceiling := _contacts_valid and is_on_ceiling()
+	_motion_velocity = velocity
+	_motion_frame = Engine.get_physics_frames()
+	move_and_slide()
+	# Area delivery can lag an impact by two physics ticks. Keep the first impact
+	# instead of replacing it with gravity against a settled floor.
+	if (is_on_floor() and not had_floor) or (is_on_wall() and not had_wall) or (is_on_ceiling() and not had_ceiling):
+		_impact_velocity = _motion_velocity
+		_impact_frame = _motion_frame
+
+
+func register_wind(source: Node, acceleration: Vector2, max_speed: float) -> void:
+	_winds[source.get_instance_id()] = [weakref(source), acceleration, maxf(max_speed, 0.0)]
+
+
+func unregister_wind(source: Node) -> void:
+	_winds.erase(source.get_instance_id())
+
+
+func _apply_wind(delta: float) -> void:
+	var acceleration := Vector2.ZERO
+	var speed_limit := 0.0
+	for id in _winds.keys():
+		var wind: Array = _winds[id]
+		var source: Node = wind[0].get_ref()
+		if not is_instance_valid(source) or not source.is_inside_tree() or source.is_queued_for_deletion():
+			_winds.erase(id)
+			continue
+		acceleration += wind[1]
+		speed_limit = maxf(speed_limit, wind[2])
+	if is_dashing() or _wall_grabbing or acceleration.is_zero_approx():
+		return
+	var direction := acceleration.normalized()
+	# Limit only wind's addition along the resultant direction. Existing faster
+	# jump/launch momentum is not truncated. Overlaps use the largest active cap.
+	var addition := minf(acceleration.length() * delta, maxf(speed_limit - velocity.dot(direction), 0.0))
+	velocity += direction * addition
 
 
 func refill_from_crystal() -> void:
@@ -223,6 +308,9 @@ func set_gravity_direction(direction: int) -> void:
 
 
 func respawn() -> void:
+	_spring_refill_frame = -1
+	_motion_frame = -2
+	_impact_frame = -2
 	global_position = _spawn_position
 	_dash_left = 0.0
 	_dash_direction = Vector2.ZERO

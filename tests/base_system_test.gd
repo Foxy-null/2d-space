@@ -16,6 +16,9 @@ func _run() -> void:
 	var player := main.get_node("Player") as PlayerController
 	_check(player != null, "Player scene is missing")
 	_assert_starfield(main.get_node("Background/Starfield") as Node2D)
+	_check(not main.get_node("GateUp").moving_enabled and not main.get_node("GateDown").moving_enabled, "Existing gates must remain stationary")
+	for demo in ["MovingGate", "FloorSpring", "WallSpring", "WindArea", "PinballSpring"]:
+		_check(main.has_node(demo), "Missing Phase 2 demo: " + demo)
 
 	await _wait_for_floor(player)
 	_check(player.is_on_floor(), "Player did not land")

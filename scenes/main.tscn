@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/stage.tscn" id="2_stage"]
@@ -7,6 +7,9 @@
 [ext_resource type="Script" path="res://scripts/starfield.gd" id="5_starfield"]
 
 [ext_resource type="PackedScene" path="res://scenes/refill_crystal.tscn" id="6_crystal"]
+[ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="7_spring"]
+[ext_resource type="PackedScene" path="res://scenes/pinball_spring.tscn" id="8_pinball"]
+[ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="9_wind"]
 
 [node name="Main" type="Node2D"]
 
@@ -41,3 +44,38 @@ position = Vector2(700, 330)
 
 [node name="RefillCrystalUp" parent="." instance=ExtResource("6_crystal")]
 position = Vector2(1540, 240)
+
+[node name="FloorSpring" parent="." instance=ExtResource("7_spring")]
+position = Vector2(650, 640)
+
+[node name="WallSpring" parent="." instance=ExtResource("7_spring")]
+position = Vector2(2320, 340)
+rotation = -1.5707963
+
+[node name="MovingGate" parent="." instance=ExtResource("3_gate")]
+position = Vector2(1230, 470)
+moving_enabled = true
+move_offset = Vector2(300, 0)
+
+[node name="WindArea" parent="." instance=ExtResource("9_wind")]
+position = Vector2(980, 480)
+area_size = Vector2(140, 320)
+wind_direction = Vector2(-1, 0)
+
+[node name="PinballSpring" parent="." instance=ExtResource("8_pinball")]
+position = Vector2(1870, 640)
+
+[node name="SpringHint" type="Label" parent="."]
+offset_left = 560.0
+offset_top = 655.0
+text = "SPRING / FULL REFILL"
+
+[node name="MovingHint" type="Label" parent="."]
+offset_left = 1240.0
+offset_top = 580.0
+text = "MOVING GRAVITY UP"
+
+[node name="PinballHint" type="Label" parent="."]
+offset_left = 1780.0
+offset_top = 655.0
+text = "PINBALL / ANGLE BOUNCE"

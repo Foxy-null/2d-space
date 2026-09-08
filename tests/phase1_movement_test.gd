@@ -288,8 +288,11 @@ func _test_crystal() -> void:
 	crystal.position = player.position
 	world.add_child(crystal)
 	player._dash_ready = false
+	player._wall_stamina = 0.0
+	player._grab_exhausted = true
 	await _step(3)
 	_check(player.is_dash_ready() and player.is_air_jump_ready(), "actual crystal overlap refills both")
+	_check(player.get_wall_stamina() == 0.0 and player._grab_exhausted, "REGRESSION crystal must not perform spring full recovery")
 	_check(not crystal.visible and crystal.get_node("CollisionShape2D").disabled and not crystal.monitoring, "crystal hidden and collision disabled")
 	_check(player.get_node("Visuals/Body").color == Color(0.35, 0.92, 1, 1), "crystal restores cyan")
 	_check(player.get_node("Visuals/Visor").color == visor, "visor unchanged")
