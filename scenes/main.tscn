@@ -63,7 +63,7 @@ area_size = Vector2(140, 320)
 wind_direction = Vector2(-1, 0)
 
 [node name="PinballSpring" parent="." instance=ExtResource("8_pinball")]
-position = Vector2(1870, 640)
+position = Vector2(1870, 540)
 
 [node name="SpringHint" type="Label" parent="."]
 offset_left = 560.0

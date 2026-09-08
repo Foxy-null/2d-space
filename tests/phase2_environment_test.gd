@@ -244,7 +244,7 @@ func _test_pinball() -> void:
 			await _reset()
 			var spring = load("res://scenes/pinball_spring.tscn").instantiate()
 			spring.position = Vector2(400, 400)
-			spring.rotation = angle
+			spring.rotation = 0.37 # A circular bumper's rotation must not set its normal.
 			world.add_child(spring)
 			player.position = spring.position + normal * 30
 			var incoming: Vector2 = tangent * incident.x - normal * incident.y
@@ -258,6 +258,18 @@ func _test_pinball() -> void:
 			await _sync(5)
 			_vector(player.velocity, expected, "pinball no repeated reflection")
 			spring.free()
+	# Identical downward velocity hits different points around the upper arc.
+	for angle in [-PI / 4, 0.0, PI / 4]:
+		await _reset()
+		var bumper = load("res://scenes/pinball_spring.tscn").instantiate()
+		bumper.position = Vector2(400, 400)
+		world.add_child(bumper)
+		_check(bumper.get_node("CollisionShape2D").shape is CircleShape2D, "pinball collider is circular")
+		player.position = bumper.position + Vector2.UP.rotated(angle) * 48
+		_incident(Vector2(0, 900))
+		await _sync()
+		_vector(player.velocity, Vector2(sin(2 * angle), -cos(2 * angle)) * 900, "contact position changes bounce direction")
+		bumper.free()
 	await _reset()
 	var spring = load("res://scenes/pinball_spring.tscn").instantiate()
 	spring.position = Vector2(400, 400)
@@ -284,9 +296,12 @@ func _test_pinball() -> void:
 	spring.position = Vector2(450, 430)
 	world.add_child(spring)
 	var launch: Array[Vector2] = []
+	var expected_launch: Array[Vector2] = []
 	spring.body_entered.connect(func(body):
 		if body == player:
 			launch.append(player.velocity)
+			var normal: Vector2 = (player.global_position - spring.global_position).normalized()
+			expected_launch.append((Vector2(1, 1).normalized() * 900).bounce(normal))
 	)
 	Input.action_press("move_right")
 	Input.action_press("move_down")
@@ -300,7 +315,7 @@ func _test_pinball() -> void:
 	_check(not player.is_dashing(), "pinball ends dash")
 	_check(launch.size() == 1, "one actual pinball launch")
 	if not launch.is_empty():
-		_vector(launch[0], Vector2(1, -1).normalized() * 900, "pinball uses incident diagonal dash")
+		_vector(launch[0], expected_launch[0], "pinball uses incident diagonal dash and radial normal")
 	_resources("pinball dash")
 	await _step(5)
 	_check(launch.size() == 1, "pinball trajectory does not loop into surface")
@@ -312,7 +327,7 @@ func _test_floor_springs() -> void:
 		await _reset(Vector2(400, 610))
 		var spring = load("res://scenes/" + scene + ".tscn").instantiate()
 		# Detection flush can occur after the same movement hits the floor.
-		spring.position = Vector2(400, 715)
+		spring.position = Vector2(400, 731 if scene == "pinball_spring" else 715)
 		world.add_child(spring)
 		var floor_contact: Array[bool] = []
 		spring.body_entered.connect(func(body):
