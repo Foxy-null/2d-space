@@ -4,6 +4,16 @@ extends CharacterBody2D
 signal gravity_changed(is_inverted: bool)
 signal resources_changed(stamina: float, stamina_max: float, dash_ready: bool, air_jump_ready: bool)
 
+signal carry_changed(label: String)
+
+@export var grab_range := 60.0
+@export var carry_offset := Vector2(40, 0)
+@export var throw_move_threshold := 80.0
+@export var parachute_launch_grace := 0.15
+@export var weight := 1.0
+var _held: Grabbable
+var _parachute_grace_left := 0.0
+
 @export var move_speed := 360.0
 @export var ground_acceleration := 2600.0
 @export var air_acceleration := 1700.0
@@ -69,23 +79,26 @@ func _physics_process(delta: float) -> void:
 		return
 	var grounded := _contacts_valid and is_on_floor()
 	var on_wall := _contacts_valid and is_on_wall_only()
-	var wants_wall_grab := Input.is_action_pressed("wall_grab") and on_wall
-	if Input.is_action_just_pressed("jump") or (not wants_wall_grab and not is_dashing() and not Input.is_action_pressed("dash") and Input.is_action_just_pressed("move_up")):
-		_jump_buffer_left = jump_buffer_time
-	else:
-		_jump_buffer_left = maxf(_jump_buffer_left - delta, 0.0)
-	_coyote_left = coyote_time if grounded else maxf(_coyote_left - delta, 0.0)
+	_parachute_grace_left = maxf(0.0, _parachute_grace_left - delta)
 	_superdash_left = maxf(_superdash_left - delta, 0.0)
+	# Dash starts before release so a simultaneous release inherits dash velocity.
 	var input_axis := Input.get_axis("move_left", "move_right")
 	if absf(input_axis) > 0.1:
 		facing_direction = 1 if input_axis > 0.0 else -1
 	if Input.is_action_just_pressed("dash") and _dash_ready and not is_dashing():
 		_start_dash(grounded)
+	_update_grab_input()
+	var wants_wall_grab := Input.is_action_pressed("wall_grab") and on_wall and get_held_object() == null
+	if Input.is_action_just_pressed("jump") or (not wants_wall_grab and not is_dashing() and not Input.is_action_pressed("dash") and Input.is_action_just_pressed("move_up")):
+		_jump_buffer_left = jump_buffer_time
+	else:
+		_jump_buffer_left = maxf(_jump_buffer_left - delta, 0.0)
+	_coyote_left = coyote_time if grounded else maxf(_coyote_left - delta, 0.0)
 	if is_dashing():
 		_tick_dash(delta, grounded)
 	else:
-		var acceleration := ground_acceleration if grounded else air_acceleration
-		velocity.x = move_toward(velocity.x, input_axis * move_speed, acceleration * delta)
+		var acceleration := get_effective_acceleration(grounded)
+		velocity.x = move_toward(velocity.x, input_axis * get_effective_move_speed(), acceleration * delta)
 		var down := Vector2.DOWN * gravity_direction
 		var climb_axis := Input.get_axis("move_up", "move_down")
 		_wall_grabbing = wants_wall_grab and not _grab_exhausted
@@ -107,6 +120,7 @@ func _physics_process(delta: float) -> void:
 			var pressing_into_wall := on_wall and input_axis * get_wall_normal().x < -0.1
 			if pressing_into_wall and falling_speed > wall_slide_speed:
 				velocity += down * (wall_slide_speed - minf(falling_speed, max_fall_speed))
+		_apply_parachute()
 		_try_jump(grounded, on_wall)
 		var was_wall_grabbing := _wall_grabbing
 		_move_player()
@@ -163,12 +177,16 @@ func _try_jump(grounded: bool, on_wall: bool) -> void:
 	if grounded or _coyote_left > 0.0:
 		if _superdash_left > 0.0:
 			velocity.x = _superdash_speed
-		velocity.y = -gravity_direction * jump_speed
+			velocity.y = -gravity_direction * jump_speed
+		else:
+			velocity.y = -gravity_direction * get_effective_jump_speed()
 	elif on_wall:
 		velocity = Vector2(get_wall_normal().x * wall_jump_speed, -gravity_direction * jump_speed)
 	elif _air_jump_ready:
 		_air_jump_ready = false
-		velocity.y = -gravity_direction * jump_speed
+		velocity.y = -gravity_direction * get_effective_jump_speed()
+	elif get_held_object() != null and _held.consume_extra_jump():
+		velocity.y = -gravity_direction * get_effective_jump_speed()
 	else:
 		return
 	_wall_grabbing = false
@@ -177,6 +195,8 @@ func _try_jump(grounded: bool, on_wall: bool) -> void:
 
 
 func _refill_on_landing() -> void:
+	if get_held_object() != null:
+		_held.refill_extra_jump()
 	_wall_stamina = wall_stamina_max
 	_grab_exhausted = false
 	_dash_ready = true
@@ -184,6 +204,8 @@ func _refill_on_landing() -> void:
 
 
 func refill_movement_resources() -> void:
+	if get_held_object() != null:
+		_held.refill_extra_jump()
 	_dash_ready = true
 	_air_jump_ready = true
 	_wall_stamina = wall_stamina_max
@@ -193,6 +215,7 @@ func refill_movement_resources() -> void:
 
 
 func launch_from_spring(launch_velocity: Vector2) -> void:
+	_parachute_grace_left = parachute_launch_grace
 	_dash_left = 0.0
 	_dash_direction = Vector2.ZERO
 	_superdash_left = 0.0
@@ -224,7 +247,22 @@ func _move_player() -> void:
 	var had_ceiling := _contacts_valid and is_on_ceiling()
 	_motion_velocity = velocity
 	_motion_frame = Engine.get_physics_frames()
+	var before := global_position
+	if get_held_object() != null:
+		_update_carry_position()
+		var motion := velocity * get_physics_process_delta_time()
+		var fraction := _held.safe_motion_fraction(_held.global_position, motion, self, false)
+		velocity *= fraction
 	move_and_slide()
+	if get_held_object() != null:
+		var motion := global_position - before
+		var fraction := _held.safe_motion_fraction(_held.global_position, motion, self, false)
+		if fraction < 1.0 or not _held.is_position_safe(_held.global_position + motion, self):
+			global_position = before
+			velocity = Vector2.ZERO
+		else:
+			_held.global_position += motion
+		_update_carry_position()
 	# Area delivery can lag an impact by two physics ticks. Keep the first impact
 	# instead of replacing it with gravity against a settled floor.
 	if (is_on_floor() and not had_floor) or (is_on_wall() and not had_wall) or (is_on_ceiling() and not had_ceiling):
@@ -308,6 +346,11 @@ func set_gravity_direction(direction: int) -> void:
 
 
 func respawn() -> void:
+	_held = null
+	_parachute_grace_left = 0.0
+	for object in get_tree().get_nodes_in_group("grabbable"):
+		object.reset_for_respawn()
+	carry_changed.emit("NONE")
 	_spring_refill_frame = -1
 	_motion_frame = -2
 	_impact_frame = -2
@@ -352,3 +395,140 @@ func _try_mantle() -> void:
 	if not test_move(global_transform, motion):
 		global_position += motion
 		velocity = Vector2.ZERO
+
+
+func get_held_object() -> Grabbable:
+	return _held if is_instance_valid(_held) else null
+
+
+func get_available_extra_jump_count() -> int:
+	return int(_air_jump_ready) + (_held.extra_jump_count() if get_held_object() != null else 0)
+
+
+func get_effective_move_speed() -> float:
+	return move_speed * (_held.move_multiplier if get_held_object() != null else 1.0)
+
+
+func get_effective_acceleration(grounded: bool) -> float:
+	return (ground_acceleration if grounded else air_acceleration) * (_held.acceleration_multiplier if get_held_object() != null else 1.0)
+
+
+func get_effective_jump_speed() -> float:
+	return jump_speed * (_held.jump_multiplier if get_held_object() != null else 1.0)
+
+
+func _apply_parachute() -> void:
+	if get_held_object() == null or is_dashing() or _parachute_grace_left > 0.0:
+		return
+	var down := Vector2.DOWN * gravity_direction
+	var excess := velocity.dot(down) - _held.fall_speed_limit()
+	if excess > 0.0:
+		velocity -= down * excess
+
+
+func _update_grab_input() -> void:
+	if get_held_object() != null:
+		if not Input.is_action_pressed("wall_grab"):
+			release_grab()
+		return
+	if not Input.is_action_pressed("wall_grab") or is_dashing():
+		return
+	# A direct shape query is synchronous (no Area enter/exit delivery delay).
+	var shape := CircleShape2D.new()
+	shape.radius = grab_range
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = shape
+	query.transform = Transform2D(0.0, global_position)
+	query.collision_mask = 0xFFFFFFFF
+	query.exclude = [get_rid()]
+	var candidates: Array[Grabbable] = []
+	for hit in get_world_2d().direct_space_state.intersect_shape(query, 256):
+		if hit.collider is Grabbable and not candidates.has(hit.collider):
+			candidates.append(hit.collider)
+	candidates.sort_custom(func(a: Grabbable, b: Grabbable): return global_position.distance_squared_to(a.global_position) < global_position.distance_squared_to(b.global_position))
+	for object in candidates:
+		if try_begin_grab(object):
+			break
+
+
+func _carry_target(object: Grabbable, from := Vector2(INF, INF)) -> Vector2:
+	if not from.is_finite():
+		from = object.global_position
+	# Search inward but validate actual shapes, never an assumed minimum radius.
+	for distance in range(int(absf(carry_offset.x)), 0, -1):
+		var target := global_position + Vector2(distance * facing_direction, carry_offset.y)
+		if object.is_position_safe(target, self) and object.safe_motion_fraction(from, target - from, self) >= 1.0:
+			return target
+	return Vector2(INF, INF)
+
+
+func try_begin_grab(object: Grabbable) -> bool:
+	if get_held_object() != null or is_dashing() or not is_instance_valid(object) or is_instance_valid(object.carrier):
+		return false
+	if global_position.distance_to(object.global_position) > grab_range:
+		return false
+	var start := object.grab_start_position(self)
+	if not start.is_finite():
+		return false
+	var target := _carry_target(object, start)
+	if not target.is_finite():
+		return false
+	_held = object
+	object.begin_carry(self)
+	object.global_position = target
+	_wall_grabbing = false
+	carry_changed.emit(object.carry_name)
+	return true
+
+
+func _update_carry_position() -> void:
+	var target := _carry_target(_held)
+	if target.is_finite():
+		_held.global_position = target
+	else:
+		# Turn around the player, never through its shape. If blocked, keep the
+		# previous safe side until there is enough space to complete the turn.
+		var offset := _held.global_position - global_position
+		var desired := Vector2(carry_offset.x * facing_direction, carry_offset.y)
+		var angle := offset.angle_to(desired)
+		# At an exact half-turn prefer the upper arc; a ceiling can select the
+		# lower arc. Subsequent frames keep following that side of the player.
+		if absf(angle) > PI - 0.01:
+			angle = -signf(offset.x) * PI
+			var upper := global_position + Vector2(0, -maxf(60.0, carry_offset.length()))
+			if not _held.is_position_safe(upper, self):
+				angle = -angle
+		var next_offset := offset.normalized() * move_toward(offset.length(), maxf(60.0, carry_offset.length()), 3.0)
+		if offset.length() >= maxf(60.0, carry_offset.length()) - 0.1:
+			next_offset = offset.rotated(clampf(angle, -0.15, 0.15))
+		var next := global_position + next_offset
+		if _held.is_position_safe(next, self) and _held.safe_motion_fraction(_held.global_position, next - _held.global_position, self) >= 1.0:
+			_held.global_position = next
+
+
+func release_grab() -> bool:
+	if get_held_object() == null:
+		return false
+	var target := _held.global_position
+	if not _held.is_position_safe(target, self):
+		var found := false
+		for radius in range(1, 17):
+			for direction in 16:
+				var candidate := target + Vector2.RIGHT.rotated(direction * TAU / 16.0) * radius
+				if _held.is_position_safe(candidate, self) and _held.safe_motion_fraction(target, candidate - target, self, false) >= 1.0:
+					target = candidate
+					found = true
+					break
+			if found:
+				break
+		if not found:
+			return false
+	var released := _held
+	_held = null
+	released.global_position = target
+	var release_velocity := velocity
+	if velocity.length() >= throw_move_threshold:
+		release_velocity += velocity.normalized() * released.throw_speed
+	released.end_carry(release_velocity)
+	carry_changed.emit("NONE")
+	return true

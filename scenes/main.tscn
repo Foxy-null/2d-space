@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/stage.tscn" id="2_stage"]
@@ -10,6 +10,11 @@
 [ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="7_spring"]
 [ext_resource type="PackedScene" path="res://scenes/pinball_spring.tscn" id="8_pinball"]
 [ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="9_wind"]
+
+[ext_resource type="PackedScene" path="res://scenes/jump_creature.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/heavy_object.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://scenes/parachute_creature.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://scenes/pressure_button.tscn" id="13"]
 
 [node name="Main" type="Node2D"]
 
@@ -79,3 +84,20 @@ text = "MOVING GRAVITY UP"
 offset_left = 1780.0
 offset_top = 655.0
 text = "PINBALL / ANGLE BOUNCE"
+
+[node name="JumpCreature" parent="." instance=ExtResource("10")]
+position = Vector2(250, 610)
+
+[node name="HeavyObject" parent="." instance=ExtResource("11")]
+position = Vector2(400, 610)
+
+[node name="ParachuteCreature" parent="." instance=ExtResource("12")]
+position = Vector2(1000, 610)
+
+[node name="PressureButton" parent="." instance=ExtResource("13")]
+position = Vector2(530, 640)
+
+[node name="CarryHint" type="Label" parent="."]
+offset_left = 210.0
+offset_top = 655.0
+text = "HOLD SHIFT: CARRY / RELEASE: DROP OR THROW"

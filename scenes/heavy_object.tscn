@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/heavy_object.gd" id="1"]
+[sub_resource type="RectangleShape2D" id="Shape"]
+size = Vector2(32, 32)
+
+[node name="HeavyObject" type="RigidBody2D"]
+script = ExtResource("1")
+carry_name = "HEAVY"
+weight = 2.0
+throw_speed = 300.0
+move_multiplier = 0.75
+acceleration_multiplier = 0.75
+jump_multiplier = 0.85
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape")
+
+[node name="Body" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+color = Color(0.45, 0.5, 0.65, 1)

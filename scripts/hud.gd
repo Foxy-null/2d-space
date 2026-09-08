@@ -5,6 +5,8 @@ extends CanvasLayer
 
 func _ready() -> void:
 	var player := get_node(player_path) as PlayerController
+	player.carry_changed.connect(_on_carry_changed)
+	_on_carry_changed("NONE")
 	player.gravity_changed.connect(_on_gravity_changed)
 	player.resources_changed.connect(_on_resources_changed)
 	_on_gravity_changed(player.gravity_direction < 0)
@@ -19,3 +21,7 @@ func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool,
 	$Margin/Panel/Rows/Stamina.max_value = stamina_max
 	$Margin/Panel/Rows/Stamina.value = stamina
 	$Margin/Panel/Rows/Resources.text = "DASH: %s   AIR JUMP: %s" % ["READY" if dash_ready else "USED", "READY" if air_jump_ready else "NONE"]
+
+
+func _on_carry_changed(label: String) -> void:
+	$Margin/Panel/Rows/Carry.text = "CARRY: " + label
