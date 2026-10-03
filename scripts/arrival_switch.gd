@@ -12,11 +12,18 @@ const GOLD := Color(1, 0.8, 0.22)
 const CYAN := Color(0.35, 0.92, 1)
 const ART := preload("res://assets/arrival/arrival-switch-atlas.png")
 const BASE_ART := Rect2(30, 256, 484, 190)
-const CAP_TOP_ART := Rect2(558, 202, 423, 95)
-const CAP_FRONT_ART := Rect2(558, 297, 423, 146)
+const BASE_FRONT_ART := Rect2(30, 300, 484, 146)
+const CAP_ART := Rect2(558, 202, 423, 241)
 const CASE_ART := Rect2(1022, 128, 487, 311)
 const LOCK_ART := Rect2(118, 550, 342, 385)
 const OPEN_LOCK_ART := Rect2(618, 550, 342, 385)
+const BASE_SCALE := 140.0 / BASE_ART.size.x
+const CAP_SCALE := 108.0 / CAP_ART.size.x
+const BASE_SIZE := BASE_ART.size * BASE_SCALE
+const CAP_SIZE := CAP_ART.size * CAP_SCALE
+const CASE_SIZE := CASE_ART.size * (128.0 / CASE_ART.size.x)
+const LOCK_SIZE := LOCK_ART.size * (54.0 / LOCK_ART.size.x)
+const SEAT_Y := -40.0
 
 var locked := true
 var pressing := false
@@ -96,25 +103,26 @@ func _draw() -> void:
 	if not is_node_ready():
 		return
 	# The scene origin is the pedestal's bottom, on the supporting floor.
-	var top := -92.0 + cap.position.y
-	# Keep the glossy standing surface intact; the front slides into the socket.
-	draw_texture_rect_region(ART, Rect2(-54, top, 108, 14), CAP_TOP_ART)
-	var front_height := -top - 45.0
-	var front_source := Rect2(CAP_FRONT_ART.position, Vector2(CAP_FRONT_ART.size.x, CAP_FRONT_ART.size.y * front_height / 47.0))
-	draw_texture_rect_region(ART, Rect2(-54, top + 14, 108, front_height), front_source)
-	draw_texture_rect_region(ART, Rect2(-70, -36, 140, 36), BASE_ART)
+	draw_texture_rect_region(ART, Rect2(Vector2(-70, -BASE_SIZE.y), BASE_SIZE), BASE_ART)
+	# Slide one uniformly scaled cap into the socket; crop instead of squashing it.
+	var visible_height := CAP_SIZE.y - cap.position.y
+	var cap_source := Rect2(CAP_ART.position, Vector2(CAP_ART.size.x, visible_height / CAP_SCALE))
+	draw_texture_rect_region(ART, Rect2(Vector2(-54, SEAT_Y - visible_height), Vector2(108, visible_height)), cap_source)
 	var case_alpha := 1.0 if locked else 1.0 - _unlock_fx
+	var opening := 0.0 if locked else _unlock_fx
 	if case_alpha > 0:
-		var opening := 0.0 if locked else _unlock_fx
-		# Seat the glass rim inside the pedestal's recessed socket.
-		draw_texture_rect_region(ART, Rect2(-64, -106 - opening * 12, 128, 78), CASE_ART, Color(1, 1, 1, case_alpha))
-		draw_set_transform(Vector2(0, -55 - opening * 36), -opening * 0.6, Vector2.ONE * (1.0 + 0.2 * sin(opening * PI)))
-		draw_texture_rect_region(ART, Rect2(-27, -38, 54, 61), LOCK_ART if locked else OPEN_LOCK_ART, Color(1, 1, 1, case_alpha))
+		draw_texture_rect_region(ART, Rect2(Vector2(-64, SEAT_Y - CASE_SIZE.y - opening * 12), CASE_SIZE), CASE_ART, Color(1, 1, 1, case_alpha))
+	# Only the front lip covers the cap and glass. The back rim stays behind them.
+	var front_top := -BASE_SIZE.y + (BASE_FRONT_ART.position.y - BASE_ART.position.y) * BASE_SCALE
+	draw_texture_rect_region(ART, Rect2(Vector2(-70, front_top), BASE_FRONT_ART.size * BASE_SCALE), BASE_FRONT_ART)
+	if case_alpha > 0:
+		draw_set_transform(Vector2(0, SEAT_Y - 27 - opening * 36), -opening * 0.6, Vector2.ONE * (1.0 + 0.2 * sin(opening * PI)))
+		draw_texture_rect_region(ART, Rect2(Vector2(-27, 23 - LOCK_SIZE.y), LOCK_SIZE), LOCK_ART if locked else OPEN_LOCK_ART, Color(1, 1, 1, case_alpha))
 		draw_set_transform(Vector2.ZERO)
 	if not locked and _unlock_fx < 1:
 		for i in 7:
 			var angle := i * TAU / 7.0
-			var center := Vector2(0, -76) + Vector2.from_angle(angle) * (30 + 66 * _unlock_fx)
+			var center := Vector2(0, SEAT_Y - CASE_SIZE.y / 2) + Vector2.from_angle(angle) * (30 + 66 * _unlock_fx)
 			_star(center, (1.0 - _unlock_fx) * 8, Color(GOLD, 1.0 - _unlock_fx))
 	draw_set_transform(BUBBLE)
 	var border := GOLD if locked else Color(0.4, 1, 0.7)

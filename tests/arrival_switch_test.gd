@@ -28,7 +28,7 @@ func _run() -> void:
 		player.set("_contacts_valid", false)
 		await _step(30)
 		_check(goal.locked and not goal.is_pressed(), "Locked case cannot activate in room %d" % (index + 1))
-		_check(player.is_on_floor() and absf(player.global_position.y - goal.global_position.y + 132) < 1, "Case supports the player in room %d" % (index + 1))
+		_check(player.is_on_floor() and absf(player.global_position.y - goal.global_position.y + 147.741) < 1, "Case supports the player in room %d" % (index + 1))
 		_check(not _room().get_node("ExitBarrier/Collision").disabled, "Locked exit remains solid")
 	await _enter(0)
 	_complete_steps()
@@ -36,7 +36,7 @@ func _run() -> void:
 	player.velocity = Vector2.ZERO
 	player.set("_contacts_valid", false)
 	await _step(30)
-	_check(player.is_on_floor() and absf(player.global_position.y - _goal().global_position.y + 62) < 1, "Player can stand on the exposed pedestal rim above the floor")
+	_check(player.is_on_floor() and absf(player.global_position.y - _goal().global_position.y + 80.959) < 1, "Player can stand on the exposed pedestal rim above the floor")
 	_check(not _goal().is_pressed(), "Standing on the pedestal does not press the red cap")
 	await _enter(6)
 	var goal := _goal()
@@ -60,7 +60,7 @@ func _run() -> void:
 	_check(not tutorial.cleared.has(6), "Exit stays locked before the deep press finishes")
 	await _step(40)
 	_check(goal.is_pressed() and tutorial.cleared.has(6) and events == [1, 1], "Player waiting on the case falls onto and activates the switch")
-	_check(absf(goal.cap.position.y - 44) < 0.1 and absf(player.global_position.y - case_height - 58) < 1, "Player follows the full deep press without sinking into the floor")
+	_check(absf(goal.cap.position.y - 44) < 0.1 and absf(player.global_position.y - case_height - 64.209) < 1, "Player follows the full deep press without sinking into the floor")
 	_check(player.is_on_floor() and _room().get_node("ExitBarrier/Collision").disabled, "Pressed platform supports player and opens exit")
 	for i in 3:
 		tutorial.call("_update_lesson")
