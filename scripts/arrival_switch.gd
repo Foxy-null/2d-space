@@ -11,7 +11,6 @@ const INK := Color(0.055, 0.09, 0.17)
 const GOLD := Color(1, 0.8, 0.22)
 const CYAN := Color(0.35, 0.92, 1)
 const ART := preload("res://assets/arrival/arrival-switch-atlas.png")
-const CLEAR_CASE := preload("res://assets/arrival/glass-case.png")
 const BASE_ART := Rect2(30, 256, 484, 190)
 const BASE_FRONT_ART := Rect2(30, 300, 484, 146)
 const CAP_ART := Rect2(558, 202, 423, 241)
@@ -33,13 +32,23 @@ var _pressed := false
 var _step := "jump"
 var _unlock_fx := 1.0
 var _unlock_tween: Tween
+var _open_lock := AtlasTexture.new()
 
 @onready var cap: AnimatableBody2D = $Cap
+@onready var _closed_lock: Texture2D = $LockPivot/Lock.texture
 
 
 func _ready() -> void:
 	$UnlockSound.stream = _sound([784.0, 1046.5, 1318.5])
 	$PressSound.stream = _sound([260.0, 130.0])
+	_open_lock.atlas = ART
+	_open_lock.region = OPEN_LOCK_ART
+	$Glass.scale = Vector2.ONE * (CASE_SIZE.x / CASE_ART.size.x)
+	$FrontLip.scale = Vector2.ONE * BASE_SCALE
+	$FrontLip.position = Vector2(-70, -BASE_SIZE.y + (BASE_FRONT_ART.position.y - BASE_ART.position.y) * BASE_SCALE)
+	$LockPivot/Lock.scale = Vector2.ONE * (LOCK_SIZE.x / LOCK_ART.size.x)
+	$LockPivot/Lock.position = Vector2(-27, 23 - LOCK_SIZE.y)
+	_sync_case_visuals()
 
 
 func set_progress(remaining: int, total: int, step: String, objective: String, cleared: bool = false) -> void:
@@ -68,6 +77,7 @@ func set_progress(remaining: int, total: int, step: String, objective: String, c
 		pressing = false
 		cap.position.y = 0.0
 		$UnlockSound.stop()
+	_sync_case_visuals()
 	queue_redraw()
 
 
@@ -97,8 +107,23 @@ func is_pressed() -> bool:
 
 
 func _process(_delta: float) -> void:
+	_sync_case_visuals()
 	if not locked and _unlock_fx < 1.0:
 		queue_redraw()
+
+
+func _sync_case_visuals() -> void:
+	var case_alpha := 1.0 if locked else 1.0 - _unlock_fx
+	var opening := 0.0 if locked else _unlock_fx
+	$Glass.visible = case_alpha > 0
+	$Glass.modulate.a = case_alpha
+	$Glass.position = Vector2(0, SEAT_Y - CASE_SIZE.y / 2 - opening * 12)
+	$LockPivot.visible = case_alpha > 0
+	$LockPivot.modulate.a = case_alpha
+	$LockPivot.position = Vector2(0, SEAT_Y - 27 - opening * 36)
+	$LockPivot.rotation = -opening * 0.6
+	$LockPivot.scale = Vector2.ONE * (1.0 + 0.2 * sin(opening * PI))
+	$LockPivot/Lock.texture = _closed_lock if locked else _open_lock
 
 
 func _draw() -> void:
@@ -111,25 +136,7 @@ func _draw() -> void:
 	var cap_source := Rect2(CAP_ART.position, Vector2(CAP_ART.size.x, visible_height / CAP_SCALE))
 	# The lower rounded corners start below the front lip even before pressing.
 	draw_texture_rect_region(ART, Rect2(Vector2(-54, CAP_SEAT_Y - visible_height), Vector2(108, visible_height)), cap_source)
-	var case_alpha := 1.0 if locked else 1.0 - _unlock_fx
-	var opening := 0.0 if locked else _unlock_fx
-	if case_alpha > 0:
-		var case_position := Vector2(-64, SEAT_Y - CASE_SIZE.y - opening * 12)
-		var case_scale := CASE_SIZE.x / CASE_ART.size.x
-		# Keep the original pane and frame; replace only the reflected bottom plane.
-		for region in [Rect2(0, 0, 487, 256), Rect2(0, 302, 487, 9)]:
-			draw_texture_rect_region(ART, Rect2(case_position + region.position * case_scale, region.size * case_scale), Rect2(CASE_ART.position + region.position, region.size), Color(1, 1, 1, case_alpha))
-		for edge in [Rect2(0, 256, 22, 46), Rect2(465, 256, 22, 46)]:
-			draw_texture_rect_region(CLEAR_CASE, Rect2(case_position + edge.position * case_scale, edge.size * case_scale), edge, Color(1, 1, 1, case_alpha))
-		var bottom := Rect2(22, 256, 443, 46)
-		draw_texture_rect_region(CLEAR_CASE, Rect2(case_position + bottom.position * case_scale, bottom.size * case_scale), bottom, Color(1, 1, 1, case_alpha * 0.35))
-	# Only the front lip covers the cap and glass. The back rim stays behind them.
-	var front_top := -BASE_SIZE.y + (BASE_FRONT_ART.position.y - BASE_ART.position.y) * BASE_SCALE
-	draw_texture_rect_region(ART, Rect2(Vector2(-70, front_top), BASE_FRONT_ART.size * BASE_SCALE), BASE_FRONT_ART)
-	if case_alpha > 0:
-		draw_set_transform(Vector2(0, SEAT_Y - 27 - opening * 36), -opening * 0.6, Vector2.ONE * (1.0 + 0.2 * sin(opening * PI)))
-		draw_texture_rect_region(ART, Rect2(Vector2(-27, 23 - LOCK_SIZE.y), LOCK_SIZE), LOCK_ART if locked else OPEN_LOCK_ART, Color(1, 1, 1, case_alpha))
-		draw_set_transform(Vector2.ZERO)
+	# Child sprites draw the glass, then the seating lip, then the lock.
 	if not locked and _unlock_fx < 1:
 		for i in 7:
 			var angle := i * TAU / 7.0

@@ -36,7 +36,7 @@ Output genuine RGBA transparency for production game use.
 
 ## ガラス底面の反射を取り除いたプロンプト
 
-`glass-case.png` は組み込みのimagegenで編集した画像から、Godotでガラス領域（487 × 311px）を切り出したものです。ゲームでは底面とその両端だけをこの画像に差し替え、底面の透明度を合わせています。上面・側面の反射と下端の輪郭は元のアトラスを使います。
+`glass-case.png` は組み込みのimagegenで編集した画像から、Godotでガラス領域（487 × 311px）を切り出したものです。ゲームでは1枚のスプライトとして描画し、`glass-case.gdshader` で元のアトラスの透明度・上面と側面の反射・下端の輪郭を保ちます。底面には編集画像を滑らかに混ぜ、透明度も連続的に調整します。矩形ごとに描き分けたときの境目が残らないようにしています。
 
 ```text
 Use case: precise-object-edit.
