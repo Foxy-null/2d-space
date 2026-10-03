@@ -75,6 +75,17 @@ position = Vector2(980, 480)
 area_size = Vector2(140, 320)
 wind_direction = Vector2(-1, 0)
 
+[node name="Updraft" parent="." instance=ExtResource("9_wind")]
+position = Vector2(980, 360)
+area_size = Vector2(140, 560)
+wind_direction = Vector2(0, -1)
+wind_acceleration = 3000.0
+
+[node name="UpdraftHint" type="Label" parent="."]
+offset_left = 920.0
+offset_top = 95.0
+text = "UPDRAFT / HOLD PARACHUTE"
+
 [node name="PinballSpring" parent="." instance=ExtResource("8_pinball")]
 position = Vector2(1870, 540)
 

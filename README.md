@@ -62,6 +62,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 | 壁Spring | 右端の壁 `(2320, 340)`。左向きに発射 |
 | Moving Gate | `(1230, 470)` ～ `(1530, 470)` を往復する赤いUp。Dashで通過可能 |
 | Wind Area | 壁の右側 `(980, 480)`、幅140／高さ320の左風。移動／Dash、左の壁へのGrabと解除を比較 |
+| Updraft | 傘の上 `(980, 360)`、幅140／高さ560の上昇気流。傘保持中はゆっくり浮上し、傘なしでは落下上限が半分になる |
 | PinballSpring | `(1870, 540)` のピンクの円形バンパー。上・下・左右・斜めから接触し反射方向を比較 |
 
 既存の静止Gate、足場、Dash Crystalの配置はそのままです。
@@ -100,6 +101,10 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `area_size = Vector2(260, 240)`：領域サイズ。Inspectorで変更すると当たり判定と表示が追従します。
 
 複数Areaでは加速度をベクトル合成します（右900＋上900なら `(900, -900)`、反対方向なら相殺）。合成方向に対して有効Areaの最大 `max_wind_speed` を使います。登録はArea単位で、退出・削除時にその寄与だけを解除します。通常の重力方向の落下上限／Wall Slide上限とCollisionは引き続き適用します。
+
+合成した風が現在の重力に逆らう成分を持つ場合は、上昇気流として扱います。重力Downでは画面上向き、Gravity Upでは画面下向きが該当し、斜め風も含みます。傘なしではその成分による加速を受けず、落下上限を通常の1/2（標準では900→450）に制限します。横風成分は作用し、他のObjectを保持していても浮上できません。領域を出ると通常の落下上限に戻ります。
+
+傘保持中は上昇気流による浮上が可能です。風が加える上昇速度の上限は `parachute_fall_speed` と同じ180で、既に速く上昇しているJump／Spring等の慣性は切り詰めません。傘を離すと風による浮上が解除され、残った上昇慣性は重力で自然に減速します。Dash中・Wall Grab中は従来どおり風を受けません。デモの上昇気流は `wind_acceleration = 3000` で、既存の左風と重なります。右入力で横風に逆らい、領域内に留まりながら浮上を試してください。
 
 ## Sceneの担当分け
 
@@ -156,7 +161,7 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 
 ### Parachute Creature
 
-黄色の傘を保持中だけ、現在の重力方向への落下成分を `parachute_fall_speed = 180` に制限します。横速度と上昇速度を維持し、Gravity Upにも対応します。Wind適用後に制限するため、横風では流され、強い上風では上昇でき、下風でも上限を超えません。Dash中は無効、Spring／Pinball発射後は `parachute_launch_grace = 0.15` 秒の猶予があります。Releaseで即解除します。
+黄色の傘を保持中だけ、現在の重力方向への落下成分を `parachute_fall_speed = 180` に制限します。横速度とJump等の上昇慣性を維持し、Gravity Upにも対応します。Wind適用後に落下を制限するため、横風では流され、重力に逆らう強い風では180を上限に浮上でき、重力方向の風でも落下上限を超えません。Dash中は無効、Spring／Pinball発射後の落下制限には `parachute_launch_grace = 0.15` 秒の猶予があります。Releaseで落下制限と風による浮上を即解除します。
 
 ### Pressure Button
 
@@ -187,12 +192,12 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 | Light Box | `(320, 610)` | 段ボールの軽い箱。Heavyとの見た目と持ち運びの違いを比較 |
 | Heavy Object | `(400, 610)` | 足場Aの下でGrabし移動差を比較。右へ移動して離す／Dashと同時に離すと投擲 |
 | Pressure Button | `(530, 640)` | HeavyをPlateへ投げるか上でDropし、緑のONを確認。外へ運ぶとOFF |
-| Parachute Creature | `(1000, 610)` | 左風内でGrabしてJump→ゆっくり落下。Upゲートで反転し天井へゆっくり落下。保持したままSpring／PinballやDashも比較 |
+| Parachute Creature | `(1000, 610)` | 上昇気流内でGrab→ゆっくり浮上。離すと慣性が減速して落下。傘なしでJumpして落下上限450を比較。Upゲートで反転し天井へゆっくり落下。保持したままSpring／PinballやDashも比較 |
 
 狭い足場下で取得・方向転換し、壁際で保持したまま壁キックできることを確認できます。低い天井にアイテムが重なった状態で離すと、Player側へ補正してから物理を復帰します。HUDは既存のGravity／Stamina／Dash／Air Jumpに **CARRY: NONE / JUMP / HEAVY / PARACHUTE** を追加しています。
 
 ### Phase 3テスト
 
-上記4本をGodot 4.7.2 headlessで実行します。新しい `tests/phase3_grab_test.gd` は `PHASE3_GRAB_TEST_OK` と終了コード0で成功です。保持中の衝突無効化と頭上追従を各テストframeで確認し、両重力の壁キック／壁スライド、低い天井での取得と方向転換、薄い壁越しGrab拒否、Release位置補正・待機・自動再試行、狭い通路での重なり解消、通常移動での押し合いを検証します。入力の共有・優先順位、Drop／全方向Throw／同frame Dash Throw、独立Jump残数と表示、Heavyの例外、ParachuteとWind／Launch猶予、実RigidBodyの投擲からButton ON、Respawnも対象です。
+上記4本をGodot 4.7.2 headlessで実行します。新しい `tests/phase3_grab_test.gd` は `PHASE3_GRAB_TEST_OK` と終了コード0で成功です。保持中の衝突無効化と頭上追従を各テストframeで確認し、両重力の壁キック／壁スライド、低い天井での取得と方向転換、薄い壁越しGrab拒否、Release位置補正・待機・自動再試行、狭い通路での重なり解消、通常移動での押し合いを検証します。入力の共有・優先順位、Drop／全方向Throw／同frame Dash Throw、独立Jump残数と表示、Heavyの例外、ParachuteとWind／Launch猶予、実RigidBodyの投擲からButton ON、Respawnも対象です。上昇気流は両重力で、傘の有無・他Objectの保持・落下450・浮上180・斜め風・風の相殺・Release後の慣性・実Areaからの退出を検証します。
 
 Wall GrabとObject Grabの切り替えは両重力で検証します。壁を掴んだままの登り・静止・降りでは取得せず、キーの押し直しと、登り切り・降り切り・スタミナ切れ・壁ジャンプでの解除時には取得すること、Dashによる解除では取得しないことを確認します。
