@@ -44,6 +44,12 @@ func _update_visuals() -> void:
 	$Glow.color = Color(tint, 0.22)
 
 
+func reset_for_respawn() -> void:
+	position = _initial_position
+	_toward_b = true
+	_endpoint_wait_left = 0.0
+
+
 func _on_body_entered(body: Node) -> void:
 	if body.has_method("set_gravity_direction"):
 		body.set_gravity_direction(target_gravity)

@@ -16,7 +16,7 @@ func refresh_weight() -> void:
 	# The engine returns each body once, including bodies with multiple shapes.
 	total_weight = 0.0
 	for body in get_overlapping_bodies():
-		if body is Grabbable:
+		if body is Grabbable and not is_instance_valid(body.carrier):
 			total_weight += body.weight
 		elif include_player and body is PlayerController:
 			total_weight += body.weight

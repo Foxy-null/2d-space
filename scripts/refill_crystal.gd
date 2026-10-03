@@ -1,5 +1,10 @@
 extends Area2D
 
+signal collected(body: PlayerController)
+
+enum RefillKind { DASH, AIR_JUMP }
+
+@export var refill_kind := RefillKind.DASH
 @export var respawn_time := 2.5
 var _respawn_left := 0.0
 var _available := true
@@ -17,7 +22,11 @@ func _on_body_entered(body: Node) -> void:
 	$CollisionShape2D.set_deferred("disabled", true)
 	set_deferred("monitoring", false)
 	hide()
-	body.refill_from_crystal()
+	collected.emit(body)
+	if refill_kind == RefillKind.AIR_JUMP:
+		body.grant_air_jump()
+	else:
+		body.refill_from_crystal()
 	_respawn_left = respawn_time
 
 
@@ -26,7 +35,12 @@ func _physics_process(delta: float) -> void:
 		return
 	_respawn_left = maxf(_respawn_left - delta, 0.0)
 	if _respawn_left <= 0.0:
-		_available = true
-		show()
-		$CollisionShape2D.set_deferred("disabled", false)
-		set_deferred("monitoring", true)
+		reset_for_respawn()
+
+
+func reset_for_respawn() -> void:
+	_respawn_left = 0.0
+	_available = true
+	show()
+	$CollisionShape2D.set_deferred("disabled", false)
+	set_deferred("monitoring", true)

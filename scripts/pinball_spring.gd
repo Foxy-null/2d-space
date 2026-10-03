@@ -1,6 +1,8 @@
 @tool
 extends Area2D
 
+signal launched(body: PlayerController)
+
 @export_range(0.0, 3000.0) var minimum_bounce_speed := 800.0
 @export_range(0.0, 3000.0) var maximum_bounce_speed := 1200.0
 @export_range(0.0, 1000.0) var min_impact_normal_speed := 50.0
@@ -30,6 +32,7 @@ func _on_body_entered(body: Node2D) -> void:
 	# Positive incident normal speed guarantees an outward reflected normal.
 	var speed := clampf(incoming.length(), minimum_bounce_speed, maxf(minimum_bounce_speed, maximum_bounce_speed))
 	body.launch_from_spring(reflected.normalized() * speed)
+	launched.emit(body)
 
 
 func _on_body_exited(body: Node2D) -> void:
