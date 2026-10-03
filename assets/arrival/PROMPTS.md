@@ -32,3 +32,17 @@ Use case: precise-object-edit. Edit this generated 1536x1024 game sprite atlas. 
 3. Keep the empty lower-right cell and all atlas padding fully transparent. No checkerboard, no text, no new sprites. The two padlocks' shackle holes must be transparent.
 Output genuine RGBA transparency for production game use.
 ```
+
+
+## ガラス底面の反射を取り除いたプロンプト
+
+`glass-case.png` は組み込みのimagegenで編集した画像から、Godotでガラス領域（487 × 311px）を切り出したものです。ゲームでは底面とその両端だけをこの画像に差し替え、底面の透明度を合わせています。上面・側面の反射と下端の輪郭は元のアトラスを使います。
+
+```text
+Use case: precise-object-edit.
+Image 1 is the EDIT TARGET: a 1536x1024 RGBA game sprite atlas.
+Make exactly ONE localized change to the GLASS COVER in the TOP-RIGHT cell:
+Remove the broad curved horizontal white/pale-blue REFLECTION OF THE BOTTOM GLASS PLANE. This is the bright wide band across the bottom INSIDE the glass cover, roughly x=1045..1485, y=390..430. The glass is placed directly on a metal pedestal in the game, so this shiny glass-floor band wrongly looks like a separate white bottom shelf. There must be NO glossy bottom floor plane, NO wide white highlight band, NO white horizontal reflective arc at the bottom.
+Replace that interior bottom band with the same very faint translucent blue pane/mostly transparent alpha as the central glass. Retain ONLY the thin dark navy outer contour and a modest thin pale blue structural bottom edge. Keep the glass's exact outside geometry, position, width, height, corner shape and alignment.
+STRICT INVARIANTS: preserve the glass top rim, left and right upright edges, diagonal side reflection strokes, overall blue colors and genuine RGBA transparency. Preserve all FOUR other sprites (gray metal pedestal, red button, closed gold lock, open gold lock), their positions, shapes, sizes, colors and pixels. Preserve the empty bottom-right cell. Keep output exactly 1536x1024, no resizing, no rearrangement, no new art, no text. Transparent background. The only visual difference should be that the glass cover no longer has a reflected glossy bottom plane.
+```

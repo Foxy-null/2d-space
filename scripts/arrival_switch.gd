@@ -11,6 +11,7 @@ const INK := Color(0.055, 0.09, 0.17)
 const GOLD := Color(1, 0.8, 0.22)
 const CYAN := Color(0.35, 0.92, 1)
 const ART := preload("res://assets/arrival/arrival-switch-atlas.png")
+const CLEAR_CASE := preload("res://assets/arrival/glass-case.png")
 const BASE_ART := Rect2(30, 256, 484, 190)
 const BASE_FRONT_ART := Rect2(30, 300, 484, 146)
 const CAP_ART := Rect2(558, 202, 423, 241)
@@ -113,7 +114,15 @@ func _draw() -> void:
 	var case_alpha := 1.0 if locked else 1.0 - _unlock_fx
 	var opening := 0.0 if locked else _unlock_fx
 	if case_alpha > 0:
-		draw_texture_rect_region(ART, Rect2(Vector2(-64, SEAT_Y - CASE_SIZE.y - opening * 12), CASE_SIZE), CASE_ART, Color(1, 1, 1, case_alpha))
+		var case_position := Vector2(-64, SEAT_Y - CASE_SIZE.y - opening * 12)
+		var case_scale := CASE_SIZE.x / CASE_ART.size.x
+		# Keep the original pane and frame; replace only the reflected bottom plane.
+		for region in [Rect2(0, 0, 487, 256), Rect2(0, 302, 487, 9)]:
+			draw_texture_rect_region(ART, Rect2(case_position + region.position * case_scale, region.size * case_scale), Rect2(CASE_ART.position + region.position, region.size), Color(1, 1, 1, case_alpha))
+		for edge in [Rect2(0, 256, 22, 46), Rect2(465, 256, 22, 46)]:
+			draw_texture_rect_region(CLEAR_CASE, Rect2(case_position + edge.position * case_scale, edge.size * case_scale), edge, Color(1, 1, 1, case_alpha))
+		var bottom := Rect2(22, 256, 443, 46)
+		draw_texture_rect_region(CLEAR_CASE, Rect2(case_position + bottom.position * case_scale, bottom.size * case_scale), bottom, Color(1, 1, 1, case_alpha * 0.35))
 	# Only the front lip covers the cap and glass. The back rim stays behind them.
 	var front_top := -BASE_SIZE.y + (BASE_FRONT_ART.position.y - BASE_ART.position.y) * BASE_SCALE
 	draw_texture_rect_region(ART, Rect2(Vector2(-70, front_top), BASE_FRONT_ART.size * BASE_SCALE), BASE_FRONT_ART)
