@@ -1,4 +1,4 @@
-[gd_scene load_steps=101 format=3]
+[gd_scene load_steps=102 format=3]
 
 [ext_resource type="Script" path="res://scripts/tutorial.gd" id="1_tutorial"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
@@ -55,13 +55,16 @@ size = Vector2(40, 210)
 size = Vector2(160, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_2_LeftKickWall"]
-size = Vector2(36, 360)
+size = Vector2(36, 580)
+
+[sub_resource type="RectangleShape2D" id="Shape_2_KickStep"]
+size = Vector2(52, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_2_RightKickWall"]
 size = Vector2(36, 260)
 
 [sub_resource type="RectangleShape2D" id="Shape_2_KickLanding"]
-size = Vector2(124, 28)
+size = Vector2(212, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_3_PracticeFloor"]
 size = Vector2(360, 80)
@@ -439,13 +442,23 @@ polygon = PackedVector2Array(-80, -14, 80, -14, 80, 14, -80, 14)
 color = Color(0.3, 0.45, 0.67, 1)
 
 [node name="LeftKickWall" type="StaticBody2D" parent="Rooms/Room2"]
-position = Vector2(668, 460)
+position = Vector2(668, 210)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/LeftKickWall"]
 shape = SubResource("Shape_2_LeftKickWall")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/LeftKickWall"]
-polygon = PackedVector2Array(-18, -180, 18, -180, 18, 180, -18, 180)
+polygon = PackedVector2Array(-18, -290, 18, -290, 18, 290, -18, 290)
+color = Color(0.3, 0.45, 0.67, 1)
+
+[node name="KickStep" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(712, 394)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/KickStep"]
+shape = SubResource("Shape_2_KickStep")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/KickStep"]
+polygon = PackedVector2Array(-26, -14, 26, -14, 26, 14, -26, 14)
 color = Color(0.3, 0.45, 0.67, 1)
 
 [node name="RightKickWall" type="StaticBody2D" parent="Rooms/Room2"]
@@ -459,13 +472,13 @@ polygon = PackedVector2Array(-18, -130, 18, -130, 18, 130, -18, 130)
 color = Color(0.3, 0.45, 0.67, 1)
 
 [node name="KickLanding" type="StaticBody2D" parent="Rooms/Room2"]
-position = Vector2(968, 394)
+position = Vector2(924, 394)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/KickLanding"]
 shape = SubResource("Shape_2_KickLanding")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/KickLanding"]
-polygon = PackedVector2Array(-62, -14, 62, -14, 62, 14, -62, 14)
+polygon = PackedVector2Array(-106, -14, 106, -14, 106, 14, -106, 14)
 color = Color(0.3, 0.45, 0.67, 1)
 
 [node name="ClimbHint" type="Label" parent="Rooms/Room2"]
@@ -489,7 +502,7 @@ offset_left = 687.0
 offset_top = 185.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "壁に触れて Space / A・×\n反対側へ壁キック"
+text = "下を通って、壁キックで上へ\n低い位置から Space / A・×"
 mouse_filter = 2
 
 [node name="PreviousHint" type="Label" parent="Rooms/Room2"]

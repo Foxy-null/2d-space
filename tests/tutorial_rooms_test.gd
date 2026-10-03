@@ -51,6 +51,7 @@ func _run() -> void:
 	_check(player.wall_actions_enabled and not player.dash_enabled, "Room 2 unlocks walls only")
 	_check(player.controls_enabled, "Controls resume after the camera slide")
 	_check(camera.position == Vector2(1920, 360), "Camera must settle on room 2")
+	await _test_wall_kick_required()
 	await _climb_and_kick()
 	await _cross_right_edge()
 	_check(tutorial.room_index == 2 and player.dash_enabled, "Room 3 unlocks dash")
@@ -78,6 +79,62 @@ func _walk_room_one() -> void:
 	await _finish_transition()
 
 
+func _test_wall_kick_required() -> void:
+	# Climbing above the hanging wall must retry before its top can be mantled.
+	player.global_position = Vector2(1280 + 632, 404)
+	player.velocity = Vector2.ZERO
+	player.set("_contacts_valid", false)
+	Input.action_press("move_right")
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	var retried := false
+	for frame in 150:
+		await _step()
+		if player.global_position.x < 1280 + 200:
+			retried = true
+			break
+	_check(retried, "Hanging wall cannot be crossed above the screen")
+	_release_inputs()
+	player.respawn()
+	await _step(3)
+	# Probe both inner faces, releasing just below the overhang while climbing.
+	for side in [-1, 1]:
+		player.global_position = Vector2(1280 + (704 if side == -1 else 852), 500)
+		player.velocity = Vector2.ZERO
+		player.set("_contacts_valid", false)
+		player.set("_coyote_left", 0.0)
+		var into_wall := "move_left" if side == -1 else "move_right"
+		var across := "move_right" if side == -1 else "move_left"
+		Input.action_press(into_wall)
+		Input.action_press("wall_grab")
+		Input.action_press("move_up")
+		await _step(16)
+		_check(player.is_wall_grabbing() and player.position.y > 434, "Climb approaches the underside of either overhang")
+		Input.action_release(into_wall)
+		Input.action_release("wall_grab")
+		Input.action_press(across)
+		var crossed := false
+		for frame in 35:
+			await _step()
+			crossed = crossed or player.position.y < 354 or player.global_position.x > 1280 + 906
+		_check(not crossed, "Releasing a climb cannot reach either overhang's top or the goal side")
+		_release_inputs()
+		player.respawn()
+		await _step(3)
+		# Full, fresh stamina must not permit climbing through either cap.
+		player.global_position = Vector2(1280 + (704 if side == -1 else 852), 500)
+		player.velocity = Vector2.ZERO
+		player.set("_contacts_valid", false)
+		Input.action_press(into_wall)
+		Input.action_press("wall_grab")
+		Input.action_press("move_up")
+		await _step(100)
+		_check(player.is_wall_grabbing() and player.position.y > 434, "Full stamina cannot climb through either overhang")
+		_release_inputs()
+		player.respawn()
+		await _step(3)
+
+
 func _climb_and_kick() -> void:
 	Input.action_press("move_right")
 	for frame in 80:
@@ -95,19 +152,52 @@ func _climb_and_kick() -> void:
 	_check(climbed, "Room 2 wall must be climbable onto the rest ledge")
 	_check(player.get_wall_stamina() > 2.9, "Rest ledge restores wall stamina")
 	_release_inputs()
-	# Probe the actual inner face of the wall-kick corridor.
-	player.global_position = Vector2(1280 + 705, 350)
-	player.velocity = Vector2.ZERO
-	player.set("_contacts_valid", false)
-	player.set("_coyote_left", 0.0)
+	Input.action_press("move_right")
+	var passed_under := false
+	for frame in 150:
+		await _step()
+		if player.global_position.x > 1280 + 686 and player.position.y >= 526:
+			passed_under = true
+		if player.is_on_floor() and player.is_on_wall() and player.global_position.x > 1280 + 800:
+			break
+	_check(passed_under, "Actual route goes below the hanging middle wall")
+	_check(player.is_on_floor() and player.is_on_wall(), "Underpass leads to the lower right wall")
+	Input.action_press("jump")
+	await _step()
+	Input.action_release("jump")
+	await _step(10)
+	_check(player.global_position.x < 1280 + 870 and player.position.y > 500, "Ordinary jump cannot reach the right landing")
+	Input.action_release("move_right")
 	Input.action_press("move_left")
 	Input.action_press("wall_grab")
-	await _step(4)
-	_check(player.is_on_wall() and player.is_wall_grabbing(), "Opposing wall must be grabbable")
+	Input.action_press("move_up")
+	Input.action_press("jump")
+	await _step()
+	_check(player.velocity.x < -400 and player.velocity.y < 0, "Low right-wall kick launches upward toward the middle wall")
+	Input.action_release("jump")
+	for frame in 100:
+		await _step()
+		if player.is_wall_grabbing() and player.position.y < 300:
+			break
+	_check(player.is_wall_grabbing() and player.position.y < 300, "Wall kick reaches the opposing shelf and its upper wall")
 	Input.action_release("move_left")
+	Input.action_release("move_up")
+	Input.action_press("move_right")
 	Input.action_press("jump")
 	await _step()
 	_check(player.velocity.x > 400 and player.velocity.y < 0, "Wall kick must launch toward the opposite wall")
+	Input.action_release("jump")
+	Input.action_release("wall_grab")
+	for frame in 180:
+		if tutorial.cleared.has(1):
+			break
+		Input.action_release("jump")
+		if player.global_position.x >= 1280 + 1170:
+			Input.action_release("move_right")
+		elif player.is_on_floor() and player.is_on_wall():
+			Input.action_press("jump")
+		await _step()
+	_check(tutorial.cleared.has(1), "Complete climb, underpass, and wall-kick route activates the actual arrival switch")
 	_release_inputs()
 
 
