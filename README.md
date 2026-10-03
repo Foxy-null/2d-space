@@ -36,6 +36,8 @@
 
 `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd` が表示、物理的な押し込み、解錠・押下の効果音を担当します。重量を測るPressure Buttonとは別の仕掛けです。
 
+ボタン・台座・ガラス・南京錠には、添付のイメージ図をもとに生成した `assets/arrival/arrival-switch-atlas.png` を使います。解錠時は南京錠のつるが開き、ケースごと浮いて消えます。ボタンの光沢面を保ちながら、前面が台座に深く沈み込みます。生成プロンプトは `assets/arrival/PROMPTS.md` に記録しています。
+
 ![到着台のロック、解錠、押下の様子](docs/screenshots/arrival/overview.png)
 
 ## 操作

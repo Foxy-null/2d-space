@@ -10,6 +10,13 @@ const BUBBLE := Vector2(-125, -230)
 const INK := Color(0.055, 0.09, 0.17)
 const GOLD := Color(1, 0.8, 0.22)
 const CYAN := Color(0.35, 0.92, 1)
+const ART := preload("res://assets/arrival/arrival-switch-atlas.png")
+const BASE_ART := Rect2(30, 256, 484, 190)
+const CAP_TOP_ART := Rect2(558, 202, 423, 95)
+const CAP_FRONT_ART := Rect2(558, 297, 423, 146)
+const CASE_ART := Rect2(1022, 128, 487, 311)
+const LOCK_ART := Rect2(118, 550, 342, 385)
+const OPEN_LOCK_ART := Rect2(618, 550, 342, 385)
 
 var locked := true
 var pressing := false
@@ -88,27 +95,19 @@ func _process(_delta: float) -> void:
 func _draw() -> void:
 	if not is_node_ready():
 		return
-	_box(Rect2(-70, 0, 140, 36), Color(0.32, 0.4, 0.5), INK, 8)
-	draw_line(Vector2(-57, 12), Vector2(57, 12), Color(0.6, 0.7, 0.8), 3, true)
-	for x in [-57, 57]:
-		draw_circle(Vector2(x, 25), 3, INK)
 	var top := -56.0 + cap.position.y
-	_box(Rect2(-54, top, 108, -top + 5), Color(0.9, 0.19, 0.26), INK, 8)
-	_box(Rect2(-54, top, 108, 13), Color(1, 0.36, 0.4), INK, 7)
-	draw_line(Vector2(-41, top + 5), Vector2(23, top + 5), Color(1, 0.69, 0.7), 3, true)
-	draw_circle(Vector2(39, top + 7), 4, GOLD if _pressed else Color(1, 0.9, 0.76))
+	# Keep the glossy standing surface intact; the front slides into the socket.
+	draw_texture_rect_region(ART, Rect2(-54, top, 108, 14), CAP_TOP_ART)
+	var front_height := -top - 9.0
+	var front_source := Rect2(CAP_FRONT_ART.position, Vector2(CAP_FRONT_ART.size.x, CAP_FRONT_ART.size.y * front_height / 47.0))
+	draw_texture_rect_region(ART, Rect2(-54, top + 14, 108, front_height), front_source)
+	draw_texture_rect_region(ART, Rect2(-70, 0, 140, 36), BASE_ART)
 	var case_alpha := 1.0 if locked else 1.0 - _unlock_fx
 	if case_alpha > 0:
 		var opening := 0.0 if locked else _unlock_fx
-		_box(Rect2(-64, -78, 128, 78), Color(0.65, 0.88, 1, case_alpha * 0.2), Color(0.6, 0.84, 1, case_alpha), 10)
-		for x in [-43, -12, 19]:
-			draw_line(Vector2(x, -66), Vector2(x - 18, -21), Color(0.85, 0.97, 1, case_alpha * 0.65), 5, true)
+		draw_texture_rect_region(ART, Rect2(-64, -78 - opening * 12, 128, 78), CASE_ART, Color(1, 1, 1, case_alpha))
 		draw_set_transform(Vector2(0, -27 - opening * 36), -opening * 0.6, Vector2.ONE * (1.0 + 0.2 * sin(opening * PI)))
-		var lock_color := Color(GOLD, case_alpha)
-		draw_arc(Vector2(0, -16), 13, PI, TAU + (opening * 0.8), 24, lock_color, 7, true)
-		_box(Rect2(-23, -15, 46, 37), lock_color, Color(INK, case_alpha), 7)
-		draw_circle(Vector2(0, -1), 5, Color(INK, case_alpha))
-		draw_line(Vector2(0, 0), Vector2(0, 10), Color(INK, case_alpha), 5, true)
+		draw_texture_rect_region(ART, Rect2(-27, -38, 54, 61), LOCK_ART if locked else OPEN_LOCK_ART, Color(1, 1, 1, case_alpha))
 		draw_set_transform(Vector2.ZERO)
 	if not locked and _unlock_fx < 1:
 		for i in 7:
