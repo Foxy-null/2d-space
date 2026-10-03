@@ -1,4 +1,4 @@
-[gd_scene load_steps=117 format=3]
+[gd_scene load_steps=101 format=3]
 
 [ext_resource type="Script" path="res://scripts/tutorial.gd" id="1_tutorial"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
@@ -24,6 +24,8 @@
 [ext_resource type="PackedScene" path="res://scenes/parachute_creature.tscn" id="ext_parachute_creature"]
 
 [ext_resource type="PackedScene" path="res://scenes/pressure_button.tscn" id="ext_pressure_button"]
+
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="14_arrival"]
 
 [sub_resource type="RectangleShape2D" id="Shape_1_EntryFloor"]
 size = Vector2(750, 80)
@@ -88,32 +90,17 @@ size = Vector2(70, 60)
 [sub_resource type="RectangleShape2D" id="Shape_4_RightBoundary"]
 size = Vector2(40, 720)
 
-[sub_resource type="RectangleShape2D" id="Shape_goal"]
-size = Vector2(80, 110)
-
-[sub_resource type="RectangleShape2D" id="Shape_1_Goal"]
-size = Vector2(120, 100)
-
 [sub_resource type="RectangleShape2D" id="Shape_1_ExitBarrier"]
 size = Vector2(28, 720)
 
-[sub_resource type="RectangleShape2D" id="Shape_2_Goal"]
-size = Vector2(120, 100)
-
 [sub_resource type="RectangleShape2D" id="Shape_2_ExitBarrier"]
 size = Vector2(28, 720)
-
-[sub_resource type="RectangleShape2D" id="Shape_3_Goal"]
-size = Vector2(120, 100)
 
 [sub_resource type="RectangleShape2D" id="Shape_3_ExitBarrier"]
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_4_ExitBarrier"]
 size = Vector2(28, 720)
-
-[sub_resource type="RectangleShape2D" id="Shape_5_Goal"]
-size = Vector2(120, 100)
 
 [sub_resource type="RectangleShape2D" id="Shape_5_ExitBarrier"]
 size = Vector2(28, 720)
@@ -126,9 +113,6 @@ size = Vector2(510, 20)
 
 [sub_resource type="RectangleShape2D" id="Shape_5_Landing"]
 size = Vector2(430, 80)
-
-[sub_resource type="RectangleShape2D" id="Shape_6_Goal"]
-size = Vector2(120, 100)
 
 [sub_resource type="RectangleShape2D" id="Shape_6_ExitBarrier"]
 size = Vector2(28, 720)
@@ -148,9 +132,6 @@ size = Vector2(160, 28)
 [sub_resource type="RectangleShape2D" id="Shape_6_ExitFloor"]
 size = Vector2(200, 80)
 
-[sub_resource type="RectangleShape2D" id="Shape_7_Goal"]
-size = Vector2(120, 100)
-
 [sub_resource type="RectangleShape2D" id="Shape_7_ExitBarrier"]
 size = Vector2(28, 720)
 
@@ -162,9 +143,6 @@ size = Vector2(210, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_7_Wall"]
 size = Vector2(28, 80)
-
-[sub_resource type="RectangleShape2D" id="Shape_8_Goal"]
-size = Vector2(120, 100)
 
 [sub_resource type="RectangleShape2D" id="Shape_8_ExitBarrier"]
 size = Vector2(28, 720)
@@ -181,9 +159,6 @@ size = Vector2(300, 28)
 [sub_resource type="RectangleShape2D" id="Shape_8_ExitFloor"]
 size = Vector2(180, 80)
 
-[sub_resource type="RectangleShape2D" id="Shape_9_Goal"]
-size = Vector2(120, 100)
-
 [sub_resource type="RectangleShape2D" id="Shape_9_ExitBarrier"]
 size = Vector2(28, 720)
 
@@ -192,9 +167,6 @@ size = Vector2(1280, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_9_GrabWall"]
 size = Vector2(28, 140)
-
-[sub_resource type="RectangleShape2D" id="Shape_10_Goal"]
-size = Vector2(120, 100)
 
 [sub_resource type="RectangleShape2D" id="Shape_10_ExitBarrier"]
 size = Vector2(28, 720)
@@ -208,17 +180,11 @@ size = Vector2(880, 40)
 [sub_resource type="RectangleShape2D" id="Shape_10_Obstacle"]
 size = Vector2(150, 250)
 
-[sub_resource type="RectangleShape2D" id="Shape_11_Goal"]
-size = Vector2(120, 100)
-
 [sub_resource type="RectangleShape2D" id="Shape_11_ExitBarrier"]
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_11_Floor"]
 size = Vector2(1280, 80)
-
-[sub_resource type="RectangleShape2D" id="Shape_12_Goal"]
-size = Vector2(120, 100)
 
 [sub_resource type="RectangleShape2D" id="Shape_12_ExitBarrier"]
 size = Vector2(28, 720)
@@ -234,9 +200,6 @@ size = Vector2(20, 40)
 
 [sub_resource type="RectangleShape2D" id="Shape_12_TrayRight"]
 size = Vector2(20, 40)
-
-[sub_resource type="RectangleShape2D" id="Shape_13_Goal"]
-size = Vector2(120, 100)
 
 [sub_resource type="RectangleShape2D" id="Shape_13_ExitBarrier"]
 size = Vector2(28, 720)
@@ -259,9 +222,6 @@ size = Vector2(120, 28)
 [sub_resource type="RectangleShape2D" id="Shape_13_ExitFloor"]
 size = Vector2(160, 80)
 
-[sub_resource type="RectangleShape2D" id="Shape_14_Goal"]
-size = Vector2(120, 100)
-
 [sub_resource type="RectangleShape2D" id="Shape_14_ExitBarrier"]
 size = Vector2(28, 720)
 
@@ -276,9 +236,6 @@ size = Vector2(250, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_14_ExitFloor"]
 size = Vector2(280, 80)
-
-[sub_resource type="RectangleShape2D" id="Shape_15_Goal"]
-size = Vector2(120, 100)
 
 [sub_resource type="RectangleShape2D" id="Shape_15_ExitBarrier"]
 size = Vector2(28, 720)
@@ -295,9 +252,6 @@ size = Vector2(230, 28)
 [sub_resource type="RectangleShape2D" id="Shape_15_ExitFloor"]
 size = Vector2(200, 80)
 
-[sub_resource type="RectangleShape2D" id="Shape_16_Goal"]
-size = Vector2(120, 100)
-
 [sub_resource type="RectangleShape2D" id="Shape_16_ExitBarrier"]
 size = Vector2(28, 720)
 
@@ -309,9 +263,6 @@ size = Vector2(640, 40)
 
 [sub_resource type="RectangleShape2D" id="Shape_16_Obstacle"]
 size = Vector2(140, 240)
-
-[sub_resource type="RectangleShape2D" id="Shape_17_Goal"]
-size = Vector2(120, 100)
 
 [sub_resource type="RectangleShape2D" id="Shape_17_ExitBarrier"]
 size = Vector2(28, 720)
@@ -754,27 +705,11 @@ position = Vector2(280, 560)
 position = Vector2(990, 280)
 target_gravity = 1
 
-[node name="Goal" type="Area2D" parent="Rooms/Room4"]
-position = Vector2(1190, 585)
+[node name="Goal" parent="Rooms/Room4" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room4/Goal"]
-shape = SubResource("Shape_goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room4/Goal"]
-polygon = PackedVector2Array(-40, -55, 40, -55, 40, 55, -40, 55)
-color = Color(0.4, 1, 0.65, 0.2)
-
-[node name="Goal" type="Area2D" parent="Rooms/Room1"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room1/Goal"]
-shape = SubResource("Shape_1_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room1/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room1" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room1"]
 offset_left = 1142
@@ -803,17 +738,8 @@ theme_override_font_sizes/font_size = 18
 text = "目標達成で出口が開く"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room2"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room2/Goal"]
-shape = SubResource("Shape_2_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room2/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room2" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room2"]
 offset_left = 1142
@@ -842,17 +768,8 @@ theme_override_font_sizes/font_size = 18
 text = "目標達成で出口が開く"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room3"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room3/Goal"]
-shape = SubResource("Shape_3_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room3/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room3" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room3"]
 offset_left = 1142
@@ -919,17 +836,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room5"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room5/Goal"]
-shape = SubResource("Shape_5_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room5/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room5" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room5"]
 offset_left = 1142
@@ -1038,17 +946,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room6"]
-position = Vector2(710, 414)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room6/Goal"]
-shape = SubResource("Shape_6_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room6/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room6" instance=ExtResource("14_arrival")]
+position = Vector2(710, 440)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room6"]
 offset_left = 662
@@ -1171,17 +1070,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room7"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room7/Goal"]
-shape = SubResource("Shape_7_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room7/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room7" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room7"]
 offset_left = 1142
@@ -1286,17 +1176,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room8"]
-position = Vector2(930, 444)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room8/Goal"]
-shape = SubResource("Shape_8_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room8/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room8" instance=ExtResource("14_arrival")]
+position = Vector2(930, 470)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room8"]
 offset_left = 882
@@ -1408,17 +1289,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room9"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room9/Goal"]
-shape = SubResource("Shape_9_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room9/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room9" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room9"]
 offset_left = 1142
@@ -1517,17 +1389,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room10"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room10/Goal"]
-shape = SubResource("Shape_10_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room10/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room10" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room10"]
 offset_left = 1142
@@ -1635,17 +1498,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room11"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room11/Goal"]
-shape = SubResource("Shape_11_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room11/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room11" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room11"]
 offset_left = 1142
@@ -1740,17 +1594,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room12"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room12/Goal"]
-shape = SubResource("Shape_12_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room12/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room12" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room12"]
 offset_left = 1142
@@ -1880,17 +1725,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room13"]
-position = Vector2(930, 304)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room13/Goal"]
-shape = SubResource("Shape_13_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room13/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room13" instance=ExtResource("14_arrival")]
+position = Vector2(930, 330)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room13"]
 offset_left = 882
@@ -2024,17 +1860,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room14"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room14/Goal"]
-shape = SubResource("Shape_14_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room14/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room14" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room14"]
 offset_left = 1142
@@ -2146,17 +1973,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room15"]
-position = Vector2(930, 324)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room15/Goal"]
-shape = SubResource("Shape_15_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room15/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room15" instance=ExtResource("14_arrival")]
+position = Vector2(930, 350)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room15"]
 offset_left = 882
@@ -2272,17 +2090,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room16"]
-position = Vector2(1190, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room16/Goal"]
-shape = SubResource("Shape_16_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room16/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room16" instance=ExtResource("14_arrival")]
+position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room16"]
 offset_left = 1142
@@ -2398,17 +2207,8 @@ theme_override_font_sizes/font_size = 18
 text = "← 前の部屋"
 mouse_filter = 2
 
-[node name="Goal" type="Area2D" parent="Rooms/Room17"]
-position = Vector2(1090, 600)
-collision_layer = 0
-collision_mask = 1
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Rooms/Room17/Goal"]
-shape = SubResource("Shape_17_Goal")
-
-[node name="Glow" type="Polygon2D" parent="Rooms/Room17/Goal"]
-polygon = PackedVector2Array(-60, -50, 60, -50, 60, 50, -60, 50)
-color = Color(0.45, 0.75, 1, 0.15)
+[node name="Goal" parent="Rooms/Room17" instance=ExtResource("14_arrival")]
+position = Vector2(1090, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room17"]
 offset_left = 1042
