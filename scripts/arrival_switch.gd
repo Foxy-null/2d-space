@@ -95,24 +95,26 @@ func _process(_delta: float) -> void:
 func _draw() -> void:
 	if not is_node_ready():
 		return
-	var top := -56.0 + cap.position.y
+	# The scene origin is the pedestal's bottom, on the supporting floor.
+	var top := -92.0 + cap.position.y
 	# Keep the glossy standing surface intact; the front slides into the socket.
 	draw_texture_rect_region(ART, Rect2(-54, top, 108, 14), CAP_TOP_ART)
-	var front_height := -top - 9.0
+	var front_height := -top - 45.0
 	var front_source := Rect2(CAP_FRONT_ART.position, Vector2(CAP_FRONT_ART.size.x, CAP_FRONT_ART.size.y * front_height / 47.0))
 	draw_texture_rect_region(ART, Rect2(-54, top + 14, 108, front_height), front_source)
-	draw_texture_rect_region(ART, Rect2(-70, 0, 140, 36), BASE_ART)
+	draw_texture_rect_region(ART, Rect2(-70, -36, 140, 36), BASE_ART)
 	var case_alpha := 1.0 if locked else 1.0 - _unlock_fx
 	if case_alpha > 0:
 		var opening := 0.0 if locked else _unlock_fx
-		draw_texture_rect_region(ART, Rect2(-64, -78 - opening * 12, 128, 78), CASE_ART, Color(1, 1, 1, case_alpha))
-		draw_set_transform(Vector2(0, -27 - opening * 36), -opening * 0.6, Vector2.ONE * (1.0 + 0.2 * sin(opening * PI)))
+		# Seat the glass rim inside the pedestal's recessed socket.
+		draw_texture_rect_region(ART, Rect2(-64, -106 - opening * 12, 128, 78), CASE_ART, Color(1, 1, 1, case_alpha))
+		draw_set_transform(Vector2(0, -55 - opening * 36), -opening * 0.6, Vector2.ONE * (1.0 + 0.2 * sin(opening * PI)))
 		draw_texture_rect_region(ART, Rect2(-27, -38, 54, 61), LOCK_ART if locked else OPEN_LOCK_ART, Color(1, 1, 1, case_alpha))
 		draw_set_transform(Vector2.ZERO)
 	if not locked and _unlock_fx < 1:
 		for i in 7:
 			var angle := i * TAU / 7.0
-			var center := Vector2(0, -48) + Vector2.from_angle(angle) * (30 + 66 * _unlock_fx)
+			var center := Vector2(0, -76) + Vector2.from_angle(angle) * (30 + 66 * _unlock_fx)
 			_star(center, (1.0 - _unlock_fx) * 8, Color(GOLD, 1.0 - _unlock_fx))
 	draw_set_transform(BUBBLE)
 	var border := GOLD if locked else Color(0.4, 1, 0.7)

@@ -19,13 +19,25 @@ func _run() -> void:
 	for index in 17:
 		await _enter(index)
 		var goal := _goal()
-		player.global_position = goal.global_position + Vector2(0, -120)
+		var floor_probe := PhysicsRayQueryParameters2D.create(goal.global_position + Vector2(0, -1), goal.global_position + Vector2(0, 2), 1,
+			[goal.cap.get_rid(), goal.get_node("Case").get_rid(), goal.get_node("Base").get_rid()])
+		var floor_hit := root.world_2d.direct_space_state.intersect_ray(floor_probe)
+		_check(not floor_hit.is_empty() and absf(floor_hit.position.y - goal.global_position.y) < 0.1, "Pedestal bottom rests on the supporting floor in room %d" % (index + 1))
+		player.global_position = goal.global_position + Vector2(0, -160)
 		player.velocity = Vector2.ZERO
 		player.set("_contacts_valid", false)
 		await _step(30)
 		_check(goal.locked and not goal.is_pressed(), "Locked case cannot activate in room %d" % (index + 1))
-		_check(player.is_on_floor() and absf(player.global_position.y - goal.global_position.y + 104) < 1, "Case supports the player in room %d" % (index + 1))
+		_check(player.is_on_floor() and absf(player.global_position.y - goal.global_position.y + 132) < 1, "Case supports the player in room %d" % (index + 1))
 		_check(not _room().get_node("ExitBarrier/Collision").disabled, "Locked exit remains solid")
+	await _enter(0)
+	_complete_steps()
+	player.global_position = _goal().global_position + Vector2(-80, -90)
+	player.velocity = Vector2.ZERO
+	player.set("_contacts_valid", false)
+	await _step(30)
+	_check(player.is_on_floor() and absf(player.global_position.y - _goal().global_position.y + 62) < 1, "Player can stand on the exposed pedestal rim above the floor")
+	_check(not _goal().is_pressed(), "Standing on the pedestal does not press the red cap")
 	await _enter(6)
 	var goal := _goal()
 	var events := [0, 0]
@@ -34,7 +46,7 @@ func _run() -> void:
 	tutorial.call("_mark", "floor_spring")
 	_check(goal.get_node("Bubble/Progress").text == "のこり 2/3", "Fraction shows remaining rather than completed steps")
 	_check(goal.get_node("Bubble/Objective").text == tutorial.STEP_LABELS["wall_spring"], "Bubble shows the next incomplete objective")
-	player.global_position = goal.global_position + Vector2(0, -120)
+	player.global_position = goal.global_position + Vector2(0, -160)
 	player.velocity = Vector2.ZERO
 	player.set("_contacts_valid", false)
 	await _step(30)
@@ -48,7 +60,7 @@ func _run() -> void:
 	_check(not tutorial.cleared.has(6), "Exit stays locked before the deep press finishes")
 	await _step(40)
 	_check(goal.is_pressed() and tutorial.cleared.has(6) and events == [1, 1], "Player waiting on the case falls onto and activates the switch")
-	_check(absf(goal.cap.position.y - 44) < 0.1 and absf(player.global_position.y - case_height - 66) < 1, "Player follows the full deep press without sinking into the floor")
+	_check(absf(goal.cap.position.y - 44) < 0.1 and absf(player.global_position.y - case_height - 58) < 1, "Player follows the full deep press without sinking into the floor")
 	_check(player.is_on_floor() and _room().get_node("ExitBarrier/Collision").disabled, "Pressed platform supports player and opens exit")
 	for i in 3:
 		tutorial.call("_update_lesson")
@@ -67,7 +79,7 @@ func _run() -> void:
 	await _step(3)
 	_check(goal.locked and goal.cap.position.y == 0 and not goal.is_pressed(), "Retry before pressing restores locked case")
 	_complete_steps()
-	player.global_position = goal.global_position + Vector2(0, -90)
+	player.global_position = goal.global_position + Vector2(0, -140)
 	player.velocity = Vector2.ZERO
 	player.set("_contacts_valid", false)
 	for frame in 40:
@@ -82,7 +94,7 @@ func _run() -> void:
 	_check(goal.locked and not goal.is_pressed() and not tutorial.cleared.has(1), "Retry during a press cancels pending exit unlock")
 	# A jump during the descent retains the ordinary jump impulse.
 	_complete_steps()
-	player.global_position = goal.global_position + Vector2(0, -90)
+	player.global_position = goal.global_position + Vector2(0, -140)
 	player.velocity = Vector2.ZERO
 	player.set("_contacts_valid", false)
 	for frame in 40:
@@ -147,7 +159,7 @@ func _screenshots() -> void:
 	await _step(40)
 	await _capture("unlocked")
 	var goal := _goal()
-	player.global_position = goal.global_position + Vector2(0, -110)
+	player.global_position = goal.global_position + Vector2(0, -150)
 	player.velocity = Vector2.ZERO
 	player.set("_contacts_valid", false)
 	await _step(40)

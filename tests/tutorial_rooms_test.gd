@@ -216,7 +216,7 @@ func _test_respawn_and_backtrack() -> void:
 func _cross_right_edge() -> void:
 	_release_inputs()
 	var goal: ArrivalSwitch = tutorial.rooms.get_child(tutorial.room_index).get_node("Goal")
-	player.global_position = goal.global_position + Vector2(0, -100)
+	player.global_position = goal.global_position + Vector2(0, -140)
 	player.velocity = Vector2.ZERO
 	player.set("_contacts_valid", false)
 	for frame in 60:

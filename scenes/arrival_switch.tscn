@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/arrival_switch.gd" id="1"]
 [sub_resource type="RectangleShape2D" id="Sensor"]
@@ -7,6 +7,8 @@ size = Vector2(128, 32)
 size = Vector2(108, 56)
 [sub_resource type="RectangleShape2D" id="Case"]
 size = Vector2(128, 78)
+[sub_resource type="RectangleShape2D" id="Base"]
+size = Vector2(140, 36)
 
 [node name="ArrivalSwitch" type="Area2D"]
 z_index = 1
@@ -16,22 +18,29 @@ collision_layer = 0
 collision_mask = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -58)
+position = Vector2(0, -94)
 shape = SubResource("Sensor")
 
 [node name="Cap" type="AnimatableBody2D" parent="."]
 collision_layer = 1
 collision_mask = 1
 [node name="Collision" type="CollisionShape2D" parent="Cap"]
-position = Vector2(0, -28)
+position = Vector2(0, -64)
 shape = SubResource("Cap")
 
 [node name="Case" type="StaticBody2D" parent="."]
 collision_layer = 1
 collision_mask = 1
 [node name="Collision" type="CollisionShape2D" parent="Case"]
-position = Vector2(0, -39)
+position = Vector2(0, -67)
 shape = SubResource("Case")
+
+[node name="Base" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 1
+[node name="Collision" type="CollisionShape2D" parent="Base"]
+position = Vector2(0, -18)
+shape = SubResource("Base")
 
 [node name="Bubble" type="Node2D" parent="."]
 position = Vector2(-125, -230)
