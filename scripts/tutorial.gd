@@ -38,25 +38,25 @@ const STEPS := [
 	["wind_lift", "inverted_glide", "down"], ["superdash"],
 ]
 const STEP_LABELS := {
-	"jump": "ジャンプして段差と穴を越えよう", "climb": "壁を掴んで登ろう",
+	"jump": "段差と穴を越えよう", "climb": "壁を掴んで登ろう",
 	"wall_jump": "壁からキックで跳ぼう", "dash": "ダッシュで進もう",
-	"up": "↑ ゲートで天井へ行こう", "down": "↓ ゲートで床へ戻ろう",
-	"air_dash": "空中でダッシュを使おう", "dash_refill": "消費したダッシュを緑のCrystalで回復",
-	"refilled_dash": "着地前にもう一度ダッシュしよう", "jump_crystal": "紫のCrystalを取ろう",
-	"air_jump": "空中でもう一度ジャンプしよう", "floor_spring": "床Springで跳ぼう",
-	"wall_spring": "壁Springで横に跳ぼう", "spring_dash": "Springで回復したダッシュを使おう",
-	"pinball": "丸いバンパーで反射して跳ぼう", "wind_walk": "風の中を歩いてみよう",
-	"wind_grab": "風の中で壁を掴んでみよう", "wind_dash": "風の中でダッシュしよう",
-	"light_grab": "小さな箱を掴もう", "light_drop": "止まって小さな箱を置こう",
-	"heavy_move": "重い箱を掴んで運ぼう", "button_on": "重い箱を置いてボタンをONにしよう",
-	"button_off": "箱を持ち上げてボタンをOFFにしよう", "throw": "動きながら重い箱を投げよう",
-	"throw_button": "投げた箱をボタンへ着地させよう", "creature_jump": "生物を保持して空中ジャンプ",
-	"creature_landed": "生物を保持したまま着地して回復", "second_creature_jump": "回復した追加ジャンプをもう一度使おう",
-	"glide": "傘を保持してゆっくり降下しよう", "parachute_release": "空中で傘を手放してみよう",
-	"fast_fall": "傘を離した後の落下速度を確かめよう", "two_jumps": "生物を掴み、紫のCrystalを取ろう",
-	"combo_air": "同じジャンプ中に追加ジャンプの1回目", "combo_creature": "着地せず追加ジャンプの2回目",
-	"wind_lift": "傘を保持して上昇気流に乗ろう", "inverted_glide": "↑ ゲートの後も傘でゆっくり落下",
-	"superdash": "地上の水平ダッシュからすぐジャンプ",
+	"up": "↑ ゲートで天井へ", "down": "↓ ゲートで床へ",
+	"air_dash": "空中でダッシュ", "dash_refill": "緑のCrystalで回復",
+	"refilled_dash": "着地前に再ダッシュ", "jump_crystal": "紫のCrystalを取ろう",
+	"air_jump": "空中で追加ジャンプ", "floor_spring": "床Springで跳ぼう",
+	"wall_spring": "壁Springで横に跳ぼう", "spring_dash": "Springの後にダッシュ",
+	"pinball": "丸いバンパーで跳ぼう", "wind_walk": "風の中を歩こう",
+	"wind_grab": "風の中で壁を掴もう", "wind_dash": "風の中でダッシュ",
+	"light_grab": "小さな箱を掴もう", "light_drop": "止まって箱を置こう",
+	"heavy_move": "重い箱を運ぼう", "button_on": "重い箱を置いてON",
+	"button_off": "箱を持ち上げてOFF", "throw": "移動しながら投げよう",
+	"throw_button": "投げた箱でボタンON", "creature_jump": "生物の追加ジャンプ",
+	"creature_landed": "生物と着地して回復", "second_creature_jump": "回復後にもう一度跳ぶ",
+	"glide": "傘でゆっくり落下", "parachute_release": "空中で傘を手放そう",
+	"fast_fall": "傘なしの速い落下", "two_jumps": "生物と紫のCrystal",
+	"combo_air": "空中ジャンプ1回目", "combo_creature": "着地せず2回目を跳ぶ",
+	"wind_lift": "傘で上昇気流に乗ろう", "inverted_glide": "反転中も傘で降りよう",
+	"superdash": "地上ダッシュから跳ぶ",
 }
 
 var room_index := 0
@@ -85,6 +85,14 @@ func _ready() -> void:
 	player.gravity_changed.connect(_on_gravity)
 	player.carry_changed.connect(_on_carry)
 	for room in rooms.get_children():
+		var goal: ArrivalSwitch = room.get_node("Goal")
+		var index := room.get_index()
+		goal.activated.connect(_on_arrival.bind(index))
+		room.get_node("ExitHint").z_index = 1
+		goal.set_progress(STEPS[index].size(), STEPS[index].size(), STEPS[index][0], STEP_LABELS[STEPS[index][0]])
+		for hint in ["ArrivalHint", "GoalHint"]:
+			if room.has_node(hint):
+				room.get_node(hint).hide()
 		for node in room.find_children("*", "Area2D", true, false):
 			if node.has_signal("collected"):
 				node.collected.connect(_on_crystal.bind(node))
@@ -102,12 +110,6 @@ func _physics_process(delta: float) -> void:
 	if transitioning:
 		return
 	_observe_lesson(delta)
-	var room := rooms.get_child(room_index)
-	if not cleared.has(room_index) and _steps_done() and player.is_on_floor() and room.get_node("Goal").overlaps_body(player):
-		cleared[room_index] = true
-		if room_index == MAIN_ROOM_COUNT - 1:
-			completed = true
-		_update_lesson()
 	var left := room_index * ROOM_SIZE.x
 	var collision_shape := player.get_node("CollisionShape2D") as CollisionShape2D
 	# A taller neighboring floor can stop the player's center before the boundary.
@@ -187,21 +189,32 @@ func _steps_done() -> bool:
 	return true
 
 
+func _on_arrival(index: int) -> void:
+	if index != room_index or not _active() or not _steps_done() or cleared.has(index):
+		return
+	cleared[index] = true
+	if index == MAIN_ROOM_COUNT - 1:
+		completed = true
+	_update_lesson()
+
+
 func _update_lesson() -> void:
 	var room := rooms.get_child(room_index)
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
-	room.get_node("ExitHint").text = "任意のSuperdash →" if done and room_index == 15 else ("次の部屋へ →" if done else "目標達成で出口が開く")
+	room.get_node("ExitHint").text = "任意のSuperdash →" if done and room_index == 15 else ("次の部屋へ →" if done else "到着台を押すと開く")
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
-	room.get_node("Goal/Glow").color = Color(0.4, 1, 0.65, 0.22) if done else Color(0.45, 0.75, 1, 0.15)
 	var count := 0
-	var next := "青い到着台へ着地しよう"
+	var next := "赤い到着台に乗ろう"
+	var next_key := ""
 	for key in STEPS[room_index]:
 		if seen.has(key):
 			count += 1
-		elif next == "青い到着台へ着地しよう":
+		elif next_key.is_empty():
+			next_key = key
 			next = STEP_LABELS[key]
+	room.get_node("Goal").set_progress(STEPS[room_index].size() - count, STEPS[room_index].size(), next_key, next, done)
 	hud.show_lesson_progress("体験済み ✓　自由に練習できます" if done else "目標 %d/%d：%s" % [count, STEPS[room_index].size(), next], done)
 	$HUD/Completion.visible = completed and room_index >= 15
 	$HUD/Completion.text = "チュートリアル完了！　右は任意のSuperdash部屋" if room_index == 15 else "本編クリア済み　Superdashも自由に練習できます"

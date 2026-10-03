@@ -215,10 +215,14 @@ func _test_respawn_and_backtrack() -> void:
 
 func _cross_right_edge() -> void:
 	_release_inputs()
-	player.global_position = Vector2(tutorial.room_index * 1280 + 1190, 610)
+	var goal: ArrivalSwitch = tutorial.rooms.get_child(tutorial.room_index).get_node("Goal")
+	player.global_position = goal.global_position + Vector2(0, -100)
 	player.velocity = Vector2.ZERO
 	player.set("_contacts_valid", false)
-	await _step(5)
+	for frame in 60:
+		if tutorial.cleared.has(tutorial.room_index):
+			break
+		await _step()
 	_check(tutorial.cleared.has(tutorial.room_index), "The lesson actions and an actual landing must open the exit")
 	player.global_position = Vector2((tutorial.room_index + 1) * 1280 - 4, 614)
 	player.velocity = Vector2(360, 0)

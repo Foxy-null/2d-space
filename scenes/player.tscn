@@ -9,6 +9,7 @@ size = Vector2(36, 52)
 [node name="Player" type="CharacterBody2D" groups=["player"]]
 script = ExtResource("1_player")
 floor_stop_on_slope = false
+platform_on_leave = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape_player")
