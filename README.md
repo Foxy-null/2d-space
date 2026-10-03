@@ -150,7 +150,9 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 
 ### Heavy Object
 
-灰色の大きな箱は `weight = 2.0`。保持中だけ移動速度・地上加速・空中加速が0.75倍、通常Jump速度が0.85倍になります。PlayerのInspector値を変更せず実効値で計算し、Releaseで即解除します。Dash速度／時間／回数、Wall Stamina、Wall Climb／Jump、Superdash、Gravityは変わりません。
+銅色の分銅型の箱は `weight = 2.0`。太い輪の取っ手と幅広の底で重さを表現し、取っ手を含めた見た目を既存の32×32の当たり判定内に収めています。保持中だけ移動速度・地上加速・空中加速が0.75倍、通常Jump速度が0.85倍になります。PlayerのInspector値を変更せず実効値で計算し、Releaseで即解除します。Dash速度／時間／回数、Wall Stamina、Wall Climb／Jump、Superdash、Gravityは変わりません。
+
+軽い箱は24×24の段ボールです。上面の継ぎ目、中央の梱包テープ、角の折れと配送マークを描いています。重量は0.5で、持っても移動やジャンプの能力は変わりません。両方とも当たり判定は四角のままです。
 
 ### Parachute Creature
 
@@ -182,6 +184,7 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 | Object | 初期位置 | 確認方法 |
 | --- | --- | --- |
 | Jump Creature | `(250, 610)` | 近づきShiftを保持。床Spring `(650, 640)` で表示2にし、空中Jumpを2回使って2→1→0。離して再Grabしても回復しないことを確認 |
+| Light Box | `(320, 610)` | 段ボールの軽い箱。Heavyとの見た目と持ち運びの違いを比較 |
 | Heavy Object | `(400, 610)` | 足場Aの下でGrabし移動差を比較。右へ移動して離す／Dashと同時に離すと投擲 |
 | Pressure Button | `(530, 640)` | HeavyをPlateへ投げるか上でDropし、緑のONを確認。外へ運ぶとOFF |
 | Parachute Creature | `(1000, 610)` | 左風内でGrabしてJump→ゆっくり落下。Upゲートで反転し天井へゆっくり落下。保持したままSpring／PinballやDashも比較 |
