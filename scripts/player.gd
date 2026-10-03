@@ -291,11 +291,25 @@ func _apply_wind(delta: float) -> void:
 		speed_limit = maxf(speed_limit, wind[2])
 	if is_dashing() or _wall_grabbing or acceleration.is_zero_approx():
 		return
+	var down := Vector2.DOWN * gravity_direction
+	var lift := -acceleration.dot(down)
+	var parachute_limit := _held.fall_speed_limit() if get_held_object() != null else INF
+	if lift > 0.0 and not is_finite(parachute_limit):
+		# Without a parachute, updrafts slow falling instead of adding lift.
+		acceleration += down * lift
+		velocity -= down * maxf(velocity.dot(down) - max_fall_speed * 0.5, 0.0)
+		if acceleration.is_zero_approx():
+			return
 	var direction := acceleration.normalized()
 	# Limit only wind's addition along the resultant direction. Existing faster
 	# jump/launch momentum is not truncated. Overlaps use the largest active cap.
 	var addition := minf(acceleration.length() * delta, maxf(speed_limit - velocity.dot(direction), 0.0))
-	velocity += direction * addition
+	var wind_velocity := direction * addition
+	if lift > 0.0 and is_finite(parachute_limit):
+		# Cap only wind's lift, preserving faster jump/launch momentum and crosswind.
+		var available_lift := maxf(parachute_limit + velocity.dot(down), 0.0)
+		wind_velocity += down * maxf(-wind_velocity.dot(down) - available_lift, 0.0)
+	velocity += wind_velocity
 
 
 func refill_from_crystal() -> void:

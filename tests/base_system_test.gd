@@ -17,7 +17,7 @@ func _run() -> void:
 	_check(player != null, "Player scene is missing")
 	_assert_starfield(main.get_node("Background/Starfield") as Node2D)
 	_check(not main.get_node("GateUp").moving_enabled and not main.get_node("GateDown").moving_enabled, "Existing gates must remain stationary")
-	for demo in ["MovingGate", "FloorSpring", "WallSpring", "WindArea", "PinballSpring", "JumpCreature", "HeavyObject", "ParachuteCreature", "PressureButton"]:
+	for demo in ["MovingGate", "FloorSpring", "WallSpring", "WindArea", "Updraft", "PinballSpring", "JumpCreature", "HeavyObject", "ParachuteCreature", "PressureButton"]:
 		_check(main.has_node(demo), "Missing Phase 2 demo: " + demo)
 
 	await _wait_for_floor(player)
@@ -42,12 +42,34 @@ func _run() -> void:
 	_check(player.gravity_direction == 1 and player.up_direction == Vector2.UP, "Down gate did not restore gravity")
 
 	await _assert_wall_actions(player)
+	await _assert_updraft_demo(main, player)
 
 	if _failed:
 		quit(1)
 		return
 	print("BASE_SYSTEM_TEST_OK")
 	quit()
+
+
+func _assert_updraft_demo(main: Node, player: PlayerController) -> void:
+	player.respawn()
+	player.global_position = Vector2(960, 614)
+	Input.action_press("wall_grab")
+	for _frame in 4:
+		await physics_frame
+	_check(player.get_held_object() == main.get_node("ParachuteCreature"), "Demo umbrella cannot be grabbed in updraft")
+	var start_y := player.global_position.y
+	for _frame in 60:
+		await physics_frame
+	_check(player.global_position.y < start_y - 100, "Demo updraft did not lift held umbrella")
+	_check(player.velocity.y >= -181 and player.velocity.y < -175, "Demo updraft rise must stay near 180")
+	Input.action_release("wall_grab")
+	for _frame in 2:
+		await physics_frame
+	_check(player.get_held_object() == null and player.velocity.y < 0, "Demo release must retain temporary ascent inertia")
+	for _frame in 25:
+		await physics_frame
+	_check(player.velocity.y > 0 and player.velocity.y <= 451, "Demo without umbrella must fall at half speed cap")
 
 
 func _assert_input_map() -> void:

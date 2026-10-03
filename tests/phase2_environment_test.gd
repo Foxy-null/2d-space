@@ -373,7 +373,8 @@ func _test_wind_vectors() -> void:
 	var b := Node.new()
 	world.add_child(a)
 	world.add_child(b)
-	for direction in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN, Vector2(1, -1).normalized()]:
+	for direction in [Vector2.RIGHT, Vector2.LEFT, Vector2.DOWN]:
+		player.set_gravity_direction(1)
 		player.register_wind(a, direction * 900, 500)
 		player.velocity = direction.orthogonal() * 700
 		player._apply_wind(0.1)
@@ -387,17 +388,18 @@ func _test_wind_vectors() -> void:
 		player.set_gravity_direction(-1)
 		player.velocity = Vector2.ZERO
 		player._apply_wind(0.1)
-		_vector(player.velocity, direction * 90, "wind independent of gravity")
+		_vector(player.velocity, direction * 90 if direction.y == 0 else Vector2.ZERO, "world direction retained; inverted updraft needs parachute")
+	player.set_gravity_direction(1)
 	player.register_wind(a, Vector2(900, 0), 500)
 	for other in [Vector2(900, 0), Vector2(-900, 0), Vector2(0, -900)]:
 		player.register_wind(b, other, 500)
 		player.velocity = Vector2.ZERO
 		player._apply_wind(0.1)
-		_vector(player.velocity, (Vector2(900, 0) + other) * 0.1, "wind sum / cancel / diagonal")
+		_vector(player.velocity, Vector2(900 + other.x, 0) * 0.1, "wind sum / cancel / diagonal without parachute lift")
 	player.unregister_wind(a)
 	player.velocity = Vector2.ZERO
 	player._apply_wind(0.1)
-	_vector(player.velocity, Vector2(0, -90), "remove one contribution")
+	_vector(player.velocity, Vector2.ZERO, "remaining updraft cannot lift without parachute")
 	player.unregister_wind(b)
 	player.velocity = Vector2.ZERO
 	player._apply_wind(1)
@@ -434,7 +436,7 @@ func _test_wind_movement() -> void:
 	while player.is_dashing():
 		await _step()
 	await _step()
-	_near(player.velocity.y, (1900 - 900) * STEP, "wind resumes after dash")
+	_near(player.velocity.y, 1900 * STEP, "updraft after dash preserves natural falling without parachute")
 	for gravity in [1, -1]:
 		await _reset(Vector2(780, 350))
 		player.unregister_wind(source)
@@ -444,14 +446,14 @@ func _test_wind_movement() -> void:
 		player.register_wind(source, Vector2(0, -gravity * 900), 500)
 		player.velocity.y = gravity * 80
 		await _step()
-		_near(player.velocity.y * gravity, 80 + 1000 * STEP, "wall slide receives wind")
+		_near(player.velocity.y * gravity, 80 + 1900 * STEP, "wall slide in updraft without parachute")
 		Input.action_press("wall_grab")
 		await _step(2)
 		_check(player.is_wall_grabbing(), "wind grab fixture")
 		_near(player.velocity.y, 0, "wall grab ignores wind")
 		Input.action_release("wall_grab")
 		await _step()
-		_near(player.velocity.y * gravity, 1000 * STEP, "wind resumes immediately on grab release")
+		_near(player.velocity.y * gravity, 1900 * STEP, "natural falling resumes immediately on wall grab release")
 	player.unregister_wind(source)
 	source.free()
 
@@ -470,11 +472,11 @@ func _test_wind_lifecycle() -> void:
 	_near(a.max_wind_speed, 500, "wind cap default")
 	player.velocity = Vector2.ZERO
 	player._apply_wind(0.1)
-	_vector(player.velocity, Vector2(90, -90), "actual overlapping areas normalize and compose")
+	_vector(player.velocity, Vector2(90, 0), "actual overlapping areas compose without parachute lift")
 	a.wind_direction = Vector2.LEFT
 	player.velocity = Vector2.ZERO
 	player._apply_wind(0.1)
-	_vector(player.velocity, Vector2(-90, -90), "Inspector direction change updates registered wind")
+	_vector(player.velocity, Vector2(-90, 0), "Inspector direction change updates registered wind")
 	a.wind_direction = Vector2.RIGHT
 	a.area_size = Vector2(180, 160)
 	await _sync()
@@ -483,7 +485,7 @@ func _test_wind_lifecycle() -> void:
 	await _sync()
 	player.velocity = Vector2.ZERO
 	player._apply_wind(0.1)
-	_vector(player.velocity, Vector2(0, -90), "actual area exit removes only one")
+	_vector(player.velocity, Vector2.ZERO, "actual area exit leaves only updraft without parachute")
 	b.position.x += 500
 	await _sync()
 	_check(player._winds.is_empty(), "all actual areas exited")
