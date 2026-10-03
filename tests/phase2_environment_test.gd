@@ -26,6 +26,7 @@ func _run() -> void:
 	await _test_floor_springs()
 	await _test_wind_vectors()
 	await _test_wind_movement()
+	await _test_wind_resistance()
 	await _test_wind_lifecycle()
 	print("PHASE2_ENVIRONMENT_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
@@ -376,24 +377,29 @@ func _test_wind_vectors() -> void:
 	for direction in [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN, Vector2(1, -1).normalized()]:
 		player.register_wind(a, direction * 900, 500)
 		player.velocity = direction.orthogonal() * 700
-		player._apply_wind(0.1)
-		_vector(player.velocity, direction.orthogonal() * 700 + direction * 90, "wind direction")
-		player._apply_wind(1)
-		_near(player.velocity.dot(direction), 500, "wind projection cap")
-		_near(player.velocity.dot(direction.orthogonal()), 700, "orthogonal speed untouched")
+		_near(player._apply_wind(0.1), direction.x * 324, "horizontal wind target bias")
+		_vector(player.velocity, direction.orthogonal() * 700 + Vector2(0, direction.y * 90), "vertical wind direction")
+		player.velocity = direction * 500
+		_near(player._apply_wind(1), direction.x * 324, "horizontal drift independent of delta")
+		_vector(player.velocity, direction * 500, "wind projection cap")
 		player.velocity = direction * 900
 		player._apply_wind(1)
 		_vector(player.velocity, direction * 900, "wind does not truncate faster launch")
 		player.set_gravity_direction(-1)
 		player.velocity = Vector2.ZERO
-		player._apply_wind(0.1)
-		_vector(player.velocity, direction * 90, "wind independent of gravity")
+		_near(player._apply_wind(0.1), direction.x * 324, "horizontal wind independent of gravity")
+		_vector(player.velocity, Vector2(0, direction.y * 90), "vertical wind independent of gravity")
+		if is_zero_approx(direction.x):
+			player._apply_wind(1)
+			_near(player.velocity.dot(direction), 500, "vertical wind reaches cap")
 	player.register_wind(a, Vector2(900, 0), 500)
-	for other in [Vector2(900, 0), Vector2(-900, 0), Vector2(0, -900)]:
+	for fixture in [[Vector2(900, 0), 500.0], [Vector2(-900, 0), 0.0], [Vector2(0, -900), 324.0]]:
+		var other: Vector2 = fixture[0]
 		player.register_wind(b, other, 500)
 		player.velocity = Vector2.ZERO
-		player._apply_wind(0.1)
-		_vector(player.velocity, (Vector2(900, 0) + other) * 0.1, "wind sum / cancel / diagonal")
+		var combined: Vector2 = Vector2(900, 0) + other
+		_near(player._apply_wind(0.1), fixture[1], "horizontal wind sum / cancel / cap")
+		_vector(player.velocity, Vector2(0, combined.y * 0.1), "vertical wind sum / cancel / diagonal")
 	player.unregister_wind(a)
 	player.velocity = Vector2.ZERO
 	player._apply_wind(0.1)
@@ -456,6 +462,56 @@ func _test_wind_movement() -> void:
 	source.free()
 
 
+func _test_wind_resistance() -> void:
+	var source := Node.new()
+	world.add_child(source)
+	for wind_direction in [-1, 1]:
+		for grounded in [true, false]:
+			for carrying_heavy in [false, true]:
+				for input_relative_to_wind in [-1, 0, 1]:
+					await _reset(Vector2(0, 674 if grounded else 300))
+					await _step(2)
+					var axis: int = wind_direction * input_relative_to_wind
+					player.facing_direction = axis if axis != 0 else 1
+					var heavy: Grabbable
+					if carrying_heavy:
+						heavy = load("res://scenes/heavy_object.tscn").instantiate()
+						heavy.freeze = true
+						heavy.position = player.position + Vector2(player.facing_direction * 40, 0)
+						world.add_child(heavy)
+						await _sync()
+						Input.action_press("wall_grab")
+						_check(player.try_begin_grab(heavy), "heavy wind fixture")
+					player.register_wind(source, Vector2(wind_direction * 900, 0), 500)
+					if axis != 0:
+						Input.action_press("move_right" if axis > 0 else "move_left")
+					var start := player.position.x
+					await _step(32)
+					var expected: float = wind_direction * 324
+					if input_relative_to_wind < 0:
+						expected = axis * (27 if carrying_heavy else 36)
+					elif input_relative_to_wind > 0:
+						expected = wind_direction * (594 if carrying_heavy else 684)
+					var label := "wind %d ground %s heavy %s input %d" % [wind_direction, grounded, carrying_heavy, axis]
+					_near(player.velocity.x, expected, label + " steady speed")
+					_check((player.position.x - start) * signf(expected) > 0, label + " movement direction")
+					_check(player.is_on_floor() == grounded, label + " floor state")
+					player.unregister_wind(source)
+					if carrying_heavy:
+						_check(player.get_held_object() == heavy, label + " retains heavy")
+						heavy.free()
+	await _reset(Vector2(0, 674))
+	await _step(2)
+	player.register_wind(source, Vector2(-5000, 0), 500)
+	Input.action_press("move_right")
+	await _step(8)
+	_near(player.velocity.x, 36, "stronger headwind still allows crawling")
+	player.unregister_wind(source)
+	await _step(8)
+	_near(player.velocity.x, 360, "leaving wind restores normal walking")
+	source.free()
+
+
 func _test_wind_lifecycle() -> void:
 	await _reset()
 	var a = load("res://scenes/wind_area.tscn").instantiate()
@@ -469,12 +525,12 @@ func _test_wind_lifecycle() -> void:
 	_near(a.wind_acceleration, 900, "wind acceleration default")
 	_near(a.max_wind_speed, 500, "wind cap default")
 	player.velocity = Vector2.ZERO
-	player._apply_wind(0.1)
-	_vector(player.velocity, Vector2(90, -90), "actual overlapping areas normalize and compose")
+	_near(player._apply_wind(0.1), 324, "actual areas compose horizontal drift")
+	_vector(player.velocity, Vector2(0, -90), "actual overlapping areas normalize and compose")
 	a.wind_direction = Vector2.LEFT
 	player.velocity = Vector2.ZERO
-	player._apply_wind(0.1)
-	_vector(player.velocity, Vector2(-90, -90), "Inspector direction change updates registered wind")
+	_near(player._apply_wind(0.1), -324, "Inspector direction updates horizontal drift")
+	_vector(player.velocity, Vector2(0, -90), "Inspector direction change updates registered wind")
 	a.wind_direction = Vector2.RIGHT
 	a.area_size = Vector2(180, 160)
 	await _sync()

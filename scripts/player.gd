@@ -61,6 +61,8 @@ var _motion_frame := -2
 var _impact_velocity := Vector2.ZERO
 var _impact_frame := -2
 var _winds: Dictionary = {}
+const HORIZONTAL_WIND_RESPONSE_TIME := 0.36
+const MIN_HEADWIND_SPEED_RATIO := 0.1
 
 @onready var visuals: Node2D = $Visuals
 
@@ -98,7 +100,6 @@ func _physics_process(delta: float) -> void:
 		_tick_dash(delta, grounded)
 	else:
 		var acceleration := get_effective_acceleration(grounded)
-		velocity.x = move_toward(velocity.x, input_axis * get_effective_move_speed(), acceleration * delta)
 		var down := Vector2.DOWN * gravity_direction
 		var climb_axis := Input.get_axis("move_up", "move_down")
 		_wall_grabbing = wants_wall_grab and not _grab_exhausted
@@ -113,7 +114,12 @@ func _physics_process(delta: float) -> void:
 			velocity = Vector2(-_last_wall_normal.x * wall_stick_speed, climb_axis * wall_climb_speed)
 		else:
 			velocity += down * gravity_acceleration * delta
-			_apply_wind(delta)
+			var wind_speed := _apply_wind(delta)
+			var move_target := input_axis * get_effective_move_speed()
+			var target_speed := move_target + wind_speed
+			if move_target * wind_speed < 0.0:
+				target_speed = signf(move_target) * maxf(target_speed * signf(move_target), absf(move_target) * MIN_HEADWIND_SPEED_RATIO)
+			velocity.x = move_toward(velocity.x, target_speed, acceleration * delta)
 			var falling_speed := velocity.dot(down)
 			if falling_speed > max_fall_speed:
 				velocity += down * (max_fall_speed - falling_speed)
@@ -278,7 +284,7 @@ func unregister_wind(source: Node) -> void:
 	_winds.erase(source.get_instance_id())
 
 
-func _apply_wind(delta: float) -> void:
+func _apply_wind(delta: float) -> float:
 	var acceleration := Vector2.ZERO
 	var speed_limit := 0.0
 	for id in _winds.keys():
@@ -290,12 +296,15 @@ func _apply_wind(delta: float) -> void:
 		acceleration += wind[1]
 		speed_limit = maxf(speed_limit, wind[2])
 	if is_dashing() or _wall_grabbing or acceleration.is_zero_approx():
-		return
+		return 0.0
 	var direction := acceleration.normalized()
 	# Limit only wind's addition along the resultant direction. Existing faster
 	# jump/launch momentum is not truncated. Overlaps use the largest active cap.
 	var addition := minf(acceleration.length() * delta, maxf(speed_limit - velocity.dot(direction), 0.0))
-	velocity += direction * addition
+	velocity.y += direction.y * addition
+	# Horizontal wind offsets the movement target so input cannot cancel it every
+	# tick. Default wind (900) gives a 324 px/s drift independently of tick rate.
+	return direction.x * minf(acceleration.length() * HORIZONTAL_WIND_RESPONSE_TIME, speed_limit)
 
 
 func refill_from_crystal() -> void:
