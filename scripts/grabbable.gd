@@ -10,12 +10,16 @@ extends RigidBody2D
 
 var carrier: PlayerController
 var _spawn_transform: Transform2D
+var _free_collision_layer: int
+var _free_collision_mask: int
 @onready var collider: CollisionShape2D = $CollisionShape2D
 
 
 func _ready() -> void:
 	add_to_group("grabbable")
 	_spawn_transform = global_transform
+	_free_collision_layer = collision_layer
+	_free_collision_mask = collision_mask
 	continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
 
 
@@ -24,13 +28,16 @@ func begin_carry(player: PlayerController) -> void:
 	freeze = true
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0.0
-	add_collision_exception_with(player)
+	rotation = 0.0
+	collision_layer = 0
+	collision_mask = 0
 
 
 func end_carry(release_velocity: Vector2) -> void:
-	if is_instance_valid(carrier):
-		remove_collision_exception_with(carrier)
 	carrier = null
+	collision_layer = _free_collision_layer
+	collision_mask = _free_collision_mask
+	PhysicsServer2D.body_set_state(get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, global_transform)
 	freeze = false
 	sleeping = false
 	linear_velocity = release_velocity
@@ -76,37 +83,6 @@ func space_query(at: Vector2, player: PlayerController) -> PhysicsShapeQueryPara
 	return query
 
 
-func is_position_safe(at: Vector2, player: PlayerController) -> bool:
-	var player_shape: CollisionShape2D = player.get_node("CollisionShape2D")
-	if collider.shape.collide(shape_transform_at(at), player_shape.shape, player_shape.global_transform):
-		return false
+func is_position_clear(at: Vector2, player: PlayerController) -> bool:
+	# Release may overlap the player; its separation routine handles that pair.
 	return get_world_2d().direct_space_state.intersect_shape(space_query(at, player), 1).is_empty()
-
-
-func safe_motion_fraction(from: Vector2, motion: Vector2, player: PlayerController, check_player := true) -> float:
-	if check_player:
-		var player_shape: CollisionShape2D = player.get_node("CollisionShape2D")
-		if collider.shape.collide_with_motion(shape_transform_at(from), motion, player_shape.shape, player_shape.global_transform, Vector2.ZERO):
-			return 0.0
-	var query := space_query(from, player)
-	query.motion = motion
-	return get_world_2d().direct_space_state.cast_motion(query)[0]
-
-
-func grab_start_position(player: PlayerController) -> Vector2:
-	if is_position_safe(global_position, player):
-		return global_position
-	# Resting rigid bodies can settle a fraction of a pixel into a surface.
-	# Use the engine's separation vector, bounded to one pixel, before sweeping.
-	var parameters := PhysicsTestMotionParameters2D.new()
-	parameters.from = global_transform
-	parameters.motion = Vector2.ZERO
-	parameters.margin = 0.2
-	parameters.recovery_as_collision = true
-	var result := PhysicsTestMotionResult2D.new()
-	PhysicsServer2D.body_test_motion(get_rid(), parameters, result)
-	var correction := result.get_travel()
-	var recovered := global_position + correction
-	if correction.length() <= 1.0 and is_position_safe(recovered, player):
-		return recovered
-	return Vector2(INF, INF)
