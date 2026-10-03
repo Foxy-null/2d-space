@@ -23,6 +23,7 @@ func _run() -> void:
 	player.set_physics_process(false)
 	await physics_frame
 	_test_input()
+	await _test_grounded_walls()
 	await _test_dash()
 	await _test_walls()
 	await _test_jumps()
@@ -33,7 +34,7 @@ func _run() -> void:
 	quit(1 if failed else 0)
 
 
-func _solid(pos: Vector2, size: Vector2) -> void:
+func _solid(pos: Vector2, size: Vector2) -> StaticBody2D:
 	var body := StaticBody2D.new()
 	var collider := CollisionShape2D.new()
 	var shape := RectangleShape2D.new()
@@ -42,6 +43,7 @@ func _solid(pos: Vector2, size: Vector2) -> void:
 	body.position = pos
 	body.add_child(collider)
 	world.add_child(body)
+	return body
 
 
 func _step(count: int = 1) -> void:
@@ -53,7 +55,7 @@ func _step(count: int = 1) -> void:
 
 
 func _reset(pos: Vector2 = Vector2(400, 350), gravity: int = 1) -> void:
-	for action in ["move_left", "move_right", "move_up", "move_down", "jump", "dash", "wall_grab"]:
+	for action in ["move_left", "move_right", "move_up", "move_down", "jump", "jump_up", "dash", "wall_grab"]:
 		Input.action_release(action)
 	player.respawn()
 	player.global_position = pos
@@ -162,8 +164,76 @@ func _test_dash() -> void:
 			if player.is_on_floor():
 				break
 		_check(player.is_on_floor() and player.is_dash_ready(), "landing refills dash %d" % gravity)
-		_check(not player.is_air_jump_ready(), "landing clears air jump")
+		_check(player.is_air_jump_ready(), "landing preserves air jump")
 		_check(player.get_node("Visuals/Body").color == Color(0.35, 0.92, 1, 1), "landing body cyan")
+		await _step(3)
+		_check(player.is_air_jump_ready(), "remaining grounded preserves air jump")
+		player._jump_buffer_left = 0.1
+		player._try_jump(true, false)
+		_check(player.is_air_jump_ready(), "ground jump after landing preserves air jump")
+		player._jump_buffer_left = 0.1
+		player._try_jump(false, false)
+		_check(not player.is_air_jump_ready(), "preserved air jump is consumed")
+		await _step()
+		for i in 120:
+			await _step()
+			if player.is_on_floor():
+				break
+		_check(player.is_on_floor() and not player.is_air_jump_ready(), "landing does not refill consumed air jump")
+
+
+func _test_grounded_walls() -> void:
+	for gravity in [1, -1]:
+		for side in [1, -1]:
+			for height in [90.0, 20.0]:
+				var floor_y := 700.0 if gravity > 0 else 0.0
+				var wall := _solid(Vector2(1020, floor_y - gravity * height / 2.0), Vector2(40, height))
+				var start := Vector2(1020 - side * 40, floor_y - gravity * 26)
+				var toward := "move_right" if side > 0 else "move_left"
+				var climb := "move_up" if gravity > 0 else "move_down"
+				var label := "g=%d side=%d height=%d" % [gravity, side, height]
+				await _reset(start, gravity)
+				Input.action_press(toward)
+				await _step(3)
+				Input.action_release(toward)
+				await _step(12)
+				_check(player.is_on_floor(), "grounded wall fixture " + label)
+				Input.action_press("wall_grab")
+				await _step(12)
+				_check(player.is_wall_grabbing() and player.is_on_floor(), "grounded grab without horizontal input " + label)
+				_near(player.get_wall_stamina(), player.wall_stamina_max, "grounded grab does not drain stamina " + label)
+				player.grant_air_jump()
+				Input.action_press("jump")
+				await _step()
+				_near(player.velocity.y, -gravity * player.jump_speed, "grounded wall uses floor jump " + label)
+				_check(absf(player.velocity.x) < 1.0 and not player.is_wall_grabbing() and player.is_air_jump_ready(), "ground jump does not kick or consume air jump " + label)
+				await _reset(start, gravity)
+				Input.action_press(toward)
+				await _step(3)
+				Input.action_release(toward)
+				await _step(12)
+				Input.action_press("wall_grab")
+				Input.action_press(climb)
+				if gravity > 0:
+					Input.action_press("jump_up") # W supplies both climb and jump_up.
+				await _step()
+				_near(player.velocity.y, -gravity * player.wall_climb_speed, "grounded climb suppresses W jump " + label)
+				_check(not player.is_on_floor(), "climb leaves floor " + label)
+				_near(player.get_wall_stamina(), player.wall_stamina_max, "first climb frame starts from grounded stamina " + label)
+				await _step()
+				_check(player.get_wall_stamina() < player.wall_stamina_max, "airborne climb drains stamina " + label)
+				var mantled := false
+				for i in 50:
+					await _step()
+					if (player.position.x - 1020) * side > -20:
+						mantled = true
+						break
+				_check(mantled, "mantle after grounded climb " + label)
+				Input.action_release(climb)
+				Input.action_release("jump_up")
+				await _step(8)
+				_check(player.is_on_floor() and not player.is_wall_grabbing(), "mantle lands on step " + label)
+				wall.free()
 
 
 func _wall(gravity: int) -> void:
@@ -236,17 +306,17 @@ func _test_jumps() -> void:
 			_near(player.velocity.x, player.dash_speed * player.dash_end_speed_ratio, "superdash momentum")
 		await _reset(Vector2(400, 674 if gravity > 0 else 26), gravity)
 		await _step(2)
-		player.refill_from_crystal()
+		player.grant_air_jump()
 		Input.action_press("jump")
 		await _step()
 		_check(player.is_air_jump_ready(), "floor jump precedes air jump")
 		await _wall(gravity)
-		player.refill_from_crystal()
+		player.grant_air_jump()
 		Input.action_press("jump")
 		await _step()
 		_check(player.is_air_jump_ready() and absf(player.velocity.x) == player.wall_jump_speed, "wall jump precedes air jump")
 		await _reset(Vector2(400, 350), gravity)
-		player.refill_from_crystal()
+		player.grant_air_jump()
 		player.velocity.x = 600
 		Input.action_press("jump")
 		await _step()
@@ -262,7 +332,7 @@ func _test_jumps() -> void:
 		if not player.is_on_floor():
 			break
 	_check(player._coyote_left > 0, "coyote exists after leaving ledge")
-	player.refill_from_crystal()
+	player.grant_air_jump()
 	Input.action_press("jump")
 	await _step()
 	_check(player.velocity.y < -600 and player.is_air_jump_ready(), "coyote jump priority")
@@ -271,7 +341,7 @@ func _test_jumps() -> void:
 	await _step()
 	Input.action_release("dash")
 	await _step(5)
-	player.refill_from_crystal()
+	player.grant_air_jump()
 	Input.action_press("jump")
 	await _step()
 	Input.action_release("jump")
@@ -282,30 +352,44 @@ func _test_jumps() -> void:
 
 
 func _test_crystal() -> void:
+	for scene in ["refill_crystal", "jump_crystal"]:
+		var grants_jump: bool = scene == "jump_crystal"
+		for gravity in [1, -1]:
+			await _reset(Vector2(400, 350), gravity)
+			var visor: Color = player.get_node("Visuals/Visor").color
+			var crystal: Area2D = load("res://scenes/" + scene + ".tscn").instantiate()
+			crystal.position = player.position
+			world.add_child(crystal)
+			player._dash_ready = false
+			player._wall_stamina = 0.0
+			player._grab_exhausted = true
+			await _step(3)
+			_check(player.is_dash_ready() != grants_jump and player.is_air_jump_ready() == grants_jump, scene + " actual pickup grants only its own resource g=%d" % gravity)
+			_check(player.get_wall_stamina() == 0.0 and player._grab_exhausted, scene + " cannot recover wall grab")
+			_check(not crystal.visible and crystal.get_node("CollisionShape2D").disabled and not crystal.monitoring, scene + " hidden and collision disabled")
+			var expected_color := Color(1, 0.5, 0.15, 1) if grants_jump else Color(0.35, 0.92, 1, 1)
+			_check(player.get_node("Visuals/Body").color == expected_color, scene + " body color still reflects dash")
+			_check(player.get_node("Visuals/Visor").color == visor, "visor unchanged")
+			player._dash_ready = false
+			player._air_jump_ready = false
+			crystal.body_entered.emit(player)
+			_check(not player.is_dash_ready() and not player.is_air_jump_ready(), scene + " duplicate pickup blocked")
+			player.position.x = 550
+			await _step(130)
+			_check(not crystal.visible, scene + " waits respawn time")
+			await _step(25)
+			_check(crystal.visible and not crystal.get_node("CollisionShape2D").disabled and crystal.monitoring, scene + " respawns after 2.5 seconds")
+			player._dash_ready = false
+			crystal.position = player.position
+			await _step(3)
+			_check(not crystal.visible and player.is_dash_ready() != grants_jump and player.is_air_jump_ready() == grants_jump, scene + " can be collected again")
+			crystal.queue_free()
+	# Refilling dash must preserve an existing, unused jump.
 	await _reset()
-	var visor: Color = player.get_node("Visuals/Visor").color
-	var crystal: Area2D = load("res://scenes/refill_crystal.tscn").instantiate()
-	crystal.position = player.position
-	world.add_child(crystal)
-	player._dash_ready = false
-	player._wall_stamina = 0.0
-	player._grab_exhausted = true
-	await _step(3)
-	_check(player.is_dash_ready() and player.is_air_jump_ready(), "actual crystal overlap refills both")
-	_check(player.get_wall_stamina() == 0.0 and player._grab_exhausted, "REGRESSION crystal must not perform spring full recovery")
-	_check(not crystal.visible and crystal.get_node("CollisionShape2D").disabled and not crystal.monitoring, "crystal hidden and collision disabled")
-	_check(player.get_node("Visuals/Body").color == Color(0.35, 0.92, 1, 1), "crystal restores cyan")
-	_check(player.get_node("Visuals/Visor").color == visor, "visor unchanged")
-	player._dash_ready = false
-	crystal.body_entered.emit(player)
-	_check(not player.is_dash_ready(), "duplicate pickup blocked")
-	player.position.x = 550
-	await _step(130)
-	_check(not crystal.visible, "crystal waits respawn time")
-	await _step(25)
-	_check(crystal.visible and not crystal.get_node("CollisionShape2D").disabled and crystal.monitoring, "crystal respawns after 2.5 seconds")
+	player.grant_air_jump()
 	player.refill_from_crystal()
-	player.refill_from_crystal()
+	_check(player.is_air_jump_ready(), "dash crystal preserves unused jump")
+	player.grant_air_jump()
 	player._coyote_left = 0
 	player._try_jump(false, false) # No buffer: cannot consume.
 	player._jump_buffer_left = player.jump_buffer_time
@@ -315,7 +399,10 @@ func _test_crystal() -> void:
 	player.velocity.y = 0
 	player._try_jump(false, false)
 	_check(player.velocity.y == 0, "no second air jump")
-	crystal.queue_free()
+	player._start_dash(false)
+	var dash_velocity := player.velocity
+	player.grant_air_jump()
+	_check(player.is_dashing() and player.velocity == dash_velocity and not player.is_dash_ready(), "jump crystal during dash preserves dash state and charge")
 
 
 func _test_respawn() -> void:

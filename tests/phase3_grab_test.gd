@@ -13,9 +13,11 @@ func _initialize() -> void:
 func _run() -> void:
 	await _reset()
 	await _grab_tests()
+	await _wall_grab_tests()
 	await _collision_tests()
 	await _throw_tests()
 	await _jump_tests()
+	await _indicator_tests()
 	await _heavy_tests()
 	await _parachute_tests()
 	await _updraft_tests()
@@ -53,7 +55,7 @@ func _step(count := 1) -> void:
 		await _sync(1)
 		player.set_physics_process(false)
 		if player.get_held_object() != null:
-			_assert_shapes_clear(player.get_held_object())
+			_assert_held(player.get_held_object())
 
 
 func _reset(at := Vector2(400, 350)) -> void:
@@ -148,92 +150,206 @@ func _grab_tests() -> void:
 	var blocked := _object("jump_creature", Vector2(-40, 0))
 	await _sync()
 	await _step()
-	_check(player.get_held_object() == null and player.is_wall_grabbing(), "unsafe object falls back to wall grab")
-	Input.action_release("move_right")
-	player.facing_direction = -1
+	_check(player.get_held_object() == null and player.is_wall_grabbing(), "nearby object does not interrupt wall grab")
+	Input.action_release("wall_grab")
 	await _step()
-	_check(player.get_held_object() == blocked and not player.is_wall_grabbing(), "valid object takes priority over existing wall grab")
+	_check(player.get_held_object() == null and not player.is_wall_grabbing(), "released grab does not pick up object")
+	Input.action_press("wall_grab")
+	await _step()
+	_check(player.get_held_object() == blocked and not player.is_wall_grabbing(), "repress grabs behind player while facing wall")
+
+
+func _grab_wall(gravity: int) -> void:
+	await _reset(Vector2(780, 350))
+	player.set_gravity_direction(gravity)
+	_solid(Vector2(820, 350), Vector2(40, 300))
+	Input.action_press("move_right")
+	Input.action_press("wall_grab")
+	await _step(5)
+	Input.action_release("move_right")
+	_check(player.is_wall_grabbing(), "wall grab fixture g=%d" % gravity)
+
+
+func _wall_grab_tests() -> void:
+	for gravity in [1, -1]:
+		for mode in [-1, 0, 1]:
+			await _grab_wall(gravity)
+			var object := _object("jump_creature", Vector2(-40, 0))
+			await _sync()
+			if mode != 0:
+				Input.action_press("move_up" if mode * gravity < 0 else "move_down")
+			await _step(3)
+			_check(player.is_wall_grabbing() and player.get_held_object() == null, "wall climb/rest/descent ignores object g=%d mode=%d" % [gravity, mode])
+			_check(not player.try_begin_grab(object), "direct grab respects wall hold")
+			# Both input edges can arrive before the next physics tick.
+			Input.action_release("wall_grab")
+			Input.action_press("wall_grab")
+			await _step()
+			_check(player.get_held_object() == object and not player.is_wall_grabbing(), "rapid repress overrides wall grab")
+
+		for reason in ["exhaustion", "jump", "dash"]:
+			await _grab_wall(gravity)
+			var object := _object("jump_creature", Vector2(-40, 0))
+			await _sync()
+			if reason == "exhaustion":
+				player._wall_stamina = 0.001
+			else:
+				Input.action_press(reason)
+			await _step()
+			_check(not player.is_wall_grabbing(), "wall releases on " + reason)
+			if reason == "dash":
+				_check(player.is_dashing() and player.get_held_object() == null, "wall dash does not grab object")
+			else:
+				_check(player.get_held_object() == object, "grab on wall release frame: " + reason)
+				if reason == "jump":
+					_check(player.velocity.x < 0 and player.velocity.y * gravity < 0, "pickup preserves wall jump")
+				else:
+					_check(player._grab_exhausted and player.get_wall_stamina() == 0, "pickup does not refill exhausted stamina")
+
+		for mantle in [true, false]:
+			await _grab_wall(gravity)
+			var axis: int = -gravity if mantle else gravity
+			var object := _object("jump_creature")
+			# Keep the pickup within reach without blocking the mantle's swept shape.
+			object.position = Vector2(820 if mantle else 742, 350 + axis * (222 if mantle else 198))
+			await _sync()
+			Input.action_press("move_up" if axis < 0 else "move_down")
+			for i in 65:
+				await _step()
+				if not player.is_wall_grabbing():
+					break
+			if mantle:
+				_check(player.position.x > 800, "mantle completes before pickup g=%d pos=%s" % [gravity, player.position])
+			else:
+				_check((player.position.y - 350) * gravity > 176, "descent leaves wall before pickup g=%d" % gravity)
+			_check(not player.is_wall_grabbing() and player.get_held_object() == object, "automatic pickup after wall edge g=%d mantle=%s" % [gravity, mantle])
 
 
 func _collision_tests() -> void:
-	for at in [Vector2(400, 674), Vector2(400, 26)]:
-		await _reset(at)
-		player.set_gravity_direction(1 if at.y > 350 else -1)
-		var carried := _object("heavy_object")
-		await _sync()
-		_hold(carried)
-		Input.action_press("move_left")
-		await _step(35)
-		_check(carried.position.x < player.position.x, "turn beside actual floor/ceiling")
 	for gravity in [1, -1]:
-		for facing in [1, -1]:
-			await _reset()
-			player.facing_direction = facing
-			player.set_gravity_direction(gravity)
-			var object := _object("heavy_object", Vector2(40 * facing, 0))
-			await _sync()
-			_hold(object)
-			_vector(object.position - player.position, Vector2(40 * facing, 0), "world carry offset")
-			_check(object.is_position_safe(object.position, player), "player shape separation")
-			player.set_gravity_direction(-gravity)
-			await _step(2)
-			_near(object.position.y - player.position.y, 0, "gravity does not flip offset")
-			_near(object.rotation, 0, "gravity does not rotate object")
-			Input.action_press("move_right" if facing < 0 else "move_left")
-			await _step(30)
-			_check(signf(object.position.x - player.position.x) == -facing, "safe facing turn completes")
-	await _reset()
-	var object := _object("jump_creature", Vector2(32, 0))
-	_solid(Vector2(452, 350), Vector2(10, 200))
-	await _sync()
-	_hold(object)
-	_check(object.position.x < 440 and object.position.x > 430, "wall forces safe inward offset")
-	Input.action_press("move_right")
-	await _step(30)
-	_check(player.position.x < 420, "carry blocks player at wall")
-	await _reset()
-	object = _object()
-	_solid(Vector2(440, 350), Vector2(4, 200))
-	await _sync()
-	_check(not player.try_begin_grab(object), "no safe carry space")
-	await _reset()
-	object = _object("jump_creature", Vector2(58, 0))
-	_solid(Vector2(443, 350), Vector2(2, 200))
-	await _sync()
-	_check(not player.try_begin_grab(object), "cannot teleport object through thin wall")
-	for movement in [Vector2(0, 900), Vector2(0, -900), Vector2(900, 0)]:
 		await _reset()
-		object = _object("heavy_object")
-		_solid(Vector2(600, 350), Vector2(20, 300))
+		player.set_gravity_direction(gravity)
+		var object := _object("heavy_object")
+		# Low headroom is allowed while carrying, for either gravity direction.
+		_solid(player.position + Vector2(0, -48 * gravity), Vector2(300, 20))
 		await _sync()
 		_hold(object)
-		player.launch_from_spring(movement)
-		await _step(35)
-		_check(player.get_held_object() == object, "launch and floor ceiling solid contacts retain carry")
+		_vector(object.position - player.position, Vector2(0, -48 * gravity), "head-side carry")
+		_check(not object.is_position_clear(object.position, player), "held shape may overlap ceiling")
+		var before := player.position
+		Input.action_press("move_left")
+		await _step(8)
+		_check(player.position.x < before.x - 3, "turn and move under low ceiling")
+		_near(object.position.x, player.position.x, "turn does not swap carry side")
+		player.set_gravity_direction(-gravity)
+		_vector(object.position - player.position, Vector2(0, 48 * gravity), "gravity flips offset immediately")
+		_near(object.rotation, 0, "held object remains upright")
+
+	for gravity in [1, -1]:
+		await _reset()
+		player.set_gravity_direction(gravity)
+		var object := _object("jump_creature", Vector2(32, 0))
+		_solid(Vector2(452, 350), Vector2(10, 700))
+		await _sync()
+		_hold(object)
+		Input.action_press("move_right")
+		await _step(20)
+		_check(player.is_on_wall_only(), "carrying reaches wall for wall kick")
+		_check(not player.is_wall_grabbing(), "carrying still forbids wall grab")
+		_check(player.velocity.y * gravity <= player.wall_slide_speed + 0.1, "carrying wall slide")
+		Input.action_press("jump")
+		await _step()
+		_check(player.velocity.x < 0 and player.velocity.y * gravity < 0, "actual input wall kick with item")
+		_check(player.get_held_object() == object, "wall kick retains item")
+
 	await _reset()
+	var object := _object("jump_creature", Vector2(58, 0))
+	_solid(Vector2(443, 350), Vector2(2, 200))
+	await _sync()
+	_check(not player.try_begin_grab(object), "thin wall blocks pickup")
+
+	for gravity in [1, -1]:
+		await _reset()
+		player.set_gravity_direction(gravity)
+		object = _object()
+		_solid(player.position + Vector2(0, -48 * gravity), Vector2(200, 20))
+		await _sync()
+		_hold(object)
+		var held_position := object.position
+		_check(player.release_grab(), "release corrects embedded item")
+		_check(object.position.distance_to(player.position) < held_position.distance_to(player.position), "release corrects toward player")
+		_check(object.is_position_clear(object.position, player), "release outside solid geometry")
+		_check(_overlaps_player(object), "release allows temporary player overlap")
+		Input.action_release("wall_grab")
+		await _step(30)
+		_check(not _overlaps_player(object), "physics resolves release overlap")
+
+	await _reset(Vector2(400, 350))
 	object = _object()
+	_solid(Vector2(400, 302), Vector2(200, 20))
+	_solid(Vector2(400, 386), Vector2(200, 20))
 	await _sync()
 	_hold(object)
-	var obstruction := _solid(object.position, Vector2(100, 100))
+	_check(player.release_grab(), "release in low tunnel")
+	Input.action_release("wall_grab")
+	var player_shape: CollisionShape2D = player.get_node("CollisionShape2D")
+	for frame in 90:
+		await _step()
+		for body in world.get_children():
+			if body is StaticBody2D:
+				var shape: CollisionShape2D = body.get_child(0)
+				_check(not player_shape.shape.collide(player_shape.global_transform, shape.shape, shape.global_transform), "release cannot push player through terrain")
+	_check(not _overlaps_player(object), "low tunnel overlap resolves without input")
+	_check(player.position.x < 398 and object.position.x > 402, "overlap gently moves both bodies apart")
+	_check(player.get_collision_exceptions().is_empty() and object.get_collision_exceptions().is_empty(), "separation restores mutual collisions")
+
+	await _reset()
+	object = _object()
+	_solid(Vector2(400, 302), Vector2(200, 20))
 	await _sync()
-	_check(not player.release_grab() and player.get_held_object() == object, "unsafe release stays held")
+	_hold(object)
+	_check(player.release_grab(), "release before deletion")
+	object.free()
+	Input.action_release("wall_grab")
+	await _step(2)
+	_check(player._separating_objects.is_empty(), "deleted overlap body is discarded")
+
+	await _reset()
+	object = _object("heavy_object")
+	await _sync()
+	_hold(object)
+	# A large item cannot be released in a tunnel that still fits the player.
+	object.collider.shape = object.collider.shape.duplicate()
+	object.collider.shape.size = Vector2(80, 80)
+	var obstruction := _solid(Vector2(400, 290), Vector2(300, 60))
+	_solid(Vector2(400, 400), Vector2(300, 40))
+	await _sync()
+	_check(not player.release_grab() and player.get_held_object() == object, "no free release position retains carry")
+	Input.action_release("wall_grab")
+	Input.action_press("move_right")
+	var before := player.position
+	await _step(8)
+	_check(player.get_held_object() == object, "blocked release retries")
+	_check(player.position.x > before.x + 3, "pending release does not lock movement")
 	obstruction.free()
 	await _sync()
-	_check(player.release_grab(), "release retries when safe")
-	await _reset()
-	object = _object()
-	var other := _object("heavy_object", Vector2(43, 0))
-	await _sync()
-	_check(not player.try_begin_grab(object), "other physics body prevents overlap")
-	other.free()
-	await _reset()
-	object = _object()
-	await _sync()
-	_hold(object)
-	player.position.x += 12
-	_check(player.release_grab(), "small unsafe release corrects player overlap")
-	_assert_shapes_clear(object)
+	await _step(5)
+	_check(player.get_held_object() == null, "automatic release when space opens")
 
+	await _reset(Vector2(400, 674))
+	object = _object("heavy_object", Vector2(40, 10))
+	object.freeze = false
+	await _sync(40)
+	var start := object.position
+	Input.action_press("move_right")
+	await _step(35)
+	_check(object.position.x > start.x + 10 and player.position.x > 410, "walking pushes a free item")
+	_check(object.linear_velocity.x <= 125, "push speed is gentle")
+
+
+func _overlaps_player(object: Grabbable) -> bool:
+	var shape: CollisionShape2D = player.get_node("CollisionShape2D")
+	return object.collider.shape.collide(object.collider.global_transform, shape.shape, shape.global_transform)
 
 func _throw_tests() -> void:
 	for name in ["jump_creature", "heavy_object", "parachute_creature"]:
@@ -273,36 +389,74 @@ func _throw_tests() -> void:
 		_vector(object.linear_velocity, launch + launch.normalized() * 450, scene + " throw")
 
 
+func _indicator_tests() -> void:
+	await _reset()
+	var indicator := player.get_node("Visuals/ExtraJumpIndicator")
+	_check(not indicator.visible, "no initial extra jumps")
+	player.refill_from_crystal()
+	await _sync()
+	_check(not indicator.visible and indicator.jump_count == 0, "dash crystal cannot add jump indicator")
+	player.grant_air_jump()
+	await _sync()
+	_check(indicator.visible and indicator.jump_count == 1, "crystal visible without creature")
+	var object := _object()
+	await _sync()
+	_hold(object)
+	await _sync()
+	_check(indicator.jump_count == 2, "grab adds creature to body indicator")
+	player.velocity = Vector2.ZERO
+	_check(player.release_grab(), "release unused creature")
+	await _sync()
+	_check(indicator.jump_count == 1 and indicator.scale == Vector2.ONE, "release removes creature and cancels pulse")
+	player._start_dash(false)
+	await _sync()
+	_check(indicator.visible and indicator.jump_count == 1, "dash keeps jump indicator")
+	player.set_gravity_direction(-1)
+	await create_timer(0.25).timeout
+	_check(absf(absf(indicator.global_rotation) - PI) < 0.01, "indicator follows inverted gravity")
+	_check(indicator.scale.is_equal_approx(Vector2.ONE), "pulse settles to static size")
+	player.respawn()
+	await _sync()
+	_check(not indicator.visible and indicator.jump_count == 0, "respawn clears indicator")
+
+
 func _jump_tests() -> void:
 	await _reset()
 	var object := _object()
 	await _sync()
 	_hold(object)
 	_check(player.get_available_extra_jump_count() == 1, "creature only one")
-	player.refill_from_crystal()
+	player.grant_air_jump()
 	_check(player.get_available_extra_jump_count() == 2, "crystal plus creature two")
 	await _sync(1)
-	_check(object.get_node("Count").text == "2" and object.get_node("Count").visible, "held label 2")
+	var indicator := player.get_node("Visuals/ExtraJumpIndicator")
+	_check(indicator.jump_count == 2 and indicator.visible, "body indicator 2")
 	player._jump_buffer_left = 0.1
 	player._try_jump(false, false)
 	_check(not player.is_air_jump_ready() and object.extra_jump_count() == 1, "crystal consumed first")
 	await _sync(1)
-	_check(object.get_node("Count").text == "1", "label 2 to 1")
+	_check(indicator.jump_count == 1 and indicator.visible, "body indicator 2 to 1")
 	player._jump_buffer_left = 0.1
 	player._try_jump(false, false)
 	_check(player.get_available_extra_jump_count() == 0, "creature consumed next")
 	await _sync(1)
-	_check(object.get_node("Count").text == "0", "label 1 to 0")
+	_check(indicator.jump_count == 0 and not indicator.visible, "body indicator hidden at zero")
 	player.velocity = Vector2.ZERO
 	_check(player.release_grab(), "drop used creature")
 	await _sync(1)
-	_check(not object.get_node("Count").visible, "free label hidden")
+	_check(not object.has_node("Count"), "creature has no duplicate counter")
 	_hold(object)
 	_check(player.get_available_extra_jump_count() == 0, "regrab does not refill")
 	player.refill_from_crystal()
-	_check(object.extra_jump_count() == 0, "crystal cannot refill creature")
+	_check(player.get_available_extra_jump_count() == 0, "dash crystal cannot refill player or creature jumps")
+	var crystal: Area2D = load("res://scenes/jump_crystal.tscn").instantiate()
+	crystal.position = player.position
+	world.add_child(crystal)
+	await _sync()
+	_check(player.is_air_jump_ready() and object.extra_jump_count() == 0, "jump crystal grants player jump without refilling creature")
+	crystal.free()
 	player._refill_on_landing()
-	_check(player.get_available_extra_jump_count() == 1 and not player.is_air_jump_ready(), "landing refills creature clears crystal")
+	_check(player.get_available_extra_jump_count() == 2 and player.is_air_jump_ready(), "landing refills creature preserves crystal")
 	player._jump_buffer_left = 0.1
 	player._try_jump(true, false)
 	_check(object.extra_jump_count() == 1, "ground jump preserves creature")
@@ -310,16 +464,18 @@ func _jump_tests() -> void:
 	player._try_jump(false, true)
 	_check(object.extra_jump_count() == 1, "wall jump preserves creature")
 	for scene in ["spring", "pinball_spring"]:
-		object.consume_extra_jump()
-		var spring = load("res://scenes/" + scene + ".tscn").instantiate()
-		spring.position = player.position + Vector2(0, 30)
-		world.add_child(spring)
-		player.velocity = Vector2(0, 500)
-		player._motion_frame = -2
-		player._impact_frame = -2
-		spring._on_body_entered(player)
-		_check(player.get_available_extra_jump_count() == 2, scene + " restores both")
-		spring.free()
+		for ready in [false, true]:
+			object.consume_extra_jump()
+			player._air_jump_ready = ready
+			var spring = load("res://scenes/" + scene + ".tscn").instantiate()
+			spring.position = player.position + Vector2(0, 30)
+			world.add_child(spring)
+			player.velocity = Vector2(0, 500)
+			player._motion_frame = -2
+			player._impact_frame = -2
+			spring._on_body_entered(player)
+			_check(player.get_available_extra_jump_count() == int(ready) and object.extra_jump_count() == 0, scene + " preserves player jump and cannot refill creature")
+			spring.free()
 	player.velocity = Vector2.ZERO
 	player.release_grab()
 	player._air_jump_ready = false
@@ -535,6 +691,20 @@ func _button_tests() -> void:
 		if button.is_pressed():
 			break
 	_check(button.is_pressed() and heavy.position.y > 675, "real thrown heavy lands on button")
+	await _reset(Vector2(400, 674))
+	button = _button(Vector2(440, 700))
+	heavy = _object("heavy_object", Vector2(40, 10))
+	await _sync(5)
+	_check(button.is_pressed(), "pickup from pressed button fixture")
+	_hold(heavy)
+	button.refresh_weight()
+	_check(not button.is_pressed() and button.total_weight == 0, "pickup stops weight immediately despite cached overlaps")
+	button.position = heavy.position + Vector2(0, 16)
+	await _sync(5)
+	_check(not button.is_pressed(), "held item overlapping button has no weight")
+	_check(player.release_grab(), "release over button")
+	await _sync(3)
+	_check(button.is_pressed(), "released item counts again")
 
 
 func _respawn_tests() -> void:
@@ -549,6 +719,7 @@ func _respawn_tests() -> void:
 		player.respawn()
 		_check(player.get_held_object() == null and object.carrier == null, "respawn clears carry")
 		_check(not object.freeze and object.get_collision_exceptions().is_empty(), "respawn restores collision physics")
+		_check(object.collision_layer == 1 and object.collision_mask == 1, "respawn restores collision layer and mask")
 		_check(object.global_transform.is_equal_approx(initial), "respawn object transform")
 		_vector(object.linear_velocity, Vector2.ZERO, "respawn linear velocity")
 		_near(object.angular_velocity, 0, "respawn angular velocity")
@@ -566,6 +737,15 @@ func _respawn_tests() -> void:
 	player.respawn()
 	await _sync(5)
 	_check(not button.is_pressed(), "respawn button returns off after physics sync")
+	await _reset()
+	var object := _object()
+	_solid(Vector2(400, 302), Vector2(200, 20))
+	await _sync()
+	_hold(object)
+	_check(player.release_grab(), "overlap release before respawn")
+	_check(not object.get_collision_exceptions().is_empty(), "overlap uses temporary separation exception")
+	player.respawn()
+	_check(object.get_collision_exceptions().is_empty() and player.get_collision_exceptions().is_empty(), "respawn clears separation exceptions")
 
 
 func _environment_tests() -> void:
@@ -591,21 +771,15 @@ func _environment_tests() -> void:
 		await _sync()
 		_hold(object)
 		object.consume_extra_jump()
-		player.refill_from_crystal()
+		player.grant_air_jump()
 		player.set_gravity_direction(gravity)
 		for i in 80:
 			await _step()
 			if player.is_on_floor():
 				break
-		_check(player.is_on_floor() and player.get_available_extra_jump_count() == 1 and not player.is_air_jump_ready(), "actual gravity-relative landing refills only creature")
+		_check(player.is_on_floor() and player.get_available_extra_jump_count() == 2 and player.is_air_jump_ready(), "actual gravity-relative landing refills creature preserves crystal")
 
 
-func _assert_shapes_clear(object: Grabbable) -> void:
-	# Independent of the production space query and collision masks/exceptions.
-	var held_shape: CollisionShape2D = object.get_node("CollisionShape2D")
-	for body in world.find_children("*", "PhysicsBody2D", true, false):
-		if body == object:
-			continue
-		for shape_node in body.get_children():
-			if shape_node is CollisionShape2D and not shape_node.disabled:
-				_check(not held_shape.shape.collide(held_shape.global_transform, shape_node.shape, shape_node.global_transform), "every frame shape separation from " + body.name)
+func _assert_held(object: Grabbable) -> void:
+	_check(object.freeze and object.collision_layer == 0 and object.collision_mask == 0, "held body has no physical collisions")
+	_vector(object.position - player.position, Vector2(0, -48 * player.gravity_direction), "held body follows head")

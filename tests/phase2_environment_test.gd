@@ -76,9 +76,9 @@ func _drain() -> void:
 	player._notify_resources()
 
 
-func _resources(label: String) -> void:
+func _resources(label: String, air_jump_ready := false) -> void:
 	_check(player.is_dash_ready(), label + " dash ready")
-	_check(player.is_air_jump_ready(), label + " air jump ready")
+	_check(player.is_air_jump_ready() == air_jump_ready, label + " air jump unchanged")
 	_near(player.get_wall_stamina(), player.wall_stamina_max, label + " stamina max")
 	_check(not player._grab_exhausted, label + " grab available")
 	_check(player.get_node("Visuals/Body").color == Color(0.35, 0.92, 1, 1), label + " body ready color")
@@ -324,35 +324,38 @@ func _test_pinball() -> void:
 
 func _test_floor_springs() -> void:
 	for scene in ["spring", "pinball_spring"]:
-		await _reset(Vector2(400, 610))
-		var spring = load("res://scenes/" + scene + ".tscn").instantiate()
-		# Detection flush can occur after the same movement hits the floor.
-		spring.position = Vector2(400, 731 if scene == "pinball_spring" else 715)
-		world.add_child(spring)
-		var floor_contact: Array[bool] = []
-		spring.body_entered.connect(func(body):
-			if body == player:
-				floor_contact.append(player.is_on_floor())
-		)
-		_drain()
-		_incident(Vector2(0, 900))
-		for i in 12:
+		for ready in [false, true]:
+			await _reset(Vector2(400, 610))
+			var spring = load("res://scenes/" + scene + ".tscn").instantiate()
+			# Detection flush can occur after the same movement hits the floor.
+			spring.position = Vector2(400, 731 if scene == "pinball_spring" else 715)
+			world.add_child(spring)
+			var floor_contact: Array[bool] = []
+			spring.body_entered.connect(func(body):
+				if body == player:
+					floor_contact.append(player.is_on_floor())
+			)
+			_drain()
+			if ready:
+				player.grant_air_jump()
+			_incident(Vector2(0, 900))
+			for i in 12:
+				await _step()
+				if not floor_contact.is_empty():
+					break
+			_resources("floor " + scene, ready)
+			_check(floor_contact == [true], "actual floor collision precedes " + scene + " signal")
+			_check(player.velocity.y < -700, "floor launch retains incident velocity")
+			# Both legal orderings in one frame must preserve the existing jump state.
+			player._refill_on_landing()
+			_resources("same-frame landing after " + scene, ready)
 			await _step()
-			if player.is_air_jump_ready():
-				break
-		_resources("floor " + scene)
-		_check(floor_contact == [true], "actual floor collision precedes " + scene + " signal")
-		_check(player.velocity.y < -700, "floor launch retains incident velocity")
-		# Both legal orderings in one frame: refill after landing and before landing.
-		player._refill_on_landing()
-		_resources("same-frame landing after " + scene)
-		await _step()
-		_check(player.is_air_jump_ready() and not player.is_on_floor(), "cached landing cannot erase spring air jump")
-		spring.free()
-		player.position = Vector2(400, 670)
-		_incident(Vector2(0, 400))
-		await _step(3)
-		_check(player.is_on_floor() and not player.is_air_jump_ready(), "later landing still clears air jump")
+			_check(player.is_air_jump_ready() == ready and not player.is_on_floor(), "cached landing preserves jump state after launch")
+			spring.free()
+			player.position = Vector2(400, 670)
+			_incident(Vector2(0, 400))
+			await _step(3)
+			_check(player.is_on_floor() and player.is_air_jump_ready() == ready, "later landing preserves jump state")
 	# Recovery is usable immediately at a wall, not just displayed as ready.
 	await _reset(Vector2(780, 350))
 	_drain()

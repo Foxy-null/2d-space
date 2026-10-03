@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/stage.tscn" id="2_stage"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/starfield.gd" id="5_starfield"]
 
 [ext_resource type="PackedScene" path="res://scenes/refill_crystal.tscn" id="6_crystal"]
+[ext_resource type="PackedScene" path="res://scenes/jump_crystal.tscn" id="14_jump_crystal"]
 [ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="7_spring"]
 [ext_resource type="PackedScene" path="res://scenes/pinball_spring.tscn" id="8_pinball"]
 [ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="9_wind"]
@@ -15,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://scenes/heavy_object.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://scenes/parachute_creature.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://scenes/pressure_button.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://scenes/grabbable.tscn" id="14"]
 
 [node name="Main" type="Node2D"]
 
@@ -50,6 +52,12 @@ position = Vector2(700, 330)
 [node name="RefillCrystalUp" parent="." instance=ExtResource("6_crystal")]
 position = Vector2(1540, 240)
 
+[node name="JumpCrystal" parent="." instance=ExtResource("14_jump_crystal")]
+position = Vector2(810, 330)
+
+[node name="JumpCrystalUp" parent="." instance=ExtResource("14_jump_crystal")]
+position = Vector2(1650, 240)
+
 [node name="FloorSpring" parent="." instance=ExtResource("7_spring")]
 position = Vector2(650, 640)
 
@@ -84,7 +92,7 @@ position = Vector2(1870, 540)
 [node name="SpringHint" type="Label" parent="."]
 offset_left = 560.0
 offset_top = 655.0
-text = "SPRING / FULL REFILL"
+text = "SPRING / DASH + STAMINA"
 
 [node name="MovingHint" type="Label" parent="."]
 offset_left = 1240.0
@@ -101,6 +109,9 @@ position = Vector2(250, 610)
 
 [node name="HeavyObject" parent="." instance=ExtResource("11")]
 position = Vector2(400, 610)
+
+[node name="LightBox" parent="." instance=ExtResource("14")]
+position = Vector2(320, 610)
 
 [node name="ParachuteCreature" parent="." instance=ExtResource("12")]
 position = Vector2(1000, 610)

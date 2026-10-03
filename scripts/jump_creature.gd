@@ -16,10 +16,3 @@ func consume_extra_jump() -> bool:
 
 func refill_extra_jump() -> void:
 	_jump_ready = true
-
-
-func _process(_delta: float) -> void:
-	$Count.visible = is_instance_valid(carrier)
-	if is_instance_valid(carrier):
-		$Count.text = str(carrier.get_available_extra_jump_count())
-		$Count.rotation = -global_rotation
