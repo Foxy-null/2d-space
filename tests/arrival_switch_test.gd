@@ -60,7 +60,7 @@ func _run() -> void:
 	_check(not tutorial.cleared.has(6), "Exit stays locked before the deep press finishes")
 	await _step(40)
 	_check(goal.is_pressed() and tutorial.cleared.has(6) and events == [1, 1], "Player waiting on the case falls onto and activates the switch")
-	_check(absf(goal.cap.position.y - 44) < 0.1 and absf(player.global_position.y - case_height - 64.209) < 1, "Player follows the full deep press without sinking into the floor")
+	_check(absf(goal.cap.position.y - 32) < 0.1 and absf(player.global_position.y - case_height - 64.209) < 1, "Player follows the full deep press without sinking into the floor")
 	_check(player.is_on_floor() and _room().get_node("ExitBarrier/Collision").disabled, "Pressed platform supports player and opens exit")
 	for i in 3:
 		tutorial.call("_update_lesson")
@@ -68,7 +68,7 @@ func _run() -> void:
 	_check(events == [1, 1], "Refreshing progress does not repeat audiovisual feedback")
 	player.respawn()
 	await _step(5)
-	_check(goal.is_pressed() and not goal.locked and goal.cap.position.y == 44 and _room().get_node("ExitBarrier/Collision").disabled, "Retry preserves a pressed switch and open exit")
+	_check(goal.is_pressed() and not goal.locked and goal.cap.position.y == 32 and _room().get_node("ExitBarrier/Collision").disabled, "Retry preserves a pressed switch and open exit")
 	# Reset before pressing re-locks; reset during the travel cancels completion.
 	await _enter(1)
 	goal = _goal()
@@ -88,7 +88,7 @@ func _run() -> void:
 		await _step()
 	_check(goal.pressing and not goal.is_pressed(), "Deep press has an intermediate physical state")
 	await _step(5)
-	_check(goal.cap.position.y > 15 and goal.cap.position.y < 30 and not goal.is_pressed(), "At about 0.1 seconds the cap is midway through its travel")
+	_check(goal.cap.position.y > 10 and goal.cap.position.y < 22 and not goal.is_pressed(), "At about 0.1 seconds the cap is midway through its travel")
 	player.respawn()
 	await _step(25)
 	_check(goal.locked and not goal.is_pressed() and not tutorial.cleared.has(1), "Retry during a press cancels pending exit unlock")

@@ -4,7 +4,7 @@ extends Area2D
 signal unlocked
 signal activated
 
-const TRAVEL := 44.0
+const TRAVEL := 32.0
 const PRESS_TIME := 0.2
 const BUBBLE := Vector2(-125, -230)
 const INK := Color(0.055, 0.09, 0.17)
@@ -24,6 +24,7 @@ const CAP_SIZE := CAP_ART.size * CAP_SCALE
 const CASE_SIZE := CASE_ART.size * (128.0 / CASE_ART.size.x)
 const LOCK_SIZE := LOCK_ART.size * (54.0 / LOCK_ART.size.x)
 const SEAT_Y := -40.0
+const CAP_SEAT_Y := SEAT_Y + 12.0
 
 var locked := true
 var pressing := false
@@ -107,7 +108,8 @@ func _draw() -> void:
 	# Slide one uniformly scaled cap into the socket; crop instead of squashing it.
 	var visible_height := CAP_SIZE.y - cap.position.y
 	var cap_source := Rect2(CAP_ART.position, Vector2(CAP_ART.size.x, visible_height / CAP_SCALE))
-	draw_texture_rect_region(ART, Rect2(Vector2(-54, SEAT_Y - visible_height), Vector2(108, visible_height)), cap_source)
+	# The lower rounded corners start below the front lip even before pressing.
+	draw_texture_rect_region(ART, Rect2(Vector2(-54, CAP_SEAT_Y - visible_height), Vector2(108, visible_height)), cap_source)
 	var case_alpha := 1.0 if locked else 1.0 - _unlock_fx
 	var opening := 0.0 if locked else _unlock_fx
 	if case_alpha > 0:

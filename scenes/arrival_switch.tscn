@@ -18,14 +18,14 @@ collision_layer = 0
 collision_mask = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -103.531915)
+position = Vector2(0, -91.531915)
 shape = SubResource("Sensor")
 
 [node name="Cap" type="AnimatableBody2D" parent="."]
 collision_layer = 1
 collision_mask = 1
 [node name="Collision" type="CollisionShape2D" parent="Cap"]
-position = Vector2(0, -70.765957)
+position = Vector2(0, -58.765957)
 shape = SubResource("Cap")
 
 [node name="Case" type="StaticBody2D" parent="."]
