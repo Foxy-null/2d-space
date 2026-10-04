@@ -6,10 +6,10 @@ const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上�
 const HINTS := [
 	"高い張り出しを交互の壁キックで越える。スタミナも見よう。",
 	"天井側の壁を渡り、出口の壁からシアン ↓ へキック。",
-	"赤 ↑ へ蹴り込み、壁を渡る。最後もキックで床へ戻ろう。",
-	"床と天井を往復。最後のシアン ↓ も壁キックで狙おう。",
-	"壁を掴んで待ち、小さな移動ゲートへ。最後は天井からキック。",
-	"反転と壁キックを連続で。速いゲートのタイミングを見よう。",
+	"赤 ↑ へ蹴り込み、穴の上を壁キックで渡る。最後は床へ。",
+	"床と天井を往復。床へ戻ったら、穴の手前でジャンプ。",
+	"穴の手前で壁を掴み、小さな移動ゲートへ。最後は天井からキック。",
+	"大きな穴は反転して越える。床へ戻り、速いゲートを狙おう。",
 ]
 
 var room_index := 0
@@ -110,6 +110,7 @@ func _update_room() -> void:
 	if bridge != null:
 		bridge.visible = done
 		bridge.get_node("Collision").set_deferred("disabled", not done)
+		room.get_node("PitWarning").visible = not done
 	room.get_node("Goal").set_progress(0, 0, "", "", done)
 	room.get_node("ExitHint").text = ("クリア！　自由に練習できます" if room_index == 5 else "次の部屋へ →") if done else "到着台に乗ると出口が開く"
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)

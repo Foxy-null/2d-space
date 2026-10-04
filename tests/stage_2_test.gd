@@ -6,6 +6,7 @@ var stage: Node2D
 var player: PlayerController
 var actions: Dictionary = {}
 var flips: Array[int] = []
+var respawns := 0
 
 
 func _initialize() -> void:
@@ -22,6 +23,7 @@ func _run() -> void:
 	player = stage.player
 	player.movement_action.connect(func(action: String): actions[action] = actions.get(action, 0) + 1)
 	player.gravity_changed.connect(func(inverted: bool): flips.append(-1 if inverted else 1))
+	player.respawned.connect(func(): respawns += 1)
 	_check(stage.rooms.get_child_count() == 6, "Stage 2 has six rooms")
 	_check(player.wall_actions_enabled and player.dash_enabled, "Walls and dash are available from the start")
 	for room in stage.rooms.get_children():
@@ -40,8 +42,11 @@ func _run() -> void:
 	_check(stage.camera.position == camera_position, "The room camera remains fixed while moving")
 	await _retry()
 	for index in 6:
+		if index >= 2:
+			await _fall_into_pit([0, 0, 350, 620, 470, 340][index])
 		actions.clear()
 		flips.clear()
+		var respawns_before := respawns
 		match index:
 			0:
 				await _kick_pair(false, 0)
@@ -53,6 +58,9 @@ func _run() -> void:
 			3:
 				await _kick_gate(280, -1)
 				await _kick_gate(580, 1)
+				_drive("move_right")
+				await _until(func(): return player.is_on_floor() and _x() > 580, 120, "Reach the edge before the floor pit")
+				await _jump()
 				await _kick_gate(840, -1)
 			4:
 				await _kick_gate(360, -1, "UpGate")
@@ -68,8 +76,10 @@ func _run() -> void:
 			return
 		await _reach_goal()
 		_check(stage.cleared.has(index), "Actual arrival must clear room %d" % (index + 1))
-		if index == 4:
-			_check(bridge.visible and not bridge.get_node("Collision").disabled, "Clearing room 5 opens a safe return bridge")
+		_check(respawns == respawns_before, "The no-dash route crosses room %d without falling" % (index + 1))
+		if index >= 2:
+			var room: Node2D = stage.rooms.get_child(index)
+			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
 		_check(actions.get("wall_jump", 0) >= [2, 3, 4, 4, 4, 5][index], "The harder route uses chained wall kicks in room %d" % (index + 1))
 		_check(not actions.has("dash"), "Room %d can be completed without dash" % (index + 1))
 		if index > 0:
@@ -143,6 +153,24 @@ func _run() -> void:
 	_release_inputs()
 	print("STAGE_2_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
+
+
+func _fall_into_pit(edge_x: int) -> void:
+	var room: Node2D = stage.rooms.get_child(stage.room_index)
+	_check(not room.get_node("ReturnBridge").visible and room.get_node("ReturnBridge/Collision").disabled and room.get_node("PitWarning").visible, "A fresh room has an open and marked pit")
+	_release_inputs()
+	player.global_position = room.to_global(Vector2(edge_x - 24, 614))
+	await _step(3)
+	var respawns_before := respawns
+	_drive("move_right")
+	await _until(func(): return respawns > respawns_before, 180, "Walking into the actual pit must trigger a fall retry")
+	_release_inputs()
+	await _step(2)
+	_check(stage.room_index == room.get_index() and player.global_position.distance_to(room.get_node("Spawn").global_position) < 20, "A pit fall returns to the current entrance")
+	_check(player.gravity_direction == 1 and player.is_dash_ready() and player.get_wall_stamina() > 2.9 and not stage.cleared.has(stage.room_index), "A pit fall restores resources without clearing the room")
+	for gate in room.find_children("*", "Area2D", true, false):
+		if gate.get("moving_enabled") == true:
+			_check(gate.position.distance_to(gate.get("_initial_position")) < 10, "A pit fall restarts its moving gate")
 
 
 func _kick_pair(inverted: bool, shift: int) -> void:
