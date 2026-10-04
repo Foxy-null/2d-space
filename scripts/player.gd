@@ -29,7 +29,9 @@ var _parachute_grace_left := 0.0
 @export var gravity_acceleration := 1900.0
 @export var max_fall_speed := 900.0
 @export var jump_speed := 650.0
-@export var wall_jump_speed := 430.0
+# A shallow kick loses height before steering can return to the same wall.
+@export var wall_jump_speed := 720.0
+@export var wall_jump_up_speed := 560.0
 @export var wall_slide_speed := 170.0
 @export var wall_climb_speed := 230.0
 @export var wall_stick_speed := 40.0
@@ -217,7 +219,7 @@ func _try_jump(grounded: bool, on_wall: bool) -> void:
 			velocity.y = -gravity_direction * get_effective_jump_speed()
 			movement_action.emit("jump")
 	elif wall_actions_enabled and on_wall:
-		velocity = Vector2(get_wall_normal().x * wall_jump_speed, -gravity_direction * jump_speed)
+		velocity = Vector2(get_wall_normal().x * wall_jump_speed, -gravity_direction * wall_jump_up_speed)
 		movement_action.emit("wall_jump")
 	elif _air_jump_ready:
 		_air_jump_ready = false

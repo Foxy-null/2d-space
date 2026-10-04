@@ -171,6 +171,12 @@ func _climb_and_kick() -> void:
 	Input.action_press("move_left")
 	Input.action_press("wall_grab")
 	Input.action_press("move_up")
+	# The shallower kick needs a short climb before crossing the overhang.
+	for frame in 30:
+		if player.is_wall_grabbing() and player.position.y < 480:
+			break
+		await _step()
+	_check(player.is_wall_grabbing() and player.position.y < 480, "Climb the right wall before kicking across the overhang")
 	Input.action_press("jump")
 	await _step()
 	_check(player.velocity.x < -400 and player.velocity.y < 0, "Low right-wall kick launches upward toward the middle wall")

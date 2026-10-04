@@ -189,7 +189,9 @@ func _wall_grab_tests() -> void:
 
 		for reason in ["exhaustion", "jump", "dash"]:
 			await _grab_wall(gravity)
-			var object := _object("jump_creature", Vector2(-40, 0))
+			# Keep the pickup beyond the kick's first step so the fixture tests
+			# carrying momentum rather than colliding with an unheld object.
+			var object := _object("jump_creature", Vector2(-50, 0))
 			await _sync()
 			if reason == "exhaustion":
 				player._wall_stamina = 0.001
@@ -500,7 +502,7 @@ func _heavy_tests() -> void:
 	_near(player.wall_stamina_rest_rate, 1.0 / 3.0, "stamina unchanged")
 	player._jump_buffer_left = 0.1
 	player._try_jump(false, true)
-	_near(player.velocity.y, -650, "wall jump unchanged")
+	_near(player.velocity.y, -player.wall_jump_up_speed, "heavy does not reduce wall jump")
 	player._start_dash(true)
 	_near(player.velocity.length(), 900, "dash speed unchanged")
 	_near(player._dash_left, 0.15, "dash duration unchanged")
