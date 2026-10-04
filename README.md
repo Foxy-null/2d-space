@@ -7,9 +7,19 @@
 - Godot 4.7.2 Stable（Standard版）、Git
 - Godotに `project.godot` をインポートし、`F5` で実行します。
 
+## ステージ選択
+
+F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」を選ぶと、チュートリアルの1部屋目から始まります。ステージ2〜5は「準備中」と表示し、選択できません。実装済みのステージは自由に選べる方針です。
+
+クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。チュートリアル中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。16部屋目のクリア後も、引き続き自由に練習できます。
+
+合意した仕様は [ステージ選択の仕様書](docs/stage-selection.md) に記録しています。
+
+![ステージ1〜5を横に並べた選択画面](docs/screenshots/stage-selection.png)
+
 ## チュートリアル
 
-通常起動は `scenes/tutorial.tscn` です。各部屋は1280×720の1画面で、カメラは部屋の中では固定されます。課題をクリアしてプレイヤーの右端が画面右端に届くか、画面左端を越えると隣室へ0.28秒でスライドし、切り替え中だけ操作が止まります。
+選択画面から開始するチュートリアルは `scenes/tutorial.tscn` です。各部屋は1280×720の1画面で、カメラは部屋の中では固定されます。課題をクリアしてプレイヤーの右端が画面右端に届くか、画面左端を越えると隣室へ0.28秒でスライドし、切り替え中だけ操作が止まります。
 
 本編は16部屋、最後に任意のSuperdash練習部屋があります。最初の4部屋で移動の基本を体験し、続く部屋でCrystal、Spring、風、運搬、生物とそれらの連携を練習します。
 
@@ -56,6 +66,7 @@
 | Object / 壁を掴む | Shift（長押し） | ZL / ZR（長押し） |
 | 壁を昇降 | 掴みながら W / S または ↑ / ↓ | 掴みながら上下入力 |
 | やり直し | R | Start |
+| ステージ選択へ戻る（チュートリアル） | Esc | Back / Select |
 
 - **重力ゲート**：赤の↑でGravity Up、シアンの↓でGravity Down。反転中は天井が床です。通常は↑で壁を登り上端へマントル、反転中は↓で登り下端へマントルします。
 - **Wall Grab**：床と壁に同時に接していても、Grabキーを長押しすると壁に捕まれます。横入力は不要で、上入力からそのまま登り、低い段差もよじのぼれます。重力反転中は天井への接地から下入力で登ります。壁に捕まっている間のWは登り、接地中のSpace / Aは地上ジャンプを優先します。
@@ -139,6 +150,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、チュートリアルの開始
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
@@ -147,6 +159,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 ## 自動テスト
 
 ```powershell
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase1_movement_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 240 --path . --script res://tests/wall_jump_regression_test.gd
@@ -158,6 +171,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 ```
 
 それぞれ `BASE_SYSTEM_TEST_OK` / `PHASE1_MOVEMENT_TEST_OK` / `PHASE2_ENVIRONMENT_TEST_OK` と終了コード0で成功です。baseは入力・移動・壁・重力とデモ配置、Phase 1は両重力・左右両側の接地からのGrab／低い段差のマントル／ジャンプ優先と接地中のスタミナ、空中のマントル／スタミナ・Dash・色・ジャンプ連携・2種類のクリスタルの効果分離／再出現・Respawnを検証します。Phase 2はGate往復・実接触、4方向Spring、反射と速度範囲、追加ジャンプを付与しないことと未使用の権利の保持、同frame着地回復、Wind合成・能力相互作用・削除を検証します。
+
+`STAGE_SELECT_TEST_OK` は、選択画面からの起動、マウス・キーボード・ゲームパッドの入力、準備中のステージの無効化、クリア後の任意練習、選択画面へ戻る操作、再選択時の進捗初期化を確認します。
 
 `TUTORIAL_ROOMS_TEST_OK` は、操作の制限と解禁、部屋内の固定カメラ、画面端での切り替え、段差と穴のジャンプ、壁登りと壁キック、水平・斜めDashでの攻略、重力ゲートとゴール、各部屋への復帰、戻った後の操作維持、Crystalの復帰を確認します。
 
