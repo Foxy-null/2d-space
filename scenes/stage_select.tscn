@@ -1,0 +1,191 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/stage_select.gd" id="1_menu"]
+[ext_resource type="Script" path="res://scripts/starfield.gd" id="2_stars"]
+
+[sub_resource type="StyleBoxFlat" id="Style_normal"]
+content_margin_left = 16.0
+content_margin_top = 24.0
+content_margin_right = 16.0
+content_margin_bottom = 24.0
+bg_color = Color(0.075, 0.15, 0.25, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="Style_hover"]
+content_margin_left = 16.0
+content_margin_top = 24.0
+content_margin_right = 16.0
+content_margin_bottom = 24.0
+bg_color = Color(0.1, 0.24, 0.35, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="Style_pressed"]
+content_margin_left = 16.0
+content_margin_top = 24.0
+content_margin_right = 16.0
+content_margin_bottom = 24.0
+bg_color = Color(0.07, 0.32, 0.4, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="Style_disabled"]
+content_margin_left = 16.0
+content_margin_top = 24.0
+content_margin_right = 16.0
+content_margin_bottom = 24.0
+bg_color = Color(0.055, 0.08, 0.15, 0.95)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="Style_focus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.4, 0.95, 1, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="Theme" id="Theme_menu"]
+default_font_size = 20
+Button/colors/font_color = Color(0.82, 0.94, 1, 1)
+Button/colors/font_disabled_color = Color(0.55, 0.64, 0.75, 1)
+Button/colors/font_focus_color = Color(0.82, 0.94, 1, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(1, 1, 1, 1)
+Button/font_sizes/font_size = 22
+Button/styles/normal = SubResource("Style_normal")
+Button/styles/hover = SubResource("Style_hover")
+Button/styles/pressed = SubResource("Style_pressed")
+Button/styles/hover_pressed = SubResource("Style_pressed")
+Button/styles/disabled = SubResource("Style_disabled")
+Button/styles/focus = SubResource("Style_focus")
+Label/colors/font_color = Color(0.78, 0.87, 1, 1)
+
+[node name="StageSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_menu")
+script = ExtResource("1_menu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.018, 0.027, 0.075, 1)
+
+[node name="Starfield" type="Node2D" parent="."]
+script = ExtResource("2_stars")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 64
+theme_override_constants/margin_top = 64
+theme_override_constants/margin_right = 64
+theme_override_constants/margin_bottom = 48
+
+[node name="Content" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="GameTitle" type="Label" parent="Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "2D SPACE"
+
+[node name="Title" type="Label" parent="Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "ステージ選択"
+
+[node name="Description" type="Label" parent="Margin/Content"]
+layout_mode = 2
+text = "チュートリアルで、移動やギミックの使い方を練習しよう。"
+
+[node name="Stages" type="HBoxContainer" parent="Margin/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Stage1" type="Button" parent="Margin/Content/Stages"]
+custom_minimum_size = Vector2(200, 232)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+text = "ステージ 1\n\nチュートリアル\n\nプレイする"
+
+[node name="Stage2" type="Button" parent="Margin/Content/Stages"]
+custom_minimum_size = Vector2(200, 232)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_mode = 0
+disabled = true
+text = "ステージ 2\n\n準備中\n\nプレイできません"
+
+[node name="Stage3" type="Button" parent="Margin/Content/Stages"]
+custom_minimum_size = Vector2(200, 232)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_mode = 0
+disabled = true
+text = "ステージ 3\n\n準備中\n\nプレイできません"
+
+[node name="Stage4" type="Button" parent="Margin/Content/Stages"]
+custom_minimum_size = Vector2(200, 232)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_mode = 0
+disabled = true
+text = "ステージ 4\n\n準備中\n\nプレイできません"
+
+[node name="Stage5" type="Button" parent="Margin/Content/Stages"]
+custom_minimum_size = Vector2(200, 232)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_mode = 0
+disabled = true
+text = "ステージ 5\n\n準備中\n\nプレイできません"
+
+[node name="Availability" type="Label" parent="Margin/Content"]
+layout_mode = 2
+text = "ステージ2〜5は準備中です。"
+
+[node name="Controls" type="Label" parent="Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.73, 0.88, 1)
+theme_override_font_sizes/font_size = 18
+text = "選択：方向キー / 十字キー / スティック　　決定：Enter / A・×　　マウスでも選べます"
+
+[connection signal="pressed" from="Margin/Content/Stages/Stage1" to="." method="_start_tutorial"]

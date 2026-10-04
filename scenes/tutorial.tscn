@@ -2335,3 +2335,33 @@ theme_override_font_sizes/font_size = 24
 text = "チュートリアル完了！\n左へ戻って、好きな操作を練習できます"
 horizontal_alignment = 1
 mouse_filter = 2
+
+[node name="ReturnToStageSelect" type="Button" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -286.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = 64.0
+grow_horizontal = 0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "ステージ選択へ戻る"
+
+[node name="ReturnHint" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -286.0
+offset_top = 72.0
+offset_right = -24.0
+offset_bottom = 96.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Esc / Back・Select でも戻れます"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[connection signal="pressed" from="HUD/ReturnToStageSelect" to="." method="_return_to_stage_select"]

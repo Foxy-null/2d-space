@@ -106,6 +106,16 @@ func _ready() -> void:
 	camera.make_current()
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("return_to_stage_select"):
+		get_viewport().set_input_as_handled()
+		_return_to_stage_select()
+
+
+func _return_to_stage_select() -> void:
+	get_tree().change_scene_to_file("res://scenes/stage_select.tscn")
+
+
 func _physics_process(delta: float) -> void:
 	if transitioning:
 		return

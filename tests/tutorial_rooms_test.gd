@@ -15,7 +15,6 @@ func _run() -> void:
 	root.add_child(tutorial)
 	player = tutorial.get_node("Player")
 	await _step(3)
-	_check(ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/tutorial.tscn", "Tutorial must be the default scene")
 	_check(not player.wall_actions_enabled and not player.dash_enabled, "Only movement and jump start unlocked")
 	var camera: Camera2D = tutorial.get_node("Camera2D")
 	var fixed_position := camera.global_position
