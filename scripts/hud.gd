@@ -37,6 +37,8 @@ func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool,
 	if compact_mode:
 		var player := get_node(player_path) as PlayerController
 		$Margin/Panel/Rows/Resources.text = "重力：%s　壁スタミナ：%.1f秒　ダッシュ：%s" % ["天井 ↑" if player.gravity_direction < 0 else "床 ↓", stamina, "使用可能" if dash_ready else "着地で回復"]
+		if air_jump_ready:
+			$Margin/Panel/Rows/Resources.text += "　空中ジャンプ：1"
 		return
 	if tutorial_mode:
 		$Margin/Panel/Rows/Resources.text = "ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復"

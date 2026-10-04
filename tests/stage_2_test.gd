@@ -24,11 +24,22 @@ func _run() -> void:
 	player.movement_action.connect(func(action: String): actions[action] = actions.get(action, 0) + 1)
 	player.gravity_changed.connect(func(inverted: bool): flips.append(-1 if inverted else 1))
 	player.respawned.connect(func(): respawns += 1)
+	stage.rooms.get_child(0).get_node("LaunchSpring").launched.connect(func(_body): actions["launch_spring"] = actions.get("launch_spring", 0) + 1)
+	stage.rooms.get_child(0).get_node("ReturnSpring").launched.connect(func(_body): actions["return_spring"] = actions.get("return_spring", 0) + 1)
+	stage.rooms.get_child(1).get_node("CeilingBumper").launched.connect(func(_body): actions["bumper"] = actions.get("bumper", 0) + 1)
+	stage.rooms.get_child(2).get_node("ExitJumpCrystal").collected.connect(func(_body): actions["jump_crystal"] = actions.get("jump_crystal", 0) + 1)
+	stage.rooms.get_child(4).get_node("ExitSpring").launched.connect(func(_body): actions["exit_spring"] = actions.get("exit_spring", 0) + 1)
 	stage.rooms.get_child(5).get_node("CeilingSpring").launched.connect(func(_body): actions["spring"] = actions.get("spring", 0) + 1)
 	stage.rooms.get_child(4).get_node("Headwind").body_entered.connect(func(body):
 		if body == player:
 			actions["wind"] = actions.get("wind", 0) + 1
 	)
+	for index in [3, 5]:
+		var wind_name := "ExitUpdraft" if index == 3 else "ExitHeadwind"
+		stage.rooms.get_child(index).get_node(wind_name).body_entered.connect(func(body):
+			if body == player:
+				actions["exit_wind"] = actions.get("exit_wind", 0) + 1
+		)
 	_check_hints(false)
 	await _key(KEY_H)
 	_check_hints(true)
@@ -68,19 +79,28 @@ func _run() -> void:
 			await _fall_into_pit([0, 0, 350, 620, 470, 340][index])
 		if index > 0:
 			await _fall_into_ceiling_pit([0, 500, 330, 320, 330, 530][index])
+			await _fall_into_ceiling_pit([0, 950, 700, 850, 920, 950][index])
 		actions.clear()
 		flips.clear()
 		var respawns_before := respawns
 		match index:
 			0:
-				await _kick_pair(false, 0)
+				await _kick_pair(false, 0, true)
+				_check(actions.has("launch_spring"), "The first room launches from its Spring into the wall kicks")
+				_drive("move_right")
+				await _until(func(): return actions.has("return_spring"), 160, "The first room's kicks enter Up gravity and its ceiling Spring")
+				await _until(func(): return player.gravity_direction == 1, 100, "The ceiling Spring passes through Down gravity before the arrival switch")
 			1:
 				await _cross_ceiling_pit(500, 600)
 				await _kick_pair(true, 0)
+				_drive("move_right")
+				await _until(func(): return actions.has("bumper"), 180, "The actual ceiling route rebounds from the pinball spring")
+				await _kick_gate(1060, 1, "", true)
 			2:
 				await _kick_gate(240, -1)
 				await _cross_ceiling_pit(330, 470)
-				await _kick_pair(true, 130)
+				await _cross_crystal_pit(700, 1060)
+				await _kick_gate(1100, 1)
 			3:
 				await _kick_gate(280, -1)
 				await _cross_ceiling_pit(320, 450)
@@ -89,18 +109,25 @@ func _run() -> void:
 				await _until(func(): return player.is_on_floor() and _x() > 580, 120, "Reach the edge before the floor pit")
 				await _jump()
 				await _kick_gate(840, -1)
+				await _cross_ceiling_pit(850, 1020)
+				_check(actions.has("exit_wind"), "The second ceiling crossing passes through a vertical gust")
+				await _kick_gate(1100, 1, "DownGate")
 			4:
 				await _kick_gate(360, -1, "UpGate")
 				await _cross_ceiling_pit(330, 470)
 				_check(actions.has("wind") and player.velocity.x < player.move_speed, "The ceiling jump actually crosses a slowing headwind")
 				await _kick_pair(true, 130)
+				_drive("move_right")
+				await _until(func(): return actions.has("exit_spring"), 150, "The short overhead platform leads into its exit Spring")
+				await _until(func(): return player.gravity_direction == 1, 120, "The exit Spring reaches the right-hand Down gate")
 			5:
 				await _kick_gate(260, -1)
 				await _kick_pair(true, -10, true)
 				_check(actions.has("spring"), "The final ceiling route uses the inverted Spring")
 				await _kick_gate(960, -1, "MovingUpGate")
-		if index > 0:
-			await _kick_gate([0, 1060, 1060, 1100, 1060, 1110][index], 1)
+				await _cross_ceiling_pit(950, 1070)
+				_check(actions.has("exit_wind"), "The final ceiling pit is crossed against a headwind")
+				await _kick_gate(1110, 1, "DownGate")
 		if failed:
 			quit(1)
 			return
@@ -110,10 +137,9 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 4, 4, 4, 5][index], "The harder route uses chained wall kicks in room %d" % (index + 1))
+		_check(actions.get("wall_jump", 0) >= [2, 3, 2, 4, 3, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
 		_check(not actions.has("dash"), "Room %d can be completed without dash" % (index + 1))
-		if index > 0:
-			_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
+		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
 			_check(flips.count(-1) >= 2 and flips.count(1) >= 2, "Later rooms combine repeated flips")
 		if failed:
@@ -234,6 +260,19 @@ func _cross_ceiling_pit(edge_x: int, end_x: int) -> void:
 	await _until(func(): return player.is_on_floor() and _x() > end_x, 110, "An inverted jump must land beyond the ceiling pit")
 
 
+func _cross_crystal_pit(edge_x: int, end_x: int) -> void:
+	_drive("move_right")
+	await _until(func(): return player.is_on_floor() and _x() > edge_x - 36 and _x() < edge_x, 180, "Reach the wide ceiling gap")
+	await _jump()
+	await _until(func(): return player.is_air_jump_ready() and _x() >= 850, 70, "Collect the crystal during the first inverted jump")
+	_check(actions.has("jump_crystal") and not player.is_on_floor(), "The crystal grants a jump in the middle of the ceiling gap")
+	_check(stage.get_node("HUD/Margin/Panel/Rows/Resources").text.contains("空中ジャンプ：1"), "The HUD shows the available crystal jump even with hints hidden")
+	await _jump()
+	await _until(func(): return player.is_on_floor() and _x() > end_x, 100, "The air jump reaches the far ceiling")
+	_check(actions.has("air_jump"), "The wide late gap is crossed with an actual air jump")
+	_check(not stage.get_node("HUD/Margin/Panel/Rows/Resources").text.contains("空中ジャンプ：1"), "The HUD clears the extra jump after use")
+
+
 func _kick_pair(inverted: bool, shift: int, spring_launch := false) -> void:
 	_drive("move_right")
 	await _until(func(): return player.is_on_wall() and (spring_launch or player.is_on_floor()) and _x() > 500 + shift, 260, "Reach the inner wall")
@@ -242,7 +281,8 @@ func _kick_pair(inverted: bool, shift: int, spring_launch := false) -> void:
 		await _step(10)
 	_drive("move_left", true, inverted)
 	var kick_height := 375 if spring_launch else 300
-	await _until(func(): return player.is_wall_grabbing() and (player.position.y > kick_height if inverted else player.position.y < 420), 80, "Climb just below the higher overhang")
+	var normal_kick_height := 350 if spring_launch else 420
+	await _until(func(): return player.is_wall_grabbing() and (player.position.y > kick_height if inverted else player.position.y < normal_kick_height), 80, "Climb just below the higher overhang")
 	await _jump()
 	await _until(func(): return player.is_wall_grabbing() and _x() < 500 + shift and (player.position.y > 480 if inverted else player.position.y < 240), 130, "Kick onto the opposing wall")
 	_drive("move_right", true, inverted)
@@ -252,9 +292,9 @@ func _kick_pair(inverted: bool, shift: int, spring_launch := false) -> void:
 	Input.action_release("move_down")
 
 
-func _kick_gate(wall_x: int, target: int, moving_gate: String = "") -> void:
+func _kick_gate(wall_x: int, target: int, moving_gate: String = "", from_air := false) -> void:
 	_drive("move_right")
-	await _until(func(): return player.is_on_floor() and player.is_on_wall() and absf(_x() - (wall_x - 18)) < 4, 260, "Reach launch wall at x=%d" % wall_x)
+	await _until(func(): return (from_air or player.is_on_floor()) and player.is_on_wall() and absf(_x() - (wall_x - 18)) < 4, 260, "Reach launch wall at x=%d" % wall_x)
 	_check(player.gravity_direction != target, "The gate must be reached by the upcoming wall kick")
 	var inverted := player.gravity_direction < 0
 	_drive("move_left", true, inverted)
@@ -262,8 +302,13 @@ func _kick_gate(wall_x: int, target: int, moving_gate: String = "") -> void:
 	await _until(func(): return player.is_wall_grabbing() and (player.position.y > kick_y if inverted else player.position.y < 480), 110, "Climb to the gate's height at x=%d" % wall_x)
 	if not moving_gate.is_empty():
 		Input.action_release("move_up")
+		Input.action_release("move_down")
 		var gate: Area2D = stage.rooms.get_child(stage.room_index).get_node(moving_gate)
-		await _until(func(): return gate.position.y >= 400 and gate.position.y <= 430 and gate.get("_toward_b"), 200, "Hold the wall until the small moving gate reaches the kick path")
+		if gate.get("move_offset").x != 0:
+			await _until(func(): return gate.position.x >= 1000 and gate.position.x <= 1030, 150, "Wait for the horizontal return gate")
+		else:
+			var low := 450 if target > 0 else 400
+			await _until(func(): return gate.position.y >= low and gate.position.y <= low + 20 and gate.get("_toward_b"), 200, "Hold the wall until the small moving gate reaches the kick path")
 	await _jump()
 	Input.action_release("wall_grab")
 	Input.action_release("move_up")
