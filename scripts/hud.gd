@@ -66,6 +66,19 @@ func show_lesson_progress(text: String, done: bool) -> void:
 	$Margin/Panel/Rows/Objective.modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.85, 0.55)
 
 
+func show_stage_room(index: int, room_count: int, title: String, hint: String) -> void:
+	$Margin/Panel/Rows/Title.text = "ステージ2　%02d / %02d　%s" % [index + 1, room_count, title]
+	$Margin/Panel/Rows/Controls.text = hint
+	$Margin/Panel/Rows/WallControls.text = "やり直し：R / Start　　到着台を踏んで出口へ"
+	$Margin/Panel/Rows/Gravity.show()
+	$Margin/Panel/Rows/Resources.show()
+	$Margin/Panel/Rows/StaminaLabel.text = "壁スタミナ（着地で回復）"
+	$Margin/Panel/Rows/StaminaLabel.show()
+	$Margin/Panel/Rows/Stamina.show()
+	$Margin/Panel/Rows/Objective.hide()
+	$Margin/Panel/Rows/Carry.hide()
+
+
 func _process(_delta: float) -> void:
 	if not tutorial_mode or _tutorial_index < 5:
 		return

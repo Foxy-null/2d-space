@@ -4,6 +4,8 @@ extends Area2D
 signal unlocked
 signal activated
 
+@export var show_bubble := true
+
 const TRAVEL := 32.0
 const PRESS_TIME := 0.2
 const BUBBLE := Vector2(-125, -230)
@@ -39,6 +41,7 @@ var _open_lock := AtlasTexture.new()
 
 
 func _ready() -> void:
+	$Bubble.visible = show_bubble
 	$UnlockSound.stream = _sound([784.0, 1046.5, 1318.5])
 	$PressSound.stream = _sound([260.0, 130.0])
 	_open_lock.atlas = ART
@@ -53,7 +56,7 @@ func _ready() -> void:
 
 func set_progress(remaining: int, total: int, step: String, objective: String, cleared: bool = false) -> void:
 	_step = step
-	$Bubble/Progress.text = "クリア！" if cleared else "のこり %d/%d" % [remaining, total]
+	$Bubble/Progress.text = "クリア！" if cleared else ("到着台" if total == 0 else "のこり %d/%d" % [remaining, total])
 	$Bubble/Objective.text = "出口がひらいた！" if cleared else (objective if remaining > 0 else "押せるよ！\nスイッチに乗ろう")
 	var next_locked := remaining > 0 and not cleared
 	if next_locked != locked:
@@ -61,7 +64,7 @@ func set_progress(remaining: int, total: int, step: String, objective: String, c
 		$Case/Collision.set_deferred("disabled", not locked)
 		if _unlock_tween:
 			_unlock_tween.kill()
-		if not locked and not cleared:
+		if not locked and not cleared and total > 0:
 			_unlock_fx = 0.0
 			_unlock_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 			_unlock_tween.tween_property(self, "_unlock_fx", 1.0, 0.5)
@@ -88,6 +91,11 @@ func _physics_process(delta: float) -> void:
 		for body in get_overlapping_bodies():
 			if not body is PlayerController or not body.controls_enabled or body.gravity_direction != 1 or not body.is_on_floor():
 				continue
+			# Area overlap and floor contacts can lag one frame after a respawn.
+			var sensor: CollisionShape2D = $CollisionShape2D
+			var player_shape: CollisionShape2D = body.get_node("CollisionShape2D")
+			if not sensor.shape.collide(sensor.global_transform, player_shape.shape, player_shape.global_transform):
+				continue
 			for index in body.get_slide_collision_count():
 				var contact: KinematicCollision2D = body.get_slide_collision(index)
 				if contact.get_collider() == cap and contact.get_normal().dot(Vector2.UP) > 0.8:
@@ -104,6 +112,14 @@ func _physics_process(delta: float) -> void:
 
 func is_pressed() -> bool:
 	return _pressed
+
+
+func reset_for_respawn() -> void:
+	if _pressed:
+		return
+	pressing = false
+	cap.position.y = 0.0
+	queue_redraw()
 
 
 func _process(_delta: float) -> void:
@@ -142,6 +158,8 @@ func _draw() -> void:
 			var angle := i * TAU / 7.0
 			var center := Vector2(0, SEAT_Y - CASE_SIZE.y / 2) + Vector2.from_angle(angle) * (30 + 66 * _unlock_fx)
 			_star(center, (1.0 - _unlock_fx) * 8, Color(GOLD, 1.0 - _unlock_fx))
+	if not show_bubble:
+		return
 	draw_set_transform(BUBBLE)
 	var border := GOLD if locked else Color(0.4, 1, 0.7)
 	_box(Rect2(-150, -84, 300, 144), Color(0.07, 0.12, 0.23, 0.97), border, 16)
