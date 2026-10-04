@@ -24,6 +24,25 @@ func _run() -> void:
 	player.movement_action.connect(func(action: String): actions[action] = actions.get(action, 0) + 1)
 	player.gravity_changed.connect(func(inverted: bool): flips.append(-1 if inverted else 1))
 	player.respawned.connect(func(): respawns += 1)
+	stage.rooms.get_child(5).get_node("CeilingSpring").launched.connect(func(_body): actions["spring"] = actions.get("spring", 0) + 1)
+	stage.rooms.get_child(4).get_node("Headwind").body_entered.connect(func(body):
+		if body == player:
+			actions["wind"] = actions.get("wind", 0) + 1
+	)
+	_check_hints(false)
+	await _key(KEY_H)
+	_check_hints(true)
+	var echo_event := InputEventKey.new()
+	echo_event.physical_keycode = KEY_H
+	echo_event.pressed = true
+	echo_event.echo = true
+	Input.parse_input_event(echo_event)
+	await _step()
+	_check(stage.hints_visible, "Holding H must not repeatedly toggle hints")
+	await _click(stage.get_node("HUD/ToggleHints"))
+	_check_hints(false)
+	await _gamepad_hints()
+	_check_hints(true)
 	_check(stage.rooms.get_child_count() == 6, "Stage 2 has six rooms")
 	_check(player.wall_actions_enabled and player.dash_enabled, "Walls and dash are available from the start")
 	for room in stage.rooms.get_children():
@@ -41,9 +60,14 @@ func _run() -> void:
 	await _step(12)
 	_check(stage.camera.position == camera_position, "The room camera remains fixed while moving")
 	await _retry()
+	_check_hints(true)
+	await _key(KEY_H)
+	_check_hints(false)
 	for index in 6:
 		if index >= 2:
 			await _fall_into_pit([0, 0, 350, 620, 470, 340][index])
+		if index > 0:
+			await _fall_into_ceiling_pit([0, 500, 330, 320, 330, 530][index])
 		actions.clear()
 		flips.clear()
 		var respawns_before := respawns
@@ -51,12 +75,15 @@ func _run() -> void:
 			0:
 				await _kick_pair(false, 0)
 			1:
+				await _cross_ceiling_pit(500, 600)
 				await _kick_pair(true, 0)
 			2:
 				await _kick_gate(240, -1)
+				await _cross_ceiling_pit(330, 470)
 				await _kick_pair(true, 130)
 			3:
 				await _kick_gate(280, -1)
+				await _cross_ceiling_pit(320, 450)
 				await _kick_gate(580, 1)
 				_drive("move_right")
 				await _until(func(): return player.is_on_floor() and _x() > 580, 120, "Reach the edge before the floor pit")
@@ -64,10 +91,13 @@ func _run() -> void:
 				await _kick_gate(840, -1)
 			4:
 				await _kick_gate(360, -1, "UpGate")
+				await _cross_ceiling_pit(330, 470)
+				_check(actions.has("wind") and player.velocity.x < player.move_speed, "The ceiling jump actually crosses a slowing headwind")
 				await _kick_pair(true, 130)
 			5:
 				await _kick_gate(260, -1)
-				await _kick_pair(true, -10)
+				await _kick_pair(true, -10, true)
+				_check(actions.has("spring"), "The final ceiling route uses the inverted Spring")
 				await _kick_gate(960, -1, "MovingUpGate")
 		if index > 0:
 			await _kick_gate([0, 1060, 1060, 1100, 1060, 1110][index], 1)
@@ -91,6 +121,8 @@ func _run() -> void:
 			return
 		print("STAGE_2_ROOM_%d_OK (wall kicks=%d, flips=%s)" % [index + 1, actions.get("wall_jump", 0), flips])
 		if index < 5:
+			if index == 0:
+				await _key(KEY_H)
 			Input.action_press("move_right")
 			await _until(func(): return stage.room_index == index + 1, 150, "Cross the open exit")
 			_check(stage.transitioning and not player.controls_enabled, "Camera slides freeze controls")
@@ -98,6 +130,10 @@ func _run() -> void:
 			await _step(25)
 			_check(not stage.transitioning and player.controls_enabled, "Controls resume after the camera slide")
 			_check(stage.camera.position == Vector2((index + 1) * 1280 + 640, 360), "Camera settles on the next room")
+			if index == 0:
+				_check_hints(true)
+				await _key(KEY_H)
+				_check_hints(false)
 	_check(stage.completed and stage.get_node("HUD/Completion").visible, "Final arrival displays completion without leaving the stage")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		DirAccess.make_dir_recursive_absolute("res://docs/screenshots/stage-2")
@@ -144,6 +180,8 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.room_index == 0 and stage.cleared.is_empty() and not stage.completed, "Re-selecting stage 2 starts fresh")
+	_check_hints(false)
+	_check(stage.get_node("HUD/ToggleHints").focus_mode == Control.FOCUS_NONE, "Jump cannot focus the hint toggle")
 	_check(stage.get_node("HUD/ReturnToStageSelect").focus_mode == Control.FOCUS_NONE, "Jump cannot focus the return button")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await _screenshots()
@@ -173,13 +211,38 @@ func _fall_into_pit(edge_x: int) -> void:
 			_check(gate.position.distance_to(gate.get("_initial_position")) < 10, "A pit fall restarts its moving gate")
 
 
-func _kick_pair(inverted: bool, shift: int) -> void:
+func _fall_into_ceiling_pit(edge_x: int) -> void:
+	var room: Node2D = stage.rooms.get_child(stage.room_index)
+	_release_inputs()
+	player.set_gravity_direction(-1)
+	player.global_position = room.to_global(Vector2(edge_x - 24, 106))
+	await _step(3)
+	var respawns_before := respawns
 	_drive("move_right")
-	await _until(func(): return player.is_on_floor() and player.is_on_wall() and _x() > 500 + shift, 260, "Reach the inner wall")
+	await _until(func(): return respawns > respawns_before, 240, "Walking into the ceiling pit without jumping or grabbing must cause a retry")
+	_release_inputs()
+	await _step(2)
+	_check(stage.room_index == room.get_index() and player.global_position.distance_to(room.get_node("Spawn").global_position) < 20, "A ceiling pit returns to the current entrance")
+	_check(player.gravity_direction == 1 and player.is_dash_ready() and player.get_wall_stamina() > 2.9, "An inverted pit fall resets gravity and resources")
+
+
+func _cross_ceiling_pit(edge_x: int, end_x: int) -> void:
+	_drive("move_right")
+	await _until(func(): return player.is_on_floor() and _x() > edge_x - 36 and _x() < edge_x, 200, "Reach the ceiling pit before leaving its edge")
+	_check(player.gravity_direction == -1, "The upper pit must be crossed while inverted")
 	await _jump()
-	await _step(10)
+	await _until(func(): return player.is_on_floor() and _x() > end_x, 110, "An inverted jump must land beyond the ceiling pit")
+
+
+func _kick_pair(inverted: bool, shift: int, spring_launch := false) -> void:
+	_drive("move_right")
+	await _until(func(): return player.is_on_wall() and (spring_launch or player.is_on_floor()) and _x() > 500 + shift, 260, "Reach the inner wall")
+	if not spring_launch:
+		await _jump()
+		await _step(10)
 	_drive("move_left", true, inverted)
-	await _until(func(): return player.is_wall_grabbing() and (player.position.y > 300 if inverted else player.position.y < 420), 80, "Climb just below the higher overhang")
+	var kick_height := 375 if spring_launch else 300
+	await _until(func(): return player.is_wall_grabbing() and (player.position.y > kick_height if inverted else player.position.y < 420), 80, "Climb just below the higher overhang")
 	await _jump()
 	await _until(func(): return player.is_wall_grabbing() and _x() < 500 + shift and (player.position.y > 480 if inverted else player.position.y < 240), 130, "Kick onto the opposing wall")
 	_drive("move_right", true, inverted)
@@ -272,6 +335,46 @@ func _key(code: Key) -> void:
 	await _step(3)
 
 
+func _check_hints(expected: bool) -> void:
+	var consistent := true
+	for hint in get_nodes_in_group("stage_2_hints"):
+		consistent = consistent and hint.visible == expected
+	_check(stage.hints_visible == expected and consistent and not get_nodes_in_group("stage_2_hints").is_empty(), "All explanations and path arrows follow the hint setting")
+	_check(stage.get_node("HUD/Margin/Panel/Rows/Title").text.contains(stage.HINTS[stage.room_index]) == expected, "HUD explanations follow the hint setting")
+	_check(stage.rooms.get_child(1).get_node("UpGate/Arrow").visible and stage.get_node("HUD/Margin/Panel/Rows/Resources").visible, "Mechanism directions and player resources stay visible")
+
+
+func _click(button: Control) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = button.get_global_rect().get_center()
+	motion.global_position = motion.position
+	root.push_input(motion, true)
+	await _step()
+	var event := InputEventMouseButton.new()
+	event.position = button.get_global_rect().get_center()
+	event.global_position = event.position
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	root.push_input(event, true)
+	await _step()
+	event = event.duplicate()
+	event.pressed = false
+	root.push_input(event, true)
+	await _step(2)
+
+
+func _gamepad_hints() -> void:
+	var event := InputEventJoypadButton.new()
+	event.button_index = JOY_BUTTON_Y
+	event.pressed = true
+	Input.parse_input_event(event)
+	await _step()
+	event = event.duplicate()
+	event.pressed = false
+	Input.parse_input_event(event)
+	await _step(2)
+
+
 func _screenshots() -> void:
 	DirAccess.make_dir_recursive_absolute("res://docs/screenshots/stage-2")
 	for index in 6:
@@ -280,6 +383,11 @@ func _screenshots() -> void:
 		await _step(3)
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://docs/screenshots/stage-2/room_%d.png" % (index + 1))
+		if index == 4:
+			await _key(KEY_H)
+			RenderingServer.force_draw()
+			root.get_texture().get_image().save_png("res://docs/screenshots/stage-2/room_5_hints.png")
+			await _key(KEY_H)
 
 
 func _step(count: int = 1) -> void:

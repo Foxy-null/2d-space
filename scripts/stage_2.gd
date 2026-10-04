@@ -4,17 +4,18 @@ const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
 const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ"]
 const HINTS := [
-	"高い張り出しを交互の壁キックで越える。スタミナも見よう。",
-	"天井側の壁を渡り、出口の壁からシアン ↓ へキック。",
-	"赤 ↑ へ蹴り込み、穴の上を壁キックで渡る。最後は床へ。",
-	"床と天井を往復。床へ戻ったら、穴の手前でジャンプ。",
-	"穴の手前で壁を掴み、小さな移動ゲートへ。最後は天井からキック。",
-	"大きな穴は反転して越える。床へ戻り、速いゲートを狙おう。",
+	"張り出しを交互のキックで越える。",
+	"天井の穴を跳び、壁を渡る。",
+	"反転後、天井の穴を跳び越える。",
+	"天井と床の穴を交互に越える。",
+	"向かい風の中で天井の穴を跳ぶ。",
+	"Springから壁を掴み、穴を越える。",
 ]
 
 var room_index := 0
 var transitioning := false
 var completed := false
+var hints_visible := false
 var cleared: Dictionary = {}
 
 @onready var rooms: Node2D = $Rooms
@@ -31,12 +32,26 @@ func _ready() -> void:
 	_set_room(0, false)
 	player.respawn()
 	camera.make_current()
+	set_hints_visible(false)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("return_to_stage_select"):
+	if event.is_action_pressed("toggle_stage_hints") and not event.is_echo():
+		get_viewport().set_input_as_handled()
+		set_hints_visible(not hints_visible)
+	elif event.is_action_pressed("return_to_stage_select"):
 		get_viewport().set_input_as_handled()
 		_return_to_stage_select()
+
+
+func set_hints_visible(value: bool) -> void:
+	hints_visible = value
+	for hint in get_tree().get_nodes_in_group("stage_2_hints"):
+		hint.visible = value
+	$HUD/ToggleHints.set_pressed_no_signal(value)
+	$HUD/ToggleHints.text = "ヒント非表示 H / Y・△" if value else "ヒント表示 H / Y・△"
+	hud.show_stage_room(room_index, TITLES[room_index], HINTS[room_index] if value else "", rooms.get_child_count())
+	$HUD/Completion.text = "ステージ2クリア！\n左へ戻って、自由に練習できます" if value else "ステージ2クリア！"
 
 
 func _return_to_stage_select() -> void:
@@ -62,7 +77,7 @@ func _set_room(index: int, from_right: bool) -> void:
 	var room := rooms.get_child(index)
 	var entrance: Marker2D = room.get_node("Return" if from_right else "Spawn")
 	player.set_respawn_position(entrance.global_position)
-	hud.show_stage_room(index, TITLES[index], HINTS[index], rooms.get_child_count())
+	hud.show_stage_room(index, TITLES[index], HINTS[index] if hints_visible else "", rooms.get_child_count())
 	_update_room()
 
 

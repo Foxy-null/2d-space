@@ -70,7 +70,9 @@ func show_tutorial_room(index: int, title: String, controls: String, wall_enable
 
 
 func show_stage_room(index: int, title: String, hint: String, room_count: int) -> void:
-	$Margin/Panel/Rows/Title.text = "ステージ2　%02d / %02d　%s　｜　%s" % [index + 1, room_count, title, hint]
+	$Margin/Panel/Rows/Title.text = "ステージ2　%02d / %02d　%s" % [index + 1, room_count, title]
+	if not hint.is_empty():
+		$Margin/Panel/Rows/Title.text += "　｜　" + hint
 	$Margin/Panel/Rows/Controls.hide()
 	$Margin/Panel/Rows/WallControls.hide()
 	$Margin/Panel/Rows/Gravity.hide()
