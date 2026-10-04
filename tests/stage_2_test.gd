@@ -61,6 +61,8 @@ func _run() -> void:
 				await _kick_gate(260, -1)
 				await _kick_pair(true, -10)
 				await _kick_gate(960, -1, "MovingUpGate")
+		if index > 0:
+			await _kick_gate([0, 1060, 1060, 1100, 1060, 1110][index], 1)
 		if failed:
 			quit(1)
 			return
@@ -68,7 +70,7 @@ func _run() -> void:
 		_check(stage.cleared.has(index), "Actual arrival must clear room %d" % (index + 1))
 		if index == 4:
 			_check(bridge.visible and not bridge.get_node("Collision").disabled, "Clearing room 5 opens a safe return bridge")
-		_check(actions.get("wall_jump", 0) >= (2 if index < 3 else 3), "The route uses wall kicks in room %d" % (index + 1))
+		_check(actions.get("wall_jump", 0) >= [2, 3, 4, 4, 4, 5][index], "The harder route uses chained wall kicks in room %d" % (index + 1))
 		_check(not actions.has("dash"), "Room %d can be completed without dash" % (index + 1))
 		if index > 0:
 			_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
@@ -112,6 +114,19 @@ func _run() -> void:
 	_check(gate.position != gate.get("_initial_position"), "Moving gates actually travel")
 	await _retry()
 	_check(gate.position.distance_to(gate.get("_initial_position")) < 5, "Retry resets the moving gate")
+	_drive("move_left")
+	for frame in 180:
+		if _x() < 820 and player.is_on_floor():
+			break
+		Input.action_release("jump")
+		if player.is_on_floor() and player.is_on_wall():
+			Input.action_press("jump")
+		await _step()
+	_check(stage.room_index == 4 and _x() < 820 and player.is_on_floor(), "Backtrack over the arrival switch onto the return bridge")
+	_drive("move_right")
+	await _until(func(): return _x() > 1055, 100, "Walk under the exit landing without getting stuck")
+	_check(player.is_on_floor(), "The return bridge provides room below the exit landing")
+	_release_inputs()
 	await _key(KEY_ESCAPE)
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Escape returns to the stage menu")
 	await _key(KEY_RIGHT)
@@ -136,9 +151,9 @@ func _kick_pair(inverted: bool, shift: int) -> void:
 	await _jump()
 	await _step(10)
 	_drive("move_left", true, inverted)
-	await _until(func(): return player.is_wall_grabbing() and (player.position.y > 240 if inverted else player.position.y < 480), 60, "Climb just below the overhang")
+	await _until(func(): return player.is_wall_grabbing() and (player.position.y > 300 if inverted else player.position.y < 420), 80, "Climb just below the higher overhang")
 	await _jump()
-	await _until(func(): return player.is_wall_grabbing() and _x() < 500 + shift and (player.position.y > 420 if inverted else player.position.y < 300), 110, "Kick onto the opposing wall")
+	await _until(func(): return player.is_wall_grabbing() and _x() < 500 + shift and (player.position.y > 480 if inverted else player.position.y < 240), 130, "Kick onto the opposing wall")
 	_drive("move_right", true, inverted)
 	await _jump()
 	Input.action_release("wall_grab")
@@ -148,13 +163,16 @@ func _kick_pair(inverted: bool, shift: int) -> void:
 
 func _kick_gate(wall_x: int, target: int, moving_gate: String = "") -> void:
 	_drive("move_right")
-	await _until(func(): return player.is_on_floor() and player.is_on_wall() and _x() >= wall_x - 20, 260, "Reach the launch wall")
-	if not moving_gate.is_empty():
-		var gate: Area2D = stage.rooms.get_child(stage.room_index).get_node(moving_gate)
-		await _until(func(): return gate.position.y >= 400, 240, "Wait for the moving gate")
+	await _until(func(): return player.is_on_floor() and player.is_on_wall() and absf(_x() - (wall_x - 18)) < 4, 260, "Reach launch wall at x=%d" % wall_x)
+	_check(player.gravity_direction != target, "The gate must be reached by the upcoming wall kick")
 	var inverted := player.gravity_direction < 0
 	_drive("move_left", true, inverted)
-	await _until(func(): return player.is_wall_grabbing() and (player.position.y > 240 if inverted else player.position.y < 480), 80, "Climb to the gate's height")
+	var kick_y := 440 if wall_x >= 1000 else 280
+	await _until(func(): return player.is_wall_grabbing() and (player.position.y > kick_y if inverted else player.position.y < 480), 110, "Climb to the gate's height at x=%d" % wall_x)
+	if not moving_gate.is_empty():
+		Input.action_release("move_up")
+		var gate: Area2D = stage.rooms.get_child(stage.room_index).get_node(moving_gate)
+		await _until(func(): return gate.position.y >= 400 and gate.position.y <= 430 and gate.get("_toward_b"), 200, "Hold the wall until the small moving gate reaches the kick path")
 	await _jump()
 	Input.action_release("wall_grab")
 	Input.action_release("move_up")
