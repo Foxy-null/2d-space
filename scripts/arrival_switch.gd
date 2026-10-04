@@ -26,7 +26,7 @@ const LOCK_SIZE := LOCK_ART.size * (54.0 / LOCK_ART.size.x)
 const SEAT_Y := -40.0
 const CAP_SEAT_Y := SEAT_Y + 12.0
 
-var locked := true
+@export var locked := true
 var pressing := false
 var _pressed := false
 var _step := "jump"
@@ -39,6 +39,7 @@ var _open_lock := AtlasTexture.new()
 
 
 func _ready() -> void:
+	$Case/Collision.disabled = not locked
 	$UnlockSound.stream = _sound([784.0, 1046.5, 1318.5])
 	$PressSound.stream = _sound([260.0, 130.0])
 	_open_lock.atlas = ART
@@ -53,7 +54,7 @@ func _ready() -> void:
 
 func set_progress(remaining: int, total: int, step: String, objective: String, cleared: bool = false) -> void:
 	_step = step
-	$Bubble/Progress.text = "クリア！" if cleared else "のこり %d/%d" % [remaining, total]
+	$Bubble/Progress.text = "クリア！" if cleared else ("到着台" if total == 0 else "のこり %d/%d" % [remaining, total])
 	$Bubble/Objective.text = "出口がひらいた！" if cleared else (objective if remaining > 0 else "押せるよ！\nスイッチに乗ろう")
 	var next_locked := remaining > 0 and not cleared
 	if next_locked != locked:

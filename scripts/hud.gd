@@ -60,6 +60,18 @@ func show_tutorial_room(index: int, title: String, controls: String, wall_enable
 	_on_carry_changed(player.get_held_object().carry_name if player.get_held_object() != null else "NONE")
 
 
+func show_stage_room(index: int, title: String, room_count: int) -> void:
+	_tutorial_index = 0
+	$Margin/Panel/Rows/Title.text = "ステージ2：ほしのさんぽ　%02d / %02d　%s" % [index + 1, room_count, title]
+	$Margin/Panel/Rows/Controls.text = "移動：A / D・← / →　ジャンプ：Space / W・A / ×　ダッシュ：X・B / ○"
+	$Margin/Panel/Rows/WallControls.text = "やり直し：R / Start　　出口を越えると次の部屋へ"
+	$Margin/Panel/Rows/Gravity.show()
+	$Margin/Panel/Rows/Resources.show()
+	$Margin/Panel/Rows/StaminaLabel.hide()
+	$Margin/Panel/Rows/Stamina.hide()
+	$Margin/Panel/Rows/Carry.hide()
+
+
 func show_lesson_progress(text: String, done: bool) -> void:
 	$Margin/Panel/Rows/Objective.visible = true
 	$Margin/Panel/Rows/Objective.text = text

@@ -17,14 +17,21 @@ func _run() -> void:
 	_check(stages.get_child_count() == 5, "Show exactly five stages")
 	_check(root.gui_get_focus_owner() == stages.get_child(0), "Stage 1 must initially have keyboard/gamepad focus")
 	_check(not stages.get_child(0).disabled, "Tutorial must be playable")
-	for index in range(1, 5):
+	_check(not stages.get_child(1).disabled and stages.get_child(1).focus_mode == Control.FOCUS_ALL, "Stage 2 must be playable and focusable")
+	_check(stages.get_child(1).text.contains("ほしのさんぽ"), "Stage 2 must display its course name")
+	for index in range(2, 5):
 		var button: Button = stages.get_child(index)
 		_check(button.text.begins_with("ステージ %d" % (index + 1)) and button.text.contains("準備中"), "Stage numbers must increase from left to right and show availability")
 		_check(button.position.x > stages.get_child(index - 1).position.x, "Stage cards must be horizontal")
 		_check(button.disabled and button.focus_mode == Control.FOCUS_NONE, "Unavailable stages cannot be played or focused")
 		await _click(button)
 		_check(current_scene == menu, "Clicking an unavailable stage must stay in the menu")
-	for key in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
+	await _key(KEY_RIGHT)
+	_check(root.gui_get_focus_owner() == stages.get_child(1), "Right must select stage 2")
+	await _key(KEY_RIGHT)
+	_check(root.gui_get_focus_owner() == stages.get_child(1), "Right must skip unavailable stages")
+	await _key(KEY_LEFT)
+	for key in [KEY_UP, KEY_DOWN]:
 		await _key(key)
 		_check(root.gui_get_focus_owner() == stages.get_child(0), "Arrow navigation must skip unavailable stages")
 	if OS.get_cmdline_user_args().has("--screenshots"):
@@ -73,7 +80,7 @@ func _run() -> void:
 	await _step()
 	stick.axis_value = 0.0
 	Input.parse_input_event(stick)
-	await _joy_button(JOY_BUTTON_DPAD_RIGHT)
+	await _joy_button(JOY_BUTTON_DPAD_LEFT)
 	_check(root.gui_get_focus_owner() == menu.get_node("Margin/Content/Stages/Stage1"), "Stick/D-pad navigation must keep a playable stage focused")
 	await _joy_button(JOY_BUTTON_A)
 	_check(current_scene.scene_file_path == "res://scenes/tutorial.tscn", "Gamepad accept must start the focused stage")

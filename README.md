@@ -9,13 +9,23 @@
 
 ## ステージ選択
 
-F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」を選ぶと、チュートリアルの1部屋目から始まります。ステージ2〜5は「準備中」と表示し、選択できません。実装済みのステージは自由に選べる方針です。
+F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」を選ぶと、チュートリアルの1部屋目から始まります。「ステージ2：ほしのさんぽ」は、自由に操作を試せる簡単な6部屋のコースです。ステージ3〜5は「準備中」と表示し、選択できません。ステージ1・2は、クリア状況に関係なく自由に選べます。
 
-クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。チュートリアル中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。16部屋目のクリア後も、引き続き自由に練習できます。
+クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。チュートリアルは16部屋目のクリア後も、引き続き自由に練習できます。
 
 合意した仕様は [ステージ選択の仕様書](docs/stage-selection.md) に記録しています。
 
 ![ステージ1〜5を横に並べた選択画面](docs/screenshots/stage-selection.png)
+
+## ステージ2：ほしのさんぽ
+
+小さな段差、受け床付きの穴、広い天井、Dash Crystal、ゆっくり動く重力ゲートを置いた、簡単な6部屋です。最初からジャンプ・ダッシュ・壁アクションを使えます。操作目標や時間制限はありません。
+
+各部屋の赤い到着台へジャンプして乗ると出口が開き、右端から次の部屋へ進めます。落下やR / Startでは現在の部屋の入口へ戻ります。クリアした部屋は開いたままなので、左へ戻って遊ぶこともできます。最後の到着台を押すとクリアを表示します。
+
+コースは `scenes/stage_2.tscn`、部屋切り替えは `scripts/stage_2.gd` で調整できます。仕様は [ステージ2の仕様書](docs/stage-2.md) に記録しています。
+
+![ステージ2の重力反転区間](docs/screenshots/stage-2/room_3.png)
 
 ## チュートリアル
 
@@ -66,7 +76,7 @@ F5で起動すると、ステージ1〜5が左から順に並んだ選択画面�
 | Object / 壁を掴む | Shift（長押し） | ZL / ZR（長押し） |
 | 壁を昇降 | 掴みながら W / S または ↑ / ↓ | 掴みながら上下入力 |
 | やり直し | R | Start |
-| ステージ選択へ戻る（チュートリアル） | Esc | Back / Select |
+| ステージ選択へ戻る | Esc | Back / Select |
 
 - **重力ゲート**：赤の↑でGravity Up、シアンの↓でGravity Down。反転中は天井が床です。通常は↑で壁を登り上端へマントル、反転中は↓で登り下端へマントルします。
 - **Wall Grab**：床と壁に同時に接していても、Grabキーを長押しすると壁に捕まれます。横入力は不要で、上入力からそのまま登り、低い段差もよじのぼれます。重力反転中は天井への接地から下入力で登ります。壁に捕まっている間のWは登り、接地中のSpace / Aは地上ジャンプを優先します。
@@ -150,7 +160,8 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、チュートリアルの開始
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1・2の開始
+- `scenes/stage_2.tscn` / `scripts/stage_2.gd`：簡単な6部屋のステージ2、部屋切り替えとクリア
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
@@ -160,6 +171,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 
 ```powershell
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase1_movement_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 240 --path . --script res://tests/wall_jump_regression_test.gd

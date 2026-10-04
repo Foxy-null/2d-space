@@ -127,7 +127,7 @@ text = "ステージ選択"
 
 [node name="Description" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "チュートリアルで、移動やギミックの使い方を練習しよう。"
+text = "チュートリアルで練習したら、ほしのさんぽへ出かけよう。"
 
 [node name="Stages" type="HBoxContainer" parent="Margin/Content"]
 layout_mode = 2
@@ -147,9 +147,7 @@ custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-focus_mode = 0
-disabled = true
-text = "ステージ 2\n\n準備中\n\nプレイできません"
+text = "ステージ 2\n\nほしのさんぽ\n\nかんたん・6部屋"
 
 [node name="Stage3" type="Button" parent="Margin/Content/Stages"]
 custom_minimum_size = Vector2(200, 232)
@@ -180,7 +178,7 @@ text = "ステージ 5\n\n準備中\n\nプレイできません"
 
 [node name="Availability" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "ステージ2〜5は準備中です。"
+text = "ステージ1・2は自由に選べます。ステージ3〜5は準備中です。"
 
 [node name="Controls" type="Label" parent="Margin/Content"]
 layout_mode = 2
@@ -189,3 +187,5 @@ theme_override_font_sizes/font_size = 18
 text = "選択：方向キー / 十字キー / スティック　　決定：Enter / A・×　　マウスでも選べます"
 
 [connection signal="pressed" from="Margin/Content/Stages/Stage1" to="." method="_start_tutorial"]
+
+[connection signal="pressed" from="Margin/Content/Stages/Stage2" to="." method="_start_stage_2"]
