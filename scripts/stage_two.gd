@@ -1,0 +1,123 @@
+extends Node2D
+
+const ROOM_SIZE := Vector2(1280, 720)
+const TRANSITION_TIME := 0.28
+const TITLES := ["外縁ドック", "反転回廊", "貨物隔壁", "風の航路", "中枢への跳躍"]
+const OBJECTIVES := [
+	"足場を渡って、右の到着台へ",
+	"↑で天井を進み、↓で床の到着台へ",
+	"重い箱を重量スイッチに置いて、隔壁を開こう",
+	"傘で上昇気流に乗り、右の足場へ",
+	"Spring・生物・クリスタルを使って、中枢へ",
+]
+
+var room_index := 0
+var transitioning := false
+var completed := false
+var cleared: Dictionary = {}
+
+@onready var rooms: Node2D = $Rooms
+@onready var player: PlayerController = $Player
+@onready var camera: Camera2D = $Camera2D
+@onready var hud: CanvasLayer = $HUD
+
+
+func _ready() -> void:
+	player.get_node("Camera2D").enabled = false
+	player.respawned.connect(_on_respawned)
+	for room in rooms.get_children():
+		room.get_node("Goal").activated.connect(_on_arrival.bind(room.get_index()))
+		room.get_node("Goal").set_progress(0, 0, "", "")
+	$Rooms/Room3/PressureButton.pressed_changed.connect(_update_cargo_door)
+	_set_room(0, false)
+	player.respawn()
+	camera.make_current()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("return_to_stage_select"):
+		get_viewport().set_input_as_handled()
+		_return_to_stage_select()
+
+
+func _return_to_stage_select() -> void:
+	get_tree().change_scene_to_file("res://scenes/stage_select.tscn")
+
+
+func _physics_process(_delta: float) -> void:
+	if transitioning:
+		return
+	var left := room_index * ROOM_SIZE.x
+	var shape := player.get_node("CollisionShape2D") as CollisionShape2D
+	var right := shape.to_global(shape.shape.get_rect().end).x + player.safe_margin
+	if right >= left + ROOM_SIZE.x and room_index < rooms.get_child_count() - 1 and cleared.has(room_index):
+		_transition_to(room_index + 1)
+	elif player.global_position.x < left and room_index > 0:
+		_transition_to(room_index - 1)
+	elif player.global_position.y > ROOM_SIZE.y + 52 or player.global_position.y < -52:
+		player.respawn()
+
+
+func _set_room(index: int, from_right: bool) -> void:
+	room_index = index
+	var room := rooms.get_child(index)
+	player.set_respawn_position(room.get_node("Return" if from_right else "Spawn").global_position)
+	hud.show_stage_room(index, TITLES[index], OBJECTIVES[index], rooms.get_child_count())
+	_update_room()
+
+
+func _transition_to(index: int) -> void:
+	transitioning = true
+	player.controls_enabled = false
+	_set_room(index, index < room_index)
+	player.respawn()
+	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(camera, "position", _camera_position(), TRANSITION_TIME)
+	await tween.finished
+	player.controls_enabled = true
+	transitioning = false
+
+
+func _camera_position() -> Vector2:
+	return Vector2(room_index * ROOM_SIZE.x, 0) + ROOM_SIZE * 0.5
+
+
+func _on_respawned() -> void:
+	for area in rooms.get_child(room_index).find_children("*", "Area2D", true, false):
+		if area.has_method("reset_for_respawn"):
+			area.reset_for_respawn()
+	_update_room()
+	if not transitioning:
+		camera.position = _camera_position()
+		camera.reset_smoothing()
+
+
+func _on_arrival(index: int) -> void:
+	if transitioning or index != room_index or cleared.has(index):
+		return
+	cleared[index] = true
+	if index == rooms.get_child_count() - 1:
+		completed = true
+	_update_room()
+
+
+func _update_room() -> void:
+	var room := rooms.get_child(room_index)
+	var done := cleared.has(room_index)
+	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
+	room.get_node("ExitBarrier/Visual").visible = not done
+	room.get_node("Goal").set_progress(0, 0, "", "", done)
+	room.get_node("ExitHint").text = "中枢に到着！" if completed and room_index == 4 else ("次の部屋へ →" if done else "到着台を押すと開く")
+	hud.show_lesson_progress("到着！　次の部屋へ →" if done else OBJECTIVES[room_index], done)
+	$HUD/Completion.visible = completed and room_index == 4
+	if completed and room_index == 4:
+		hud.show_lesson_progress("ステージ2クリア！　戻って自由に探索できます", true)
+	_update_cargo_door($Rooms/Room3/PressureButton.is_pressed())
+
+
+func _update_cargo_door(pressed: bool) -> void:
+	var open := pressed or cleared.has(2)
+	$Rooms/Room3/CargoDoor/Collision.set_deferred("disabled", open)
+	$Rooms/Room3/CargoDoor/Visual.visible = not open
+	$Rooms/Room3/DoorHint.text = "隔壁が開いた →" if open else "重い箱を置くと開く"
+	$Rooms/Room3/DoorHint.modulate = Color(0.55, 1, 0.75) if open else Color(1, 0.8, 0.45)

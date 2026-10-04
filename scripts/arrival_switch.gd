@@ -26,6 +26,7 @@ const LOCK_SIZE := LOCK_ART.size * (54.0 / LOCK_ART.size.x)
 const SEAT_Y := -40.0
 const CAP_SEAT_Y := SEAT_Y + 12.0
 
+@export var starts_unlocked := false
 var locked := true
 var pressing := false
 var _pressed := false
@@ -39,6 +40,9 @@ var _open_lock := AtlasTexture.new()
 
 
 func _ready() -> void:
+	if starts_unlocked:
+		locked = false
+		$Case/Collision.disabled = true
 	$UnlockSound.stream = _sound([784.0, 1046.5, 1318.5])
 	$PressSound.stream = _sound([260.0, 130.0])
 	_open_lock.atlas = ART
@@ -53,7 +57,7 @@ func _ready() -> void:
 
 func set_progress(remaining: int, total: int, step: String, objective: String, cleared: bool = false) -> void:
 	_step = step
-	$Bubble/Progress.text = "クリア！" if cleared else "のこり %d/%d" % [remaining, total]
+	$Bubble/Progress.text = "クリア！" if cleared else ("到着台" if total == 0 else "のこり %d/%d" % [remaining, total])
 	$Bubble/Objective.text = "出口がひらいた！" if cleared else (objective if remaining > 0 else "押せるよ！\nスイッチに乗ろう")
 	var next_locked := remaining > 0 and not cleared
 	if next_locked != locked:
@@ -86,7 +90,7 @@ func _physics_process(delta: float) -> void:
 		return
 	if not pressing:
 		for body in get_overlapping_bodies():
-			if not body is PlayerController or not body.controls_enabled or body.gravity_direction != 1 or not body.is_on_floor():
+			if not body is PlayerController or not body.controls_enabled or body.gravity_direction != 1 or not body.has_valid_floor_contact():
 				continue
 			for index in body.get_slide_collision_count():
 				var contact: KinematicCollision2D = body.get_slide_collision(index)
@@ -104,6 +108,14 @@ func _physics_process(delta: float) -> void:
 
 func is_pressed() -> bool:
 	return _pressed
+
+
+func reset_for_respawn() -> void:
+	if _pressed:
+		return
+	pressing = false
+	cap.position.y = 0.0
+	queue_redraw()
 
 
 func _process(_delta: float) -> void:

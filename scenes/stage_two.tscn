@@ -1,0 +1,680 @@
+[gd_scene load_steps=31 format=3]
+
+[ext_resource type="Script" path="res://scripts/stage_two.gd" id="course"]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="hud"]
+
+[ext_resource type="Script" path="res://scripts/starfield.gd" id="stars"]
+
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="arrival"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="gate"]
+
+[ext_resource type="PackedScene" path="res://scenes/refill_crystal.tscn" id="dash"]
+
+[ext_resource type="PackedScene" path="res://scenes/jump_crystal.tscn" id="jump"]
+
+[ext_resource type="PackedScene" path="res://scenes/heavy_object.tscn" id="heavy"]
+
+[ext_resource type="PackedScene" path="res://scenes/pressure_button.tscn" id="button"]
+
+[ext_resource type="PackedScene" path="res://scenes/parachute_creature.tscn" id="parachute"]
+
+[ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
+
+[ext_resource type="PackedScene" path="res://scenes/jump_creature.tscn" id="creature"]
+
+[ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="spring"]
+
+[sub_resource type="RectangleShape2D" id="Shape_1"]
+size = Vector2(380, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_2"]
+size = Vector2(64, 64)
+
+[sub_resource type="RectangleShape2D" id="Shape_3"]
+size = Vector2(260, 160)
+
+[sub_resource type="RectangleShape2D" id="Shape_4"]
+size = Vector2(300, 280)
+
+[sub_resource type="RectangleShape2D" id="Shape_5"]
+size = Vector2(40, 720)
+
+[sub_resource type="RectangleShape2D" id="Shape_6"]
+size = Vector2(28, 720)
+
+[sub_resource type="RectangleShape2D" id="Shape_7"]
+size = Vector2(1280, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_8"]
+size = Vector2(960, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_9"]
+size = Vector2(420, 250)
+
+[sub_resource type="RectangleShape2D" id="Shape_10"]
+size = Vector2(70, 60)
+
+[sub_resource type="RectangleShape2D" id="Shape_11"]
+size = Vector2(28, 640)
+
+[sub_resource type="RectangleShape2D" id="Shape_12"]
+size = Vector2(330, 160)
+
+[sub_resource type="RectangleShape2D" id="Shape_13"]
+size = Vector2(200, 28)
+
+[sub_resource type="RectangleShape2D" id="Shape_14"]
+size = Vector2(280, 220)
+
+[sub_resource type="RectangleShape2D" id="Shape_15"]
+size = Vector2(360, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_16"]
+size = Vector2(300, 300)
+
+[node name="StageTwo" type="Node2D"]
+script = ExtResource("course")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="ColorRect" type="ColorRect" parent="Background"]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.018, 0.027, 0.075, 1)
+mouse_filter = 2
+
+[node name="Starfield" type="Node2D" parent="Background"]
+script = ExtResource("stars")
+
+[node name="Rooms" type="Node2D" parent="."]
+
+[node name="Room1" type="Node2D" parent="Rooms"]
+position = Vector2(0, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room1"]
+position = Vector2(72, 614)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room1"]
+position = Vector2(1240, 414)
+
+[node name="EntryFloor" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(190.0, 680.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/EntryFloor"]
+shape = SubResource("Shape_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/EntryFloor"]
+polygon = PackedVector2Array(-190.0, -40.0, 190.0, -40.0, 190.0, 40.0, -190.0, 40.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room1/EntryFloor/Visual"]
+polygon = PackedVector2Array(-190.0, -40.0, 190.0, -40.0, 190.0, -37.0, -190.0, -37.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="Step" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(282.0, 608.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step"]
+shape = SubResource("Shape_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step"]
+polygon = PackedVector2Array(-32.0, -32.0, 32.0, -32.0, 32.0, 32.0, -32.0, 32.0)
+color = Color(0.3, 0.45, 0.67, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room1/Step/Visual"]
+polygon = PackedVector2Array(-32.0, -32.0, 32.0, -32.0, 32.0, -29.0, -32.0, -29.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="Landing" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(850.0, 640.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Landing"]
+shape = SubResource("Shape_3")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Landing"]
+polygon = PackedVector2Array(-130.0, -80.0, 130.0, -80.0, 130.0, 80.0, -130.0, 80.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room1/Landing/Visual"]
+polygon = PackedVector2Array(-130.0, -80.0, 130.0, -80.0, 130.0, -77.0, -130.0, -77.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(1130.0, 580.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/ExitFloor"]
+shape = SubResource("Shape_4")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/ExitFloor"]
+polygon = PackedVector2Array(-150.0, -140.0, 150.0, -140.0, 150.0, 140.0, -150.0, 140.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room1/ExitFloor/Visual"]
+polygon = PackedVector2Array(-150.0, -140.0, 150.0, -140.0, 150.0, -137.0, -150.0, -137.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="LeftBoundary" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(-20.0, 360.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/LeftBoundary"]
+shape = SubResource("Shape_5")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/LeftBoundary"]
+polygon = PackedVector2Array(-20.0, -360.0, 20.0, -360.0, 20.0, 360.0, -20.0, 360.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="DashCrystal" parent="Rooms/Room1" instance=ExtResource("dash")]
+position = Vector2(560, 510)
+
+[node name="GapHint" type="Label" parent="Rooms/Room1"]
+offset_left = 355.0
+offset_top = 355.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "ジャンプ → ダッシュ\n緑のCrystalで、もう一度"
+mouse_filter = 2
+
+[node name="ClimbHint" type="Label" parent="Rooms/Room1"]
+offset_left = 760.0
+offset_top = 455.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "高い足場は壁を登ってもOK"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room1" instance=ExtResource("arrival")]
+position = Vector2(1150, 440)
+starts_unlocked = true
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(1266.0, 360.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/ExitBarrier"]
+shape = SubResource("Shape_6")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/ExitBarrier"]
+polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+color = Color(1, 0.65, 0.3, 0.7)
+
+[node name="ExitHint" type="Label" parent="Rooms/Room1"]
+offset_left = 1030.0
+offset_top = 464.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "到着台を押すと開く"
+mouse_filter = 2
+
+[node name="Room2" type="Node2D" parent="Rooms"]
+position = Vector2(1280, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room2"]
+position = Vector2(72, 614)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room2"]
+position = Vector2(1240, 614)
+
+[node name="Floor" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(640.0, 680.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Floor"]
+shape = SubResource("Shape_7")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Floor"]
+polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 40.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room2/Floor/Visual"]
+polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, -37.0, -640.0, -37.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="Ceiling" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(640.0, 206.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Ceiling"]
+shape = SubResource("Shape_8")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Ceiling"]
+polygon = PackedVector2Array(-480.0, -16.0, 480.0, -16.0, 480.0, 16.0, -480.0, 16.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room2/Ceiling/Visual"]
+polygon = PackedVector2Array(-480.0, -16.0, 480.0, -16.0, 480.0, -13.0, -480.0, -13.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="Obstacle" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(670.0, 515.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Obstacle"]
+shape = SubResource("Shape_9")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Obstacle"]
+polygon = PackedVector2Array(-210.0, -125.0, 210.0, -125.0, 210.0, 125.0, -210.0, 125.0)
+color = Color(0.3, 0.45, 0.67, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room2/Obstacle/Visual"]
+polygon = PackedVector2Array(-210.0, -125.0, 210.0, -125.0, 210.0, -122.0, -210.0, -122.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="CeilingStep" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(685.0, 252.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/CeilingStep"]
+shape = SubResource("Shape_10")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/CeilingStep"]
+polygon = PackedVector2Array(-35.0, -30.0, 35.0, -30.0, 35.0, 30.0, -35.0, 30.0)
+color = Color(0.3, 0.45, 0.67, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room2/CeilingStep/Visual"]
+polygon = PackedVector2Array(-35.0, -30.0, 35.0, -30.0, 35.0, -27.0, -35.0, -27.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="UpGate" parent="Rooms/Room2" instance=ExtResource("gate")]
+position = Vector2(280, 550)
+
+[node name="DownGate" parent="Rooms/Room2" instance=ExtResource("gate")]
+position = Vector2(1020, 300)
+target_gravity = 1
+
+[node name="UpHint" type="Label" parent="Rooms/Room2"]
+offset_left = 110.0
+offset_top = 395.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "↑で天井の通路へ"
+mouse_filter = 2
+
+[node name="CeilingHint" type="Label" parent="Rooms/Room2"]
+offset_left = 400.0
+offset_top = 302.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "天井の段差もジャンプで越えよう"
+mouse_filter = 2
+
+[node name="DownHint" type="Label" parent="Rooms/Room2"]
+offset_left = 930.0
+offset_top = 410.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "↓で床へ戻る"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room2" instance=ExtResource("arrival")]
+position = Vector2(1150, 640)
+starts_unlocked = true
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(1266.0, 360.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/ExitBarrier"]
+shape = SubResource("Shape_6")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/ExitBarrier"]
+polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+color = Color(1, 0.65, 0.3, 0.7)
+
+[node name="ExitHint" type="Label" parent="Rooms/Room2"]
+offset_left = 1030.0
+offset_top = 664.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "到着台を押すと開く"
+mouse_filter = 2
+
+[node name="Room3" type="Node2D" parent="Rooms"]
+position = Vector2(2560, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room3"]
+position = Vector2(72, 614)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room3"]
+position = Vector2(1240, 614)
+
+[node name="Floor" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(640.0, 680.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Floor"]
+shape = SubResource("Shape_7")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Floor"]
+polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 40.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room3/Floor/Visual"]
+polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, -37.0, -640.0, -37.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="CargoDoor" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(680.0, 320.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/CargoDoor"]
+shape = SubResource("Shape_11")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/CargoDoor"]
+polygon = PackedVector2Array(-14.0, -320.0, 14.0, -320.0, 14.0, 320.0, -14.0, 320.0)
+color = Color(0.7, 0.3, 0.4, 1)
+
+[node name="HeavyObject" parent="Rooms/Room3" instance=ExtResource("heavy")]
+position = Vector2(210, 608)
+
+[node name="PressureButton" parent="Rooms/Room3" instance=ExtResource("button")]
+position = Vector2(430, 640)
+
+[node name="CargoHint" type="Label" parent="Rooms/Room3"]
+offset_left = 170.0
+offset_top = 450.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "重い箱を掴んで運ぼう\n止まってShiftを離すと置ける"
+mouse_filter = 2
+
+[node name="DoorHint" type="Label" parent="Rooms/Room3"]
+offset_left = 515.0
+offset_top = 300.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "重い箱を置くと開く"
+mouse_filter = 2
+
+[node name="PlateHint" type="Label" parent="Rooms/Room3"]
+offset_left = 355.0
+offset_top = 665.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "重量スイッチ"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room3" instance=ExtResource("arrival")]
+position = Vector2(1150, 640)
+starts_unlocked = true
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(1266.0, 360.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/ExitBarrier"]
+shape = SubResource("Shape_6")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitBarrier"]
+polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+color = Color(1, 0.65, 0.3, 0.7)
+
+[node name="ExitHint" type="Label" parent="Rooms/Room3"]
+offset_left = 1030.0
+offset_top = 664.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "到着台を押すと開く"
+mouse_filter = 2
+
+[node name="Room4" type="Node2D" parent="Rooms"]
+position = Vector2(3840, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room4"]
+position = Vector2(72, 534)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room4"]
+position = Vector2(1240, 474)
+
+[node name="EntryFloor" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(165.0, 640.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/EntryFloor"]
+shape = SubResource("Shape_12")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/EntryFloor"]
+polygon = PackedVector2Array(-165.0, -80.0, 165.0, -80.0, 165.0, 80.0, -165.0, 80.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room4/EntryFloor/Visual"]
+polygon = PackedVector2Array(-165.0, -80.0, 165.0, -80.0, 165.0, -77.0, -165.0, -77.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="HighLanding" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(750.0, 344.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/HighLanding"]
+shape = SubResource("Shape_13")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/HighLanding"]
+polygon = PackedVector2Array(-100.0, -14.0, 100.0, -14.0, 100.0, 14.0, -100.0, 14.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room4/HighLanding/Visual"]
+polygon = PackedVector2Array(-100.0, -14.0, 100.0, -14.0, 100.0, -11.0, -100.0, -11.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(1140.0, 610.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/ExitFloor"]
+shape = SubResource("Shape_14")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitFloor"]
+polygon = PackedVector2Array(-140.0, -110.0, 140.0, -110.0, 140.0, 110.0, -140.0, 110.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room4/ExitFloor/Visual"]
+polygon = PackedVector2Array(-140.0, -110.0, 140.0, -110.0, 140.0, -107.0, -140.0, -107.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="Parachute" parent="Rooms/Room4" instance=ExtResource("parachute")]
+position = Vector2(200, 530)
+
+[node name="Wind" parent="Rooms/Room4" instance=ExtResource("wind")]
+position = Vector2(490, 425)
+area_size = Vector2(240, 430)
+wind_direction = Vector2(0, -1)
+wind_acceleration = 3000.0
+max_wind_speed = 500.0
+
+[node name="Crosswind" parent="Rooms/Room4" instance=ExtResource("wind")]
+position = Vector2(920, 390)
+area_size = Vector2(220, 280)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 350.0
+max_wind_speed = 150.0
+
+[node name="LiftHint" type="Label" parent="Rooms/Room4"]
+offset_left = 310.0
+offset_top = 275.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "傘を持って、上昇気流へ"
+mouse_filter = 2
+
+[node name="GlideHint" type="Label" parent="Rooms/Room4"]
+offset_left = 675.0
+offset_top = 395.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "高い足場から\n傘で右へ滑空"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room4" instance=ExtResource("arrival")]
+position = Vector2(1150, 500)
+starts_unlocked = true
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(1266.0, 360.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/ExitBarrier"]
+shape = SubResource("Shape_6")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitBarrier"]
+polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+color = Color(1, 0.65, 0.3, 0.7)
+
+[node name="ExitHint" type="Label" parent="Rooms/Room4"]
+offset_left = 1030.0
+offset_top = 524.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "到着台を押すと開く"
+mouse_filter = 2
+
+[node name="Room5" type="Node2D" parent="Rooms"]
+position = Vector2(5120, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room5"]
+position = Vector2(72, 614)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room5"]
+position = Vector2(1240, 394)
+
+[node name="EntryFloor" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(180.0, 680.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/EntryFloor"]
+shape = SubResource("Shape_15")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/EntryFloor"]
+polygon = PackedVector2Array(-180.0, -40.0, 180.0, -40.0, 180.0, 40.0, -180.0, 40.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room5/EntryFloor/Visual"]
+polygon = PackedVector2Array(-180.0, -40.0, 180.0, -40.0, 180.0, -37.0, -180.0, -37.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(1130.0, 570.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/ExitFloor"]
+shape = SubResource("Shape_16")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitFloor"]
+polygon = PackedVector2Array(-150.0, -150.0, 150.0, -150.0, 150.0, 150.0, -150.0, 150.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room5/ExitFloor/Visual"]
+polygon = PackedVector2Array(-150.0, -150.0, 150.0, -150.0, 150.0, -147.0, -150.0, -147.0)
+color = Color(0.38, 0.7, 0.9, 0.65)
+
+[node name="RightBoundary" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(1300.0, 360.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/RightBoundary"]
+shape = SubResource("Shape_5")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/RightBoundary"]
+polygon = PackedVector2Array(-20.0, -360.0, 20.0, -360.0, 20.0, 360.0, -20.0, 360.0)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="JumpCreature" parent="Rooms/Room5" instance=ExtResource("creature")]
+position = Vector2(200, 610)
+
+[node name="FloorSpring" parent="Rooms/Room5" instance=ExtResource("spring")]
+position = Vector2(320, 640)
+
+[node name="JumpCrystal" parent="Rooms/Room5" instance=ExtResource("jump")]
+position = Vector2(400, 450)
+
+[node name="DashCrystal" parent="Rooms/Room5" instance=ExtResource("dash")]
+position = Vector2(700, 300)
+
+[node name="LaunchHint" type="Label" parent="Rooms/Room5"]
+offset_left = 110.0
+offset_top = 390.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "生物を掴んでSpringへ"
+mouse_filter = 2
+
+[node name="ComboHint" type="Label" parent="Rooms/Room5"]
+offset_left = 470.0
+offset_top = 530.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "紫のCrystalで追加ジャンプ\n緑のCrystalでダッシュ回復"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room5" instance=ExtResource("arrival")]
+position = Vector2(1150, 420)
+starts_unlocked = true
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(1266.0, 360.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/ExitBarrier"]
+shape = SubResource("Shape_6")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitBarrier"]
+polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+color = Color(1, 0.65, 0.3, 0.7)
+
+[node name="ExitHint" type="Label" parent="Rooms/Room5"]
+offset_left = 1030.0
+offset_top = 444.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "到着台を押すと開く"
+mouse_filter = 2
+
+[node name="Player" parent="." instance=ExtResource("player")]
+position = Vector2(72, 614)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+
+[node name="HUD" parent="." instance=ExtResource("hud")]
+player_path = NodePath("../Player")
+stage_mode = true
+
+[node name="ControlsHint" type="Label" parent="HUD"]
+offset_left = 24.0
+offset_top = 687.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "移動：A/D・←/→　ジャンプ：Space/A・×　ダッシュ：X/B・○　掴む：Shift/ZL・ZR　登る：↑/↓　やり直し：R/Start"
+mouse_filter = 2
+
+[node name="Completion" type="Label" parent="HUD"]
+visible = false
+offset_left = 620.0
+offset_top = 570.0
+offset_right = 1220.0
+offset_bottom = 650.0
+theme_override_colors/font_color = Color(0.55, 1, 0.75, 1)
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 26
+text = "ステージ2クリア！\n宇宙ステーションの中枢に到着"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="ReturnToStageSelect" type="Button" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -286.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = 64.0
+grow_horizontal = 0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "ステージ選択へ戻る"
+
+[node name="ReturnHint" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -286.0
+offset_top = 72.0
+offset_right = -24.0
+offset_bottom = 96.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Esc / Back・Select でも戻れます"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[connection signal="pressed" from="HUD/ReturnToStageSelect" to="." method="_return_to_stage_select"]

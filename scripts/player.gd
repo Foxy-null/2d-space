@@ -492,6 +492,10 @@ func is_wall_grabbing() -> bool:
 	return _wall_grabbing
 
 
+func has_valid_floor_contact() -> bool:
+	return _contacts_valid and is_on_floor()
+
+
 func _consume_jump() -> void:
 	_jump_buffer_left = 0.0
 	_coyote_left = 0.0

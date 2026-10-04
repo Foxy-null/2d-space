@@ -9,13 +9,31 @@
 
 ## ステージ選択
 
-F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」を選ぶと、チュートリアルの1部屋目から始まります。ステージ2〜5は「準備中」と表示し、選択できません。実装済みのステージは自由に選べる方針です。
+F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」で操作を練習でき、「ステージ2：宇宙ステーション」で5部屋のコースを遊べます。ステージ1をクリアしていなくてもステージ2を選べます。ステージ3〜5は「準備中」と表示し、選択できません。
 
-クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。チュートリアル中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。16部屋目のクリア後も、引き続き自由に練習できます。
+クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。クリア後も、そのステージ内で自由に練習できます。
 
 合意した仕様は [ステージ選択の仕様書](docs/stage-selection.md) に記録しています。
 
 ![ステージ1〜5を横に並べた選択画面](docs/screenshots/stage-selection.png)
+
+## ステージ2：宇宙ステーション
+
+チュートリアルの操作を組み合わせ、ステーションの外縁から中枢を目指す5部屋のコースです。最初から壁アクションとダッシュを使えます。到着台には操作の達成条件を設けず、コースを渡って台に乗ると出口が開きます。
+
+| 部屋 | コース |
+| --- | --- |
+| 1：外縁ドック | 段差、ダッシュと緑のCrystalで渡る穴、高い到着足場 |
+| 2：反転回廊 | ↑ゲートで天井の通路へ。天井の段差を越え、↓ゲートで床へ戻る |
+| 3：貨物隔壁 | 重い箱を重量スイッチに置くと隔壁が開く。持ち上げると閉じる |
+| 4：風の航路 | 傘を持って上昇気流に乗り、高い足場から追い風の中を滑空する |
+| 5：中枢への跳躍 | Spring、ジャンプ生物、紫・緑のCrystalを組み合わせて最後の穴を渡る |
+
+カメラは各部屋で固定され、画面端を越えると隣室へスライドします。落下またはR / Startで現在の入口へ戻り、重力・ダッシュ・壁スタミナ・持てる物体・その部屋のCrystalを初期状態に戻します。左端から前の部屋へ戻れます。到着台を押した部屋の出口と貨物隔壁は、やり直しても開いたままです。
+
+最後の到着台を押すと「ステージ2クリア！」を表示します。そのまま探索を続けられます。配置は `scenes/stage_two.tscn`、進行は `scripts/stage_two.gd` で調整できます。
+
+![ステージ2の選択画面と全5部屋](docs/screenshots/stage-two/overview.png)
 
 ## チュートリアル
 
@@ -66,7 +84,7 @@ F5で起動すると、ステージ1〜5が左から順に並んだ選択画面�
 | Object / 壁を掴む | Shift（長押し） | ZL / ZR（長押し） |
 | 壁を昇降 | 掴みながら W / S または ↑ / ↓ | 掴みながら上下入力 |
 | やり直し | R | Start |
-| ステージ選択へ戻る（チュートリアル） | Esc | Back / Select |
+| ステージ選択へ戻る | Esc | Back / Select |
 
 - **重力ゲート**：赤の↑でGravity Up、シアンの↓でGravity Down。反転中は天井が床です。通常は↑で壁を登り上端へマントル、反転中は↓で登り下端へマントルします。
 - **Wall Grab**：床と壁に同時に接していても、Grabキーを長押しすると壁に捕まれます。横入力は不要で、上入力からそのまま登り、低い段差もよじのぼれます。重力反転中は天井への接地から下入力で登ります。壁に捕まっている間のWは登り、接地中のSpace / Aは地上ジャンプを優先します。
@@ -150,7 +168,8 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、チュートリアルの開始
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1・2の開始
+- `scenes/stage_two.tscn` / `scripts/stage_two.gd`：5部屋の宇宙ステーション、重量スイッチと隔壁、復帰とクリア
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
@@ -160,6 +179,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 
 ```powershell
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_two_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase1_movement_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 240 --path . --script res://tests/wall_jump_regression_test.gd
@@ -173,6 +193,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 それぞれ `BASE_SYSTEM_TEST_OK` / `PHASE1_MOVEMENT_TEST_OK` / `PHASE2_ENVIRONMENT_TEST_OK` と終了コード0で成功です。baseは入力・移動・壁・重力とデモ配置、Phase 1は両重力・左右両側の接地からのGrab／低い段差のマントル／ジャンプ優先と接地中のスタミナ、空中のマントル／スタミナ・Dash・色・ジャンプ連携・2種類のクリスタルの効果分離／再出現・Respawnを検証します。Phase 2はGate往復・実接触、4方向Spring、反射と速度範囲、追加ジャンプを付与しないことと未使用の権利の保持、同frame着地回復、Wind合成・能力相互作用・削除を検証します。
 
 `STAGE_SELECT_TEST_OK` は、選択画面からの起動、マウス・キーボード・ゲームパッドの入力、準備中のステージの無効化、クリア後の任意練習、選択画面へ戻る操作、再選択時の進捗初期化を確認します。
+
+`STAGE_TWO_TEST_OK` は、全5部屋を移動・ジャンプ・ダッシュ・Grabの実入力で攻略し、到着台の押し込み、重力反転、箱による隔壁の開閉、傘での浮上と滑空、追加ジャンプ、クリア表示を確認します。復帰地点、落下とやり直し、物体とCrystalの復元、前の部屋への移動、再選択時の初期化も検証します。
 
 `TUTORIAL_ROOMS_TEST_OK` は、操作の制限と解禁、部屋内の固定カメラ、画面端での切り替え、段差と穴のジャンプ、壁登りと壁キック、水平・斜めDashでの攻略、重力ゲートとゴール、各部屋への復帰、戻った後の操作維持、Crystalの復帰を確認します。
 

@@ -2,6 +2,7 @@ extends CanvasLayer
 
 @export var player_path: NodePath
 @export var tutorial_mode := false
+@export var stage_mode := false
 var _tutorial_index := 0
 var _last_extra_count := -1
 
@@ -14,13 +15,18 @@ func _ready() -> void:
 	player.resources_changed.connect(_on_resources_changed)
 	_on_gravity_changed(player.gravity_direction < 0)
 	_on_resources_changed(player.get_wall_stamina(), player.wall_stamina_max, player.is_dash_ready(), player.is_air_jump_ready())
-	if tutorial_mode:
+	if tutorial_mode or stage_mode:
 		$Margin.add_theme_constant_override("margin_top", 8)
+	if tutorial_mode:
 		$Margin/Panel/Rows/Carry.hide()
+	if stage_mode:
+		$Margin/Panel/Rows/Controls.hide()
+		$Margin/Panel/Rows/WallControls.hide()
+		$Margin/Panel/Rows/StaminaLabel.hide()
 
 
 func _on_gravity_changed(is_inverted: bool) -> void:
-	if tutorial_mode:
+	if tutorial_mode or stage_mode:
 		$Margin/Panel/Rows/Gravity.text = "重力：天井へ ↑" if is_inverted else "重力：床へ ↓"
 		return
 	$Margin/Panel/Rows/Gravity.text = "GRAVITY: UP" if is_inverted else "GRAVITY: DOWN"
@@ -29,9 +35,9 @@ func _on_gravity_changed(is_inverted: bool) -> void:
 func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool, air_jump_ready: bool) -> void:
 	$Margin/Panel/Rows/Stamina.max_value = stamina_max
 	$Margin/Panel/Rows/Stamina.value = stamina
-	if tutorial_mode:
+	if tutorial_mode or stage_mode:
 		$Margin/Panel/Rows/Resources.text = "ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復"
-		if _tutorial_index >= 5:
+		if _tutorial_index >= 5 or stage_mode:
 			var player := get_node(player_path) as PlayerController
 			$Margin/Panel/Rows/Resources.text += "　追加ジャンプ：%d" % player.get_available_extra_jump_count()
 		return
@@ -40,7 +46,7 @@ func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool,
 
 func _on_carry_changed(label: String) -> void:
 	$Margin/Panel/Rows/Carry.text = "CARRY: " + label
-	if tutorial_mode:
+	if tutorial_mode or stage_mode:
 		$Margin/Panel/Rows/Carry.text = "保持：" + {"NONE": "なし", "OBJECT": "小さな箱", "HEAVY": "重い箱", "JUMP": "ジャンプ生物", "PARACHUTE": "傘の生物"}.get(label, label)
 
 
@@ -66,8 +72,16 @@ func show_lesson_progress(text: String, done: bool) -> void:
 	$Margin/Panel/Rows/Objective.modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.85, 0.55)
 
 
+func show_stage_room(index: int, title: String, objective: String, room_count: int) -> void:
+	$Margin/Panel/Rows/Title.text = "ステージ2　%02d / %02d　%s" % [index + 1, room_count, title]
+	$Margin/Panel/Rows/Controls.text = "移動：A / D・← / →　ジャンプ：Space / A・×　ダッシュ：X / B・○"
+	$Margin/Panel/Rows/WallControls.text = "掴む：Shift / ZL・ZR　登る：↑ / ↓　やり直し：R / Start"
+	$Margin/Panel/Rows/StaminaLabel.text = "壁スタミナ（着地で回復）"
+	show_lesson_progress(objective, false)
+
+
 func _process(_delta: float) -> void:
-	if not tutorial_mode or _tutorial_index < 5:
+	if not stage_mode and (not tutorial_mode or _tutorial_index < 5):
 		return
 	var player := get_node(player_path) as PlayerController
 	var count := player.get_available_extra_jump_count()
