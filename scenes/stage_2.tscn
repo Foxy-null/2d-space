@@ -1,4 +1,4 @@
-[gd_scene load_steps=78 format=3]
+[gd_scene load_steps=79 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_2.gd" id="1_stage"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
@@ -166,10 +166,13 @@ size = Vector2(48, 96)
 size = Vector2(200, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_ExitFloor_Room3"]
-size = Vector2(420, 80)
+size = Vector2(200, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_ReturnBridge_Room3"]
-size = Vector2(510, 80)
+size = Vector2(730, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_GravityCurtain"]
+size = Vector2(48, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_ExitFloor_Room4"]
 size = Vector2(520, 80)
@@ -711,35 +714,35 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room3"]
-position = Vector2(1070, 680)
+position = Vector2(1180, 680)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/ExitFloor"]
 shape = SubResource("Shape_ExitFloor_Room3")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitFloor"]
-polygon = PackedVector2Array(-210, -40, 210, -40, 210, 40, -210, 40)
+polygon = PackedVector2Array(-100, -40, 100, -40, 100, 40, -100, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Edge" type="Line2D" parent="Rooms/Room3/ExitFloor"]
-points = PackedVector2Array(-210, -40, 210, -40)
+points = PackedVector2Array(-100, -40, 100, -40)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="ReturnBridge" type="StaticBody2D" parent="Rooms/Room3"]
 visible = false
-position = Vector2(605, 680)
+position = Vector2(715, 680)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/ReturnBridge"]
 shape = SubResource("Shape_ReturnBridge_Room3")
 disabled = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/ReturnBridge"]
-polygon = PackedVector2Array(-255, -40, 255, -40, 255, 40, -255, 40)
+polygon = PackedVector2Array(-365, -40, 365, -40, 365, 40, -365, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Edge" type="Line2D" parent="Rooms/Room3/ReturnBridge"]
-points = PackedVector2Array(-255, -40, 255, -40)
+points = PackedVector2Array(-365, -40, 365, -40)
 width = 2.0
 default_color = Color(0.55, 1, 0.75, 0.65)
 antialiased = true
@@ -754,7 +757,7 @@ default_color = Color(1, 0.57, 0.3, 0.8)
 antialiased = true
 
 [node name="ExitLip" type="Line2D" parent="Rooms/Room3/PitWarning"]
-points = PackedVector2Array(884, 640, 860, 640, 860, 712)
+points = PackedVector2Array(1104, 640, 1080, 640, 1080, 712)
 width = 2.0
 default_color = Color(1, 0.57, 0.3, 0.8)
 antialiased = true
@@ -886,25 +889,25 @@ offset_left = 850.0
 offset_top = 580.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "天井の壁から\n左キックで ↓ へ"
+text = "空中ジャンプで ↓ へ\n出口の壁に沿って着地"
 mouse_filter = 2
 
 [node name="ExitKickPath" type="Line2D" parent="Rooms/Room3" groups=["stage_2_hints"]]
 visible = false
-points = PackedVector2Array(1082, 440, 1010, 500, 970, 500)
+points = PackedVector2Array(980, 200, 1070, 180, 1082, 500)
 width = 3.0
 default_color = Color(0.55, 0.98, 1, 0.7)
 antialiased = true
 
 [node name="ExitKickPathHead" type="Line2D" parent="Rooms/Room3" groups=["stage_2_hints"]]
 visible = false
-points = PackedVector2Array(982, 492, 970, 500, 982, 508)
+points = PackedVector2Array(1074, 488, 1082, 500, 1090, 488)
 width = 3.0
 default_color = Color(0.55, 0.98, 1, 0.7)
 antialiased = true
 
 [node name="DownGate" parent="Rooms/Room3" instance=ExtResource("5_gate")]
-position = Vector2(1010, 500)
+position = Vector2(1070, 180)
 target_gravity = 1
 
 [node name="CollisionShape2D" parent="Rooms/Room3/DownGate" index="0"]
@@ -1269,20 +1272,20 @@ mouse_filter = 2
 
 [node name="ExitKickPath" type="Line2D" parent="Rooms/Room4" groups=["stage_2_hints"]]
 visible = false
-points = PackedVector2Array(1082, 440, 1010, 500, 970, 500)
+points = PackedVector2Array(1082, 440, 1030, 500, 990, 500)
 width = 3.0
 default_color = Color(0.55, 0.98, 1, 0.7)
 antialiased = true
 
 [node name="ExitKickPathHead" type="Line2D" parent="Rooms/Room4" groups=["stage_2_hints"]]
 visible = false
-points = PackedVector2Array(982, 492, 970, 500, 982, 508)
+points = PackedVector2Array(1002, 492, 990, 500, 1002, 508)
 width = 3.0
 default_color = Color(0.55, 0.98, 1, 0.7)
 antialiased = true
 
 [node name="DownGate" parent="Rooms/Room4" instance=ExtResource("5_gate")]
-position = Vector2(1010, 500)
+position = Vector2(1030, 500)
 target_gravity = 1
 moving_enabled = true
 move_offset = Vector2(0, -150)
@@ -1398,7 +1401,7 @@ text = "←"
 mouse_filter = 2
 
 [node name="ExitGateTrack" type="Line2D" parent="Rooms/Room4"]
-points = PackedVector2Array(1010, 350, 1010, 500)
+points = PackedVector2Array(1030, 350, 1030, 500)
 width = 2.0
 default_color = Color(0.55, 0.98, 1, 0.35)
 
@@ -1408,6 +1411,28 @@ wind_direction = Vector2(0, -1)
 wind_acceleration = 300.0
 max_wind_speed = 60.0
 area_size = Vector2(220, 240)
+
+[node name="FirstUpCurtain" parent="Rooms/Room4" instance=ExtResource("5_gate")]
+position = Vector2(334, 360)
+target_gravity = -1
+
+[node name="CollisionShape2D" parent="Rooms/Room4/FirstUpCurtain" index="0"]
+shape = SubResource("Shape_GravityCurtain")
+
+[node name="Glow" parent="Rooms/Room4/FirstUpCurtain" index="1"]
+modulate = Color(1, 1, 1, 0.4)
+polygon = PackedVector2Array(-24, -360, 24, -360, 24, 360, -24, 360)
+
+[node name="SecondUpCurtain" parent="Rooms/Room4" instance=ExtResource("5_gate")]
+position = Vector2(870, 360)
+target_gravity = -1
+
+[node name="CollisionShape2D" parent="Rooms/Room4/SecondUpCurtain" index="0"]
+shape = SubResource("Shape_GravityCurtain")
+
+[node name="Glow" parent="Rooms/Room4/SecondUpCurtain" index="1"]
+modulate = Color(1, 1, 1, 0.4)
+polygon = PackedVector2Array(-24, -360, 24, -360, 24, 360, -24, 360)
 
 [node name="Room5" type="Node2D" parent="Rooms"]
 position = Vector2(5120, 0)
@@ -2318,47 +2343,84 @@ text = "ステージ2クリア！\n左へ戻って、自由に練習できます
 horizontal_alignment = 1
 mouse_filter = 2
 
-[node name="ToggleHints" type="Button" parent="HUD"]
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -502.0
-offset_top = 12.0
-offset_right = -298.0
-offset_bottom = 56.0
-grow_horizontal = 0
+[node name="HelpButton" type="Button" parent="HUD"]
+offset_left = 24.0
+offset_top = 38.0
+offset_right = 292.0
+offset_bottom = 78.0
 focus_mode = 0
 toggle_mode = true
 theme_override_font_sizes/font_size = 16
-text = "ヒント表示 H / Y・△"
+text = "お助けメニュー H / Y・△"
 
-[node name="ReturnToStageSelect" type="Button" parent="HUD"]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -286.0
-offset_top = 12.0
-offset_right = -24.0
-offset_bottom = 56.0
-grow_horizontal = 0
-focus_mode = 0
+[node name="HelpMenu" type="PanelContainer" parent="HUD"]
+visible = false
+offset_left = 24.0
+offset_top = 86.0
+offset_right = 326.0
+offset_bottom = 242.0
+
+[node name="Rows" type="VBoxContainer" parent="HUD/HelpMenu"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ToggleHints" type="Button" parent="HUD/HelpMenu/Rows"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+toggle_mode = true
+theme_override_font_sizes/font_size = 18
+text = "ヒントを表示する"
+
+[node name="ReturnToStageSelect" type="Button" parent="HUD/HelpMenu/Rows"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "ステージ選択へ戻る"
 
-[node name="ReturnHint" type="Label" parent="HUD" groups=["stage_2_hints"]]
-visible = false
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -286.0
-offset_top = 60.0
-offset_right = -24.0
-offset_bottom = 78.0
-grow_horizontal = 0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+[node name="CloseHint" type="Label" parent="HUD/HelpMenu/Rows"]
+layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Esc / Back・Select でも戻れます"
+text = "閉じる：H / Y・△ / Esc・Back"
 horizontal_alignment = 1
 mouse_filter = 2
 
-[connection signal="pressed" from="HUD/ReturnToStageSelect" to="." method="_return_to_stage_select"]
+[node name="Status" type="PanelContainer" parent="HUD"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -394.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 108.0
+grow_horizontal = 0
+mouse_filter = 2
 
-[connection signal="toggled" from="HUD/ToggleHints" to="." method="set_hints_visible"]
+[node name="Rows" type="VBoxContainer" parent="HUD/Status"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="StaminaLabel" type="Label" parent="HUD/Status/Rows"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "壁スタミナ"
+mouse_filter = 2
+
+[node name="Stamina" type="ProgressBar" parent="HUD/Status/Rows"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+mouse_filter = 2
+max_value = 3.0
+step = 0.0
+value = 3.0
+show_percentage = false
+
+[node name="Resources" type="Label" parent="HUD/Status/Rows"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "ダッシュ：使用可能"
+mouse_filter = 2
+
+[connection signal="toggled" from="HUD/HelpButton" to="." method="set_help_menu_visible"]
+
+[connection signal="pressed" from="HUD/HelpMenu/Rows/ReturnToStageSelect" to="." method="_return_to_stage_select"]
+
+[connection signal="toggled" from="HUD/HelpMenu/Rows/ToggleHints" to="." method="set_hints_visible"]

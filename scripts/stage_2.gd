@@ -16,6 +16,7 @@ var room_index := 0
 var transitioning := false
 var completed := false
 var hints_visible := false
+var help_menu_visible := false
 var cleared: Dictionary = {}
 
 @onready var rooms: Node2D = $Rooms
@@ -38,18 +39,32 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_stage_hints") and not event.is_echo():
 		get_viewport().set_input_as_handled()
-		set_hints_visible(not hints_visible)
-	elif event.is_action_pressed("return_to_stage_select"):
+		set_help_menu_visible(not help_menu_visible)
+	elif event.is_action_pressed("return_to_stage_select") and not event.is_echo():
 		get_viewport().set_input_as_handled()
-		_return_to_stage_select()
+		if help_menu_visible:
+			set_help_menu_visible(false)
+		else:
+			_return_to_stage_select()
+
+
+func set_help_menu_visible(value: bool) -> void:
+	help_menu_visible = value
+	$HUD/HelpMenu.visible = value
+	$HUD/HelpButton.set_pressed_no_signal(value)
+	player.controls_enabled = not value and not transitioning
+	if value:
+		$HUD/HelpMenu/Rows/ToggleHints.grab_focus()
+	else:
+		get_viewport().gui_release_focus()
 
 
 func set_hints_visible(value: bool) -> void:
 	hints_visible = value
 	for hint in get_tree().get_nodes_in_group("stage_2_hints"):
 		hint.visible = value
-	$HUD/ToggleHints.set_pressed_no_signal(value)
-	$HUD/ToggleHints.text = "ヒント非表示 H / Y・△" if value else "ヒント表示 H / Y・△"
+	$HUD/HelpMenu/Rows/ToggleHints.set_pressed_no_signal(value)
+	$HUD/HelpMenu/Rows/ToggleHints.text = "ヒントを非表示にする" if value else "ヒントを表示する"
 	hud.show_stage_room(room_index, TITLES[room_index], HINTS[room_index] if value else "", rooms.get_child_count())
 	$HUD/Completion.text = "ステージ2クリア！\n左へ戻って、自由に練習できます" if value else "ステージ2クリア！"
 
@@ -59,7 +74,7 @@ func _return_to_stage_select() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if transitioning:
+	if transitioning or help_menu_visible:
 		return
 	var left := room_index * ROOM_SIZE.x
 	var collision: CollisionShape2D = player.get_node("CollisionShape2D")
@@ -89,8 +104,8 @@ func _transition_to(index: int) -> void:
 	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_property(camera, "position", _camera_position(), TRANSITION_TIME)
 	await tween.finished
-	player.controls_enabled = true
 	transitioning = false
+	player.controls_enabled = not help_menu_visible
 
 
 func _camera_position() -> Vector2:
@@ -121,6 +136,9 @@ func _update_room() -> void:
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
+	for curtain in room.find_children("*UpCurtain", "Area2D", false, false):
+		curtain.set_deferred("monitoring", not done)
+		curtain.visible = not done
 	var bridge := room.get_node_or_null("ReturnBridge")
 	if bridge != null:
 		bridge.visible = done

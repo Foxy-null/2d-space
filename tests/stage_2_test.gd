@@ -41,18 +41,29 @@ func _run() -> void:
 				actions["exit_wind"] = actions.get("exit_wind", 0) + 1
 		)
 	_check_hints(false)
+	_check_help(false)
+	_check_status(false)
 	await _key(KEY_H)
-	_check_hints(true)
+	_check_help(true)
+	_check_hints(false)
 	var echo_event := InputEventKey.new()
 	echo_event.physical_keycode = KEY_H
 	echo_event.pressed = true
 	echo_event.echo = true
 	Input.parse_input_event(echo_event)
 	await _step()
-	_check(stage.hints_visible, "Holding H must not repeatedly toggle hints")
-	await _click(stage.get_node("HUD/ToggleHints"))
-	_check_hints(false)
+	_check(stage.help_menu_visible, "Holding H must not repeatedly toggle the help menu")
+	await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+	_check_hints(true)
+	await _click(stage.get_node("HUD/HelpButton"))
+	_check_help(false)
 	await _gamepad_hints()
+	_check_help(true)
+	await _gamepad_hints(JOY_BUTTON_A)
+	_check_hints(false)
+	await _key(KEY_ESCAPE)
+	_check_help(false)
+	await _toggle_hints()
 	_check_hints(true)
 	_check(stage.rooms.get_child_count() == 6, "Stage 2 has six rooms")
 	_check(player.wall_actions_enabled and player.dash_enabled, "Walls and dash are available from the start")
@@ -72,8 +83,12 @@ func _run() -> void:
 	_check(stage.camera.position == camera_position, "The room camera remains fixed while moving")
 	await _retry()
 	_check_hints(true)
-	await _key(KEY_H)
+	await _toggle_hints()
 	_check_hints(false)
+	await _verify_shortcuts()
+	stage._set_room(0, false)
+	player.respawn()
+	await _step(3)
 	for index in 6:
 		if index >= 2:
 			await _fall_into_pit([0, 0, 350, 620, 470, 340][index])
@@ -99,8 +114,10 @@ func _run() -> void:
 			2:
 				await _kick_gate(240, -1)
 				await _cross_ceiling_pit(330, 470)
+				if OS.get_cmdline_user_args().has("--screenshots"):
+					RenderingServer.force_draw()
+					root.get_texture().get_image().save_png("res://docs/screenshots/stage-2/room_3_inverted.png")
 				await _cross_crystal_pit(700, 1060)
-				await _kick_gate(1100, 1)
 			3:
 				await _kick_gate(280, -1)
 				await _cross_ceiling_pit(320, 450)
@@ -137,18 +154,21 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 2, 4, 3, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+			if index == 3:
+				for curtain in room.find_children("*UpCurtain", "Area2D", false, false):
+					_check(not curtain.monitoring and not curtain.visible, "Cleared room 4 stops its bypass curtains so the floor return route remains usable")
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 3, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
 		_check(not actions.has("dash"), "Room %d can be completed without dash" % (index + 1))
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
-			_check(flips.count(-1) >= 2 and flips.count(1) >= 2, "Later rooms combine repeated flips")
+			_check(flips.count(-1) == 2 and flips.count(1) == 2, "Later rooms use two intended cycles without an accidental return flip")
 		if failed:
 			quit(1)
 			return
 		print("STAGE_2_ROOM_%d_OK (wall kicks=%d, flips=%s)" % [index + 1, actions.get("wall_jump", 0), flips])
 		if index < 5:
 			if index == 0:
-				await _key(KEY_H)
+				await _toggle_hints()
 			Input.action_press("move_right")
 			await _until(func(): return stage.room_index == index + 1, 150, "Cross the open exit")
 			_check(stage.transitioning and not player.controls_enabled, "Camera slides freeze controls")
@@ -158,7 +178,7 @@ func _run() -> void:
 			_check(stage.camera.position == Vector2((index + 1) * 1280 + 640, 360), "Camera settles on the next room")
 			if index == 0:
 				_check_hints(true)
-				await _key(KEY_H)
+				await _toggle_hints()
 				_check_hints(false)
 	_check(stage.completed and stage.get_node("HUD/Completion").visible, "Final arrival displays completion without leaving the stage")
 	if OS.get_cmdline_user_args().has("--screenshots"):
@@ -199,24 +219,72 @@ func _run() -> void:
 	await _until(func(): return _x() > 1055, 100, "Walk under the exit landing without getting stuck")
 	_check(player.is_on_floor(), "The return bridge provides room below the exit landing")
 	_release_inputs()
-	await _key(KEY_ESCAPE)
-	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Escape returns to the stage menu")
+	await _key(KEY_H)
+	_check_help(true)
+	await _key(KEY_DOWN)
+	await _key(KEY_ENTER)
+	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Keyboard navigation selects the return button inside the help menu")
 	await _key(KEY_RIGHT)
 	await _key(KEY_ENTER)
 	stage = current_scene
 	player = stage.player
 	_check(stage.room_index == 0 and stage.cleared.is_empty() and not stage.completed, "Re-selecting stage 2 starts fresh")
 	_check_hints(false)
-	_check(stage.get_node("HUD/ToggleHints").focus_mode == Control.FOCUS_NONE, "Jump cannot focus the hint toggle")
-	_check(stage.get_node("HUD/ReturnToStageSelect").focus_mode == Control.FOCUS_NONE, "Jump cannot focus the return button")
+	_check_help(false)
+	_check(stage.get_node("HUD/HelpButton").focus_mode == Control.FOCUS_NONE, "Jump cannot focus the help trigger during gameplay")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await _screenshots()
-	stage.get_node("HUD/ReturnToStageSelect").pressed.emit()
+	await _click(stage.get_node("HUD/HelpButton"))
+	await _click(stage.get_node("HUD/HelpMenu/Rows/ReturnToStageSelect"))
 	await _step(3)
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "The return button opens stage selection")
 	_release_inputs()
 	print("STAGE_2_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
+
+
+func _verify_shortcuts() -> void:
+	stage._set_room(2, false)
+	for diagonal in [false, true]:
+		for delay in [0, 15, 30, 45, 55, 60]:
+			_release_inputs()
+			player.respawn()
+			await _step(3)
+			var before := respawns
+			_drive("move_right", true)
+			await _until(func(): return player.is_on_floor() and player.position.y < 410 and _x() > 240, 160, "Climb the launch wall using only normal gravity")
+			_drive("move_right")
+			await _jump()
+			await _step(delay)
+			if diagonal:
+				Input.action_press("move_up")
+			Input.action_press("dash")
+			await _step()
+			Input.action_release("move_up")
+			Input.action_release("dash")
+			for frame in 180:
+				if respawns > before or (player.is_on_floor() and _x() > 1080):
+					break
+				await _step()
+			_check(respawns > before and not stage.cleared.has(2), "Room 3's enlarged gap defeats an elevated jump plus dash (diagonal=%s, delay=%d)" % [diagonal, delay])
+			if failed:
+				return
+	stage._set_room(3, false)
+	for second in [false, true]:
+		_release_inputs()
+		player.respawn()
+		if second:
+			player.global_position = stage.rooms.get_child(3).to_global(Vector2(790, 614))
+		await _step(3)
+		_drive("move_right", true)
+		var wall_x := 840 if second else 280
+		await _until(func(): return player.gravity_direction == -1 or (player.is_on_floor() and player.position.y < 410 and _x() > wall_x), 160, "Climbing the floor wall reaches its gravity curtain")
+		_drive("move_right")
+		await _until(func(): return player.gravity_direction == -1, 50, "The gravity curtain intercepts the original floor bypass")
+		_check(not stage.cleared.has(3), "Room 4 cannot leave either floor wall without encountering Up gravity")
+		if failed:
+			return
+	_release_inputs()
 
 
 func _fall_into_pit(edge_x: int) -> void:
@@ -266,11 +334,11 @@ func _cross_crystal_pit(edge_x: int, end_x: int) -> void:
 	await _jump()
 	await _until(func(): return player.is_air_jump_ready() and _x() >= 850, 70, "Collect the crystal during the first inverted jump")
 	_check(actions.has("jump_crystal") and not player.is_on_floor(), "The crystal grants a jump in the middle of the ceiling gap")
-	_check(stage.get_node("HUD/Margin/Panel/Rows/Resources").text.contains("空中ジャンプ：1"), "The HUD shows the available crystal jump even with hints hidden")
+	_check(stage.get_node("HUD/Status/Rows/Resources").text.contains("空中ジャンプ：1"), "The HUD shows the available crystal jump even with hints hidden")
 	await _jump()
-	await _until(func(): return player.is_on_floor() and _x() > end_x, 100, "The air jump reaches the far ceiling")
+	await _until(func(): return player.gravity_direction == 1 and _x() > end_x - 40, 100, "The air jump reaches the far ceiling's return gate")
 	_check(actions.has("air_jump"), "The wide late gap is crossed with an actual air jump")
-	_check(not stage.get_node("HUD/Margin/Panel/Rows/Resources").text.contains("空中ジャンプ：1"), "The HUD clears the extra jump after use")
+	_check(not stage.get_node("HUD/Status/Rows/Resources").text.contains("空中ジャンプ：1"), "The HUD clears the extra jump after use")
 
 
 func _kick_pair(inverted: bool, shift: int, spring_launch := false) -> void:
@@ -314,6 +382,7 @@ func _kick_gate(wall_x: int, target: int, moving_gate: String = "", from_air := 
 	Input.action_release("move_up")
 	Input.action_release("move_down")
 	await _until(func(): return player.gravity_direction == target, 70, "A wall kick must enter the gravity gate")
+	_check_status(target < 0)
 	_drive("move_right")
 
 
@@ -386,7 +455,28 @@ func _check_hints(expected: bool) -> void:
 		consistent = consistent and hint.visible == expected
 	_check(stage.hints_visible == expected and consistent and not get_nodes_in_group("stage_2_hints").is_empty(), "All explanations and path arrows follow the hint setting")
 	_check(stage.get_node("HUD/Margin/Panel/Rows/Title").text.contains(stage.HINTS[stage.room_index]) == expected, "HUD explanations follow the hint setting")
-	_check(stage.rooms.get_child(1).get_node("UpGate/Arrow").visible and stage.get_node("HUD/Margin/Panel/Rows/Resources").visible, "Mechanism directions and player resources stay visible")
+	_check(stage.rooms.get_child(1).get_node("UpGate/Arrow").visible and stage.get_node("HUD/Status").visible, "Mechanism directions and player resources stay visible")
+
+
+func _toggle_hints() -> void:
+	await _key(KEY_H)
+	await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+	await _key(KEY_H)
+
+
+func _check_help(expected: bool) -> void:
+	_check(stage.help_menu_visible == expected and stage.get_node("HUD/HelpMenu").visible == expected, "The help menu follows its setting and starts closed")
+	_check(stage.get_node("HUD/HelpMenu/Rows/ReturnToStageSelect").is_visible_in_tree() == expected, "Return and hint controls stay inside the help menu")
+	_check(player.controls_enabled != expected, "Opening the menu suspends character input and closing restores it")
+	_check((root.gui_get_focus_owner() != null) == expected, "Only the open help menu owns keyboard and controller focus")
+
+
+func _check_status(inverted: bool) -> void:
+	var status: Control = stage.get_node("HUD/Status")
+	var gauge: ProgressBar = stage.get_node("HUD/Status/Rows/Stamina")
+	_check((status.position.y > 360) == inverted, "Resources switch to the side opposite gravity in the same frame")
+	_check(is_equal_approx(gauge.value, player.get_wall_stamina()) and is_equal_approx(gauge.max_value, player.wall_stamina_max), "The stamina gauge displays the actual remaining resource")
+	_check(not stage.get_node("HUD/Status/Rows/Resources").text.contains("秒") and not stage.get_node("HUD/Margin/Panel/Rows/Gravity").visible, "Stamina seconds and gravity text are absent")
 
 
 func _click(button: Control) -> void:
@@ -408,9 +498,9 @@ func _click(button: Control) -> void:
 	await _step(2)
 
 
-func _gamepad_hints() -> void:
+func _gamepad_hints(button: JoyButton = JOY_BUTTON_Y) -> void:
 	var event := InputEventJoypadButton.new()
-	event.button_index = JOY_BUTTON_Y
+	event.button_index = button
 	event.pressed = true
 	Input.parse_input_event(event)
 	await _step()
@@ -429,9 +519,13 @@ func _screenshots() -> void:
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://docs/screenshots/stage-2/room_%d.png" % (index + 1))
 		if index == 4:
-			await _key(KEY_H)
+			await _toggle_hints()
 			RenderingServer.force_draw()
 			root.get_texture().get_image().save_png("res://docs/screenshots/stage-2/room_5_hints.png")
+			await _toggle_hints()
+			await _key(KEY_H)
+			RenderingServer.force_draw()
+			root.get_texture().get_image().save_png("res://docs/screenshots/stage-2/help_menu.png")
 			await _key(KEY_H)
 
 

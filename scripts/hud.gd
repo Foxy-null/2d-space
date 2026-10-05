@@ -22,8 +22,7 @@ func _ready() -> void:
 
 func _on_gravity_changed(is_inverted: bool) -> void:
 	if compact_mode:
-		var player := get_node(player_path) as PlayerController
-		_on_resources_changed(player.get_wall_stamina(), player.wall_stamina_max, player.is_dash_ready(), player.is_air_jump_ready())
+		$Status.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT if is_inverted else Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_KEEP_SIZE, 24)
 		return
 	if tutorial_mode:
 		$Margin/Panel/Rows/Gravity.text = "重力：天井へ ↑" if is_inverted else "重力：床へ ↓"
@@ -35,10 +34,11 @@ func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool,
 	$Margin/Panel/Rows/Stamina.max_value = stamina_max
 	$Margin/Panel/Rows/Stamina.value = stamina
 	if compact_mode:
-		var player := get_node(player_path) as PlayerController
-		$Margin/Panel/Rows/Resources.text = "重力：%s　壁スタミナ：%.1f秒　ダッシュ：%s" % ["天井 ↑" if player.gravity_direction < 0 else "床 ↓", stamina, "使用可能" if dash_ready else "着地で回復"]
+		$Status/Rows/Stamina.value = stamina
+		$Status/Rows/Stamina.max_value = stamina_max
+		$Status/Rows/Resources.text = "ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復"
 		if air_jump_ready:
-			$Margin/Panel/Rows/Resources.text += "　空中ジャンプ：1"
+			$Status/Rows/Resources.text += "　空中ジャンプ：1"
 		return
 	if tutorial_mode:
 		$Margin/Panel/Rows/Resources.text = "ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復"
@@ -80,7 +80,7 @@ func show_stage_room(index: int, title: String, hint: String, room_count: int) -
 	$Margin/Panel/Rows/Gravity.hide()
 	$Margin/Panel/Rows/StaminaLabel.hide()
 	$Margin/Panel/Rows/Stamina.hide()
-	$Margin/Panel/Rows/Resources.show()
+	$Margin/Panel/Rows/Resources.hide()
 	$Margin/Panel/Rows/Carry.hide()
 	$Margin/Panel/Rows/Objective.hide()
 
