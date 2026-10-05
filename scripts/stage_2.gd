@@ -136,9 +136,6 @@ func _update_room() -> void:
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
-	for curtain in room.find_children("*UpCurtain", "Area2D", false, false):
-		curtain.set_deferred("monitoring", not done)
-		curtain.visible = not done
 	var bridge := room.get_node_or_null("ReturnBridge")
 	if bridge != null:
 		bridge.visible = done

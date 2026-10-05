@@ -114,6 +114,18 @@ func _run() -> void:
 			2:
 				await _kick_gate(240, -1)
 				await _cross_ceiling_pit(330, 470)
+				_check_status(true)
+				await _click(stage.get_node("HUD/HelpButton"))
+				_check_help(true)
+				await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+				_check_hints(true)
+				await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+				_check_hints(false)
+				if OS.get_cmdline_user_args().has("--screenshots"):
+					RenderingServer.force_draw()
+					root.get_texture().get_image().save_png("res://docs/screenshots/stage-2/help_menu_inverted.png")
+				await _key(KEY_H)
+				_check_help(false)
 				if OS.get_cmdline_user_args().has("--screenshots"):
 					RenderingServer.force_draw()
 					root.get_texture().get_image().save_png("res://docs/screenshots/stage-2/room_3_inverted.png")
@@ -154,9 +166,6 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-			if index == 3:
-				for curtain in room.find_children("*UpCurtain", "Area2D", false, false):
-					_check(not curtain.monitoring and not curtain.visible, "Cleared room 4 stops its bypass curtains so the floor return route remains usable")
 		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 3, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
 		_check(not actions.has("dash"), "Room %d can be completed without dash" % (index + 1))
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
@@ -278,9 +287,9 @@ func _verify_shortcuts() -> void:
 		await _step(3)
 		_drive("move_right", true)
 		var wall_x := 840 if second else 280
-		await _until(func(): return player.gravity_direction == -1 or (player.is_on_floor() and player.position.y < 410 and _x() > wall_x), 160, "Climbing the floor wall reaches its gravity curtain")
+		await _until(func(): return player.gravity_direction == -1 or (player.is_on_floor() and player.position.y < 410 and _x() > wall_x), 160, "Climbing the floor wall reaches its enlarged Up gate")
 		_drive("move_right")
-		await _until(func(): return player.gravity_direction == -1, 50, "The gravity curtain intercepts the original floor bypass")
+		await _until(func(): return player.gravity_direction == -1, 50, "The existing Up gate intercepts the original floor bypass")
 		_check(not stage.cleared.has(3), "Room 4 cannot leave either floor wall without encountering Up gravity")
 		if failed:
 			return
@@ -367,7 +376,10 @@ func _kick_gate(wall_x: int, target: int, moving_gate: String = "", from_air := 
 	var inverted := player.gravity_direction < 0
 	_drive("move_left", true, inverted)
 	var kick_y := 440 if wall_x >= 1000 else 280
-	await _until(func(): return player.is_wall_grabbing() and (player.position.y > kick_y if inverted else player.position.y < 480), 110, "Climb to the gate's height at x=%d" % wall_x)
+	var climb_y := 480
+	if stage.room_index == 3 and target < 0:
+		climb_y = 540 if wall_x == 280 else 500
+	await _until(func(): return player.is_wall_grabbing() and (player.position.y > kick_y if inverted else player.position.y < climb_y), 110, "Climb to the gate's height at x=%d" % wall_x)
 	if not moving_gate.is_empty():
 		Input.action_release("move_up")
 		Input.action_release("move_down")
@@ -475,6 +487,11 @@ func _check_status(inverted: bool) -> void:
 	var status: Control = stage.get_node("HUD/Status")
 	var gauge: ProgressBar = stage.get_node("HUD/Status/Rows/Stamina")
 	_check((status.position.y > 360) == inverted, "Resources switch to the side opposite gravity in the same frame")
+	_check((stage.get_node("HUD/Margin/Panel/Rows/Title").get_global_rect().position.y > 360) == inverted, "The room count and title switch sides with the stamina gauge")
+	_check((stage.get_node("HUD/HelpButton").position.y > 360) == inverted, "The help trigger switches sides with the stamina gauge")
+	var menu_rect: Rect2 = stage.get_node("HUD/HelpMenu").get_global_rect()
+	var button_rect: Rect2 = stage.get_node("HUD/HelpButton").get_global_rect()
+	_check(menu_rect.end.y < button_rect.position.y if inverted else menu_rect.position.y > button_rect.end.y, "The menu opens above the lower HUD and below the upper HUD")
 	_check(is_equal_approx(gauge.value, player.get_wall_stamina()) and is_equal_approx(gauge.max_value, player.wall_stamina_max), "The stamina gauge displays the actual remaining resource")
 	_check(not stage.get_node("HUD/Status/Rows/Resources").text.contains("秒") and not stage.get_node("HUD/Margin/Panel/Rows/Gravity").visible, "Stamina seconds and gravity text are absent")
 

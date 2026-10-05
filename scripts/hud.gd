@@ -23,6 +23,16 @@ func _ready() -> void:
 func _on_gravity_changed(is_inverted: bool) -> void:
 	if compact_mode:
 		$Status.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT if is_inverted else Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_KEEP_SIZE, 24)
+		$Margin/Panel.size_flags_vertical = Control.SIZE_SHRINK_END if is_inverted else Control.SIZE_SHRINK_BEGIN
+		$Margin.add_theme_constant_override("margin_bottom", 104 if is_inverted else 0)
+		$HelpButton.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT if is_inverted else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 48 if is_inverted else 24)
+		$HelpButton.position.x = 24
+		if not is_inverted:
+			$HelpButton.position.y = 38
+		$HelpMenu.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT if is_inverted else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 134 if is_inverted else 24)
+		$HelpMenu.position.x = 24
+		if not is_inverted:
+			$HelpMenu.position.y = 86
 		return
 	if tutorial_mode:
 		$Margin/Panel/Rows/Gravity.text = "重力：天井へ ↑" if is_inverted else "重力：床へ ↓"

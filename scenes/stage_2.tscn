@@ -85,7 +85,7 @@ size = Vector2(36, 220)
 size = Vector2(36, 220)
 
 [sub_resource type="RectangleShape2D" id="Shape_29"]
-size = Vector2(48, 96)
+size = Vector2(64, 160)
 
 [sub_resource type="RectangleShape2D" id="Shape_30"]
 size = Vector2(28, 720)
@@ -171,8 +171,8 @@ size = Vector2(200, 80)
 [sub_resource type="RectangleShape2D" id="Shape_ReturnBridge_Room3"]
 size = Vector2(730, 80)
 
-[sub_resource type="RectangleShape2D" id="Shape_GravityCurtain"]
-size = Vector2(48, 720)
+[sub_resource type="RectangleShape2D" id="Shape_Room4UpGate"]
+size = Vector2(160, 160)
 
 [sub_resource type="RectangleShape2D" id="Shape_ExitFloor_Room4"]
 size = Vector2(520, 80)
@@ -1205,6 +1205,12 @@ antialiased = true
 position = Vector2(190, 420)
 target_gravity = -1
 
+[node name="CollisionShape2D" parent="Rooms/Room4/UpGate" index="0"]
+shape = SubResource("Shape_Room4UpGate")
+
+[node name="Glow" parent="Rooms/Room4/UpGate" index="1"]
+polygon = PackedVector2Array(-80, -80, 80, -80, 80, 80, -80, 80)
+
 [node name="CeilingWall" type="StaticBody2D" parent="Rooms/Room4"]
 position = Vector2(598.0, 190.0)
 
@@ -1244,6 +1250,12 @@ antialiased = true
 [node name="SecondUpGate" parent="Rooms/Room4" instance=ExtResource("5_gate")]
 position = Vector2(750, 380)
 target_gravity = -1
+
+[node name="CollisionShape2D" parent="Rooms/Room4/SecondUpGate" index="0"]
+shape = SubResource("Shape_Room4UpGate")
+
+[node name="Glow" parent="Rooms/Room4/SecondUpGate" index="1"]
+polygon = PackedVector2Array(-80, -80, 80, -80, 80, 80, -80, 80)
 
 [node name="ExitKickWall" type="StaticBody2D" parent="Rooms/Room4"]
 position = Vector2(1118, 270)
@@ -1296,7 +1308,7 @@ endpoint_wait_time = 0.2
 shape = SubResource("Shape_29")
 
 [node name="Glow" parent="Rooms/Room4/DownGate" index="1"]
-polygon = PackedVector2Array(-24, -48, 24, -48, 24, 48, -24, 48)
+polygon = PackedVector2Array(-32, -80, 32, -80, 32, 80, -32, 80)
 
 [node name="LaunchHint" type="Label" parent="Rooms/Room4" groups=["stage_2_hints"]]
 visible = false
@@ -1411,28 +1423,6 @@ wind_direction = Vector2(0, -1)
 wind_acceleration = 300.0
 max_wind_speed = 60.0
 area_size = Vector2(220, 240)
-
-[node name="FirstUpCurtain" parent="Rooms/Room4" instance=ExtResource("5_gate")]
-position = Vector2(334, 360)
-target_gravity = -1
-
-[node name="CollisionShape2D" parent="Rooms/Room4/FirstUpCurtain" index="0"]
-shape = SubResource("Shape_GravityCurtain")
-
-[node name="Glow" parent="Rooms/Room4/FirstUpCurtain" index="1"]
-modulate = Color(1, 1, 1, 0.4)
-polygon = PackedVector2Array(-24, -360, 24, -360, 24, 360, -24, 360)
-
-[node name="SecondUpCurtain" parent="Rooms/Room4" instance=ExtResource("5_gate")]
-position = Vector2(870, 360)
-target_gravity = -1
-
-[node name="CollisionShape2D" parent="Rooms/Room4/SecondUpCurtain" index="0"]
-shape = SubResource("Shape_GravityCurtain")
-
-[node name="Glow" parent="Rooms/Room4/SecondUpCurtain" index="1"]
-modulate = Color(1, 1, 1, 0.4)
-polygon = PackedVector2Array(-24, -360, 24, -360, 24, 360, -24, 360)
 
 [node name="Room5" type="Node2D" parent="Rooms"]
 position = Vector2(5120, 0)
