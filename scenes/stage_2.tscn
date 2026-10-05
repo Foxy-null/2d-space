@@ -1,0 +1,633 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://scripts/stage_2.gd" id="1_course"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="3_hud"]
+[ext_resource type="Script" path="res://scripts/starfield.gd" id="4_stars"]
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="5_goal"]
+[ext_resource type="PackedScene" path="res://scenes/refill_crystal.tscn" id="6_crystal"]
+[ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="7_spring"]
+
+[sub_resource type="RectangleShape2D" id="Shape_1280_80"]
+size = Vector2(1280, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_40_880"]
+size = Vector2(40, 880)
+
+[sub_resource type="RectangleShape2D" id="Shape_28_880"]
+size = Vector2(28, 880)
+
+[sub_resource type="RectangleShape2D" id="Shape_350_80"]
+size = Vector2(350, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_670_80"]
+size = Vector2(670, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_340_80"]
+size = Vector2(340, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_500_80"]
+size = Vector2(500, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_360_80"]
+size = Vector2(360, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_720_80"]
+size = Vector2(720, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_240_80"]
+size = Vector2(240, 80)
+
+[sub_resource type="RectangleShape2D" id="Shape_300_80"]
+size = Vector2(300, 80)
+
+[node name="Stage2" type="Node2D"]
+script = ExtResource("1_course")
+
+[node name="Backdrop" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Background" type="ColorRect" parent="Backdrop"]
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.018, 0.027, 0.075, 1)
+
+[node name="Starfield" type="Node2D" parent="Backdrop"]
+script = ExtResource("4_stars")
+
+[node name="Rooms" type="Node2D" parent="."]
+
+[node name="Room1" type="Node2D" parent="Rooms"]
+position = Vector2(0, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room1"]
+position = Vector2(96, 614)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room1"]
+position = Vector2(1230, 614)
+
+[node name="RouteHint" type="Label" parent="Rooms/Room1"]
+offset_left = 80.0
+offset_top = 225.0
+offset_right = 860.0
+offset_bottom = 299.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "横ダッシュで加速しよう。\n着地すると、もう一度ダッシュできる。"
+mouse_filter = 2
+
+[node name="Floor1" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(640, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Floor1"]
+shape = SubResource("Shape_1280_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Floor1"]
+polygon = PackedVector2Array(-640, -40, 640, -40, 640, 40, -640, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room1/Floor1"]
+polygon = PackedVector2Array(-640, -40, 640, -40, 640, -35, -640, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="LeftBoundary" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(-20, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/LeftBoundary"]
+shape = SubResource("Shape_40_880")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/LeftBoundary"]
+polygon = PackedVector2Array(-20, -440, 20, -440, 20, 440, -20, 440)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(1266, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/ExitBarrier"]
+shape = SubResource("Shape_28_880")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/ExitBarrier"]
+polygon = PackedVector2Array(-14, -440, 14, -440, 14, 440, -14, 440)
+color = Color(0.4, 0.55, 0.75, 0.45)
+
+[node name="Arrow1" type="Label" parent="Rooms/Room1"]
+offset_left = 340.0
+offset_top = 520.0
+offset_right = 424.0
+offset_bottom = 602.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Arrow2" type="Label" parent="Rooms/Room1"]
+offset_left = 660.0
+offset_top = 520.0
+offset_right = 744.0
+offset_bottom = 602.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Arrow3" type="Label" parent="Rooms/Room1"]
+offset_left = 900.0
+offset_top = 520.0
+offset_right = 984.0
+offset_bottom = 602.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room1" instance=ExtResource("5_goal")]
+position = Vector2(1140, 640)
+locked = false
+
+[node name="ExitHint" type="Label" parent="Rooms/Room1"]
+offset_left = 990.0
+offset_top = 662.0
+offset_right = 1238.0
+offset_bottom = 692.0
+theme_override_font_sizes/font_size = 20
+text = "到着台を踏もう ↑"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Room2" type="Node2D" parent="Rooms"]
+position = Vector2(1280, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room2"]
+position = Vector2(96, 614)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room2"]
+position = Vector2(1230, 614)
+
+[node name="RouteHint" type="Label" parent="Rooms/Room2"]
+offset_left = 80.0
+offset_top = 225.0
+offset_right = 860.0
+offset_bottom = 299.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "踏み切って、空中で右へダッシュ。\n向こうの広い足場を目指そう。"
+mouse_filter = 2
+
+[node name="Floor1" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(175, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Floor1"]
+shape = SubResource("Shape_350_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Floor1"]
+polygon = PackedVector2Array(-175, -40, 175, -40, 175, 40, -175, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room2/Floor1"]
+polygon = PackedVector2Array(-175, -40, 175, -40, 175, -35, -175, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="Floor2" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(945, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Floor2"]
+shape = SubResource("Shape_670_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Floor2"]
+polygon = PackedVector2Array(-335, -40, 335, -40, 335, 40, -335, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room2/Floor2"]
+polygon = PackedVector2Array(-335, -40, 335, -40, 335, -35, -335, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(1266, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/ExitBarrier"]
+shape = SubResource("Shape_28_880")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/ExitBarrier"]
+polygon = PackedVector2Array(-14, -440, 14, -440, 14, 440, -14, 440)
+color = Color(0.4, 0.55, 0.75, 0.45)
+
+[node name="Arrow1" type="Label" parent="Rooms/Room2"]
+offset_left = 445.0
+offset_top = 450.0
+offset_right = 529.0
+offset_bottom = 532.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Arrow2" type="Label" parent="Rooms/Room2"]
+offset_left = 750.0
+offset_top = 520.0
+offset_right = 834.0
+offset_bottom = 602.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room2" instance=ExtResource("5_goal")]
+position = Vector2(1140, 640)
+locked = false
+
+[node name="ExitHint" type="Label" parent="Rooms/Room2"]
+offset_left = 990.0
+offset_top = 662.0
+offset_right = 1238.0
+offset_bottom = 692.0
+theme_override_font_sizes/font_size = 20
+text = "到着台を踏もう ↑"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Room3" type="Node2D" parent="Rooms"]
+position = Vector2(2560, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room3"]
+position = Vector2(96, 614)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room3"]
+position = Vector2(1230, 614)
+
+[node name="RouteHint" type="Label" parent="Rooms/Room3"]
+offset_left = 80.0
+offset_top = 225.0
+offset_right = 860.0
+offset_bottom = 299.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "緑のCrystalで、空中のダッシュを補充。\nX / B・○を押し直して、もう一度右へ。"
+mouse_filter = 2
+
+[node name="Floor1" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(170, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Floor1"]
+shape = SubResource("Shape_340_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Floor1"]
+polygon = PackedVector2Array(-170, -40, 170, -40, 170, 40, -170, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room3/Floor1"]
+polygon = PackedVector2Array(-170, -40, 170, -40, 170, -35, -170, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="Floor2" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(1030, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Floor2"]
+shape = SubResource("Shape_500_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Floor2"]
+polygon = PackedVector2Array(-250, -40, 250, -40, 250, 40, -250, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room3/Floor2"]
+polygon = PackedVector2Array(-250, -40, 250, -40, 250, -35, -250, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(1266, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/ExitBarrier"]
+shape = SubResource("Shape_28_880")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitBarrier"]
+polygon = PackedVector2Array(-14, -440, 14, -440, 14, 440, -14, 440)
+color = Color(0.4, 0.55, 0.75, 0.45)
+
+[node name="Crystal1" parent="Rooms/Room3" instance=ExtResource("6_crystal")]
+position = Vector2(530, 515)
+
+[node name="Arrow1" type="Label" parent="Rooms/Room3"]
+offset_left = 380.0
+offset_top = 465.0
+offset_right = 464.0
+offset_bottom = 547.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Arrow2" type="Label" parent="Rooms/Room3"]
+offset_left = 630.0
+offset_top = 465.0
+offset_right = 714.0
+offset_bottom = 547.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room3" instance=ExtResource("5_goal")]
+position = Vector2(1140, 640)
+locked = false
+
+[node name="ExitHint" type="Label" parent="Rooms/Room3"]
+offset_left = 990.0
+offset_top = 662.0
+offset_right = 1238.0
+offset_bottom = 692.0
+theme_override_font_sizes/font_size = 20
+text = "到着台を踏もう ↑"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Room4" type="Node2D" parent="Rooms"]
+position = Vector2(3840, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room4"]
+position = Vector2(96, 614)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room4"]
+position = Vector2(1230, 534)
+
+[node name="RouteHint" type="Label" parent="Rooms/Room4"]
+offset_left = 80.0
+offset_top = 225.0
+offset_right = 860.0
+offset_bottom = 299.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "Springに乗って、跳び出そう。\n空中で右へダッシュし、広い足場へ。"
+mouse_filter = 2
+
+[node name="Floor1" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(180, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Floor1"]
+shape = SubResource("Shape_360_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Floor1"]
+polygon = PackedVector2Array(-180, -40, 180, -40, 180, 40, -180, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room4/Floor1"]
+polygon = PackedVector2Array(-180, -40, 180, -40, 180, -35, -180, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="Floor2" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(920, 600)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Floor2"]
+shape = SubResource("Shape_720_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Floor2"]
+polygon = PackedVector2Array(-360, -40, 360, -40, 360, 40, -360, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room4/Floor2"]
+polygon = PackedVector2Array(-360, -40, 360, -40, 360, -35, -360, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(1266, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/ExitBarrier"]
+shape = SubResource("Shape_28_880")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitBarrier"]
+polygon = PackedVector2Array(-14, -440, 14, -440, 14, 440, -14, 440)
+color = Color(0.4, 0.55, 0.75, 0.45)
+
+[node name="Spring1" parent="Rooms/Room4" instance=ExtResource("7_spring")]
+position = Vector2(310, 640)
+
+[node name="Arrow1" type="Label" parent="Rooms/Room4"]
+offset_left = 380.0
+offset_top = 420.0
+offset_right = 464.0
+offset_bottom = 502.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Arrow2" type="Label" parent="Rooms/Room4"]
+offset_left = 700.0
+offset_top = 445.0
+offset_right = 784.0
+offset_bottom = 527.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room4" instance=ExtResource("5_goal")]
+position = Vector2(1140, 560)
+locked = false
+
+[node name="ExitHint" type="Label" parent="Rooms/Room4"]
+offset_left = 990.0
+offset_top = 582.0
+offset_right = 1238.0
+offset_bottom = 612.0
+theme_override_font_sizes/font_size = 20
+text = "到着台を踏もう ↑"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Room5" type="Node2D" parent="Rooms"]
+position = Vector2(5120, 0)
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room5"]
+position = Vector2(96, 614)
+
+[node name="Return" type="Marker2D" parent="Rooms/Room5"]
+position = Vector2(1230, 614)
+
+[node name="RouteHint" type="Label" parent="Rooms/Room5"]
+offset_left = 80.0
+offset_top = 225.0
+offset_right = 860.0
+offset_bottom = 299.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "Spring → ダッシュ → 補充 → ダッシュ。\n最後は到着台へ着地しよう。"
+mouse_filter = 2
+
+[node name="Floor1" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(170, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Floor1"]
+shape = SubResource("Shape_340_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/Floor1"]
+polygon = PackedVector2Array(-170, -40, 170, -40, 170, 40, -170, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room5/Floor1"]
+polygon = PackedVector2Array(-170, -40, 170, -40, 170, -35, -170, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="Floor2" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(770, 560)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Floor2"]
+shape = SubResource("Shape_240_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/Floor2"]
+polygon = PackedVector2Array(-120, -40, 120, -40, 120, 40, -120, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room5/Floor2"]
+polygon = PackedVector2Array(-120, -40, 120, -40, 120, -35, -120, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="Floor3" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(1130, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Floor3"]
+shape = SubResource("Shape_300_80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/Floor3"]
+polygon = PackedVector2Array(-150, -40, 150, -40, 150, 40, -150, 40)
+color = Color(0.14, 0.23, 0.36, 1)
+
+[node name="Edge" type="Polygon2D" parent="Rooms/Room5/Floor3"]
+polygon = PackedVector2Array(-150, -40, 150, -40, 150, -35, -150, -35)
+color = Color(0.35, 0.7, 0.9, 1)
+
+[node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(1266, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/ExitBarrier"]
+shape = SubResource("Shape_28_880")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitBarrier"]
+polygon = PackedVector2Array(-14, -440, 14, -440, 14, 440, -14, 440)
+color = Color(0.4, 0.55, 0.75, 0.45)
+
+[node name="Crystal1" parent="Rooms/Room5" instance=ExtResource("6_crystal")]
+position = Vector2(480, 450)
+
+[node name="Spring1" parent="Rooms/Room5" instance=ExtResource("7_spring")]
+position = Vector2(280, 640)
+
+[node name="Spring2" parent="Rooms/Room5" instance=ExtResource("7_spring")]
+position = Vector2(840, 520)
+
+[node name="Arrow1" type="Label" parent="Rooms/Room5"]
+offset_left = 350.0
+offset_top = 425.0
+offset_right = 434.0
+offset_bottom = 507.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Arrow2" type="Label" parent="Rooms/Room5"]
+offset_left = 545.0
+offset_top = 425.0
+offset_right = 629.0
+offset_bottom = 507.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Arrow3" type="Label" parent="Rooms/Room5"]
+offset_left = 920.0
+offset_top = 400.0
+offset_right = 1004.0
+offset_bottom = 482.0
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 0.3)
+theme_override_font_sizes/font_size = 64
+text = "→"
+mouse_filter = 2
+
+[node name="Goal" parent="Rooms/Room5" instance=ExtResource("5_goal")]
+position = Vector2(1140, 640)
+locked = false
+
+[node name="ExitHint" type="Label" parent="Rooms/Room5"]
+offset_left = 990.0
+offset_top = 662.0
+offset_right = 1238.0
+offset_bottom = 692.0
+theme_override_font_sizes/font_size = 20
+text = "ステージゴール ↑"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(96, 614)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+player_path = NodePath("../Player")
+tutorial_mode = true
+
+[node name="Title" parent="HUD/Margin/Panel/Rows" index="0"]
+text = "ステージ2　01 / 05　助走"
+
+[node name="Controls" parent="HUD/Margin/Panel/Rows" index="1"]
+text = "移動：A / D・← / →　ジャンプ：Space・A / ×"
+
+[node name="WallControls" parent="HUD/Margin/Panel/Rows" index="2"]
+text = "ダッシュ：X・B / ○ ＋ 方向　やり直し：R / Start"
+
+[node name="Gravity" parent="HUD/Margin/Panel/Rows" index="3"]
+visible = false
+
+[node name="StaminaLabel" parent="HUD/Margin/Panel/Rows" index="6"]
+visible = false
+
+[node name="Stamina" parent="HUD/Margin/Panel/Rows" index="7"]
+visible = false
+
+[node name="Completion" type="Label" parent="HUD"]
+visible = false
+offset_left = 380.0
+offset_top = 215.0
+offset_right = 900.0
+offset_bottom = 300.0
+theme_override_colors/font_color = Color(0.55, 1, 0.75, 1)
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 28
+text = "ステージ2 クリア！\nそのまま自由に練習できます"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="ReturnToStageSelect" type="Button" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -286.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = 64.0
+grow_horizontal = 0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "ステージ選択へ戻る"
+
+[node name="ReturnHint" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -286.0
+offset_top = 72.0
+offset_right = -24.0
+offset_bottom = 96.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Esc / Back・Select でも戻れます"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[connection signal="pressed" from="HUD/ReturnToStageSelect" to="." method="_return_to_stage_select"]
+
+[editable path="HUD"]

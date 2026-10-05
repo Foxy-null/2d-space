@@ -26,7 +26,7 @@ const LOCK_SIZE := LOCK_ART.size * (54.0 / LOCK_ART.size.x)
 const SEAT_Y := -40.0
 const CAP_SEAT_Y := SEAT_Y + 12.0
 
-var locked := true
+@export var locked := true
 var pressing := false
 var _pressed := false
 var _step := "jump"
@@ -39,6 +39,7 @@ var _open_lock := AtlasTexture.new()
 
 
 func _ready() -> void:
+	$Case/Collision.set_deferred("disabled", not locked)
 	$UnlockSound.stream = _sound([784.0, 1046.5, 1318.5])
 	$PressSound.stream = _sound([260.0, 130.0])
 	_open_lock.atlas = ART

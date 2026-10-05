@@ -291,7 +291,9 @@ func _test_respawn_and_backtrack() -> void:
 	_check(tutorial.room_index == 2, "Left edge returns to the previous room")
 	_check(player.dash_enabled and player.wall_actions_enabled, "Learned actions stay unlocked when going back")
 	var crystal: Area2D = tutorial.get_node("Rooms/Room3/DashCrystal")
-	crystal.emit_signal("body_entered", player)
+	player.global_position = crystal.global_position
+	player.velocity = Vector2.ZERO
+	await _step(3)
 	_check(not crystal.visible, "Crystal can be consumed")
 	player.respawn()
 	await _step(2)

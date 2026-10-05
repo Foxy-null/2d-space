@@ -9,13 +9,21 @@
 
 ## ステージ選択
 
-F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」を選ぶと、チュートリアルの1部屋目から始まります。ステージ2〜5は「準備中」と表示し、選択できません。実装済みのステージは自由に選べる方針です。
+F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」または「ステージ2：ダッシュ航路」を選ぶと、それぞれの1部屋目から始まります。ステージ3〜5は「準備中」と表示し、選択できません。実装済みのステージは自由に選べます。
 
-クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。チュートリアル中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。16部屋目のクリア後も、引き続き自由に練習できます。
+クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。各ステージのクリア後も、引き続き自由に練習できます。
 
 合意した仕様は [ステージ選択の仕様書](docs/stage-selection.md) に記録しています。
 
 ![ステージ1〜5を横に並べた選択画面](docs/screenshots/stage-selection.png)
+
+## ステージ2：ダッシュ航路
+
+横ダッシュで気持ちよく駆け抜ける、初級の5部屋コースです。安全な床での助走、ジャンプからのダッシュ、空中でのCrystal補充、Springからのダッシュ、最後にそれらを繋ぐコースを遊べます。ダッシュと壁アクションは初めから使用可能で、Superdashや精密な斜め入力は必須にしていません。
+
+1〜4部屋目の到着台を踏むと次の部屋への出口が開きます。操作の達成チェックはなく、落下やR / Startではその部屋の入口からやり直せます。5部屋目の到着台を踏むとクリア表示を出し、その場で遊び続けられます。詳しい構成は[ステージ2の仕様書](docs/stage-2.md)に記録しています。
+
+![ステージ2の空中ダッシュ補充](docs/screenshots/stage-2/room-3.png)
 
 ## チュートリアル
 
@@ -66,7 +74,7 @@ F5で起動すると、ステージ1〜5が左から順に並んだ選択画面�
 | Object / 壁を掴む | Shift（長押し） | ZL / ZR（長押し） |
 | 壁を昇降 | 掴みながら W / S または ↑ / ↓ | 掴みながら上下入力 |
 | やり直し | R | Start |
-| ステージ選択へ戻る（チュートリアル） | Esc | Back / Select |
+| ステージ選択へ戻る | Esc | Back / Select |
 
 - **重力ゲート**：赤の↑でGravity Up、シアンの↓でGravity Down。反転中は天井が床です。通常は↑で壁を登り上端へマントル、反転中は↓で登り下端へマントルします。
 - **Wall Grab**：床と壁に同時に接していても、Grabキーを長押しすると壁に捕まれます。横入力は不要で、上入力からそのまま登り、低い段差もよじのぼれます。重力反転中は天井への接地から下入力で登ります。壁に捕まっている間のWは登り、接地中のSpace / Aは地上ジャンプを優先します。
@@ -150,8 +158,9 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、チュートリアルの開始
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、チュートリアルとステージ2の開始
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
+- `scenes/stage_2.tscn` / `scripts/stage_2.gd`：初級のダッシュ5部屋、部屋単位の復帰とクリア表示
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
 調整値はPlayer／CrystalのInspectorから変更できます。同じSceneを複数人で同時編集せず、担当ごとにブランチを分けます。
@@ -160,6 +169,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 
 ```powershell
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase1_movement_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 240 --path . --script res://tests/wall_jump_regression_test.gd
