@@ -17,6 +17,11 @@ func _ready() -> void:
 func _on_body_entered(body: Node) -> void:
 	if not _available or not body is PlayerController:
 		return
+	var player_shape: CollisionShape2D = body.get_node("CollisionShape2D")
+	var crystal_shape: CollisionShape2D = $CollisionShape2D
+	# A queued entry can arrive after the player has respawned elsewhere.
+	if not crystal_shape.shape.collide(crystal_shape.global_transform, player_shape.shape, player_shape.global_transform):
+		return
 	# Logical guard is immediate; physics-server changes must be deferred in callbacks.
 	_available = false
 	$CollisionShape2D.set_deferred("disabled", true)
