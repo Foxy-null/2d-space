@@ -7,7 +7,7 @@ extends RigidBody2D
 @export var move_multiplier := 1.0
 @export var acceleration_multiplier := 1.0
 @export var jump_multiplier := 1.0
-@export var visual_width := 90.0
+@export var visual_width := 72.0
 
 var carrier: PlayerController
 var _spawn_transform: Transform2D

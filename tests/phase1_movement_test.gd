@@ -104,7 +104,7 @@ func _test_dash() -> void:
 		await _step(2)
 		_check(player.velocity.is_equal_approx(speed), "no gravity during dash")
 		_check(not player.is_dash_ready(), "air dash consumed")
-		_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color(1, 0.5, 0.15, 1), "used body orange")
+		_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color(0.35, 0.92, 1, 1), "used outfit cyan")
 		while player.is_dashing():
 			await _step()
 		_near(player.velocity.length(), player.dash_speed * player.dash_end_speed_ratio, "end momentum")
@@ -165,7 +165,7 @@ func _test_dash() -> void:
 				break
 		_check(player.is_on_floor() and player.is_dash_ready(), "landing refills dash %d" % gravity)
 		_check(player.is_air_jump_ready(), "landing preserves air jump")
-		_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color(0.35, 0.92, 1, 1), "landing body cyan")
+		_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color.TRANSPARENT, "landing restores original indigo")
 		await _step(3)
 		_check(player.is_air_jump_ready(), "remaining grounded preserves air jump")
 		player._jump_buffer_left = 0.1
@@ -366,7 +366,7 @@ func _test_crystal() -> void:
 			_check(player.is_dash_ready() != grants_jump and player.is_air_jump_ready() == grants_jump, scene + " actual pickup grants only its own resource g=%d" % gravity)
 			_check(player.get_wall_stamina() == 0.0 and player._grab_exhausted, scene + " cannot recover wall grab")
 			_check(not crystal.visible and crystal.get_node("CollisionShape2D").disabled and not crystal.monitoring, scene + " hidden and collision disabled")
-			var expected_color := Color(1, 0.5, 0.15, 1) if grants_jump else Color(0.35, 0.92, 1, 1)
+			var expected_color := Color(0.35, 0.92, 1, 1) if grants_jump else Color.TRANSPARENT
 			_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == expected_color, scene + " body color still reflects dash")
 			player._dash_ready = false
 			player._air_jump_ready = false
@@ -418,7 +418,7 @@ func _test_respawn() -> void:
 	_check(player.get_wall_stamina() == player.wall_stamina_max and not player._grab_exhausted, "respawn stamina")
 	_check(not player.is_dashing() and player._superdash_left == 0 and player._jump_buffer_left == 0 and player._coyote_left == 0, "respawn transient states")
 	_check(player.velocity == Vector2.ZERO and player.visuals.rotation == 0, "respawn velocity and rotation")
-	_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color(0.35, 0.92, 1, 1), "respawn color")
+	_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color.TRANSPARENT, "respawn restores original indigo")
 	player.position.y = 1000
 	player._physics_process(STEP)
 	_check(player.position == player._spawn_position and player.velocity == Vector2.ZERO, "out-of-bounds respawn")

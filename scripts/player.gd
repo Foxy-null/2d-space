@@ -62,8 +62,9 @@ var _dash_direction := Vector2.ZERO
 var _superdash_left := 0.0
 var _superdash_speed := 0.0
 var _gravity_tween: Tween
-const DASH_READY_COLOR := Color(0.35, 0.92, 1.0, 1.0)
-const DASH_USED_COLOR := Color(1.0, 0.5, 0.15, 1.0)
+# Zero tint strength preserves the original indigo texture.
+const DASH_READY_COLOR := Color.TRANSPARENT
+const DASH_USED_COLOR := Color(0.35, 0.92, 1.0, 1.0)
 var _last_resources: Array = []
 # Ignore cached contacts immediately after teleporting or changing up_direction.
 var _contacts_valid := false

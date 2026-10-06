@@ -10,7 +10,7 @@
 | `jump-creature.png` | `jump-creature-rest.png`、`jump-creature-active.png` |
 | `red-umbrella.png` | `red-umbrella-rest.png`、`red-umbrella-active.png` |
 
-衣装の色は画像を再生成せず `outfit.gdshader` で切り替える。元の6姿勢の布の形・顔・手足を保つ。
+衣装の色は画像を再生成せず `outfit.gdshader` で切り替える。通常時は元の藍色をそのまま表示し、Dash使用済みのときだけシアンにする。元の6姿勢の布の形・顔・手足を保つ。
 
 ## 忍者の壁登り・運搬
 

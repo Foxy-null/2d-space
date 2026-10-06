@@ -104,7 +104,8 @@ func _run() -> void:
 			var artwork := object.visuals.get_node("Body") as AnimatedSprite2D
 			if artwork != null:
 				size = artwork.sprite_frames.get_frame_texture(artwork.animation, artwork.frame).get_size() * artwork.scale
-			_check(absf(size.x * object.visuals.scale.x - 90.0) < 0.01, "2.5 body widths: " + name)
+			var expected_width := 90.0 if name == "parachute_creature" else 72.0
+			_check(absf(size.x * object.visuals.scale.x - expected_width) < 0.01, "Umbrella 2.5 body widths, other items 2: " + name)
 			_check(object.visuals.scale.x == object.visuals.scale.y, "Preserve aspect ratio: " + name)
 			var bottom: float = object.visuals.position.y + size.y * object.visuals.scale.y * 0.5 * gravity
 			_check(absf(object.position.y + bottom - player.position.y + 28.0 * gravity) < 0.01, "Large item meets raised palms: " + name)
