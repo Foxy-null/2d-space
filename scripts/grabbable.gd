@@ -7,12 +7,16 @@ extends RigidBody2D
 @export var move_multiplier := 1.0
 @export var acceleration_multiplier := 1.0
 @export var jump_multiplier := 1.0
+@export var visual_width := 63.0
 
 var carrier: PlayerController
 var _spawn_transform: Transform2D
 var _free_collision_layer: int
 var _free_collision_mask: int
+var _artwork_size: Vector2
+var release_physics_frame := -2
 @onready var collider: CollisionShape2D = $CollisionShape2D
+@onready var visuals: Node2D = $Visuals
 
 
 func _ready() -> void:
@@ -21,6 +25,34 @@ func _ready() -> void:
 	_free_collision_layer = collision_layer
 	_free_collision_mask = collision_mask
 	continuous_cd = RigidBody2D.CCD_MODE_CAST_SHAPE
+	_artwork_size = (collider.shape as RectangleShape2D).size
+	var sprite := visuals.get_node("Body") as AnimatedSprite2D
+	if sprite != null:
+		_artwork_size = sprite.sprite_frames.get_frame_texture(sprite.animation, 0).get_size() * sprite.scale
+	# Each instance owns its enlarged shape; animation never resizes shared physics.
+	collider.shape = collider.shape.duplicate()
+	(collider.shape as RectangleShape2D).size = _artwork_size * (visual_width / _artwork_size.x)
+	_update_visuals()
+
+
+func _process(_delta: float) -> void:
+	_update_visuals()
+
+
+func _update_visuals() -> void:
+	var size := _artwork_size
+	var sprite := visuals.get_node("Body") as AnimatedSprite2D
+	if sprite != null:
+		size = sprite.sprite_frames.get_frame_texture(sprite.animation, sprite.frame).get_size() * sprite.scale
+	var visual_scale := visual_width / size.x
+	var held := is_instance_valid(carrier)
+	var gravity := carrier.gravity_direction if held else 1
+	visuals.scale = Vector2.ONE * visual_scale
+	visuals.rotation = PI if gravity < 0 else 0.0
+	# Align the artwork's bottom with its full-size collider in either gravity.
+	var support: float = (collider.shape as RectangleShape2D).size.y * 0.5
+	visuals.position.y = (support - size.y * visual_scale * 0.5) * gravity
+	visuals.position.x = 0.0
 
 
 func begin_carry(player: PlayerController) -> void:
@@ -35,6 +67,7 @@ func begin_carry(player: PlayerController) -> void:
 
 func end_carry(release_velocity: Vector2) -> void:
 	carrier = null
+	release_physics_frame = Engine.get_physics_frames()
 	collision_layer = _free_collision_layer
 	collision_mask = _free_collision_mask
 	PhysicsServer2D.body_set_state(get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, global_transform)

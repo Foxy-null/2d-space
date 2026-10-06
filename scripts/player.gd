@@ -62,7 +62,9 @@ var _dash_direction := Vector2.ZERO
 var _superdash_left := 0.0
 var _superdash_speed := 0.0
 var _gravity_tween: Tween
-var _ready_color: Color
+# Zero tint strength preserves the original indigo texture.
+const DASH_READY_COLOR := Color.TRANSPARENT
+const DASH_USED_COLOR := Color(0.35, 0.92, 1.0, 1.0)
 var _last_resources: Array = []
 # Ignore cached contacts immediately after teleporting or changing up_direction.
 var _contacts_valid := false
@@ -80,7 +82,6 @@ var controls_enabled := true
 
 func _ready() -> void:
 	_spawn_position = global_position
-	_ready_color = $Visuals/Body.color
 	_wall_stamina = wall_stamina_max
 	_apply_up_direction()
 	_notify_resources()
@@ -304,9 +305,9 @@ func _move_player() -> void:
 		_impact_frame = _motion_frame
 
 
-func _ignore_overlapping_object(object: Grabbable) -> void:
+func _ignore_overlapping_object(object: Grabbable, just_released := false) -> void:
 	var shape: CollisionShape2D = $CollisionShape2D
-	if not shape.shape.collide(shape.global_transform, object.collider.shape, object.collider.global_transform):
+	if not just_released and not shape.shape.collide(shape.global_transform, object.collider.shape, object.collider.global_transform):
 		return
 	if not _separating_objects.has(object):
 		_separating_objects.append(object)
@@ -336,6 +337,9 @@ func _separate_overlapping_objects() -> void:
 	for object in _separating_objects.duplicate():
 		if not is_instance_valid(object) or is_instance_valid(object.carrier):
 			_clear_object_separation(object)
+			continue
+		# The rigid body integrates after this character; let a released item advance first.
+		if Engine.get_physics_frames() <= object.release_physics_frame + 1:
 			continue
 		if not shape.shape.collide(shape.global_transform, object.collider.shape, object.collider.global_transform):
 			_clear_object_separation(object)
@@ -429,7 +433,7 @@ func _notify_resources() -> void:
 	var state := [_wall_stamina, wall_stamina_max, _dash_ready, _air_jump_ready]
 	if state != _last_resources:
 		_last_resources = state
-		$Visuals/Body.color = _ready_color if _dash_ready else Color(1.0, 0.5, 0.15, 1.0)
+		$Visuals/Body.material.set_shader_parameter("outfit_color", DASH_READY_COLOR if _dash_ready else DASH_USED_COLOR)
 		resources_changed.emit(_wall_stamina, wall_stamina_max, _dash_ready, _air_jump_ready)
 
 
@@ -570,7 +574,10 @@ func try_begin_grab(object: Grabbable) -> bool:
 		return false
 	if _wall_grabbing and not Input.is_action_just_pressed("wall_grab"):
 		return false
-	if global_position.distance_to(object.global_position) > grab_range:
+	var local_position := object.collider.global_transform.affine_inverse() * global_position
+	var half_size := (object.collider.shape as RectangleShape2D).size * 0.5
+	var closest := local_position.clamp(-half_size, half_size)
+	if global_position.distance_to(object.collider.global_transform * closest) > grab_range:
 		return false
 	var query := PhysicsRayQueryParameters2D.create(global_position, object.global_position, 0xFFFFFFFF, [get_rid(), object.get_rid()])
 	query.hit_from_inside = true
@@ -586,7 +593,12 @@ func try_begin_grab(object: Grabbable) -> bool:
 
 
 func _update_carry_position() -> void:
-	_held.global_position = global_position + Vector2(carry_offset.x, carry_offset.y * gravity_direction)
+	var half_height := (_held.collider.shape as RectangleShape2D).size.y * 0.5
+	# The collider's bottom meets the raised palms, 28px above the player origin.
+	var offset := Vector2(carry_offset.x, (carry_offset.y + 20.0 - half_height) * gravity_direction)
+	if is_finite(_held.fall_speed_limit()):
+		offset.x += facing_direction * 14.0
+	_held.global_position = global_position + offset
 
 
 func release_grab() -> bool:
@@ -608,11 +620,11 @@ func release_grab() -> bool:
 	var released := _held
 	_held = null
 	released.global_position = target
-	_ignore_overlapping_object(released)
 	var release_velocity := velocity
 	if velocity.length() >= throw_move_threshold:
 		release_velocity += velocity.normalized() * released.throw_speed
 	released.end_carry(release_velocity)
+	_ignore_overlapping_object(released, true)
 	object_released.emit(released, velocity.length() >= throw_move_threshold)
 	carry_changed.emit("NONE")
 	return true

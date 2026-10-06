@@ -275,7 +275,7 @@ func _grab(name: String) -> void:
 	var object: Grabbable = _room().get_node(name)
 	Input.action_press("move_right")
 	for frame in 200:
-		if player.global_position.distance_to(object.global_position) < 48:
+		if player.global_position.distance_to(object.global_position) < player.grab_range + (object.collider.shape as RectangleShape2D).size.x * 0.5:
 			break
 		await _step()
 	Input.action_release("move_right")
@@ -307,7 +307,9 @@ func _test_retry() -> void:
 	player.global_position.y = 800
 	await _step(4)
 	_check(player.get_held_object() == null and _local().x < 100, "Falling restores the current entrance and drops held state")
-	_check(_room().get_node("Creature").position.distance_to(Vector2(170,626)) < 5, "Falling restores object placement")
+	var creature: Grabbable = _room().get_node("Creature")
+	var rest_y := 640.0 - (creature.collider.shape as RectangleShape2D).size.y * 0.5
+	_check(creature.position.distance_to(Vector2(170, rest_y)) < 5, "Falling restores full-size creature above the floor")
 
 
 func _screenshots() -> void:
