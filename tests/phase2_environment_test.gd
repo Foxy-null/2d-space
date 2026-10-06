@@ -82,7 +82,7 @@ func _resources(label: String, air_jump_ready := false) -> void:
 	_check(player.is_air_jump_ready() == air_jump_ready, label + " air jump unchanged")
 	_near(player.get_wall_stamina(), player.wall_stamina_max, label + " stamina max")
 	_check(not player._grab_exhausted, label + " grab available")
-	_check(player.get_node("Visuals/Body").color == Color(0.35, 0.92, 1, 1), label + " body ready color")
+	_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color(0.35, 0.92, 1, 1), label + " body ready color")
 
 
 func _check(ok: bool, label: String) -> void:

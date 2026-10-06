@@ -23,7 +23,7 @@ theme_override_constants/separation = 4
 [node name="Title" type="Label" parent="Margin/Panel/Rows"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "2D SPACE — PHASE 3"
+text = "忍者ぶっとびくん Galaxy"
 
 [node name="Controls" type="Label" parent="Margin/Panel/Rows"]
 layout_mode = 2

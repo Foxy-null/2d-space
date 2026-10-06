@@ -62,7 +62,8 @@ var _dash_direction := Vector2.ZERO
 var _superdash_left := 0.0
 var _superdash_speed := 0.0
 var _gravity_tween: Tween
-var _ready_color: Color
+const DASH_READY_COLOR := Color(0.35, 0.92, 1.0, 1.0)
+const DASH_USED_COLOR := Color(1.0, 0.5, 0.15, 1.0)
 var _last_resources: Array = []
 # Ignore cached contacts immediately after teleporting or changing up_direction.
 var _contacts_valid := false
@@ -80,7 +81,6 @@ var controls_enabled := true
 
 func _ready() -> void:
 	_spawn_position = global_position
-	_ready_color = $Visuals/Body.color
 	_wall_stamina = wall_stamina_max
 	_apply_up_direction()
 	_notify_resources()
@@ -429,7 +429,7 @@ func _notify_resources() -> void:
 	var state := [_wall_stamina, wall_stamina_max, _dash_ready, _air_jump_ready]
 	if state != _last_resources:
 		_last_resources = state
-		$Visuals/Body.color = _ready_color if _dash_ready else Color(1.0, 0.5, 0.15, 1.0)
+		$Visuals/Body.material.set_shader_parameter("outfit_color", DASH_READY_COLOR if _dash_ready else DASH_USED_COLOR)
 		resources_changed.emit(_wall_stamina, wall_stamina_max, _dash_ready, _air_jump_ready)
 
 
