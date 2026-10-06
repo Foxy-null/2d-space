@@ -105,16 +105,16 @@ offset_top = 655.0
 text = "PINBALL / ANGLE BOUNCE"
 
 [node name="JumpCreature" parent="." instance=ExtResource("10")]
-position = Vector2(250, 610)
+position = Vector2(250, 607.1)
 
 [node name="HeavyObject" parent="." instance=ExtResource("11")]
-position = Vector2(440, 610)
+position = Vector2(440, 606.5)
 
 [node name="LightBox" parent="." instance=ExtResource("14")]
-position = Vector2(345, 610)
+position = Vector2(345, 606.5)
 
 [node name="ParachuteCreature" parent="." instance=ExtResource("12")]
-position = Vector2(1000, 610)
+position = Vector2(1000, 593.4)
 
 [node name="PressureButton" parent="." instance=ExtResource("13")]
 position = Vector2(530, 640)

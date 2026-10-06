@@ -188,7 +188,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 ## Phase 3：Grab / Carry
 
-Shift / ZL / ZRを長押しすると、半径 `grab_range = 60` 内で壁に遮られていない最寄りObjectを優先して掴みます。対象がない場合は従来のWall Grabです。低い天井の下でも取得できます。Object保持中はWall Grab／壁登りを使いませんが、壁キックと壁スライドは使用できます。Dash中の新規Grabは禁止ですが、Dash終了後も押していればGrabできます。保持済みならDash、Spring、円形Pinball、静止／移動GravityGate、Windでも保持を続けます。
+Shift / ZL / ZRを長押しすると、当たり判定の最寄りの端が `grab_range = 60` 内にあり、壁に遮られていない最寄りObjectを優先して掴みます。大きな傘も、中心まで近づかずに掴めます。対象がない場合は従来のWall Grabです。低い天井の下でも取得できます。Object保持中はWall Grab／壁登りを使いませんが、壁キックと壁スライドは使用できます。Dash中の新規Grabは禁止ですが、Dash終了後も押していればGrabできます。保持済みならDash、Spring、円形Pinball、静止／移動GravityGate、Windでも保持を続けます。
 
 Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを自動で掴みません。Grabキーを一度離して押し直した場合は、範囲内のObjectを優先して掴みます。登り切り・壁からの離脱・スタミナ切れ・壁ジャンプでWall Grabが終わったときは、Grabキーを押したままならその時点の範囲内のObjectを自動で掴みます。Dash中は引き続き新規Grabしません。
 
@@ -204,9 +204,9 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 
 ### Heavy Object
 
-銅色の分銅型の箱は `weight = 2.0`。太い輪の取っ手と幅広の底で重さを表現しています。表示幅は72px、当たり判定は32×32です。保持中だけ移動速度・地上加速・空中加速が0.75倍、通常Jump速度が0.85倍になります。PlayerのInspector値を変更せず実効値で計算し、Releaseで即解除します。Dash速度／時間／回数、Wall Stamina、Wall Climb／Jump、Superdash、Gravityは変わりません。
+銅色の分銅型の箱は `weight = 8.0`、物理質量も8.0です。太い輪の取っ手と幅広の底で重さを表現しています。表示幅は63px、当たり判定は取っ手を含む輪郭に合わせた約63×54.14pxです。保持中だけ移動速度・地上加速・空中加速が0.75倍、通常Jump速度が0.85倍になります。PlayerのInspector値を変更せず実効値で計算し、Releaseで即解除します。Dash速度／時間／回数、Wall Stamina、Wall Climb／Jump、Superdash、Gravityは変わりません。
 
-軽い箱は表示幅72px、当たり判定24×24の段ボールです。上面の継ぎ目、中央の梱包テープ、角の折れと配送マークを描いています。重量は0.5で、持っても移動やジャンプの能力は変わりません。両方とも当たり判定は四角のままです。
+軽い箱は表示幅・当たり判定63×63pxの段ボールです。上面の継ぎ目、中央の梱包テープ、角の折れと配送マークを描いています。`weight = 2.0`、物理質量も2.0で、持っても移動やジャンプの能力は変わりません。重い箱との重量比は従来どおり4倍です。両方とも当たり判定は四角のままです。
 
 ### Parachute Creature
 
@@ -214,7 +214,7 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 
 ### Pressure Button
 
-赤茶色のPlateはArea内の、手放されているGrabbable重量を合算し、`required_weight = 2.0` 以上で緑へ変わって沈みます。Heavy 1個または軽量0.5を4個でON、離れて不足するとOFFです。Bodyは重複加算しません。`include_player = false` が標準で、trueの場合のみPlayerの `weight = 1.0` も加算します。
+赤茶色のPlateはArea内の、手放されているGrabbable重量を合算し、`required_weight = 2.0` 以上で緑へ変わって沈みます。軽い箱1個、重い箱1個、または重量0.5の生物4個でON、離れて不足するとOFFです。Bodyは重複加算しません。`include_player = false` が標準で、trueの場合のみPlayerの `weight = 1.0` も加算します。
 
 `pressed_changed(is_pressed: bool)` と `is_pressed()` を公開しています。Door等への接続はありません。Heavyを動きながら離して投げ、Plateへ着地させることでも操作できます。
 
@@ -222,14 +222,14 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 
 - `grabbable.tscn` / `grabbable.gd` は1つの `CollisionShape2D` を持つRigidBody2Dの共通基盤です。派生Scene／Scriptが重量、投擲速度、Modifier、追加Jump、落下上限を提供します。
 - Playerは `try_begin_grab()` / `release_grab()` / `get_held_object()` / `get_available_extra_jump_count()` と実効移動値のgetter、`carry_changed` signalを公開します。外部ObjectはPlayerのprivate stateを変更しません。
-- Carryは頭側の `carry_offset = Vector2(0, -48)`。重力Upでは画面下へ反転し、左右のFacingには影響されません。保持中はRigidBodyをfreezeし、回転・速度を停止します。
+- Carryは頭側の `carry_offset = Vector2(0, -48)` を基準に、拡大した当たり判定の下端が上げた手に合うよう高さを補正します。重力Upでは画面下へ反転し、傘の持ち手だけ前側の片手へ14px寄せます。保持中はRigidBodyをfreezeし、回転・速度を停止します。
 - 保持中だけcollision layer／maskを0にして、壁・床・天井・Player・他Bodyとの物理衝突を無効化します。Shape自体は残してRelease位置の検査に使用します。保持アイテムが地形に重なってもPlayerの移動・方向転換を制限しません。重量スイッチには加算しません。
 - Grab時はPlayerと対象の中心を結ぶRayで遮蔽物を確認します。薄い壁越しの取得は禁止し、取得後の頭上配置経路と天井への重なりは許容します。非Solid Areaは取得を妨げません。
 - Release時に地形や他Bodyへ重なっていれば、保持位置からPlayer中心へ約1px刻みで安全位置を探します。Playerとの一時的な重なりは許容します。安全位置がなければ保持を継続し、ボタンを離している間は毎frame再試行します。待機中も移動できます。
-- Releaseで元のcollision layer／maskとRigidBodyの物理を復帰します。Playerは通常移動でアイテムを穏やかに押せます（押す方向の目標速度は最大120px/s）。重なったペアは一時的に相互衝突だけを外し、Playerを地形に衝突する移動で毎秒60pxずつ離し、アイテムにも逆方向の押し返しを与えます。床・天井に挟まれている場合は横方向へ解消し、分離後に相互衝突を戻します。強制ノックバックは与えません。
+- Releaseで元のcollision layer／maskとRigidBodyの物理を復帰します。離した直後はRigidBodyが先に進めるよう相互衝突を短く猶予し、上昇慣性を保ちます。Playerは通常移動でアイテムを穏やかに押せます（押す方向の目標速度は最大120px/s）。重なったペアは一時的に相互衝突だけを外し、Playerを地形に衝突する移動で毎秒60pxずつ離し、アイテムにも逆方向の押し返しを与えます。床・天井に挟まれている場合は横方向へ解消し、分離後に相互衝突を戻します。強制ノックバックは与えません。
 - R / Start／画面外Respawnで全Grabbableの初期位置・回転・速度・Collision・Jump残数を戻します。Buttonは物理同期後、戻ったBodyの位置に応じて再集計します。
 
-保持位置はPlayerの `carry_offset`、押す速さは `object_push_speed = 120`、重なりを解消する速さは `overlap_separation_speed = 60` で調整できます。傘の表示幅は90px（プレイヤーの体幅36pxの2.5倍）、それ以外の持てる物体は72px（体幅の2倍）です。縦横比を保ち、置いたときは当たり判定の底、保持中は忍者の手に画像の下端を合わせます。反転中は保持物の画像も反転します。
+保持位置はPlayerの `carry_offset`、押す速さは `object_push_speed = 120`、重なりを解消する速さは `overlap_separation_speed = 60` で調整できます。傘の表示幅は90px（プレイヤーの体幅36pxの2.5倍）、それ以外の持てる物体は63px（体幅の1.75倍）です。当たり判定も表示の拡大率に合わせます。生物と傘は通常姿勢の矩形を使い、アニメーションで物理サイズを変えません。縦横比を保ち、置いたときは当たり判定の底、保持中は忍者の手に画像の下端を合わせます。反転中は保持物の画像も反転します。
 
 ### Phase 3デモ手順
 
@@ -237,11 +237,11 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 
 | Object | 初期位置 | 確認方法 |
 | --- | --- | --- |
-| Jump Creature | `(250, 610)` | 近づきShiftを保持。床Spring `(650, 640)` で表示2にし、空中Jumpを2回使って2→1→0。離して再Grabしても回復しないことを確認 |
-| Light Box | `(345, 610)` | 段ボールの軽い箱。Heavyとの見た目と持ち運びの違いを比較 |
-| Heavy Object | `(440, 610)` | 足場Aの下でGrabし移動差を比較。右へ移動して離す／Dashと同時に離すと投擲 |
+| Jump Creature | `(250, 607.1)` | 近づきShiftを保持。床Spring `(650, 640)` で表示2にし、空中Jumpを2回使って2→1→0。離して再Grabしても回復しないことを確認 |
+| Light Box | `(345, 606.5)` | 段ボールの軽い箱。Heavyとの見た目と持ち運びの違いを比較 |
+| Heavy Object | `(440, 606.5)` | 足場Aの下でGrabし移動差を比較。右へ移動して離す／Dashと同時に離すと投擲 |
 | Pressure Button | `(530, 640)` | HeavyをPlateへ投げるか上でDropし、緑のONを確認。外へ運ぶとOFF |
-| Parachute Creature | `(1000, 610)` | 上昇気流内でGrab→ゆっくり浮上。離すと慣性が減速して落下。傘なしでJumpして落下上限450を比較。Upゲートで反転し天井へゆっくり落下。保持したままSpring／PinballやDashも比較 |
+| Parachute Creature | `(1000, 593.4)` | 上昇気流内でGrab→ゆっくり浮上。離すと慣性が減速して落下。傘なしでJumpして落下上限450を比較。Upゲートで反転し天井へゆっくり落下。保持したままSpring／PinballやDashも比較 |
 
 狭い足場下で取得・方向転換し、壁際で保持したまま壁キックできることを確認できます。低い天井にアイテムが重なった状態で離すと、Player側へ補正してから物理を復帰します。HUDは既存のGravity／Stamina／Dash／Air Jumpに **CARRY: NONE / JUMP / HEAVY / PARACHUTE** を追加しています。
 

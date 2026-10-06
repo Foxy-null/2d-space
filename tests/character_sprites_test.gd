@@ -93,6 +93,9 @@ func _run() -> void:
 		object.position = player.position + Vector2(35, 0)
 		world.add_child(object)
 		object.freeze = true
+		if name in ["grabbable", "heavy_object"]:
+			var expected_weight := 2.0 if name == "grabbable" else 8.0
+			_check(object.weight == expected_weight and object.mass == expected_weight, "Box weight and physical mass agree: " + name)
 		await _step(2)
 		_check(player.try_begin_grab(object), "Carry " + name)
 		await _step(2)
@@ -100,19 +103,30 @@ func _run() -> void:
 		for gravity in [1, -1]:
 			player.set_gravity_direction(gravity)
 			await _step(10)
-			var size := (object.collider.shape as RectangleShape2D).size
+			var size := Vector2(32, 27.5) if name == "heavy_object" else Vector2(24, 24)
 			var artwork := object.visuals.get_node("Body") as AnimatedSprite2D
 			if artwork != null:
 				size = artwork.sprite_frames.get_frame_texture(artwork.animation, artwork.frame).get_size() * artwork.scale
-			var expected_width := 90.0 if name == "parachute_creature" else 72.0
-			_check(absf(size.x * object.visuals.scale.x - expected_width) < 0.01, "Umbrella 2.5 body widths, other items 2: " + name)
+			var expected_width := 90.0 if name == "parachute_creature" else 63.0
+			_check(absf(size.x * object.visuals.scale.x - expected_width) < 0.01, "Umbrella 2.5 body widths, other items 1.75: " + name)
+			var collision_size := (object.collider.shape as RectangleShape2D).size
+			_check(absf(collision_size.x - expected_width) < 0.01, "Collider matches displayed width: " + name)
+			var resting_size := artwork.sprite_frames.get_frame_texture(artwork.animation, 0).get_size() * artwork.scale if artwork != null else size
+			_check(collision_size.is_equal_approx(resting_size * (expected_width / resting_size.x)), "Collider preserves artwork aspect ratio: " + name)
 			_check(object.visuals.scale.x == object.visuals.scale.y, "Preserve aspect ratio: " + name)
 			var bottom: float = object.visuals.position.y + size.y * object.visuals.scale.y * 0.5 * gravity
 			_check(absf(object.position.y + bottom - player.position.y + 28.0 * gravity) < 0.01, "Large item meets raised palms: " + name)
 			_check(object.rotation == 0.0, "Visual gravity does not rotate physics: " + name)
 			if name == "parachute_creature":
-				_check(object.visuals.position.x * player.facing_direction > 0.0, "Umbrella handle reaches the forward palm")
+				_check((object.position.x - player.position.x) * player.facing_direction > 0.0, "Umbrella handle reaches the forward palm")
 		player.respawn()
+		var free_size := (object.collider.shape as RectangleShape2D).size
+		object.position = Vector2(300, 600 - free_size.y * 0.5)
+		player.position = Vector2(300, 400)
+		player.set_physics_process(true)
+		await _step(40)
+		_check(player.is_on_floor(), "Player can stand on the full-size item: " + name)
+		_check(absf(player.position.y + 26.0 - object.position.y + free_size.y * 0.5) < 1.0, "Standing does not sink into item artwork: " + name)
 		object.queue_free()
 	print("CHARACTER_SPRITES_TEST_%s" % ["FAILED" if failed else "OK"])
 	quit(1 if failed else 0)
