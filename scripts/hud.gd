@@ -2,6 +2,7 @@ extends CanvasLayer
 
 @export var player_path: NodePath
 @export var tutorial_mode := false
+@export var compact_mode := false
 var _tutorial_index := 0
 var _last_extra_count := -1
 
@@ -20,6 +21,19 @@ func _ready() -> void:
 
 
 func _on_gravity_changed(is_inverted: bool) -> void:
+	if compact_mode:
+		$Status.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT if is_inverted else Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_KEEP_SIZE, 24)
+		$Margin/Panel.size_flags_vertical = Control.SIZE_SHRINK_END if is_inverted else Control.SIZE_SHRINK_BEGIN
+		$Margin.add_theme_constant_override("margin_bottom", 104 if is_inverted else 0)
+		$HelpButton.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT if is_inverted else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 48 if is_inverted else 24)
+		$HelpButton.position.x = 24
+		if not is_inverted:
+			$HelpButton.position.y = 38
+		$HelpMenu.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT if is_inverted else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 134 if is_inverted else 24)
+		$HelpMenu.position.x = 24
+		if not is_inverted:
+			$HelpMenu.position.y = 86
+		return
 	if tutorial_mode:
 		$Margin/Panel/Rows/Gravity.text = "重力：天井へ ↑" if is_inverted else "重力：床へ ↓"
 		return
@@ -29,6 +43,13 @@ func _on_gravity_changed(is_inverted: bool) -> void:
 func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool, air_jump_ready: bool) -> void:
 	$Margin/Panel/Rows/Stamina.max_value = stamina_max
 	$Margin/Panel/Rows/Stamina.value = stamina
+	if compact_mode:
+		$Status/Rows/Stamina.value = stamina
+		$Status/Rows/Stamina.max_value = stamina_max
+		$Status/Rows/Resources.text = "ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復"
+		if air_jump_ready:
+			$Status/Rows/Resources.text += "　空中ジャンプ：1"
+		return
 	if tutorial_mode:
 		$Margin/Panel/Rows/Resources.text = "ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復"
 		if _tutorial_index >= 5:
@@ -58,6 +79,20 @@ func show_tutorial_room(index: int, title: String, controls: String, wall_enable
 	var player := get_node(player_path) as PlayerController
 	_on_resources_changed(player.get_wall_stamina(), player.wall_stamina_max, player.is_dash_ready(), player.is_air_jump_ready())
 	_on_carry_changed(player.get_held_object().carry_name if player.get_held_object() != null else "NONE")
+
+
+func show_stage_room(index: int, title: String, hint: String, room_count: int) -> void:
+	$Margin/Panel/Rows/Title.text = "ステージ2　%02d / %02d　%s" % [index + 1, room_count, title]
+	if not hint.is_empty():
+		$Margin/Panel/Rows/Title.text += "　｜　" + hint
+	$Margin/Panel/Rows/Controls.hide()
+	$Margin/Panel/Rows/WallControls.hide()
+	$Margin/Panel/Rows/Gravity.hide()
+	$Margin/Panel/Rows/StaminaLabel.hide()
+	$Margin/Panel/Rows/Stamina.hide()
+	$Margin/Panel/Rows/Resources.hide()
+	$Margin/Panel/Rows/Carry.hide()
+	$Margin/Panel/Rows/Objective.hide()
 
 
 func show_lesson_progress(text: String, done: bool) -> void:

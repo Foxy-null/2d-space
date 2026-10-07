@@ -24,6 +24,12 @@ window/stretch/mode="canvas_items"
 
 [input]
 
+toggle_stage_hints={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":72)
+, Object(InputEventJoypadButton,"device":-1,"button_index":3)
+]
+}
 ui_accept={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"device":-1,"keycode":4194309)

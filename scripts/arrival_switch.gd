@@ -4,6 +4,8 @@ extends Area2D
 signal unlocked
 signal activated
 
+@export var mission_required := true
+
 const TRAVEL := 32.0
 const PRESS_TIME := 0.2
 const BUBBLE := Vector2(-125, -230)
@@ -39,6 +41,10 @@ var _open_lock := AtlasTexture.new()
 
 
 func _ready() -> void:
+	if not mission_required:
+		locked = false
+		$Case/Collision.disabled = true
+		$Bubble.hide()
 	$UnlockSound.stream = _sound([784.0, 1046.5, 1318.5])
 	$PressSound.stream = _sound([260.0, 130.0])
 	_open_lock.atlas = ART
@@ -142,6 +148,8 @@ func _draw() -> void:
 			var angle := i * TAU / 7.0
 			var center := Vector2(0, SEAT_Y - CASE_SIZE.y / 2) + Vector2.from_angle(angle) * (30 + 66 * _unlock_fx)
 			_star(center, (1.0 - _unlock_fx) * 8, Color(GOLD, 1.0 - _unlock_fx))
+	if not mission_required:
+		return
 	draw_set_transform(BUBBLE)
 	var border := GOLD if locked else Color(0.4, 1, 0.7)
 	_box(Rect2(-150, -84, 300, 144), Color(0.07, 0.12, 0.23, 0.97), border, 16)
