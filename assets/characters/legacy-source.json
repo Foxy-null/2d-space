@@ -1,0 +1,325 @@
+{
+  "source_zip": "820d19f30cb3e46e.zip",
+  "unity_version": "2022.3.48f1",
+  "sprites": [
+    {
+      "name": "tachi",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 26,
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1000.0,
+        "height": 1000.0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "pixels_per_unit": 100.0,
+      "texture_rect": {
+        "x": 270.0059814453125,
+        "y": 181.01290893554688,
+        "width": 440.9810791015625,
+        "height": 664.9508056640625
+      },
+      "texture_rect_offset": {
+        "x": 270.0059814453125,
+        "y": 181.01290893554688
+      },
+      "extracted_size": [
+        441,
+        665
+      ],
+      "alpha_bbox": [
+        3,
+        2,
+        439,
+        663
+      ],
+      "image": "tachi.png"
+    },
+    {
+      "name": "aruki",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 23,
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1000.0,
+        "height": 1000.0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "pixels_per_unit": 100.0,
+      "texture_rect": {
+        "x": 235.01290893554688,
+        "y": 176.02674865722656,
+        "width": 452.9603576660156,
+        "height": 670.9603271484375
+      },
+      "texture_rect_offset": {
+        "x": 235.01290893554688,
+        "y": 176.02674865722656
+      },
+      "extracted_size": [
+        453,
+        671
+      ],
+      "alpha_bbox": [
+        3,
+        2,
+        451,
+        668
+      ],
+      "image": "aruki.png"
+    },
+    {
+      "name": "aruki2",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 24,
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1000.0,
+        "height": 1000.0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "pixels_per_unit": 100.0,
+      "texture_rect": {
+        "x": 248.01290893554688,
+        "y": 201.01290893554688,
+        "width": 383.9603576660156,
+        "height": 645.97412109375
+      },
+      "texture_rect_offset": {
+        "x": 248.01290893554688,
+        "y": 201.01290893554688
+      },
+      "extracted_size": [
+        384,
+        646
+      ],
+      "alpha_bbox": [
+        2,
+        2,
+        382,
+        644
+      ],
+      "image": "aruki2.png"
+    },
+    {
+      "name": "jamp",
+      "source_asset": "sharedassets0.assets",
+      "path_id": 28,
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1000.0,
+        "height": 1000.0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "pixels_per_unit": 100.0,
+      "texture_rect": {
+        "x": 236.0761260986328,
+        "y": 181.02674865722656,
+        "width": 491.8477783203125,
+        "height": 690.8971557617188
+      },
+      "texture_rect_offset": {
+        "x": 236.0761260986328,
+        "y": 181.02674865722656
+      },
+      "extracted_size": [
+        492,
+        691
+      ],
+      "alpha_bbox": [
+        2,
+        3,
+        490,
+        689
+      ],
+      "image": "jamp.png"
+    },
+    {
+      "name": "kouka",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 21,
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1000.0,
+        "height": 1000.0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "pixels_per_unit": 100.0,
+      "texture_rect": {
+        "x": 233.04290771484375,
+        "y": 126.01290893554688,
+        "width": 570.95458984375,
+        "height": 771.9508056640625
+      },
+      "texture_rect_offset": {
+        "x": 233.04290771484375,
+        "y": 126.01290893554688
+      },
+      "extracted_size": [
+        571,
+        772
+      ],
+      "alpha_bbox": [
+        2,
+        3,
+        569,
+        769
+      ],
+      "image": "kouka.png"
+    },
+    {
+      "name": "rakka",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 25,
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1000.0,
+        "height": 1000.0
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "pixels_per_unit": 100.0,
+      "texture_rect": {
+        "x": 47.0040397644043,
+        "y": 195.0761260986328,
+        "width": 799.9830322265625,
+        "height": 774.8809814453125
+      },
+      "texture_rect_offset": {
+        "x": 47.0040397644043,
+        "y": 195.0761260986328
+      },
+      "extracted_size": [
+        800,
+        775
+      ],
+      "alpha_bbox": [
+        3,
+        3,
+        798,
+        772
+      ],
+      "image": "rakka.png"
+    }
+  ],
+  "animations": [
+    {
+      "name": "aruki Animation",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 12,
+      "sample_rate": 60.0,
+      "duration": 0.5166666507720947,
+      "loop": true,
+      "sprites": [
+        "aruki",
+        "aruki2",
+        "aruki"
+      ],
+      "keyframes": [
+        {
+          "time": 0,
+          "sprite": "aruki"
+        },
+        {
+          "time": 0.25,
+          "sprite": "aruki2"
+        },
+        {
+          "time": 0.5,
+          "sprite": "aruki"
+        }
+      ]
+    },
+    {
+      "name": "jump Animation",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 13,
+      "sample_rate": 60.0,
+      "duration": 0.01666666753590107,
+      "loop": false,
+      "sprites": [
+        "jamp"
+      ],
+      "keyframes": [
+        {
+          "time": 0,
+          "sprite": "jamp"
+        }
+      ]
+    },
+    {
+      "name": "kouka Animation",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 14,
+      "sample_rate": 60.0,
+      "duration": 0.01666666753590107,
+      "loop": false,
+      "sprites": [
+        "kouka"
+      ],
+      "keyframes": [
+        {
+          "time": 0,
+          "sprite": "kouka"
+        }
+      ]
+    },
+    {
+      "name": "playre Animation",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 15,
+      "sample_rate": 60.0,
+      "duration": 0.01666666753590107,
+      "loop": false,
+      "sprites": [
+        "tachi"
+      ],
+      "keyframes": [
+        {
+          "time": 0,
+          "sprite": "tachi"
+        }
+      ]
+    },
+    {
+      "name": "rakka Animation",
+      "source_asset": "sharedassets1.assets",
+      "path_id": 16,
+      "sample_rate": 60.0,
+      "duration": 0.01666666753590107,
+      "loop": true,
+      "sprites": [
+        "rakka"
+      ],
+      "keyframes": [
+        {
+          "time": 0,
+          "sprite": "rakka"
+        }
+      ]
+    }
+  ]
+}

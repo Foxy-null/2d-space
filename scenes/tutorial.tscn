@@ -1553,11 +1553,11 @@ polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 4
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="SmallBox" parent="Rooms/Room11" instance=ExtResource("ext_grabbable")]
-position = Vector2(180, 628)
+position = Vector2(180, 606.5)
 
 
 [node name="Heavy" parent="Rooms/Room11" instance=ExtResource("ext_heavy_object")]
-position = Vector2(380, 617)
+position = Vector2(380, 606.5)
 
 
 [node name="Button" parent="Rooms/Room11" instance=ExtResource("ext_pressure_button")]
@@ -1569,7 +1569,7 @@ offset_left = 110
 offset_top = 410
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "小さな箱：0.5\n掴む → 止まる → 離す"
+text = "小さな箱：2.0\n掴む → 止まる → 離す"
 mouse_filter = 2
 
 [node name="HeavyHint" type="Label" parent="Rooms/Room11"]
@@ -1577,7 +1577,7 @@ offset_left = 390
 offset_top = 310
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "重い箱：2.0\n保持中は歩行・ジャンプが控えめ"
+text = "重い箱：8.0\n保持中は歩行・ジャンプが控えめ"
 mouse_filter = 2
 
 [node name="ButtonHint" type="Label" parent="Rooms/Room11"]
@@ -1682,7 +1682,7 @@ polygon = PackedVector2Array(-10.0, -20.0, 10.0, -20.0, 10.0, 20.0, -10.0, 20.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Heavy" parent="Rooms/Room12" instance=ExtResource("ext_heavy_object")]
-position = Vector2(230, 617)
+position = Vector2(230, 606.5)
 
 
 [node name="Button" parent="Rooms/Room12" instance=ExtResource("ext_pressure_button")]
@@ -1835,7 +1835,7 @@ polygon = PackedVector2Array(-80.0, -40.0, 80.0, -40.0, 80.0, 40.0, -80.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Creature" parent="Rooms/Room13" instance=ExtResource("ext_jump_creature")]
-position = Vector2(170, 626)
+position = Vector2(170, 607.1)
 
 
 [node name="CreatureHint" type="Label" parent="Rooms/Room13"]
@@ -2061,7 +2061,7 @@ polygon = PackedVector2Array(-100.0, -40.0, 100.0, -40.0, 100.0, 40.0, -100.0, 4
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Creature" parent="Rooms/Room15" instance=ExtResource("ext_jump_creature")]
-position = Vector2(170, 626)
+position = Vector2(170, 607.1)
 
 
 [node name="JumpCrystal" parent="Rooms/Room15" instance=ExtResource("ext_jump_crystal")]
@@ -2167,7 +2167,7 @@ polygon = PackedVector2Array(-70.0, -120.0, 70.0, -120.0, 70.0, 120.0, -70.0, 12
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Parachute" parent="Rooms/Room16" instance=ExtResource("ext_parachute_creature")]
-position = Vector2(170, 626)
+position = Vector2(170, 593.4)
 
 
 [node name="Wind" parent="Rooms/Room16" instance=ExtResource("ext_wind_area")]

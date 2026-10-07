@@ -109,7 +109,7 @@ func _grab_tests() -> void:
 	await _reset()
 	_check(InputMap.has_action("wall_grab"), "shared action")
 	_near(player.grab_range, 60, "range default")
-	var far := _object("heavy_object", Vector2(40, -40))
+	var far := _object("heavy_object", Vector2(70, -40))
 	var near := _object()
 	await _sync()
 	Input.action_press("wall_grab")
@@ -123,9 +123,9 @@ func _grab_tests() -> void:
 	_check(player.get_held_object() == null and not near.freeze, "button release restores physics")
 	far.free()
 	await _reset()
-	var outside := _object("jump_creature", Vector2(61, 0))
+	var outside := _object("jump_creature", Vector2(92, 0))
 	await _sync()
-	_check(not player.try_begin_grab(outside), "center outside grab range")
+	_check(not player.try_begin_grab(outside), "Nearest collider edge outside grab range")
 	await _reset()
 	var object := _object()
 	await _sync()
@@ -147,7 +147,7 @@ func _grab_tests() -> void:
 	Input.action_press("wall_grab")
 	await _step(5)
 	_check(player.is_wall_grabbing(), "no object falls back to wall grab")
-	var blocked := _object("jump_creature", Vector2(-40, 0))
+	var blocked := _object("jump_creature", Vector2(-55, 0))
 	await _sync()
 	await _step()
 	_check(player.get_held_object() == null and player.is_wall_grabbing(), "nearby object does not interrupt wall grab")
@@ -174,7 +174,7 @@ func _wall_grab_tests() -> void:
 	for gravity in [1, -1]:
 		for mode in [-1, 0, 1]:
 			await _grab_wall(gravity)
-			var object := _object("jump_creature", Vector2(-40, 0))
+			var object := _object("jump_creature", Vector2(-55, 0))
 			await _sync()
 			if mode != 0:
 				Input.action_press("move_up" if mode * gravity < 0 else "move_down")
@@ -191,7 +191,7 @@ func _wall_grab_tests() -> void:
 			await _grab_wall(gravity)
 			# Keep the pickup beyond the kick's first step so the fixture tests
 			# carrying momentum rather than colliding with an unheld object.
-			var object := _object("jump_creature", Vector2(-50, 0))
+			var object := _object("jump_creature", Vector2(-70, 0))
 			await _sync()
 			if reason == "exhaustion":
 				player._wall_stamina = 0.001
@@ -213,7 +213,7 @@ func _wall_grab_tests() -> void:
 			var axis: int = -gravity if mantle else gravity
 			var object := _object("jump_creature")
 			# Keep the pickup within reach without blocking the mantle's swept shape.
-			object.position = Vector2(820 if mantle else 742, 350 + axis * (222 if mantle else 198))
+			object.position = Vector2(820 if mantle else 715, 350 + axis * (252 if mantle else 198))
 			await _sync()
 			Input.action_press("move_up" if axis < 0 else "move_down")
 			for i in 65:
@@ -236,7 +236,7 @@ func _collision_tests() -> void:
 		_solid(player.position + Vector2(0, -48 * gravity), Vector2(300, 20))
 		await _sync()
 		_hold(object)
-		_vector(object.position - player.position, Vector2(0, -48 * gravity), "head-side carry")
+		_assert_held(object)
 		_check(not object.is_position_clear(object.position, player), "held shape may overlap ceiling")
 		var before := player.position
 		Input.action_press("move_left")
@@ -244,7 +244,7 @@ func _collision_tests() -> void:
 		_check(player.position.x < before.x - 3, "turn and move under low ceiling")
 		_near(object.position.x, player.position.x, "turn does not swap carry side")
 		player.set_gravity_direction(-gravity)
-		_vector(object.position - player.position, Vector2(0, 48 * gravity), "gravity flips offset immediately")
+		_assert_held(object)
 		_near(object.rotation, 0, "held object remains upright")
 
 	for gravity in [1, -1]:
@@ -491,7 +491,8 @@ func _heavy_tests() -> void:
 	var object := _object("heavy_object")
 	await _sync()
 	_hold(object)
-	_near(object.weight, 2, "heavy weight")
+	_near(object.weight, 8, "heavy weight")
+	_near(object.mass, 8, "heavy physical mass")
 	_near(player.get_effective_move_speed(), 270, "heavy move")
 	_near(player.get_effective_acceleration(true), 1950, "heavy ground acceleration")
 	_near(player.get_effective_acceleration(false), 1275, "heavy air acceleration")
@@ -662,7 +663,7 @@ func _button_tests() -> void:
 	_check(button.is_pressed(), "heavy on")
 	button.refresh_weight()
 	button.refresh_weight()
-	_near(button.total_weight, 2, "no double count")
+	_near(button.total_weight, 8, "no double count")
 	heavy.position.x += 200
 	await _sync(5)
 	_check(not button.is_pressed() and changes == [true, false], "exit off and signal edges")
@@ -692,7 +693,9 @@ func _button_tests() -> void:
 		await _sync(1)
 		if button.is_pressed():
 			break
-	_check(button.is_pressed() and heavy.position.y > 675, "real thrown heavy lands on button")
+	await _sync(5)
+	var bottom := heavy.position.y + (heavy.collider.shape as RectangleShape2D).size.y * 0.5
+	_check(button.is_pressed() and bottom > 690, "real thrown heavy lands on button")
 	await _reset(Vector2(400, 674))
 	button = _button(Vector2(440, 700))
 	heavy = _object("heavy_object", Vector2(40, 10))
@@ -784,4 +787,7 @@ func _environment_tests() -> void:
 
 func _assert_held(object: Grabbable) -> void:
 	_check(object.freeze and object.collision_layer == 0 and object.collision_mask == 0, "held body has no physical collisions")
-	_vector(object.position - player.position, Vector2(0, -48 * player.gravity_direction), "held body follows head")
+	var half_height := (object.collider.shape as RectangleShape2D).size.y * 0.5
+	var x := player.carry_offset.x + (player.facing_direction * 14.0 if is_finite(object.fall_speed_limit()) else 0.0)
+	var y := (player.carry_offset.y + 20.0 - half_height) * player.gravity_direction
+	_vector(object.position - player.position, Vector2(x, y), "Full-size held body meets raised palms")

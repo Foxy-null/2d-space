@@ -1,16 +1,20 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/parachute_creature.gd" id="1"]
+[ext_resource type="SpriteFrames" path="res://assets/characters/red-umbrella-frames.tres" id="2_frames"]
+
 [sub_resource type="RectangleShape2D" id="Shape"]
 size = Vector2(28, 28)
 
 [node name="ParachuteCreature" type="RigidBody2D"]
 script = ExtResource("1")
 carry_name = "PARACHUTE"
+visual_width = 90.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("Shape")
 
-[node name="Body" type="Polygon2D" parent="."]
-polygon = PackedVector2Array(-14, 0, -10, -10, 0, -14, 10, -10, 14, 0, 4, 0, 4, 14, -4, 14, -4, 0)
-color = Color(1, 0.75, 0.35, 1)
+[node name="Visuals" type="Node2D" parent="."]
+
+[node name="Body" type="AnimatedSprite2D" parent="Visuals"]
+sprite_frames = ExtResource("2_frames")

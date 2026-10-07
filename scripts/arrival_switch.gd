@@ -223,8 +223,8 @@ func _draw_icon(step: String) -> void:
 			for y in [-16, 0, 16]:
 				_arrow(Vector2(-25, y), Vector2(24, y), Color(0.6, 0.85, 1))
 		"glide", "parachute_release", "fast_fall":
-			draw_arc(Vector2(0, 1), 25, PI, TAU, 24, GOLD, 4, true)
-			draw_line(Vector2(-25, 1), Vector2(25, 1), GOLD, 3, true)
+			draw_arc(Vector2(0, 1), 25, PI, TAU, 24, Color(0.85, 0.2, 0.12), 4, true)
+			draw_line(Vector2(-25, 1), Vector2(25, 1), Color(0.85, 0.2, 0.12), 3, true)
 			for x in [-25, 25]:
 				draw_line(Vector2(x, 1), Vector2(0, 18), Color.WHITE, 2, true)
 			draw_circle(Vector2(0, 22), 6, CYAN)
