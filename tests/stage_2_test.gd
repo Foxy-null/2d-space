@@ -400,8 +400,20 @@ func _kick_gate(wall_x: int, target: int, moving_gate: String = "", from_air := 
 
 func _reach_goal() -> void:
 	_drive("move_right")
+	var goal: ArrivalSwitch = stage.rooms.get_child(stage.room_index).get_node("Goal")
+	var menu_during_press := false
 	for frame in 320:
 		if stage.cleared.has(stage.room_index):
+			break
+		if stage.room_index == 0 and goal.pressing:
+			menu_during_press = true
+			_release_inputs()
+			await _key(KEY_H)
+			_check_help(true)
+			await _step(20)
+			_check(goal.is_pressed() and stage.cleared.has(0), "Opening help during the physical arrival press must not lose completion")
+			await _key(KEY_H)
+			_check_help(false)
 			break
 		Input.action_release("jump")
 		if _x() >= 1140:
@@ -410,6 +422,8 @@ func _reach_goal() -> void:
 			Input.action_press("jump")
 		await _step()
 	_release_inputs()
+	if stage.room_index == 0:
+		_check(menu_during_press, "Exercise opening help before the arrival press finishes")
 	_check(stage.cleared.has(stage.room_index), "Reach and physically press the arrival switch")
 
 

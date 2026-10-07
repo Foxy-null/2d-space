@@ -123,7 +123,7 @@ func _on_respawned() -> void:
 
 
 func _on_arrival(index: int) -> void:
-	if index != room_index or transitioning or not player.controls_enabled or cleared.has(index):
+	if index != room_index or transitioning or cleared.has(index):
 		return
 	cleared[index] = true
 	if index == rooms.get_child_count() - 1:
