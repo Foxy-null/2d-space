@@ -28,7 +28,7 @@ func _ready() -> void:
 	content.add_child(games)
 	for entry in [
 		["ActionGame", "忍者ぶっとびくん Galaxy\n\n重力反転と壁キック\nステージ1・2", "res://scenes/stage_select.tscn"],
-		["MiniHero", "ミニ勇者バトル\n\nコマンド式RPG・開発版\n戦闘 / 装備 / スキル", "res://games/mini_hero/game.tscn"]]:
+		["MiniHero", "ミニ勇者バトル\n\nコマンド式RPG\n戦闘 / 装備 / スキル", "res://games/mini_hero/game.tscn"]]:
 		var button := Button.new()
 		button.name = entry[0]
 		button.text = entry[1]

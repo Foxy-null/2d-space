@@ -2,15 +2,15 @@ extends SceneTree
 
 const Battle = preload("res://games/mini_hero/battle.gd")
 var checks := 0
-var failed := false
+var failures := 0
 
 class FixedBattle:
 	extends "res://games/mini_hero/battle.gd"
 	var roll := 0.5
+	var calls := 0
 	func _roll() -> float:
+		calls += 1
 		return roll
-	func _settle_action() -> void:
-		pass
 
 
 func _initialize() -> void:
@@ -20,84 +20,148 @@ func _initialize() -> void:
 func _check(condition: bool, message: String) -> void:
 	checks += 1
 	if not condition:
-		failed = true
-		push_error(message)
+		failures += 1
+		if failures < 40:
+			push_error(message)
+
+
+func _compare(actual: Variant, expected: Variant, path: String) -> void:
+	if expected is Dictionary:
+		_check(actual is Dictionary, path + " dictionary")
+		if actual is not Dictionary:
+			return
+		_check(actual.size() == expected.size(), path + " key count actual=" + str(actual.keys()) + " expected=" + str(expected.keys()))
+		for key in expected:
+			_check(actual.has(key), path + " missing " + key)
+			if actual.has(key):
+				_compare(actual[key], expected[key], path + "." + key)
+	elif expected is Array:
+		_check(actual is Array and actual.size() == expected.size(), path + " array size")
+		if actual is Array and actual.size() == expected.size():
+			for i in range(expected.size()):
+				_compare(actual[i], expected[i], path + "[%d]" % i)
+	else:
+		_check(actual == expected, "%s actual=%s expected=%s" % [path, str(actual), str(expected)])
+
+
+func _restore(b: FixedBattle, fixture: Dictionary) -> void:
+	var s = fixture.initial
+	b.party = s.party.duplicate(true)
+	b.enemies = s.enemies.duplicate(true)
+	b.last_enemies = s.lastEnemies.duplicate(true)
+	b.equipment = s.equipDefs.duplicate(true)
+	b.inventory = s.equips.duplicate(true)
+	b.items = s.items.duplicate(true)
+	b.materials = s.materials.duplicate(true)
+	b.quests = s.quest.duplicate(true)
+	b.stats = s.stats.duplicate(true)
+	b.bestiary = s.bestiary.duplicate(true)
+	b.wave = int(s.wave)
+	b.active = int(s.active)
+	b.sel_enemy = int(s.selE)
+	b.sel_ally = int(s.selA)
+	b.busy = s.busy
+	b.phase = ("won" if s.preparing else "lost") if s.finished else "party"
+	b.preparing = s.preparing
+	b.route = s.route.duplicate(true)
+	b.route_chosen = s.routeChosen
+	b.difficulty = s.curDiff
+	b.skill_mode = s.skillMode
+	b.instance_counter = int(s.stamp)
+	b.messages = s.logs.duplicate(true)
+	b.roll = fixture.roll
+	b.calls = 0
+	b.event_kind = "starter" if s.eventHtml.contains("冒険者への支給品") else ""
+
+
+func _snapshot(b: FixedBattle) -> Dictionary:
+	var ids: Dictionary = {}
+	var definitions: Array = []
+	for i in range(b.equipment.size()):
+		var e = b.equipment[i]
+		ids[e.id] = "eq:%d" % i if e.has("baseId") else e.id
+		definitions.append({"id":ids[e.id],"baseId":e.get("baseId",""),"name":e.name,"slot":e.slot,"jobs":e.jobs,"rarity":e.rarity,"stats":e.stats,"effects":e.effects,"affix":e.get("affix", "")})
+	var party = b.party.duplicate(true)
+	for m in party:
+		m.charge = m.get("charge", 0)
+		for key in m.equip:
+			m.equip[key] = ids.get(m.equip[key], null)
+	var enemies = b.enemies.duplicate(true)
+	for e in enemies:
+		e.erase("intentFlash")
+		e.enraged = e.get("enraged", false)
+		e.shielded = e.get("shielded", false)
+	var inventory: Dictionary = {}
+	for id in b.inventory:
+		inventory[ids[id]] = b.inventory[id]
+	return {"party":party,"enemies":enemies,"equipDefs":definitions,"equips":inventory,"items":b.items,"materials":b.materials,"quest":b.quests,"stats":b.stats,"bestiary":b.bestiary,"wave":b.wave,"active":b.active,"selE":b.sel_enemy,"selA":b.sel_ally,"busy":b.busy,"preparing":b.preparing,"route":b.route,"routeChosen":b.route_chosen,"skillMode":b.skill_mode,"logs":b.messages,"phase":b.phase,"event_kind":b.event_kind,"calls":b.calls}
 
 
 func _run() -> void:
-	var cases = JSON.parse_string(FileAccess.get_file_as_string("res://tests/mini_hero_reference.json"))
-	for fixture in cases:
-		var battle = FixedBattle.new()
-		battle.start()
-		battle.party = fixture.initial.party.duplicate(true)
-		battle.enemies = fixture.initial.enemies.duplicate(true)
-		battle.active = int(fixture.initial.active)
-		battle.roll = fixture.initial.roll
-		var skill = fixture.command not in ["attack", "guard", "fire", "spark", "heal"]
-		_check(battle.perform("skill" if skill else fixture.command, fixture.command if skill else ""), "Reference action executes: " + fixture.command)
-		for i in range(3):
-			for key in fixture.expected.party[i]:
-				_check(battle.party[i].get(key, 0) == fixture.expected.party[i][key], "JS comparison party %s %s enhanced=%s" % [fixture.command, key, fixture.enhanced])
-			for key in fixture.expected.enemies[i]:
-				_check(battle.enemies[i].get(key, false) == fixture.expected.enemies[i][key], "JS comparison enemies %s %s enhanced=%s" % [fixture.command, key, fixture.enhanced])
-	var game = Battle.new()
-	game.start()
-	game.actor().mp = 0
-	var hp_before = game.enemies[0].hp
-	_check(not game.perform("skill", "heroSlash") and game.active == 0 and game.enemies[0].hp == hp_before, "Insufficient MP consumes neither action nor health")
-	game.actor().mp = 100
-	_check(not game.perform("skill", "meteor") and game.actor().mp == 100 and game.active == 0, "Unavailable/foreign skills consume nothing")
-	game.actor().level = 1
-	_check(not game.perform("skill", "gigaSlash"), "Learning level is enforced")
-	var attack_before = game.actor().attack
-	_check(game.learn(0, "hero_atk_1") and game.actor().attack == attack_before + 2, "Learning applies permanent stats")
-	_check(not game.learn(0, "hero_atk_1"), "No duplicate learning")
-	_check(not game.learn(0, "hero_atk_3"), "Prerequisites enforced")
-	game.party[0].sp = 0
-	_check(not game.learn(0, "hero_guard_1"), "SP checked")
-	_check(not game.equip(0, "not_owned") and not game.equip(0, "apprenticeStaff"), "Ownership and job checked")
-	game.inventory.append("flameSword")
-	_check(game.equip(0, "flameSword"), "Equip a compatible owned item")
-	_check(game.actor().attack == attack_before + 4, "Equipment swaps subtract old stats")
-	_check(not game.equip(0, "flameSword"), "No repeated stat stacking")
-	_check(game.equip(0, "bronzeSword") and game.actor().attack == attack_before + 2, "Switching back preserves learned stats")
-	var ore_before = game.materials.magicOre
-	_check(game.craft("bronzeSword", true) and game.materials.magicOre == ore_before - 2, "Craft consumes exact recipe")
-	var instance = game.inventory.back()
-	_check(game.equipment_def(instance).has("affix"), "Crafted equipment has a random affix")
-	game.materials.magicOre = 0
-	var inventory_before = game.inventory.size()
-	_check(not game.craft("bronzeSword", true) and game.inventory.size() == inventory_before, "Failed crafting changes no inventory")
-	var herbs_before = game.items.herb
-	_check(game.craft("herb", false) and game.items.herb == herbs_before + 2, "Consumable recipe yield retained")
-	game.developer_supply()
-	_check(game.party.all(func(m): return m.level >= 8 and m.sp >= 15), "Explicit developer support unlocks testing")
-	game.party[0].hp = 0
-	game.sel_ally = 0
-	_check(game.use_item("reviveStone") and game.party[0].hp > 0, "Provisional revival works")
-	game.start()
-	for i in range(3):
-		_check(game.perform("guard"), "Provisional turn advances")
-	_check(game.turn == 2 and game.active == 0 and game.alive_party().size() > 0, "Enemy turn executes and returns control")
-	game.start()
-	game.actor().attack = 5000
-	for enemy in game.enemies:
-		enemy.hp = 1
-	for i in range(3):
-		game.perform("attack")
-	_check(game.phase == "won" and game.party[0].sp > 3, "Victory grants provisional EXP and SP")
-	_check(game.next_wave() and game.wave == 2 and game.phase == "party", "Next floor becomes playable")
-	_check(not game.next_wave() and game.wave == 2, "No next-floor shortcut during battle")
-	game.wave = 5
-	var bosses = game.make_enemies()
-	_check(bosses[0].isBoss and bosses.size() == 3, "Fifth floor has boss and two enemies")
-	for member in game.party:
-		member.hp = 0
-	game._settle_action()
-	_check(game.phase == "lost", "Defeat recognized")
-	game.developer_supply()
-	_check(game.phase == "party" and game.actor().hp > 0, "Developer recovery resumes a lost battle")
-	game.start("hell")
-	_check(game.difficulty == "hell" and game.enemies[0].maxHp == roundi(30 * 1.35 * 1.3), "Difficulty changes original enemy formula")
-	print("MINI_HERO_TEST_%s (%d checks, %d JS reference cases)" % ["FAILED" if failed else "OK", checks, cases.size()])
-	quit(1 if failed else 0)
+	var payload = JSON.parse_string(FileAccess.get_file_as_string("res://tests/mini_hero_reference.json"))
+	var fixtures = payload.cases
+	for fixture in fixtures:
+		fixture = fixture.duplicate(true)
+		fixture.initial = _patch(payload.initial_base, fixture.initial)
+		fixture.expected = _patch(payload.expected_base, fixture.expected)
+		var b = FixedBattle.new()
+		_restore(b, fixture)
+		var id = fixture.id
+		var result := true
+		match fixture.kind:
+			"start": b.start(id)
+			"command": result = b.command_effect(id)
+			"skill": result = b.use_skill(id if id != "noRevive" else "revive")
+			"limit": result = b.use_limit(id)
+			"item": result = b.use_item(id if id != "noRevive" else "reviveStone")
+			"enemy", "pattern": b.execute_intent(b.enemies[0])
+			"quest": b.claim_quest(id)
+			"route": b.choose_route(id)
+			"win": b.win()
+			"next": b.next_wave()
+			"starter": b.choose_starter_reward(id)
+			"talent": b.learn(b.sel_ally, id)
+			"craft": b.craft(id)
+			"craftEq": b.craft(id, true)
+			"equip":
+				var matches = b.equipment.filter(func(e): return e.get("baseId", "") == id)
+				b.equip(0, matches[0].id)
+			"unequip": b.unequip(0, b.equipment_def(id).slot)
+			"turn": result = await b.perform("fire" if id == "noMP" else "guard" if id == "lose" else id)
+		if fixture.kind != "turn":
+			_check(result == fixture.result, "%s %s returns expected success" % [fixture.kind, id])
+		_compare(_snapshot(b), fixture.expected, "%s %s roll=%s" % [fixture.kind, id, fixture.roll])
+	var edge = FixedBattle.new()
+	edge.start()
+	for m in edge.party:
+		m.hp = 0
+	edge.party[0].hp = 1
+	edge.enemies[0].skill = "doubleAttack"
+	edge.enemies[0].attack = 99
+	edge.enemy_skill(edge.enemies[0])
+	_check(edge.alive_party().is_empty(), "Source doubleAttack edge safely ends after last survivor falls")
+	print("MINI_HERO_TEST_%s (%d checks, %d full-source cases, %d failures)" % ["OK" if failures == 0 else "FAILED", checks, fixtures.size(), failures])
+	quit(0 if failures == 0 else 1)
+
+
+func _patch(base: Dictionary, operations: Array) -> Dictionary:
+	var value = base.duplicate(true)
+	for op in operations:
+		var current: Variant = value
+		var path: Array = op[1]
+		for key in path.slice(0, -1):
+			current = current[int(key)] if current is Array else current[key]
+		var key = path.back()
+		if current is Array:
+			var index = int(key)
+			if op[0] == "remove":
+				current.remove_at(index)
+			elif index == current.size():
+				current.append(op[2])
+			else:
+				current[index] = op[2]
+		elif op[0] == "remove":
+			current.erase(key)
+		else:
+			current[key] = op[2]
+	return value

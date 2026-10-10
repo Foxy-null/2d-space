@@ -1891,5 +1891,858 @@
       },
       "rarity": "SR"
     }
+  ],
+  "limits": {
+    "hero": [
+      {
+        "id": "limitHeroBlade",
+        "name": "聖剣解放",
+        "desc": "単体超ダメージ+全員防御"
+      },
+      {
+        "id": "limitFortress",
+        "name": "不屈の城壁",
+        "desc": "全員防御+回復+LIMIT少し増加"
+      },
+      {
+        "id": "limitJudgement",
+        "name": "ジャッジメント",
+        "desc": "敵全体に聖属性ダメージ"
+      }
+    ],
+    "mage": [
+      {
+        "id": "limitMegaFlare",
+        "name": "メガフレア",
+        "desc": "敵全体に炎大ダメージ"
+      },
+      {
+        "id": "limitTimeFreeze",
+        "name": "時凍結界",
+        "desc": "敵全体氷ダメージ+確率阻害"
+      },
+      {
+        "id": "limitManaOverdrive",
+        "name": "魔力暴走",
+        "desc": "敵全体雷ダメージ+MP回復"
+      }
+    ],
+    "priest": [
+      {
+        "id": "limitMiracle",
+        "name": "大奇跡",
+        "desc": "全員大回復+復活+毒解除"
+      },
+      {
+        "id": "limitSanctuary",
+        "name": "聖域展開",
+        "desc": "全員回復+防御+LIMIT増加"
+      },
+      {
+        "id": "limitHolyNova",
+        "name": "ホーリーノヴァ",
+        "desc": "敵全体聖ダメージ+全員回復"
+      }
+    ]
+  },
+  "quests": [
+    {
+      "id": "firstKill",
+      "name": "はじめての一撃",
+      "cat": "序盤",
+      "goal": 1,
+      "now": 0,
+      "reward": "薬草x2",
+      "give": [
+        {
+          "kind": "item",
+          "id": "herb",
+          "amount": 2
+        }
+      ],
+      "progress": "stats.kills||0"
+    },
+    {
+      "id": "firstWeakHit",
+      "name": "弱点を突け！",
+      "cat": "序盤",
+      "goal": 1,
+      "now": 0,
+      "reward": "魔力水x1",
+      "give": [
+        {
+          "kind": "item",
+          "id": "manaWater",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.weak||0"
+    },
+    {
+      "id": "firstGuard",
+      "name": "守りの練習",
+      "cat": "序盤",
+      "goal": 1,
+      "now": 0,
+      "reward": "守りの種x1",
+      "give": [
+        {
+          "kind": "item",
+          "id": "guardSeed",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.guard||0"
+    },
+    {
+      "id": "firstTraining",
+      "name": "小さな成長",
+      "cat": "序盤",
+      "goal": 1,
+      "now": 0,
+      "reward": "薬草花x2",
+      "give": [
+        {
+          "kind": "material",
+          "id": "herbFlower",
+          "amount": 2
+        }
+      ],
+      "progress": "stats.bookUse||0"
+    },
+    {
+      "id": "firstCraft",
+      "name": "クラフト入門",
+      "cat": "クラフト",
+      "goal": 1,
+      "now": 0,
+      "reward": "薬草花x2",
+      "give": [
+        {
+          "kind": "material",
+          "id": "herbFlower",
+          "amount": 2
+        }
+      ],
+      "progress": "stats.craft||0"
+    },
+    {
+      "id": "hunter",
+      "name": "討伐任務",
+      "cat": "討伐",
+      "goal": 10,
+      "now": 0,
+      "reward": "魔鉱石x2",
+      "give": [
+        {
+          "kind": "material",
+          "id": "magicOre",
+          "amount": 2
+        }
+      ],
+      "progress": "stats.kills||0"
+    },
+    {
+      "id": "weak",
+      "name": "弱点研究",
+      "cat": "戦術",
+      "goal": 5,
+      "now": 0,
+      "reward": "魔力水x2",
+      "give": [
+        {
+          "kind": "item",
+          "id": "manaWater",
+          "amount": 2
+        }
+      ],
+      "progress": "stats.weak||0"
+    },
+    {
+      "id": "boss1",
+      "name": "第5階層突破",
+      "cat": "ボス",
+      "goal": 1,
+      "now": 0,
+      "reward": "修練の書x1",
+      "give": [
+        {
+          "kind": "item",
+          "id": "trainingBook",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.boss||0"
+    },
+    {
+      "id": "craft5",
+      "name": "クラフト修行",
+      "cat": "クラフト",
+      "requires": "firstCraft",
+      "goal": 5,
+      "now": 0,
+      "reward": "上薬草x2",
+      "give": [
+        {
+          "kind": "item",
+          "id": "hiHerb",
+          "amount": 2
+        }
+      ],
+      "progress": "stats.craft||0"
+    },
+    {
+      "id": "craft10",
+      "name": "クラフト職人",
+      "cat": "クラフト",
+      "requires": "craft5",
+      "goal": 10,
+      "now": 0,
+      "reward": "魔鉱石x4",
+      "give": [
+        {
+          "kind": "material",
+          "id": "magicOre",
+          "amount": 4
+        }
+      ],
+      "progress": "stats.craft||0"
+    },
+    {
+      "id": "craftMaster",
+      "name": "熟練クラフター",
+      "cat": "クラフト",
+      "requires": "craft10",
+      "goal": 20,
+      "now": 0,
+      "randomReward": [
+        {
+          "text": "魔鉱石x6",
+          "weight": 40,
+          "give": [
+            {
+              "kind": "material",
+              "id": "magicOre",
+              "amount": 6
+            }
+          ]
+        },
+        {
+          "text": "竜の鱗x1",
+          "weight": 25,
+          "give": [
+            {
+              "kind": "material",
+              "id": "dragonScale",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "text": "修練の書x1",
+          "weight": 20,
+          "give": [
+            {
+              "kind": "item",
+              "id": "trainingBook",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "text": "ランダム装備x1",
+          "weight": 15,
+          "give": [
+            {
+              "kind": "randomEquipment",
+              "id": "",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "progress": "stats.craft||0",
+      "give": []
+    },
+    {
+      "id": "equipCraft",
+      "name": "鍛冶見習い",
+      "cat": "装備",
+      "requires": "firstCraft",
+      "goal": 2,
+      "now": 0,
+      "reward": "冒険者のお守り",
+      "give": [
+        {
+          "kind": "equipment",
+          "id": "adventureCharm",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.eqCraft||0"
+    },
+    {
+      "id": "equipCraft5",
+      "name": "鍛冶職人",
+      "cat": "装備",
+      "requires": "equipCraft",
+      "goal": 5,
+      "now": 0,
+      "reward": "賢者の指輪",
+      "give": [
+        {
+          "kind": "equipment",
+          "id": "sageRing",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.eqCraft||0"
+    },
+    {
+      "id": "collectorEq",
+      "name": "装備コレクター",
+      "cat": "装備",
+      "requires": "equipCraft",
+      "goal": 10,
+      "now": 0,
+      "reward": "ランダム装備x1",
+      "give": [
+        {
+          "kind": "randomEquipment",
+          "id": "",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.eqGet||0"
+    },
+    {
+      "id": "legendSmith",
+      "name": "伝説鍛冶への道",
+      "cat": "装備",
+      "requires": [
+        "boss3",
+        "equipCraft5"
+      ],
+      "goal": 10,
+      "now": 0,
+      "randomReward": [
+        {
+          "text": "賢者の指輪",
+          "weight": 30,
+          "give": [
+            {
+              "kind": "equipment",
+              "id": "sageRing",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "text": "炎の杖",
+          "weight": 25,
+          "give": [
+            {
+              "kind": "equipment",
+              "id": "flameStaff",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "text": "氷晶の杖",
+          "weight": 25,
+          "give": [
+            {
+              "kind": "equipment",
+              "id": "iceStaff",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "text": "ランダム装備x2",
+          "weight": 20,
+          "give": [
+            {
+              "kind": "randomEquipment",
+              "id": "",
+              "amount": 1
+            },
+            {
+              "kind": "randomEquipment",
+              "id": "",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "progress": "stats.eqCraft||0",
+      "give": []
+    },
+    {
+      "id": "killer30",
+      "name": "熟練討伐者",
+      "cat": "討伐",
+      "requires": "hunter",
+      "goal": 30,
+      "now": 0,
+      "reward": "力の種x1",
+      "give": [
+        {
+          "kind": "item",
+          "id": "powerSeed",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.kills||0"
+    },
+    {
+      "id": "slimeHunter",
+      "name": "ぷるぷる退治",
+      "cat": "討伐",
+      "requires": "hunter",
+      "goal": 5,
+      "now": 0,
+      "reward": "ぷるゼリーx3",
+      "give": [
+        {
+          "kind": "material",
+          "id": "slimeJelly",
+          "amount": 3
+        }
+      ],
+      "progress": "stats.slimeKill||0"
+    },
+    {
+      "id": "dragonHunter",
+      "name": "竜狩り入門",
+      "cat": "討伐",
+      "requires": "boss1",
+      "goal": 2,
+      "now": 0,
+      "reward": "竜の鱗x1",
+      "give": [
+        {
+          "kind": "material",
+          "id": "dragonScale",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.dragonKill||0"
+    },
+    {
+      "id": "demonRoad",
+      "name": "魔王への道",
+      "cat": "討伐",
+      "requires": "boss3",
+      "goal": 60,
+      "now": 0,
+      "randomReward": [
+        {
+          "text": "力の種x2",
+          "weight": 35,
+          "give": [
+            {
+              "kind": "item",
+              "id": "powerSeed",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "text": "守りの種x2",
+          "weight": 35,
+          "give": [
+            {
+              "kind": "item",
+              "id": "guardSeed",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "text": "ランダム装備x1",
+          "weight": 30,
+          "give": [
+            {
+              "kind": "randomEquipment",
+              "id": "",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "progress": "stats.kills||0",
+      "give": []
+    },
+    {
+      "id": "weak15",
+      "name": "弱点研究・応用",
+      "cat": "戦術",
+      "requires": "weak",
+      "goal": 15,
+      "now": 0,
+      "reward": "魔力水x3",
+      "give": [
+        {
+          "kind": "item",
+          "id": "manaWater",
+          "amount": 3
+        }
+      ],
+      "progress": "stats.weak||0"
+    },
+    {
+      "id": "guard5",
+      "name": "防御の心得",
+      "cat": "戦術",
+      "requires": "weak",
+      "goal": 5,
+      "now": 0,
+      "reward": "守りの種x1",
+      "give": [
+        {
+          "kind": "item",
+          "id": "guardSeed",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.guard||0"
+    },
+    {
+      "id": "limit3",
+      "name": "必殺の極意",
+      "cat": "戦術",
+      "requires": "weak",
+      "goal": 3,
+      "now": 0,
+      "reward": "魔法の実x1",
+      "give": [
+        {
+          "kind": "item",
+          "id": "magicFruit",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.limit||0"
+    },
+    {
+      "id": "itemUse5",
+      "name": "道具使い",
+      "cat": "戦術",
+      "requires": "firstCraft",
+      "goal": 5,
+      "now": 0,
+      "reward": "上薬草x2",
+      "give": [
+        {
+          "kind": "item",
+          "id": "hiHerb",
+          "amount": 2
+        }
+      ],
+      "progress": "stats.itemUse||0"
+    },
+    {
+      "id": "tactician",
+      "name": "戦術家の証",
+      "cat": "戦術",
+      "requires": [
+        "weak15",
+        "limit3"
+      ],
+      "goal": 50,
+      "now": 0,
+      "reward": "修練の書x2",
+      "give": [
+        {
+          "kind": "item",
+          "id": "trainingBook",
+          "amount": 2
+        }
+      ],
+      "progress": "(stats.weak||0)+(stats.limit||0)"
+    },
+    {
+      "id": "boss3",
+      "name": "ボスハンター",
+      "cat": "ボス",
+      "requires": "boss1",
+      "goal": 3,
+      "now": 0,
+      "reward": "修練の書x2",
+      "give": [
+        {
+          "kind": "item",
+          "id": "trainingBook",
+          "amount": 2
+        }
+      ],
+      "progress": "stats.boss||0"
+    },
+    {
+      "id": "floor10",
+      "name": "第10階層到達",
+      "cat": "ボス",
+      "requires": "boss1",
+      "goal": 10,
+      "now": 1,
+      "reward": "ランダム装備x1",
+      "give": [
+        {
+          "kind": "randomEquipment",
+          "id": "",
+          "amount": 1
+        }
+      ],
+      "progress": "wave"
+    },
+    {
+      "id": "boss5",
+      "name": "歴戦のボスハンター",
+      "cat": "ボス",
+      "requires": "boss3",
+      "goal": 5,
+      "now": 0,
+      "randomReward": [
+        {
+          "text": "修練の書x3",
+          "weight": 45,
+          "give": [
+            {
+              "kind": "item",
+              "id": "trainingBook",
+              "amount": 3
+            }
+          ]
+        },
+        {
+          "text": "命の実x2",
+          "weight": 25,
+          "give": [
+            {
+              "kind": "item",
+              "id": "lifeFruit",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "text": "ランダム装備x2",
+          "weight": 30,
+          "give": [
+            {
+              "kind": "randomEquipment",
+              "id": "",
+              "amount": 1
+            },
+            {
+              "kind": "randomEquipment",
+              "id": "",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "progress": "stats.boss||0",
+      "give": []
+    },
+    {
+      "id": "starDragon",
+      "name": "星喰い討伐",
+      "cat": "ボス",
+      "requires": "boss5",
+      "goal": 1,
+      "now": 0,
+      "randomReward": [
+        {
+          "text": "竜の鱗x3",
+          "weight": 35,
+          "give": [
+            {
+              "kind": "material",
+              "id": "dragonScale",
+              "amount": 3
+            }
+          ]
+        },
+        {
+          "text": "修練の書x3",
+          "weight": 30,
+          "give": [
+            {
+              "kind": "item",
+              "id": "trainingBook",
+              "amount": 3
+            }
+          ]
+        },
+        {
+          "text": "星詠みの杖",
+          "weight": 20,
+          "give": [
+            {
+              "kind": "equipment",
+              "id": "starWand",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "text": "ランダム装備x2",
+          "weight": 15,
+          "give": [
+            {
+              "kind": "randomEquipment",
+              "id": "",
+              "amount": 1
+            },
+            {
+              "kind": "randomEquipment",
+              "id": "",
+              "amount": 1
+            }
+          ]
+        }
+      ],
+      "progress": "stats.starDragonBoss||0",
+      "give": []
+    },
+    {
+      "id": "route3",
+      "name": "道を選ぶ者",
+      "cat": "探索",
+      "requires": "boss1",
+      "goal": 3,
+      "now": 0,
+      "reward": "薬草花x3",
+      "give": [
+        {
+          "kind": "material",
+          "id": "herbFlower",
+          "amount": 3
+        }
+      ],
+      "progress": "stats.route||0"
+    },
+    {
+      "id": "dangerRoute",
+      "name": "危険な道を越えて",
+      "cat": "探索",
+      "requires": "route3",
+      "goal": 2,
+      "now": 0,
+      "reward": "力の種x1",
+      "give": [
+        {
+          "kind": "item",
+          "id": "powerSeed",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.dangerRoute||0"
+    },
+    {
+      "id": "mineRoute",
+      "name": "鉱脈調査",
+      "cat": "探索",
+      "requires": "route3",
+      "goal": 2,
+      "now": 0,
+      "reward": "魔鉱石x5",
+      "give": [
+        {
+          "kind": "material",
+          "id": "magicOre",
+          "amount": 5
+        }
+      ],
+      "progress": "stats.mineRoute||0"
+    },
+    {
+      "id": "dragonRoute",
+      "name": "竜の道探索",
+      "cat": "探索",
+      "requires": "route3",
+      "goal": 2,
+      "now": 0,
+      "reward": "竜の鱗x2",
+      "give": [
+        {
+          "kind": "material",
+          "id": "dragonScale",
+          "amount": 2
+        }
+      ],
+      "progress": "stats.dragonRoute||0"
+    },
+    {
+      "id": "herbCollector",
+      "name": "薬草花集め",
+      "cat": "素材",
+      "requires": "firstCraft",
+      "goal": 8,
+      "now": 0,
+      "reward": "薬草x3",
+      "give": [
+        {
+          "kind": "item",
+          "id": "herb",
+          "amount": 3
+        }
+      ],
+      "progress": "materials.herbFlower||0"
+    },
+    {
+      "id": "oreCollector",
+      "name": "鉱石集め",
+      "cat": "素材",
+      "requires": "firstCraft",
+      "goal": 8,
+      "now": 0,
+      "reward": "魔力水x2",
+      "give": [
+        {
+          "kind": "item",
+          "id": "manaWater",
+          "amount": 2
+        }
+      ],
+      "progress": "materials.magicOre||0"
+    },
+    {
+      "id": "scaleCollector",
+      "name": "竜素材研究",
+      "cat": "素材",
+      "requires": "dragonHunter",
+      "goal": 3,
+      "now": 0,
+      "reward": "ランダム装備x1",
+      "give": [
+        {
+          "kind": "randomEquipment",
+          "id": "",
+          "amount": 1
+        }
+      ],
+      "progress": "materials.dragonScale||0"
+    },
+    {
+      "id": "bookTraining",
+      "name": "技の鍛錬",
+      "cat": "成長",
+      "requires": "limit3",
+      "goal": 3,
+      "now": 0,
+      "reward": "修練の書x1",
+      "give": [
+        {
+          "kind": "item",
+          "id": "trainingBook",
+          "amount": 1
+        }
+      ],
+      "progress": "stats.bookUse||0"
+    }
   ]
 }
