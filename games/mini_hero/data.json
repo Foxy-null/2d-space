@@ -1,0 +1,1895 @@
+{
+  "diffs": {
+    "easy": {
+      "label": "やさしい",
+      "hp": 0.88,
+      "atk": 0.88,
+      "exp": 1,
+      "reward": 0.9
+    },
+    "normal": {
+      "label": "ふつう",
+      "hp": 1,
+      "atk": 1,
+      "exp": 1,
+      "reward": 1
+    },
+    "hard": {
+      "label": "むずかしい",
+      "hp": 1.16,
+      "atk": 1.12,
+      "exp": 1,
+      "reward": 1.25
+    },
+    "hell": {
+      "label": "地獄級",
+      "hp": 1.35,
+      "atk": 1.28,
+      "exp": 1,
+      "reward": 1.55
+    }
+  },
+  "enemyPower": 1.3,
+  "itemNames": {
+    "herb": "薬草",
+    "hiHerb": "上薬草",
+    "manaWater": "魔力水",
+    "panacea": "万能薬",
+    "trainingBook": "修練の書",
+    "powerSeed": "力の種",
+    "guardSeed": "守りの種",
+    "lifeFruit": "命の実",
+    "magicFruit": "魔法の実",
+    "reviveStone": "復活石"
+  },
+  "mat": {
+    "herbFlower": "薬草花",
+    "magicOre": "魔鉱石",
+    "slimeJelly": "ぷるゼリー",
+    "poisonSpore": "毒胞子",
+    "dragonScale": "竜の鱗"
+  },
+  "ename": {
+    "fire": "炎",
+    "ice": "氷",
+    "thunder": "雷",
+    "wind": "風",
+    "holy": "聖",
+    "physical": "物理"
+  },
+  "members": [
+    {
+      "name": "勇者",
+      "emoji": "🛡️",
+      "level": 1,
+      "exp": 0,
+      "nextExp": 35,
+      "hp": 58,
+      "maxHp": 58,
+      "mp": 14,
+      "maxMp": 14,
+      "attack": 12,
+      "defense": 4,
+      "role": "hero",
+      "limit": 0,
+      "guarding": false,
+      "poison": 0
+    },
+    {
+      "name": "魔法使い",
+      "emoji": "🧙",
+      "level": 1,
+      "exp": 0,
+      "nextExp": 35,
+      "hp": 38,
+      "maxHp": 38,
+      "mp": 28,
+      "maxMp": 28,
+      "attack": 7,
+      "defense": 2,
+      "role": "mage",
+      "limit": 0,
+      "guarding": false,
+      "poison": 0,
+      "charge": 0
+    },
+    {
+      "name": "僧侶",
+      "emoji": "✨",
+      "level": 1,
+      "exp": 0,
+      "nextExp": 35,
+      "hp": 44,
+      "maxHp": 44,
+      "mp": 24,
+      "maxMp": 24,
+      "attack": 8,
+      "defense": 3,
+      "role": "priest",
+      "limit": 0,
+      "guarding": false,
+      "poison": 0
+    }
+  ],
+  "skills": {
+    "hero": [
+      {
+        "id": "heroSlash",
+        "name": "勇者斬り",
+        "lv": 1,
+        "mp": 5,
+        "desc": "単体大ダメージ+防御"
+      },
+      {
+        "id": "quickSlash",
+        "name": "はやぶさ斬り",
+        "lv": 1,
+        "mp": 3,
+        "desc": "単体小ダメージ+LIMIT少し上昇"
+      },
+      {
+        "id": "guardStrike",
+        "name": "守りの一撃",
+        "lv": 1,
+        "mp": 4,
+        "desc": "単体攻撃+勇者HP小回復"
+      },
+      {
+        "id": "cover",
+        "name": "かばう",
+        "lv": 2,
+        "mp": 4,
+        "desc": "全員防御"
+      },
+      {
+        "id": "shieldBash",
+        "name": "盾打ち",
+        "lv": 3,
+        "mp": 6,
+        "desc": "単体攻撃+低確率遅延"
+      },
+      {
+        "id": "windSlash",
+        "name": "烈風斬",
+        "lv": 4,
+        "mp": 8,
+        "desc": "敵全体攻撃"
+      },
+      {
+        "id": "rally",
+        "name": "勇気の号令",
+        "lv": 5,
+        "mp": 7,
+        "desc": "全員LIMIT上昇"
+      },
+      {
+        "id": "braveStrike",
+        "name": "背水の一撃",
+        "lv": 7,
+        "mp": 9,
+        "desc": "HP低下で威力UP"
+      },
+      {
+        "id": "gigaSlash",
+        "name": "ギガスラッシュ",
+        "lv": 8,
+        "mp": 12,
+        "desc": "単体特大"
+      }
+    ],
+    "mage": [
+      {
+        "id": "iceDance",
+        "name": "氷結乱舞",
+        "lv": 1,
+        "mp": 8,
+        "desc": "全体氷"
+      },
+      {
+        "id": "sparkShot",
+        "name": "小雷弾",
+        "lv": 1,
+        "mp": 3,
+        "desc": "単体雷ダメージ"
+      },
+      {
+        "id": "chillNeedle",
+        "name": "氷針",
+        "lv": 1,
+        "mp": 3,
+        "desc": "単体氷+低確率遅延"
+      },
+      {
+        "id": "focus",
+        "name": "魔力集中",
+        "lv": 2,
+        "mp": 4,
+        "desc": "次の魔法強化"
+      },
+      {
+        "id": "thunderBolt",
+        "name": "サンダーボルト",
+        "lv": 3,
+        "mp": 7,
+        "desc": "単体雷+低確率遅延"
+      },
+      {
+        "id": "fireStorm",
+        "name": "ファイアストーム",
+        "lv": 4,
+        "mp": 10,
+        "desc": "全体炎"
+      },
+      {
+        "id": "manaBurst",
+        "name": "マナバースト",
+        "lv": 5,
+        "mp": 9,
+        "desc": "全体魔力攻撃"
+      },
+      {
+        "id": "frostPrison",
+        "name": "氷牢",
+        "lv": 6,
+        "mp": 10,
+        "desc": "単体氷+確率封じ"
+      },
+      {
+        "id": "meteor",
+        "name": "メテオ",
+        "lv": 8,
+        "mp": 14,
+        "desc": "全体大ダメージ"
+      }
+    ],
+    "priest": [
+      {
+        "id": "partyHeal",
+        "name": "全体癒し",
+        "lv": 1,
+        "mp": 8,
+        "desc": "全体回復"
+      },
+      {
+        "id": "lightSmite",
+        "name": "聖なる一撃",
+        "lv": 1,
+        "mp": 3,
+        "desc": "単体聖ダメージ"
+      },
+      {
+        "id": "miniHealAll",
+        "name": "小さな祈り",
+        "lv": 1,
+        "mp": 5,
+        "desc": "全体小回復"
+      },
+      {
+        "id": "cleanse",
+        "name": "解毒祈祷",
+        "lv": 2,
+        "mp": 4,
+        "desc": "毒回復"
+      },
+      {
+        "id": "barrier",
+        "name": "聖なる結界",
+        "lv": 3,
+        "mp": 6,
+        "desc": "全員防御+小回復"
+      },
+      {
+        "id": "bigHeal",
+        "name": "大回復",
+        "lv": 4,
+        "mp": 10,
+        "desc": "単体大回復"
+      },
+      {
+        "id": "holyLight",
+        "name": "ホーリーライト",
+        "lv": 5,
+        "mp": 9,
+        "desc": "全体聖攻撃+小回復"
+      },
+      {
+        "id": "blessing",
+        "name": "祝福",
+        "lv": 7,
+        "mp": 10,
+        "desc": "全員LIMIT+毒解除"
+      },
+      {
+        "id": "revive",
+        "name": "復活の光",
+        "lv": 8,
+        "mp": 14,
+        "desc": "仲間復活"
+      }
+    ]
+  },
+  "talentDefs": {
+    "hero": [
+      {
+        "id": "hero_atk_1",
+        "name": "剣の心得",
+        "cost": 1,
+        "branch": "剣技",
+        "desc": "攻撃+2",
+        "effect": {
+          "attack": 2
+        }
+      },
+      {
+        "id": "hero_atk_2",
+        "name": "勇者斬り強化",
+        "cost": 1,
+        "branch": "剣技",
+        "require": "hero_atk_1",
+        "desc": "勇者斬りの威力+20%",
+        "effect": {
+          "heroSlashBoost": 0.2
+        }
+      },
+      {
+        "id": "hero_atk_3",
+        "name": "会心の構え",
+        "cost": 1,
+        "branch": "剣技",
+        "require": "hero_atk_2",
+        "desc": "攻撃・技が8%で会心になる",
+        "effect": {
+          "critRate": 0.08
+        }
+      },
+      {
+        "id": "hero_atk_4",
+        "name": "弱点追撃",
+        "cost": 2,
+        "branch": "剣技",
+        "require": "hero_atk_3",
+        "desc": "弱点を突いた時、追加ダメージ",
+        "effect": {
+          "weakChase": 1
+        }
+      },
+      {
+        "id": "hero_atk_5",
+        "name": "ギガスラッシュ極意",
+        "cost": 3,
+        "branch": "剣技",
+        "require": "hero_atk_4",
+        "desc": "ギガスラッシュと聖剣系の威力+25%",
+        "effect": {
+          "gigaSlashBoost": 0.25,
+          "holyBoost": 0.08
+        }
+      },
+      {
+        "id": "hero_guard_1",
+        "name": "盾の心得",
+        "cost": 1,
+        "branch": "守護",
+        "desc": "防御+2",
+        "effect": {
+          "defense": 2
+        }
+      },
+      {
+        "id": "hero_guard_2",
+        "name": "体力鍛錬",
+        "cost": 1,
+        "branch": "守護",
+        "require": "hero_guard_1",
+        "desc": "最大HP+12",
+        "effect": {
+          "maxHp": 12
+        }
+      },
+      {
+        "id": "hero_guard_3",
+        "name": "かばう強化",
+        "cost": 1,
+        "branch": "守護",
+        "require": "hero_guard_2",
+        "desc": "かばう使用時、味方全員のLIMITも少し上昇",
+        "effect": {
+          "coverBoost": 1
+        }
+      },
+      {
+        "id": "hero_guard_4",
+        "name": "不屈強化",
+        "cost": 2,
+        "branch": "守護",
+        "require": "hero_guard_3",
+        "desc": "HP30%以下の被ダメージをさらに軽減",
+        "effect": {
+          "unyieldingBoost": 1
+        }
+      },
+      {
+        "id": "hero_guard_5",
+        "name": "英雄の守り",
+        "cost": 3,
+        "branch": "守護",
+        "require": "hero_guard_4",
+        "desc": "常時受けるダメージ-8%",
+        "effect": {
+          "damageResist": 0.08
+        }
+      },
+      {
+        "id": "hero_limit_1",
+        "name": "戦意高揚",
+        "cost": 1,
+        "branch": "号令",
+        "desc": "LIMIT上昇量+10%",
+        "effect": {
+          "limitGain": 0.1
+        }
+      },
+      {
+        "id": "hero_limit_2",
+        "name": "勇気の号令強化",
+        "cost": 1,
+        "branch": "号令",
+        "require": "hero_limit_1",
+        "desc": "勇気の号令のLIMIT上昇量+10",
+        "effect": {
+          "rallyBoost": 10
+        }
+      },
+      {
+        "id": "hero_limit_3",
+        "name": "防御指揮",
+        "cost": 1,
+        "branch": "号令",
+        "require": "hero_limit_2",
+        "desc": "防御中に攻撃を受けた味方のLIMIT上昇量アップ",
+        "effect": {
+          "guardLimitBoost": 6
+        }
+      },
+      {
+        "id": "hero_limit_4",
+        "name": "勝利への号令",
+        "cost": 2,
+        "branch": "号令",
+        "require": "hero_limit_3",
+        "desc": "LIMIT使用後、他の味方のLIMITも少し上昇",
+        "effect": {
+          "limitChain": 1
+        }
+      },
+      {
+        "id": "hero_limit_5",
+        "name": "指揮官の勘",
+        "cost": 3,
+        "branch": "号令",
+        "require": "hero_limit_4",
+        "desc": "味方全員の技ダメージ+8%",
+        "effect": {
+          "skillDamageBoost": 0.08
+        }
+      }
+    ],
+    "mage": [
+      {
+        "id": "mage_fire_1",
+        "name": "炎雷研究",
+        "cost": 1,
+        "branch": "炎雷",
+        "desc": "炎・雷ダメージ+10%",
+        "effect": {
+          "fireBoost": 0.1,
+          "thunderBoost": 0.1
+        }
+      },
+      {
+        "id": "mage_fire_2",
+        "name": "火球強化",
+        "cost": 1,
+        "branch": "炎雷",
+        "require": "mage_fire_1",
+        "desc": "火球の威力+20%",
+        "effect": {
+          "fireSpellBoost": 0.2
+        }
+      },
+      {
+        "id": "mage_fire_3",
+        "name": "雷撃干渉",
+        "cost": 2,
+        "branch": "炎雷",
+        "require": "mage_fire_2",
+        "desc": "雷属性攻撃時、低確率で行動遅延",
+        "effect": {
+          "thunderStun": 0.15
+        }
+      },
+      {
+        "id": "mage_fire_4",
+        "name": "魔導会心",
+        "cost": 2,
+        "branch": "炎雷",
+        "require": "mage_fire_3",
+        "desc": "魔法攻撃が6%で会心になる",
+        "effect": {
+          "critRate": 0.06
+        }
+      },
+      {
+        "id": "mage_fire_5",
+        "name": "メテオ研究",
+        "cost": 3,
+        "branch": "炎雷",
+        "require": "mage_fire_4",
+        "desc": "メテオの威力+25%",
+        "effect": {
+          "meteorBoost": 0.25
+        }
+      },
+      {
+        "id": "mage_ice_1",
+        "name": "氷研究",
+        "cost": 1,
+        "branch": "氷制御",
+        "desc": "氷ダメージ+10%",
+        "effect": {
+          "iceBoost": 0.1
+        }
+      },
+      {
+        "id": "mage_ice_2",
+        "name": "氷牢強化",
+        "cost": 1,
+        "branch": "氷制御",
+        "require": "mage_ice_1",
+        "desc": "氷牢の行動阻害成功率アップ",
+        "effect": {
+          "frostPrisonBoost": 0.15
+        }
+      },
+      {
+        "id": "mage_ice_3",
+        "name": "氷の壁",
+        "cost": 2,
+        "branch": "氷制御",
+        "require": "mage_ice_2",
+        "desc": "氷属性で攻撃すると味方全員が防御状態になる",
+        "effect": {
+          "iceWall": 1
+        }
+      },
+      {
+        "id": "mage_ice_4",
+        "name": "凍結追撃",
+        "cost": 2,
+        "branch": "氷制御",
+        "require": "mage_ice_3",
+        "desc": "氷属性攻撃時、追加ダメージ",
+        "effect": {
+          "iceChase": 1
+        }
+      },
+      {
+        "id": "mage_ice_5",
+        "name": "時凍結界強化",
+        "cost": 3,
+        "branch": "氷制御",
+        "require": "mage_ice_4",
+        "desc": "LIMIT「時凍結界」の行動阻害率アップ",
+        "effect": {
+          "timeFreezeBoost": 0.15
+        }
+      },
+      {
+        "id": "mage_mp_1",
+        "name": "魔力増幅",
+        "cost": 1,
+        "branch": "魔力循環",
+        "desc": "最大MP+8",
+        "effect": {
+          "maxMp": 8
+        }
+      },
+      {
+        "id": "mage_mp_2",
+        "name": "魔力節約",
+        "cost": 1,
+        "branch": "魔力循環",
+        "require": "mage_mp_1",
+        "desc": "MP消費-1",
+        "effect": {
+          "mpCostDown": 1
+        }
+      },
+      {
+        "id": "mage_mp_3",
+        "name": "弱点吸収",
+        "cost": 1,
+        "branch": "魔力循環",
+        "require": "mage_mp_2",
+        "desc": "弱点を突いた時、MPを追加回復",
+        "effect": {
+          "weakMpGain": 1
+        }
+      },
+      {
+        "id": "mage_mp_4",
+        "name": "魔力集中強化",
+        "cost": 2,
+        "branch": "魔力循環",
+        "require": "mage_mp_3",
+        "desc": "魔力集中後の魔法威力アップ",
+        "effect": {
+          "focusBoost": 0.25
+        }
+      },
+      {
+        "id": "mage_mp_5",
+        "name": "戦後瞑想",
+        "cost": 3,
+        "branch": "魔力循環",
+        "require": "mage_mp_4",
+        "desc": "勝利時にMPを追加回復",
+        "effect": {
+          "manaAfterBattle": 0.15
+        }
+      }
+    ],
+    "priest": [
+      {
+        "id": "priest_heal_1",
+        "name": "癒しの心得",
+        "cost": 1,
+        "branch": "癒し",
+        "desc": "回復量+10%",
+        "effect": {
+          "healBoost": 0.1
+        }
+      },
+      {
+        "id": "priest_heal_2",
+        "name": "祈りの器",
+        "cost": 1,
+        "branch": "癒し",
+        "require": "priest_heal_1",
+        "desc": "最大MP+6",
+        "effect": {
+          "maxMp": 6
+        }
+      },
+      {
+        "id": "priest_heal_3",
+        "name": "全体癒し強化",
+        "cost": 1,
+        "branch": "癒し",
+        "require": "priest_heal_2",
+        "desc": "全体癒しの回復量+20%",
+        "effect": {
+          "partyHealBoost": 0.2
+        }
+      },
+      {
+        "id": "priest_heal_4",
+        "name": "大回復強化",
+        "cost": 2,
+        "branch": "癒し",
+        "require": "priest_heal_3",
+        "desc": "大回復の回復量+25%",
+        "effect": {
+          "bigHealBoost": 0.25
+        }
+      },
+      {
+        "id": "priest_heal_5",
+        "name": "奇跡の担い手",
+        "cost": 3,
+        "branch": "癒し",
+        "require": "priest_heal_4",
+        "desc": "復活時のHP増加",
+        "effect": {
+          "reviveBoost": 0.25
+        }
+      },
+      {
+        "id": "priest_holy_1",
+        "name": "聖なる心得",
+        "cost": 1,
+        "branch": "聖撃",
+        "desc": "聖属性ダメージ+10%",
+        "effect": {
+          "holyBoost": 0.1
+        }
+      },
+      {
+        "id": "priest_holy_2",
+        "name": "ホーリーライト強化",
+        "cost": 1,
+        "branch": "聖撃",
+        "require": "priest_holy_1",
+        "desc": "ホーリーライトの威力+20%",
+        "effect": {
+          "holyLightBoost": 0.2
+        }
+      },
+      {
+        "id": "priest_holy_3",
+        "name": "浄化",
+        "cost": 2,
+        "branch": "聖撃",
+        "require": "priest_holy_2",
+        "desc": "聖属性攻撃時、低確率で敵の強化を解除",
+        "effect": {
+          "purify": 0.2
+        }
+      },
+      {
+        "id": "priest_holy_4",
+        "name": "破邪の光",
+        "cost": 2,
+        "branch": "聖撃",
+        "require": "priest_holy_3",
+        "desc": "聖属性攻撃が6%で会心になる",
+        "effect": {
+          "critRate": 0.06
+        }
+      },
+      {
+        "id": "priest_holy_5",
+        "name": "ホーリーノヴァ強化",
+        "cost": 3,
+        "branch": "聖撃",
+        "require": "priest_holy_4",
+        "desc": "LIMIT「ホーリーノヴァ」の威力+25%",
+        "effect": {
+          "holyNovaBoost": 0.25
+        }
+      },
+      {
+        "id": "priest_guard_1",
+        "name": "加護の心得",
+        "cost": 1,
+        "branch": "加護",
+        "desc": "防御中の味方の被ダメージ軽減",
+        "effect": {
+          "guardSupport": 1
+        }
+      },
+      {
+        "id": "priest_guard_2",
+        "name": "生命の加護",
+        "cost": 1,
+        "branch": "加護",
+        "require": "priest_guard_1",
+        "desc": "最大HP+10",
+        "effect": {
+          "maxHp": 10
+        }
+      },
+      {
+        "id": "priest_guard_3",
+        "name": "結界強化",
+        "cost": 1,
+        "branch": "加護",
+        "require": "priest_guard_2",
+        "desc": "聖なる結界の効果アップ",
+        "effect": {
+          "barrierBoost": 1
+        }
+      },
+      {
+        "id": "priest_guard_4",
+        "name": "状態異常耐性",
+        "cost": 2,
+        "branch": "加護",
+        "require": "priest_guard_3",
+        "desc": "毒を受けにくくなる",
+        "effect": {
+          "poisonResist": 0.35
+        }
+      },
+      {
+        "id": "priest_guard_5",
+        "name": "守護祈願",
+        "cost": 3,
+        "branch": "加護",
+        "require": "priest_guard_4",
+        "desc": "常時受けるダメージ-5%",
+        "effect": {
+          "damageResist": 0.05
+        }
+      }
+    ]
+  },
+  "enemyBase": [
+    {
+      "base": "あおぷる",
+      "emoji": "🟦",
+      "hp": 30,
+      "attack": 7,
+      "defense": 2,
+      "type": "slime",
+      "skill": "regen",
+      "note": "再生"
+    },
+    {
+      "base": "こつこつバット",
+      "emoji": "🦇",
+      "hp": 25,
+      "attack": 9,
+      "defense": 1,
+      "type": "bat",
+      "skill": "doubleAttack",
+      "note": "二連撃"
+    },
+    {
+      "base": "ひのこゴースト",
+      "emoji": "🔥",
+      "hp": 29,
+      "attack": 8,
+      "defense": 2,
+      "type": "ghost",
+      "skill": "ember",
+      "note": "火の粉"
+    },
+    {
+      "base": "いわゴーレム",
+      "emoji": "🪨",
+      "hp": 44,
+      "attack": 10,
+      "defense": 5,
+      "type": "golem",
+      "skill": "stoneGuard",
+      "note": "防御UP"
+    },
+    {
+      "base": "クリスタルスライム",
+      "emoji": "💎",
+      "hp": 34,
+      "attack": 8,
+      "defense": 4,
+      "type": "crystal",
+      "skill": "reflect",
+      "note": "反射"
+    },
+    {
+      "base": "どくキノコ",
+      "emoji": "🍄",
+      "hp": 28,
+      "attack": 11,
+      "defense": 1,
+      "type": "mushroom",
+      "skill": "poison",
+      "note": "毒"
+    },
+    {
+      "base": "洞窟オオカミ",
+      "emoji": "🐺",
+      "hp": 32,
+      "attack": 12,
+      "defense": 2,
+      "type": "wolf",
+      "skill": "howl",
+      "note": "遠吠え"
+    },
+    {
+      "base": "ミミック",
+      "emoji": "🎁",
+      "hp": 38,
+      "attack": 13,
+      "defense": 3,
+      "type": "mimic",
+      "skill": "trap",
+      "note": "罠"
+    },
+    {
+      "base": "闇のまどうし",
+      "emoji": "🧛",
+      "hp": 31,
+      "attack": 14,
+      "defense": 2,
+      "type": "warlock",
+      "skill": "manaDrain",
+      "note": "MP吸収"
+    },
+    {
+      "base": "古代ドラゴン",
+      "emoji": "🐉",
+      "hp": 52,
+      "attack": 15,
+      "defense": 4,
+      "type": "dragon",
+      "skill": "dragonBreath",
+      "note": "ブレス"
+    }
+  ],
+  "bossBase": [
+    {
+      "base": "巨大ミミック",
+      "emoji": "🎁",
+      "hp": 185,
+      "attack": 18,
+      "defense": 5,
+      "type": "boss_mimic",
+      "skill": "bossTrap",
+      "note": "大罠"
+    },
+    {
+      "base": "古代竜王",
+      "emoji": "🐲",
+      "hp": 260,
+      "attack": 24,
+      "defense": 7,
+      "type": "boss_dragon",
+      "skill": "hellBreath",
+      "note": "灼熱ブレス"
+    },
+    {
+      "base": "洞窟の魔王",
+      "emoji": "😈",
+      "hp": 340,
+      "attack": 28,
+      "defense": 8,
+      "type": "boss_demon",
+      "skill": "darkNova",
+      "note": "闇の大技"
+    },
+    {
+      "base": "星喰いの邪竜",
+      "emoji": "🌌",
+      "hp": 460,
+      "attack": 33,
+      "defense": 10,
+      "type": "boss_star_dragon",
+      "skill": "starEclipse",
+      "note": "星蝕の大技"
+    }
+  ],
+  "profiles": {
+    "slime": [
+      "thunder",
+      "ice"
+    ],
+    "bat": [
+      "thunder",
+      "wind"
+    ],
+    "ghost": [
+      "holy",
+      "physical"
+    ],
+    "golem": [
+      "ice",
+      "thunder"
+    ],
+    "crystal": [
+      "physical",
+      "fire"
+    ],
+    "mushroom": [
+      "fire",
+      null
+    ],
+    "wolf": [
+      "fire",
+      "wind"
+    ],
+    "mimic": [
+      "thunder",
+      "physical"
+    ],
+    "warlock": [
+      "holy",
+      "fire"
+    ],
+    "dragon": [
+      "ice",
+      "fire"
+    ],
+    "boss_mimic": [
+      "thunder",
+      "physical"
+    ],
+    "boss_dragon": [
+      "ice",
+      "fire"
+    ],
+    "boss_demon": [
+      "holy",
+      "fire"
+    ],
+    "boss_star_dragon": [
+      "holy",
+      "thunder"
+    ]
+  },
+  "equipDefs": [
+    {
+      "id": "bronzeSword",
+      "name": "銅の剣",
+      "slot": "weapon",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "N",
+      "stats": {
+        "attack": 3
+      },
+      "effects": {},
+      "desc": "攻撃+3"
+    },
+    {
+      "id": "flameSword",
+      "name": "炎の剣",
+      "slot": "weapon",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "R",
+      "stats": {
+        "attack": 5
+      },
+      "effects": {
+        "fireAttack": 0.25,
+        "fireBoost": 0.08
+      },
+      "desc": "攻撃+5 / 通常炎化+25% / 炎強化+8%"
+    },
+    {
+      "id": "thunderSword",
+      "name": "雷鳴の剣",
+      "slot": "weapon",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "R",
+      "stats": {
+        "attack": 4,
+        "maxMp": 3
+      },
+      "effects": {
+        "thunderBoost": 0.12
+      },
+      "desc": "攻撃+4 / 最大MP+3 / 雷強化+12%"
+    },
+    {
+      "id": "guardianBlade",
+      "name": "守護の剣",
+      "slot": "weapon",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "R",
+      "stats": {
+        "attack": 3,
+        "defense": 2
+      },
+      "effects": {
+        "holyBoost": 0.08
+      },
+      "desc": "攻撃+3 / 防御+2 / 聖強化+8%"
+    },
+    {
+      "id": "dragonSlayer",
+      "name": "竜断ちの剣",
+      "slot": "weapon",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "SR",
+      "stats": {
+        "attack": 8
+      },
+      "effects": {
+        "iceBoost": 0.12
+      },
+      "desc": "攻撃+8 / 氷強化+12%"
+    },
+    {
+      "id": "ironArmor",
+      "name": "鉄の鎧",
+      "slot": "armor",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "N",
+      "stats": {
+        "defense": 4,
+        "maxHp": 10
+      },
+      "effects": {},
+      "desc": "防御+4 / 最大HP+10"
+    },
+    {
+      "id": "dragonArmor",
+      "name": "竜鱗の鎧",
+      "slot": "armor",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "SR",
+      "stats": {
+        "defense": 8,
+        "maxHp": 18
+      },
+      "effects": {
+        "breathResist": 0.25
+      },
+      "desc": "防御+8 / 最大HP+18 / ブレス軽減+25%"
+    },
+    {
+      "id": "crystalArmor",
+      "name": "水晶の鎧",
+      "slot": "armor",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "R",
+      "stats": {
+        "defense": 5,
+        "maxMp": 4
+      },
+      "effects": {
+        "thunderBoost": 0.08
+      },
+      "desc": "防御+5 / 最大MP+4 / 雷強化+8%"
+    },
+    {
+      "id": "oathArmor",
+      "name": "誓いの鎧",
+      "slot": "armor",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "SR",
+      "stats": {
+        "defense": 7,
+        "maxHp": 14
+      },
+      "effects": {
+        "holyBoost": 0.1
+      },
+      "desc": "防御+7 / 最大HP+14 / 聖強化+10%"
+    },
+    {
+      "id": "apprenticeStaff",
+      "name": "見習いの杖",
+      "slot": "weapon",
+      "jobs": [
+        "mage"
+      ],
+      "rarity": "N",
+      "stats": {
+        "maxMp": 6,
+        "attack": 1
+      },
+      "effects": {},
+      "desc": "最大MP+6 / 攻撃+1"
+    },
+    {
+      "id": "flameStaff",
+      "name": "火炎の杖",
+      "slot": "weapon",
+      "jobs": [
+        "mage"
+      ],
+      "rarity": "R",
+      "stats": {
+        "maxMp": 8
+      },
+      "effects": {
+        "fireBoost": 0.15
+      },
+      "desc": "最大MP+8 / 炎強化+15%"
+    },
+    {
+      "id": "iceStaff",
+      "name": "氷晶の杖",
+      "slot": "weapon",
+      "jobs": [
+        "mage"
+      ],
+      "rarity": "R",
+      "stats": {
+        "maxMp": 8
+      },
+      "effects": {
+        "iceBoost": 0.15
+      },
+      "desc": "最大MP+8 / 氷強化+15%"
+    },
+    {
+      "id": "stormStaff",
+      "name": "嵐の杖",
+      "slot": "weapon",
+      "jobs": [
+        "mage"
+      ],
+      "rarity": "R",
+      "stats": {
+        "maxMp": 7
+      },
+      "effects": {
+        "thunderBoost": 0.16,
+        "windBoost": 0.08
+      },
+      "desc": "最大MP+7 / 雷強化+16% / 風強化+8%"
+    },
+    {
+      "id": "starWand",
+      "name": "星詠みの杖",
+      "slot": "weapon",
+      "jobs": [
+        "mage"
+      ],
+      "rarity": "SR",
+      "stats": {
+        "maxMp": 12
+      },
+      "effects": {
+        "mpCostDown": 1,
+        "holyBoost": 0.08
+      },
+      "desc": "最大MP+12 / MP消費軽減-1 / 聖強化+8%"
+    },
+    {
+      "id": "magicRobe",
+      "name": "魔導ローブ",
+      "slot": "armor",
+      "jobs": [
+        "mage"
+      ],
+      "rarity": "N",
+      "stats": {
+        "defense": 2,
+        "maxMp": 10
+      },
+      "effects": {},
+      "desc": "防御+2 / 最大MP+10"
+    },
+    {
+      "id": "sageRobe",
+      "name": "賢者のローブ",
+      "slot": "armor",
+      "jobs": [
+        "mage"
+      ],
+      "rarity": "SR",
+      "stats": {
+        "defense": 3,
+        "maxMp": 16
+      },
+      "effects": {
+        "mpCostDown": 1
+      },
+      "desc": "防御+3 / 最大MP+16 / MP消費軽減-1"
+    },
+    {
+      "id": "mistRobe",
+      "name": "霧隠れのローブ",
+      "slot": "armor",
+      "jobs": [
+        "mage"
+      ],
+      "rarity": "R",
+      "stats": {
+        "defense": 3,
+        "maxHp": 8
+      },
+      "effects": {
+        "iceBoost": 0.08
+      },
+      "desc": "防御+3 / 最大HP+8 / 氷強化+8%"
+    },
+    {
+      "id": "prayerStaff",
+      "name": "祈りの杖",
+      "slot": "weapon",
+      "jobs": [
+        "priest"
+      ],
+      "rarity": "N",
+      "stats": {
+        "maxMp": 6
+      },
+      "effects": {
+        "healBoost": 0.1
+      },
+      "desc": "最大MP+6 / 回復強化+10%"
+    },
+    {
+      "id": "saintStaff",
+      "name": "聖鈴の杖",
+      "slot": "weapon",
+      "jobs": [
+        "priest"
+      ],
+      "rarity": "R",
+      "stats": {
+        "maxMp": 8
+      },
+      "effects": {
+        "healBoost": 0.12,
+        "holyBoost": 0.08
+      },
+      "desc": "最大MP+8 / 回復強化+12% / 聖強化+8%"
+    },
+    {
+      "id": "judgementMace",
+      "name": "裁きのメイス",
+      "slot": "weapon",
+      "jobs": [
+        "priest"
+      ],
+      "rarity": "SR",
+      "stats": {
+        "attack": 4,
+        "maxMp": 8
+      },
+      "effects": {
+        "holyBoost": 0.18
+      },
+      "desc": "攻撃+4 / 最大MP+8 / 聖強化+18%"
+    },
+    {
+      "id": "saintRobe",
+      "name": "聖者の法衣",
+      "slot": "armor",
+      "jobs": [
+        "priest"
+      ],
+      "rarity": "R",
+      "stats": {
+        "defense": 4,
+        "maxMp": 8
+      },
+      "effects": {
+        "healBoost": 0.15
+      },
+      "desc": "防御+4 / 最大MP+8 / 回復強化+15%"
+    },
+    {
+      "id": "monkRobe",
+      "name": "修道士の法衣",
+      "slot": "armor",
+      "jobs": [
+        "priest"
+      ],
+      "rarity": "N",
+      "stats": {
+        "defense": 3,
+        "maxHp": 8
+      },
+      "effects": {
+        "healBoost": 0.05
+      },
+      "desc": "防御+3 / 最大HP+8 / 回復強化+5%"
+    },
+    {
+      "id": "oracleVestment",
+      "name": "神託の祭服",
+      "slot": "armor",
+      "jobs": [
+        "priest"
+      ],
+      "rarity": "SR",
+      "stats": {
+        "defense": 5,
+        "maxMp": 14
+      },
+      "effects": {
+        "healBoost": 0.18
+      },
+      "desc": "防御+5 / 最大MP+14 / 回復強化+18%"
+    },
+    {
+      "id": "lifeRing",
+      "name": "生命の指輪",
+      "slot": "accessory",
+      "jobs": [
+        "hero",
+        "mage",
+        "priest"
+      ],
+      "rarity": "N",
+      "stats": {
+        "maxHp": 12
+      },
+      "effects": {},
+      "desc": "最大HP+12"
+    },
+    {
+      "id": "manaRing",
+      "name": "魔力の指輪",
+      "slot": "accessory",
+      "jobs": [
+        "hero",
+        "mage",
+        "priest"
+      ],
+      "rarity": "N",
+      "stats": {
+        "maxMp": 8
+      },
+      "effects": {},
+      "desc": "最大MP+8"
+    },
+    {
+      "id": "warriorRing",
+      "name": "闘志の指輪",
+      "slot": "accessory",
+      "jobs": [
+        "hero",
+        "mage",
+        "priest"
+      ],
+      "rarity": "R",
+      "stats": {
+        "attack": 2
+      },
+      "effects": {},
+      "desc": "攻撃+2"
+    },
+    {
+      "id": "focusCharm",
+      "name": "集中のお守り",
+      "slot": "accessory",
+      "jobs": [
+        "hero",
+        "mage",
+        "priest"
+      ],
+      "rarity": "R",
+      "stats": {
+        "maxMp": 4
+      },
+      "effects": {
+        "mpCostDown": 1
+      },
+      "desc": "最大MP+4 / MP消費軽減-1"
+    },
+    {
+      "id": "luckyCharm",
+      "name": "幸運のお守り",
+      "slot": "accessory",
+      "jobs": [
+        "hero",
+        "mage",
+        "priest"
+      ],
+      "rarity": "R",
+      "stats": {},
+      "effects": {
+        "dropBoost": 0.18
+      },
+      "desc": "ドロップ率+18%"
+    },
+    {
+      "id": "heroCape",
+      "name": "勇気のマント",
+      "slot": "accessory",
+      "jobs": [
+        "hero"
+      ],
+      "rarity": "SR",
+      "stats": {
+        "maxHp": 10,
+        "defense": 2
+      },
+      "effects": {
+        "holyBoost": 0.08
+      },
+      "desc": "最大HP+10 / 防御+2 / 聖強化+8%"
+    },
+    {
+      "id": "adventureCharm",
+      "name": "冒険者のお守り",
+      "slot": "accessory",
+      "jobs": [
+        "hero",
+        "mage",
+        "priest"
+      ],
+      "rarity": "R",
+      "stats": {},
+      "effects": {
+        "dropBoost": 0.1
+      },
+      "desc": "ドロップ率+10%"
+    },
+    {
+      "id": "sageRing",
+      "name": "賢者の指輪",
+      "slot": "accessory",
+      "jobs": [
+        "hero",
+        "mage",
+        "priest"
+      ],
+      "rarity": "SR",
+      "stats": {
+        "maxMp": 5
+      },
+      "effects": {
+        "mpCostDown": 1
+      },
+      "desc": "最大MP+5 / MP消費軽減-1"
+    }
+  ],
+  "equipRecipes": [
+    {
+      "id": "bronzeSword",
+      "cost": {
+        "magicOre": 2,
+        "herbFlower": 1
+      }
+    },
+    {
+      "id": "ironArmor",
+      "cost": {
+        "magicOre": 2,
+        "slimeJelly": 1
+      }
+    },
+    {
+      "id": "magicRobe",
+      "cost": {
+        "magicOre": 2,
+        "slimeJelly": 2
+      }
+    },
+    {
+      "id": "prayerStaff",
+      "cost": {
+        "herbFlower": 2,
+        "magicOre": 1
+      }
+    },
+    {
+      "id": "flameStaff",
+      "cost": {
+        "magicOre": 3,
+        "poisonSpore": 1
+      }
+    },
+    {
+      "id": "iceStaff",
+      "cost": {
+        "magicOre": 3,
+        "slimeJelly": 2
+      }
+    },
+    {
+      "id": "thunderSword",
+      "cost": {
+        "magicOre": 3,
+        "slimeJelly": 2
+      }
+    },
+    {
+      "id": "guardianBlade",
+      "cost": {
+        "magicOre": 3,
+        "herbFlower": 2
+      }
+    },
+    {
+      "id": "crystalArmor",
+      "cost": {
+        "magicOre": 3,
+        "slimeJelly": 3
+      }
+    },
+    {
+      "id": "dragonSlayer",
+      "cost": {
+        "magicOre": 6,
+        "dragonScale": 2
+      }
+    },
+    {
+      "id": "stormStaff",
+      "cost": {
+        "magicOre": 4,
+        "slimeJelly": 2
+      }
+    },
+    {
+      "id": "starWand",
+      "cost": {
+        "magicOre": 5,
+        "dragonScale": 1,
+        "poisonSpore": 1
+      }
+    },
+    {
+      "id": "sageRobe",
+      "cost": {
+        "magicOre": 4,
+        "slimeJelly": 3
+      }
+    },
+    {
+      "id": "mistRobe",
+      "cost": {
+        "slimeJelly": 4,
+        "poisonSpore": 1
+      }
+    },
+    {
+      "id": "saintStaff",
+      "cost": {
+        "herbFlower": 4,
+        "magicOre": 2
+      }
+    },
+    {
+      "id": "judgementMace",
+      "cost": {
+        "magicOre": 5,
+        "dragonScale": 1,
+        "herbFlower": 2
+      }
+    },
+    {
+      "id": "saintRobe",
+      "cost": {
+        "herbFlower": 3,
+        "magicOre": 2
+      }
+    },
+    {
+      "id": "monkRobe",
+      "cost": {
+        "herbFlower": 3,
+        "slimeJelly": 2
+      }
+    },
+    {
+      "id": "oracleVestment",
+      "cost": {
+        "herbFlower": 5,
+        "magicOre": 3,
+        "dragonScale": 1
+      }
+    },
+    {
+      "id": "warriorRing",
+      "cost": {
+        "magicOre": 3,
+        "slimeJelly": 1
+      }
+    },
+    {
+      "id": "focusCharm",
+      "cost": {
+        "magicOre": 3,
+        "poisonSpore": 1
+      }
+    },
+    {
+      "id": "luckyCharm",
+      "cost": {
+        "slimeJelly": 3,
+        "herbFlower": 3
+      }
+    },
+    {
+      "id": "heroCape",
+      "cost": {
+        "herbFlower": 4,
+        "dragonScale": 1
+      }
+    },
+    {
+      "id": "sageRing",
+      "cost": {
+        "magicOre": 4,
+        "dragonScale": 1
+      }
+    },
+    {
+      "id": "adventureCharm",
+      "cost": {
+        "slimeJelly": 2,
+        "herbFlower": 2
+      }
+    }
+  ],
+  "recipes": [
+    {
+      "id": "herb",
+      "name": "薬草",
+      "cost": {
+        "herbFlower": 1
+      },
+      "make": 2
+    },
+    {
+      "id": "hiHerb",
+      "name": "上薬草",
+      "cost": {
+        "herbFlower": 2,
+        "slimeJelly": 1
+      },
+      "make": 1
+    },
+    {
+      "id": "manaWater",
+      "name": "魔力水",
+      "cost": {
+        "magicOre": 1,
+        "slimeJelly": 1
+      },
+      "make": 1
+    },
+    {
+      "id": "panacea",
+      "name": "万能薬",
+      "cost": {
+        "herbFlower": 1,
+        "poisonSpore": 1
+      },
+      "make": 1
+    },
+    {
+      "id": "reviveStone",
+      "name": "復活石",
+      "cost": {
+        "magicOre": 2,
+        "dragonScale": 1
+      },
+      "make": 1
+    },
+    {
+      "id": "trainingBook",
+      "name": "修練の書",
+      "cost": {
+        "magicOre": 4,
+        "herbFlower": 2
+      },
+      "make": 1
+    }
+  ],
+  "affixDefs": [
+    {
+      "name": "剛力",
+      "slots": [
+        "weapon",
+        "accessory"
+      ],
+      "stats": {
+        "attack": 2
+      },
+      "rarity": "N"
+    },
+    {
+      "name": "堅牢",
+      "slots": [
+        "armor",
+        "accessory"
+      ],
+      "stats": {
+        "defense": 2
+      },
+      "rarity": "N"
+    },
+    {
+      "name": "生命",
+      "slots": [
+        "armor",
+        "accessory"
+      ],
+      "stats": {
+        "maxHp": 10
+      },
+      "rarity": "N"
+    },
+    {
+      "name": "魔力",
+      "slots": [
+        "weapon",
+        "armor",
+        "accessory"
+      ],
+      "stats": {
+        "maxMp": 6
+      },
+      "rarity": "N"
+    },
+    {
+      "name": "火花",
+      "slots": [
+        "weapon"
+      ],
+      "effects": {
+        "fireBoost": 0.08
+      },
+      "rarity": "R"
+    },
+    {
+      "name": "霜",
+      "slots": [
+        "weapon"
+      ],
+      "effects": {
+        "iceBoost": 0.08
+      },
+      "rarity": "R"
+    },
+    {
+      "name": "雷光",
+      "slots": [
+        "weapon"
+      ],
+      "effects": {
+        "thunderBoost": 0.08
+      },
+      "rarity": "R"
+    },
+    {
+      "name": "聖印",
+      "slots": [
+        "weapon",
+        "accessory"
+      ],
+      "effects": {
+        "holyBoost": 0.08
+      },
+      "rarity": "R"
+    },
+    {
+      "name": "祈り",
+      "slots": [
+        "weapon",
+        "armor",
+        "accessory"
+      ],
+      "effects": {
+        "healBoost": 0.07
+      },
+      "rarity": "R"
+    },
+    {
+      "name": "幸運",
+      "slots": [
+        "accessory",
+        "armor"
+      ],
+      "effects": {
+        "dropBoost": 0.08
+      },
+      "rarity": "R"
+    },
+    {
+      "name": "賢者",
+      "slots": [
+        "weapon",
+        "accessory"
+      ],
+      "stats": {
+        "maxMp": 4
+      },
+      "effects": {
+        "mpCostDown": 1
+      },
+      "rarity": "SR"
+    },
+    {
+      "name": "英雄",
+      "slots": [
+        "weapon",
+        "armor",
+        "accessory"
+      ],
+      "stats": {
+        "attack": 2,
+        "maxHp": 8
+      },
+      "rarity": "SR"
+    }
+  ]
+}

@@ -9,8 +9,8 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	_check(ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/stage_select.tscn", "F5 must start at stage selection")
-	change_scene_to_file(ProjectSettings.get_setting("application/run/main_scene"))
+	_check(ResourceLoader.exists("res://scenes/stage_select.tscn"), "Action stage selection must remain available")
+	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(3)
 	var menu := current_scene
 	var stages: HBoxContainer = menu.get_node("Margin/Content/Stages")

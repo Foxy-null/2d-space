@@ -7,11 +7,25 @@
 ## 必要環境と起動
 
 - Godot 4.7.2 Stable（Standard版）、Git
-- Godotに `project.godot` をインポートし、`F5` で実行します。
+- Godotに `project.godot` をインポートし、`F5` でゲーム選択画面を開きます。
+
+## ゲーム選択とミニ勇者バトル
+
+「忍者ぶっとびくん Galaxy」を選ぶと、既存のステージ選択画面に進みます。「ミニ勇者バトル」を選ぶと、受領した未完の `4.html` をGodotに移植したコマンド式RPGの開発版を起動します。クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選択できます。
+
+RPGでは難易度を選んで冒険を始め、勇者・魔法使い・僧侶が順に行動します。敵のカードを押すと攻撃対象、味方の名前を押すと回復・装備・スキルツリーの対象を変更します。「技」「魔法」「道具」で行動を選び、「メニュー」から装備交換、スキル習得、クラフトを試せます。勝利後は「次の階層」で進みます。
+
+「開発用補給（仮）」は全回復、Lv8以上、SP・素材・装備の追加を行う試験用ボタンです。高レベルの技や装備をすぐに確認できます。元コードから確認できる戦闘計算と16種類の技効果を再現し、途中で切れている「氷牢」は確認できる式に終端を補いました。敵の実行、ターン進行、報酬・成長、道具の効果などは仮実装です。
+
+不足している処理と移植時の変更は [ミニ勇者バトルの移植記録](docs/mini-hero-port.md) に記録しています。未受領の技効果は一覧に残して無効化しています。セーブと最終クリア条件はこの開発版にはありません。「最初から」やゲームの選び直しで進行をリセットします。
+
+RPGのポップアップはEsc／Back・Select／B・○で閉じられます。画面右上の「ゲーム選択へ戻る」、またはポップアップを閉じた状態のEsc／Back・Selectでゲーム選択へ戻れます。既存のステージ選択画面からも「ゲーム選択へ戻る」またはEsc／Back・Selectで戻れます。
+
+![ミニ勇者バトルの開発版](docs/screenshots/mini-hero/battle.png)
 
 ## ステージ選択
 
-F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」と「ステージ2：壁キックと重力」は自由に選べ、それぞれ1部屋目から始まります。ステージ3〜5は「準備中」と表示し、選択できません。
+ゲーム選択で「忍者ぶっとびくん Galaxy」を選ぶと、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」と「ステージ2：壁キックと重力」は自由に選べ、それぞれ1部屋目から始まります。ステージ3〜5は「準備中」と表示し、選択できません。
 
 クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。クリア後も、引き続き自由に練習できます。
 
@@ -166,7 +180,9 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1・2の開始
+- `scenes/game_select.tscn` / `scripts/game_select.gd`：通常起動するゲーム選択画面、既存アクションとRPGの開始
+- `games/mini_hero/game.tscn` / `game.gd` / `battle.gd` / `data.json`：RPGの画面、戦闘と仮の進行、元コードのデータ定義
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：既存アクションのステージ選択画面、ステージ1・2の開始
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：壁キックと重力反転を組み合わせた6部屋の本編ステージ
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
@@ -176,6 +192,8 @@ F6で実行する `main.tscn` のPhase 2配置：
 ## 自動テスト
 
 ```powershell
+Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/mini_hero_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/game_select_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
@@ -192,6 +210,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 それぞれ `BASE_SYSTEM_TEST_OK` / `PHASE1_MOVEMENT_TEST_OK` / `PHASE2_ENVIRONMENT_TEST_OK` と終了コード0で成功です。baseは入力・移動・壁・重力とデモ配置、Phase 1は両重力・左右両側の接地からのGrab／低い段差のマントル／ジャンプ優先と接地中のスタミナ、空中のマントル／スタミナ・Dash・色・ジャンプ連携・2種類のクリスタルの効果分離／再出現・Respawnを検証します。Phase 2はGate往復・実接触、4方向Spring、反射と速度範囲、追加ジャンプを付与しないことと未使用の権利の保持、同frame着地回復、Wind合成・能力相互作用・削除を検証します。
 
 `STAGE_SELECT_TEST_OK` は、選択画面からの起動、マウス・キーボード・ゲームパッドの入力、準備中のステージの無効化、クリア後の任意練習、選択画面へ戻る操作、再選択時の進捗初期化を確認します。
+
+`MINI_HERO_TEST_OK` は受領したJavaScriptから生成した44ケースとHP・MP・LIMIT・状態を比較し、装備交換、習得条件、製作、仮の進行を確認します。`GAME_SELECT_TEST_OK` は両ゲームの起動・往復、RPGの画面操作と1280×720内への収まりを確認します。比較条件と描画付きテストの方法は [移植記録](docs/mini-hero-port.md#検証) にあります。
 
 `STAGE_2_TEST_OK` は、ダッシュなしの実入力で全6部屋を攻略し、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
 
