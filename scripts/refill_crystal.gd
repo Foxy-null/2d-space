@@ -8,10 +8,29 @@ enum RefillKind { DASH, AIR_JUMP }
 @export var respawn_time := 2.5
 var _respawn_left := 0.0
 var _available := true
+var _time := 0.0
 
 
 func _ready() -> void:
+	for child in get_children():
+		if child is CanvasItem:
+			child.hide()
 	body_entered.connect(_on_body_entered)
+
+
+func _process(delta: float) -> void:
+	_time = fposmod(_time + delta, 4.0)
+	if _available:
+		queue_redraw()
+
+
+func _draw() -> void:
+	draw_set_transform(Vector2(0, 2 * sin(_time * TAU / 4)))
+	if refill_kind == RefillKind.AIR_JUMP:
+		ArtDraw.boot(self)
+	else:
+		ArtDraw.dash(self)
+	draw_set_transform(Vector2.ZERO)
 
 
 func _on_body_entered(body: Node) -> void:

@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_select.gd" id="1_menu"]
-[ext_resource type="Script" path="res://scripts/starfield.gd" id="2_stars"]
+[ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="2_stars"]
 
 [sub_resource type="StyleBoxFlat" id="Style_normal"]
 content_margin_left = 16.0
@@ -112,7 +112,7 @@ theme_override_constants/margin_bottom = 48
 
 [node name="Content" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 16
 
 [node name="GameTitle" type="Label" parent="Margin/Content"]
 layout_mode = 2
@@ -136,6 +136,9 @@ theme_override_constants/separation = 16
 alignment = 1
 
 [node name="Stage1" type="Button" parent="Margin/Content/Stages"]
+focus_neighbor_right = NodePath("../Stage2")
+focus_neighbor_left = NodePath("../Stage1")
+focus_neighbor_bottom = NodePath("../../Preview")
 custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -143,6 +146,9 @@ size_flags_vertical = 4
 text = "ステージ 1\n\nチュートリアル\n\nプレイする"
 
 [node name="Stage2" type="Button" parent="Margin/Content/Stages"]
+focus_neighbor_right = NodePath("../Stage2")
+focus_neighbor_left = NodePath("../Stage1")
+focus_neighbor_bottom = NodePath("../../Preview")
 custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -176,6 +182,12 @@ focus_mode = 0
 disabled = true
 text = "ステージ 5\n\n準備中\n\nプレイできません"
 
+[node name="Preview" type="Button" parent="Margin/Content"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+focus_neighbor_top = NodePath("../Stages/Stage1")
+text = "5つの環境を見る — 背景とギミックのプレビュー"
+
 [node name="Availability" type="Label" parent="Margin/Content"]
 layout_mode = 2
 text = "ステージ1・2は自由に選べます。ステージ3〜5は準備中です。"
@@ -189,3 +201,5 @@ text = "選択：方向キー / 十字キー / スティック　　決定：Ent
 [connection signal="pressed" from="Margin/Content/Stages/Stage1" to="." method="_start_tutorial"]
 
 [connection signal="pressed" from="Margin/Content/Stages/Stage2" to="." method="_start_stage_two"]
+
+[connection signal="pressed" from="Margin/Content/Preview" to="." method="_preview_environments"]

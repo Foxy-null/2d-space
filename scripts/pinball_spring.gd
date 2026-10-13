@@ -40,7 +40,8 @@ func _on_body_exited(body: Node2D) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, 32.0, Color(0.45, 0.15, 0.4))
-	draw_circle(Vector2.ZERO, 28.0, Color(1.0, 0.45, 0.85))
-	draw_arc(Vector2.ZERO, 22.0, 0.0, TAU, 64, Color(1.0, 0.85, 0.95), 3.0, true)
-	draw_circle(Vector2.ZERO, 9.0, Color(0.45, 0.15, 0.4))
+	ArtDraw.ellipse(self, Vector2.ZERO, Vector2(31, 31), ArtDraw.CORAL, 3)
+	for angle in [0.0, PI / 2, PI, PI * 1.5]:
+		var p := Vector2.from_angle(angle) * 23
+		var radius := Vector2(5, 10) if absf(p.x) > 10 else Vector2(10, 5)
+		ArtDraw.ellipse(self, p, radius, ArtDraw.CREAM, 2)

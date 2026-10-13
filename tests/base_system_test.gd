@@ -15,7 +15,7 @@ func _run() -> void:
 	await process_frame
 	var player := main.get_node("Player") as PlayerController
 	_check(player != null, "Player scene is missing")
-	_assert_starfield(main.get_node("Background/Starfield") as Node2D)
+	_assert_backdrop(main.get_node("Background/Starfield") as StageBackdrop)
 	_check(not main.get_node("GateUp").moving_enabled and not main.get_node("GateDown").moving_enabled, "Existing gates must remain stationary")
 	for demo in ["MovingGate", "FloorSpring", "WallSpring", "WindArea", "Updraft", "PinballSpring", "JumpCreature", "HeavyObject", "ParachuteCreature", "PressureButton", "JumpCrystal", "JumpCrystalUp"]:
 		_check(main.has_node(demo), "Missing Phase 2 demo: " + demo)
@@ -158,32 +158,16 @@ func _assert_wall_slide_requires_input(player: PlayerController) -> void:
 	_check(player.velocity.y > player.wall_slide_speed + 1.0, "Wall slide stayed active without wall input")
 
 
-func _assert_starfield(starfield: Node2D) -> void:
-	_check(starfield != null, "Starfield is missing")
-	if starfield == null:
+func _assert_backdrop(backdrop: StageBackdrop) -> void:
+	_check(backdrop != null, "Animated backdrop is missing")
+	if backdrop == null:
 		return
-
-	var stars: Array = starfield.get("_stars")
-	_check(stars.size() == starfield.get("star_count"), "Starfield did not populate the viewport")
-	var bounds := starfield.get_viewport_rect().size
-	var quadrant_mask := 0
-	for value in stars:
-		var star: Vector3 = value
-		_check(star.x >= 0.0 and star.x < bounds.x and star.y >= 0.0 and star.y < bounds.y, "A star was placed outside the viewport")
-		var quadrant := 0
-		if star.x >= bounds.x * 0.5:
-			quadrant += 1
-		if star.y >= bounds.y * 0.5:
-			quadrant += 2
-		quadrant_mask |= 1 << quadrant
-	_check(quadrant_mask == 15, "Stars do not cover the whole viewport")
-
-	var wrapping_star: Vector3 = stars[0]
-	wrapping_star.x = 0.0
-	stars[0] = wrapping_star
-	starfield.call("_process", 1.0)
-	var wrapped_star: Vector3 = stars[0]
-	_check(wrapped_star.x > bounds.x * 0.9, "Starfield did not wrap at the viewport edge")
+	var picture := backdrop.get_child(0) as Sprite2D
+	_check(picture != null and picture.texture != null, "Backdrop art must be loaded")
+	if picture == null or picture.texture == null:
+		return
+	_check((picture.texture.get_size() * picture.scale).is_equal_approx(root.get_visible_rect().size), "Backdrop fills the viewport")
+	_check(backdrop.get_parent() is CanvasLayer and backdrop.get_parent().layer < 0, "Background stays behind the playable world")
 
 
 func _wait_for_floor(player: PlayerController) -> void:

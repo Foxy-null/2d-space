@@ -42,6 +42,30 @@ func _update_visuals() -> void:
 	$Arrow.text = "↓" if target_gravity > 0 else "↑"
 	$Arrow.add_theme_color_override("font_color", tint)
 	$Glow.color = Color(tint, 0.22)
+	$Glow.hide()
+	$Arrow.add_theme_color_override("font_outline_color", ArtDraw.INK)
+	$Arrow.add_theme_constant_override("outline_size", 5)
+	queue_redraw()
+
+
+func _draw() -> void:
+	var half: Vector2 = ($CollisionShape2D.shape as RectangleShape2D).size * 0.5
+	var tint := ArtDraw.CORAL if target_gravity < 0 else ArtDraw.CYAN
+	for side in [0.0, PI]:
+		var points := PackedVector2Array()
+		for i in 25:
+			var angle: float = side - PI / 2 + 0.3 + i * (PI - 0.6) / 24
+			points.append(Vector2(cos(angle), sin(angle)) * half)
+		draw_polyline(points, ArtDraw.INK, 13, true)
+		draw_polyline(points, tint, 8, true)
+		for tip in [points[0], points[-1]]:
+			draw_circle(tip, 6, ArtDraw.INK)
+			draw_circle(tip, 3.5, Color("84848b"))
+	if moving_enabled:
+		var direction := move_offset.normalized()
+		var center := Vector2(0, -half.y - 20)
+		ArtDraw.arrow(self, center - direction * 16, center + direction * 16, Color("bdb5c7"), 2)
+		ArtDraw.arrow(self, center + direction * 16, center - direction * 16, Color("bdb5c7"), 2)
 
 
 func reset_for_respawn() -> void:

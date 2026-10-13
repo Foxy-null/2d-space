@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/stage.tscn" id="2_stage"]
 [ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="3_gate"]
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
-[ext_resource type="Script" path="res://scripts/starfield.gd" id="5_starfield"]
+[ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="5_starfield"]
 
 [ext_resource type="PackedScene" path="res://scenes/refill_crystal.tscn" id="6_crystal"]
 [ext_resource type="PackedScene" path="res://scenes/jump_crystal.tscn" id="14_jump_crystal"]

@@ -3,3 +3,6 @@ builds/
 *.tmp
 Thumbs.db
 .DS_Store
+deliverables/
+docs/screenshots/art-review/round-*/*.png
+docs/screenshots/art-review/round-*/*.mp4

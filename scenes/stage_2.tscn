@@ -1,9 +1,11 @@
-[gd_scene load_steps=79 format=3]
+[gd_scene load_steps=80 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
 [ext_resource type="Script" path="res://scripts/stage_2.gd" id="1_stage"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="3_hud"]
-[ext_resource type="Script" path="res://scripts/starfield.gd" id="4_stars"]
+[ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="4_stars"]
 [ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="5_gate"]
 [ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="6_goal"]
 
@@ -217,6 +219,7 @@ size = Vector2(140, 28)
 size = Vector2(160, 40)
 
 [node name="Stage2" type="Node2D"]
+metadata/environment_theme = 1
 script = ExtResource("1_stage")
 
 [node name="Background" type="CanvasLayer" parent="."]
@@ -244,6 +247,7 @@ position = Vector2(640.0, 680.0)
 shape = SubResource("Shape_0")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/Floor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -260,6 +264,7 @@ position = Vector2(-20.0, 360.0)
 shape = SubResource("Shape_1")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/LeftBoundary"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-20.0, -360.0, 20.0, -360.0, 20.0, 360.0, -20.0, 360.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -276,6 +281,7 @@ position = Vector2(418.0, 210.0)
 shape = SubResource("Shape_2")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/LeftKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -290.0, 18.0, -290.0, 18.0, 290.0, -18.0, 290.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -292,6 +298,7 @@ position = Vector2(462, 334)
 shape = SubResource("Shape_3")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/KickStep"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-26, -14, 26, -14, 26, 14, -26, 14)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -308,6 +315,7 @@ position = Vector2(662, 480)
 shape = SubResource("Shape_4")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/RightKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18, -160, 18, -160, 18, 160, -18, 160)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -347,6 +355,7 @@ position = Vector2(1266.0, 360.0)
 shape = SubResource("Shape_6")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/ExitBarrier"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
 color = Color(0.35, 0.92, 1, 0.2)
 
@@ -393,6 +402,7 @@ position = Vector2(1040, 60)
 shape = SubResource("Shape_SpringCeiling_Room1")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/SpringCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-80, -20, 80, -20, 80, 20, -80, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -427,6 +437,7 @@ position = Vector2(640.0, 680.0)
 shape = SubResource("Shape_7")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/Floor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -443,6 +454,7 @@ position = Vector2(250, 60)
 shape = SubResource("Shape_8")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/EntryCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-250, -20, 250, -20, 250, 20, -250, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -459,6 +471,7 @@ position = Vector2(775, 60)
 shape = SubResource("Shape_ExitCeiling_Room2")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/MiddleCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-175, -20, 175, -20, 175, 20, -175, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -503,6 +516,7 @@ position = Vector2(418.0, 510.0)
 shape = SubResource("Shape_9")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/LeftKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -290.0, 18.0, -290.0, 18.0, 290.0, -18.0, 290.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -519,6 +533,7 @@ position = Vector2(462, 386)
 shape = SubResource("Shape_10")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/KickStep"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-26, -14, 26, -14, 26, 14, -26, 14)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -535,6 +550,7 @@ position = Vector2(662, 240)
 shape = SubResource("Shape_11")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/RightKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18, -160, 18, -160, 18, 160, -18, 160)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -551,6 +567,7 @@ position = Vector2(678, 386)
 shape = SubResource("Shape_12")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/KickLanding"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-86, -14, 86, -14, 86, 14, -86, 14)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -571,6 +588,7 @@ position = Vector2(1078, 270)
 shape = SubResource("Shape_ExitKickWall")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/ExitKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18, -190, 18, -190, 18, 190, -18, 190)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -643,6 +661,7 @@ position = Vector2(1266.0, 360.0)
 shape = SubResource("Shape_14")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room2/ExitBarrier"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
 color = Color(0.35, 0.92, 1, 0.2)
 
@@ -704,6 +723,7 @@ position = Vector2(175, 680)
 shape = SubResource("Shape_15")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/EntryFloor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-175, -40, 175, -40, 175, 40, -175, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -720,6 +740,7 @@ position = Vector2(1180, 680)
 shape = SubResource("Shape_ExitFloor_Room3")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitFloor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-100, -40, 100, -40, 100, 40, -100, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -738,6 +759,7 @@ shape = SubResource("Shape_ReturnBridge_Room3")
 disabled = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/ReturnBridge"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-365, -40, 365, -40, 365, 40, -365, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -778,6 +800,7 @@ position = Vector2(165, 60)
 shape = SubResource("Shape_16")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/EntryCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-165, -20, 165, -20, 165, 20, -165, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -794,6 +817,7 @@ position = Vector2(585, 60)
 shape = SubResource("Shape_ExitCeiling_Room3")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/MiddleCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-115, -20, 115, -20, 115, 20, -115, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -810,6 +834,7 @@ position = Vector2(1090, 60)
 shape = SubResource("Shape_FinalCeiling_Room3")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-30, -20, 30, -20, 30, 20, -30, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -854,6 +879,7 @@ position = Vector2(258.0, 530.0)
 shape = SubResource("Shape_17")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/LaunchWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -110.0, 18.0, -110.0, 18.0, 110.0, -18.0, 110.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -874,6 +900,7 @@ position = Vector2(1118, 270)
 shape = SubResource("Shape_ExitKickWall")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18, -190, 18, -190, 18, 190, -18, 190)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -969,6 +996,7 @@ position = Vector2(1266.0, 360.0)
 shape = SubResource("Shape_23")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitBarrier"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
 color = Color(0.35, 0.92, 1, 0.2)
 
@@ -1028,6 +1056,7 @@ position = Vector2(310, 680)
 shape = SubResource("Shape_24")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/EntryFloor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-310, -40, 310, -40, 310, 40, -310, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1044,6 +1073,7 @@ position = Vector2(1020, 680)
 shape = SubResource("Shape_ExitFloor_Room4")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitFloor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-260, -40, 260, -40, 260, 40, -260, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1062,6 +1092,7 @@ shape = SubResource("Shape_ReturnBridge_Room4")
 disabled = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/ReturnBridge"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-70, -40, 70, -40, 70, 40, -70, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1116,6 +1147,7 @@ position = Vector2(160, 60)
 shape = SubResource("Shape_25")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/EntryCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-160, -20, 160, -20, 160, 20, -160, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1132,6 +1164,7 @@ position = Vector2(650, 60)
 shape = SubResource("Shape_ExitCeiling_Room4")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/MiddleCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-200, -20, 200, -20, 200, 20, -200, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1148,6 +1181,7 @@ position = Vector2(1070, 60)
 shape = SubResource("Shape_FinalCeiling_Room4")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-50, -20, 50, -20, 50, 20, -50, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1192,6 +1226,7 @@ position = Vector2(298.0, 530.0)
 shape = SubResource("Shape_26")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/LaunchWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -110.0, 18.0, -110.0, 18.0, 110.0, -18.0, 110.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1218,6 +1253,7 @@ position = Vector2(598.0, 190.0)
 shape = SubResource("Shape_27")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/CeilingWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -110.0, 18.0, -110.0, 18.0, 110.0, -18.0, 110.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1238,6 +1274,7 @@ position = Vector2(858.0, 530.0)
 shape = SubResource("Shape_28")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/SecondLaunchWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -110.0, 18.0, -110.0, 18.0, 110.0, -18.0, 110.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1264,6 +1301,7 @@ position = Vector2(1118, 270)
 shape = SubResource("Shape_ExitKickWall")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18, -190, 18, -190, 18, 190, -18, 190)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1372,6 +1410,7 @@ position = Vector2(1266.0, 360.0)
 shape = SubResource("Shape_30")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitBarrier"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
 color = Color(0.35, 0.92, 1, 0.2)
 
@@ -1440,6 +1479,7 @@ position = Vector2(235.0, 680.0)
 shape = SubResource("Shape_31")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/EntryFloor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-235.0, -40.0, 235.0, -40.0, 235.0, 40.0, -235.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1456,6 +1496,7 @@ position = Vector2(1155.0, 680.0)
 shape = SubResource("Shape_32")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitFloor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-125.0, -40.0, 125.0, -40.0, 125.0, 40.0, -125.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1474,6 +1515,7 @@ shape = SubResource("Shape_ReturnBridge")
 disabled = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/ReturnBridge"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-280, -40, 280, -40, 280, 40, -280, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1514,6 +1556,7 @@ position = Vector2(165, 60)
 shape = SubResource("Shape_33")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/EntryCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-165, -20, 165, -20, 165, 20, -165, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1530,6 +1573,7 @@ position = Vector2(695, 60)
 shape = SubResource("Shape_ExitCeiling_Room5")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/MiddleCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-225, -20, 225, -20, 225, 20, -225, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1574,6 +1618,7 @@ position = Vector2(378.0, 530.0)
 shape = SubResource("Shape_34")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/LaunchWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -110.0, 18.0, -110.0, 18.0, 110.0, -18.0, 110.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1590,6 +1635,7 @@ position = Vector2(548.0, 510.0)
 shape = SubResource("Shape_35")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/LeftKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -290.0, 18.0, -290.0, 18.0, 290.0, -18.0, 290.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1606,6 +1652,7 @@ position = Vector2(592, 386)
 shape = SubResource("Shape_36")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/KickStep"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-26, -14, 26, -14, 26, 14, -26, 14)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1622,6 +1669,7 @@ position = Vector2(792, 240)
 shape = SubResource("Shape_37")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/RightKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18, -160, 18, -160, 18, 160, -18, 160)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1638,6 +1686,7 @@ position = Vector2(808, 386)
 shape = SubResource("Shape_38")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/KickLanding"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-86, -14, 86, -14, 86, 14, -86, 14)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1691,6 +1740,7 @@ position = Vector2(950, 554)
 shape = SubResource("Shape_ExitLanding")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitLanding"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-100, -14, 100, -14, 100, 14, -100, 14)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1768,6 +1818,7 @@ position = Vector2(1266.0, 360.0)
 shape = SubResource("Shape_40")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitBarrier"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
 color = Color(0.35, 0.92, 1, 0.2)
 
@@ -1822,6 +1873,7 @@ position = Vector2(1010, 274)
 shape = SubResource("Shape_ExitSpringPlatform")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitSpringPlatform"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-70, -14, 70, -14, 70, 14, -70, 14)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -1852,6 +1904,7 @@ position = Vector2(170, 680)
 shape = SubResource("Shape_41")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/EntryFloor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-170, -40, 170, -40, 170, 40, -170, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1868,6 +1921,7 @@ position = Vector2(1040, 680)
 shape = SubResource("Shape_ExitFloor_Room6")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/ExitFloor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-240, -40, 240, -40, 240, 40, -240, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1886,6 +1940,7 @@ shape = SubResource("Shape_ReturnBridge_Room6")
 disabled = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/ReturnBridge"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-230, -40, 230, -40, 230, 40, -230, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1926,6 +1981,7 @@ position = Vector2(265, 60)
 shape = SubResource("Shape_42")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/EntryCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-265, -20, 265, -20, 265, 20, -265, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1942,6 +1998,7 @@ position = Vector2(885, 60)
 shape = SubResource("Shape_ExitCeiling_Room6")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/MiddleCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-65, -20, 65, -20, 65, 20, -65, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -1958,6 +2015,7 @@ position = Vector2(1095, 60)
 shape = SubResource("Shape_FinalCeiling_Room6")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/ExitCeiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-25, -20, 25, -20, 25, 20, -25, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -2002,6 +2060,7 @@ position = Vector2(278.0, 530.0)
 shape = SubResource("Shape_43")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/LaunchWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -110.0, 18.0, -110.0, 18.0, 110.0, -18.0, 110.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -2022,6 +2081,7 @@ position = Vector2(408.0, 510.0)
 shape = SubResource("Shape_44")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/LeftKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -290.0, 18.0, -290.0, 18.0, 290.0, -18.0, 290.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -2038,6 +2098,7 @@ position = Vector2(452, 386)
 shape = SubResource("Shape_45")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/KickStep"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-26, -14, 26, -14, 26, 14, -26, 14)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -2054,6 +2115,7 @@ position = Vector2(652, 240)
 shape = SubResource("Shape_46")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/RightKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18, -160, 18, -160, 18, 160, -18, 160)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -2080,6 +2142,7 @@ position = Vector2(978.0, 530.0)
 shape = SubResource("Shape_49")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/SecondLaunchWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18.0, -110.0, 18.0, -110.0, 18.0, 110.0, -18.0, 110.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -2110,6 +2173,7 @@ position = Vector2(1128, 270)
 shape = SubResource("Shape_ExitKickWall")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/ExitKickWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-18, -190, 18, -190, 18, 190, -18, 190)
 color = Color(0.24, 0.38, 0.56, 1)
 
@@ -2223,6 +2287,7 @@ position = Vector2(1266.0, 360.0)
 shape = SubResource("Shape_51")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/ExitBarrier"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
 color = Color(0.35, 0.92, 1, 0.2)
 
@@ -2239,6 +2304,7 @@ position = Vector2(1300.0, 360.0)
 shape = SubResource("Shape_52")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/RightBoundary"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-20.0, -360.0, 20.0, -360.0, 20.0, 360.0, -20.0, 360.0)
 color = Color(0.12, 0.19, 0.34, 1)
 

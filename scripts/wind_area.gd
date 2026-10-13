@@ -21,6 +21,12 @@ extends Area2D
 		queue_redraw()
 
 var _players: Dictionary = {}
+var _time := 0.0
+
+
+func _process(delta: float) -> void:
+	_time = fposmod(_time + delta, 6.0)
+	queue_redraw()
 
 
 func _ready() -> void:
@@ -73,14 +79,25 @@ func _exit_tree() -> void:
 
 func _draw() -> void:
 	var rect := Rect2(-area_size * 0.5, area_size)
-	draw_rect(rect, Color(0.55, 0.8, 1.0, 0.13))
-	draw_rect(rect, Color(0.55, 0.8, 1.0, 0.45), false, 2.0)
+	draw_rect(rect, Color(0.55, 0.8, 1.0, 0.035))
 	# Convert the world direction into local coordinates, including editor rotation.
 	var direction := global_transform.basis_xform_inv(wind_direction).normalized()
 	if direction.is_zero_approx():
 		return
-	var tip := direction * minf(40.0, minf(area_size.x, area_size.y) * 0.3)
-	var tint := Color(0.75, 0.9, 1.0, 0.8)
-	draw_line(-tip, tip, tint, 4.0)
-	draw_line(tip, tip - direction.rotated(0.6) * 16.0, tint, 4.0)
-	draw_line(tip, tip - direction.rotated(-0.6) * 16.0, tint, 4.0)
+	var tint := Color(0.65, 0.88, 1.0, 0.55)
+	for i in 9:
+		var phase := fposmod(_time / 6.0 + float(i) / 9, 1.0)
+		var offset := Vector2(fposmod(i * 73.0, maxf(area_size.x - 20, 1)), fposmod(i * 97.0, maxf(area_size.y - 20, 1)))
+		if absf(direction.x) > absf(direction.y):
+			offset.x = (phase if direction.x > 0 else 1.0 - phase) * maxf(area_size.x - 20, 1)
+		else:
+			offset.y = (phase if direction.y > 0 else 1.0 - phase) * maxf(area_size.y - 20, 1)
+		var center := rect.position + Vector2(10, 10) + offset
+		ArtDraw.arrow(self, center - direction * 9, center + direction * 9, Color(tint, tint.a * sin(phase * PI)), 1.5)
+	var distance := absf(direction.x) * area_size.x / 2 + absf(direction.y) * area_size.y / 2
+	var fan := -direction * (distance - 16)
+	ArtDraw.ellipse(self, fan, Vector2(14, 14), Color("8e939f"))
+	ArtDraw.ellipse(self, fan, Vector2(10, 10), Color("444756"), 1.5)
+	for i in 3:
+		var angle := _time * TAU / 6 + i * TAU / 3
+		draw_line(fan, fan + Vector2.from_angle(angle) * 8, Color("b9c4cf"), 3, true)
