@@ -1,4 +1,6 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
 [sub_resource type="RectangleShape2D" id="Shape_floor"]
 size = Vector2(2400, 80)
@@ -31,6 +33,7 @@ position = Vector2(1200, 680)
 [node name="Collision" type="CollisionShape2D" parent="Floor"]
 shape = SubResource("Shape_floor")
 [node name="Visual" type="Polygon2D" parent="Floor"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-1200, -40, 1200, -40, 1200, 40, -1200, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -39,6 +42,7 @@ position = Vector2(1200, 40)
 [node name="Collision" type="CollisionShape2D" parent="Ceiling"]
 shape = SubResource("Shape_floor")
 [node name="Visual" type="Polygon2D" parent="Ceiling"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-1200, -40, 1200, -40, 1200, 40, -1200, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -47,6 +51,7 @@ position = Vector2(40, 360)
 [node name="Collision" type="CollisionShape2D" parent="LeftWall"]
 shape = SubResource("Shape_wall")
 [node name="Visual" type="Polygon2D" parent="LeftWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-40, -320, 40, -320, 40, 320, -40, 320)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -55,6 +60,7 @@ position = Vector2(2360, 360)
 [node name="Collision" type="CollisionShape2D" parent="RightWall"]
 shape = SubResource("Shape_wall")
 [node name="Visual" type="Polygon2D" parent="RightWall"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-40, -320, 40, -320, 40, 320, -40, 320)
 color = Color(0.12, 0.19, 0.34, 1)
 
@@ -63,6 +69,7 @@ position = Vector2(470, 525)
 [node name="Collision" type="CollisionShape2D" parent="PlatformA"]
 shape = SubResource("Shape_platform_wide")
 [node name="Visual" type="Polygon2D" parent="PlatformA"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-150, -14, 150, -14, 150, 14, -150, 14)
 color = Color(0.3, 0.45, 0.67, 1)
 
@@ -71,6 +78,7 @@ position = Vector2(790, 410)
 [node name="Collision" type="CollisionShape2D" parent="PlatformB"]
 shape = SubResource("Shape_platform_mid")
 [node name="Visual" type="Polygon2D" parent="PlatformB"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-110, -14, 110, -14, 110, 14, -110, 14)
 color = Color(0.3, 0.45, 0.67, 1)
 
@@ -79,6 +87,7 @@ position = Vector2(890, 515)
 [node name="Collision" type="CollisionShape2D" parent="WallJump"]
 shape = SubResource("Shape_wall_jump")
 [node name="Visual" type="Polygon2D" parent="WallJump"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-17, -110, 17, -110, 17, 110, -17, 110)
 color = Color(0.3, 0.45, 0.67, 1)
 
@@ -87,6 +96,7 @@ position = Vector2(1330, 205)
 [node name="Collision" type="CollisionShape2D" parent="CeilingPlatformA"]
 shape = SubResource("Shape_platform_short")
 [node name="Visual" type="Polygon2D" parent="CeilingPlatformA"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-75, -14, 75, -14, 75, 14, -75, 14)
 color = Color(0.47, 0.35, 0.72, 1)
 
@@ -95,6 +105,7 @@ position = Vector2(2080, 595)
 [node name="Collision" type="CollisionShape2D" parent="Step"]
 shape = SubResource("Shape_step")
 [node name="Visual" type="Polygon2D" parent="Step"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-45, -45, 45, -45, 45, 45, -45, 45)
 color = Color(0.3, 0.45, 0.67, 1)
 
@@ -103,5 +114,6 @@ position = Vector2(2180, 445)
 [node name="Collision" type="CollisionShape2D" parent="LastPlatform"]
 shape = SubResource("Shape_platform_last")
 [node name="Visual" type="Polygon2D" parent="LastPlatform"]
+script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-130, -14, 130, -14, 130, 14, -130, 14)
 color = Color(0.3, 0.45, 0.67, 1)

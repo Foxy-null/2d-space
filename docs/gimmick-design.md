@@ -65,4 +65,4 @@
 - 到着台・ロック：`scripts/arrival_switch.gd`、`scenes/arrival_switch.tscn`。
 - 実配置、出口の壁、穴、帰り道の橋：`scenes/main.tscn`、`scenes/tutorial.tscn`、`scenes/stage_2.tscn`、`scripts/tutorial.gd`、`scripts/stage_2.gd`。
 
-生成手段とプロンプトは [生成記録](art-direction/GIMMICK-PROMPTS.md) に保存した。今回の作業は見本と一覧の作成まで。ゲームの素材・シーン・挙動は変更していない。
+生成手段とプロンプトは [生成記録](art-direction/GIMMICK-PROMPTS.md) に保存した。ユーザーの承認を受けて、Aの形・機能の記号をゲームへ反映した。緑の生物・傘と、各ギミックの当たり判定・挙動は維持している。背景は5環境ぶん作成し、既存の全23部屋と環境プレビューへ組み込んだ。

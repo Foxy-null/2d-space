@@ -12,9 +12,9 @@ const CONTROLS := [
 	"掴む：Shift・ZL / ZR　登る：↑ / ↓　壁キック：Space・A / ×",
 	"ダッシュ：X・B / ○ ＋ 方向入力　空中では1回、着地で回復",
 	"↑ ゲート：天井へ　↓ ゲート：床へ　左右の操作は同じ",
-	"緑のひし形でダッシュ回復　空中で回復してもう一度ダッシュ",
-	"紫の八角形で追加ジャンプ1回　ジャンプ：Space・A / ×",
-	"矢印に触れると発射　ダッシュと壁スタミナも回復",
+	"緑の速度マークでダッシュ回復　空中で回復してもう一度ダッシュ",
+	"紫のばね靴で追加ジャンプ1回　ジャンプ：Space・A / ×",
+	"ばねの板に触れると発射　ダッシュと壁スタミナも回復",
 	"丸いバンパーは当たる位置で反射方向が変わる",
 	"風は歩行・空中に作用　ダッシュ中・壁を掴んでいる間は無効",
 	"ゲートの往復を見てから通過　↑ で天井、↓ で床へ",
@@ -22,7 +22,7 @@ const CONTROLS := [
 	"動きながらGrabキーを離すと、自分の移動方向へ投げる",
 	"緑の生物を保持して追加ジャンプ　保持したまま着地で回復",
 	"赤い和傘を保持してゆっくり落下　離すと通常の落下へ",
-	"紫のCrystal ＋ 緑の生物で追加ジャンプ2回　白い山形に注目",
+	"紫のばね靴 ＋ 緑の生物で追加ジャンプ2回　白い山形に注目",
 	"傘を保持して上昇気流へ　反転しても落下がゆっくりになる",
 	"地上で水平ダッシュ → すぐジャンプ　Space・A / ×を使おう",
 ]
@@ -41,8 +41,8 @@ const STEP_LABELS := {
 	"jump": "段差と穴を越えよう", "climb": "壁を掴んで登ろう",
 	"wall_jump": "壁からキックで跳ぼう", "dash": "ダッシュで進もう",
 	"up": "↑ ゲートで天井へ", "down": "↓ ゲートで床へ",
-	"air_dash": "空中でダッシュ", "dash_refill": "緑のCrystalで回復",
-	"refilled_dash": "着地前に再ダッシュ", "jump_crystal": "紫のCrystalを取ろう",
+	"air_dash": "空中でダッシュ", "dash_refill": "緑の速度マークで回復",
+	"refilled_dash": "着地前に再ダッシュ", "jump_crystal": "紫のばね靴を取ろう",
 	"air_jump": "空中で追加ジャンプ", "floor_spring": "床Springで跳ぼう",
 	"wall_spring": "壁Springで横に跳ぼう", "spring_dash": "Springの後にダッシュ",
 	"pinball": "丸いバンパーで跳ぼう", "wind_walk": "風の中を歩こう",
@@ -53,7 +53,7 @@ const STEP_LABELS := {
 	"throw_button": "投げた箱でボタンON", "creature_jump": "生物の追加ジャンプ",
 	"creature_landed": "生物と着地して回復", "second_creature_jump": "回復後にもう一度跳ぶ",
 	"glide": "傘でゆっくり落下", "parachute_release": "空中で傘を手放そう",
-	"fast_fall": "傘なしの速い落下", "two_jumps": "生物と紫のCrystal",
+	"fast_fall": "傘なしの速い落下", "two_jumps": "生物と紫のばね靴",
 	"combo_air": "空中ジャンプ1回目", "combo_creature": "着地せず2回目を跳ぶ",
 	"wind_lift": "傘で上昇気流に乗ろう", "inverted_glide": "反転中も傘で降りよう",
 	"superdash": "地上ダッシュから跳ぶ",
@@ -85,12 +85,16 @@ func _ready() -> void:
 	player.gravity_changed.connect(_on_gravity)
 	player.carry_changed.connect(_on_carry)
 	for room in rooms.get_children():
+		for hint in room.get_children():
+			if hint is Label:
+				hint.add_theme_color_override("font_outline_color", ArtDraw.INK)
+				hint.add_theme_constant_override("outline_size", 2)
 		var goal: ArrivalSwitch = room.get_node("Goal")
 		var index := room.get_index()
 		goal.activated.connect(_on_arrival.bind(index))
 		room.get_node("ExitHint").z_index = 1
 		goal.set_progress(STEPS[index].size(), STEPS[index].size(), STEPS[index][0], STEP_LABELS[STEPS[index][0]])
-		for hint in ["ArrivalHint", "GoalHint"]:
+		for hint in ["ArrivalHint", "GoalHint", "NextHint"]:
 			if room.has_node(hint):
 				room.get_node(hint).hide()
 		for node in room.find_children("*", "Area2D", true, false):
@@ -216,7 +220,7 @@ func _update_lesson() -> void:
 	room.get_node("ExitHint").text = "任意のSuperdash →" if done and room_index == 15 else ("次の部屋へ →" if done else "到着台を押すと開く")
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
 	var count := 0
-	var next := "赤い到着台に乗ろう"
+	var next := "足跡の到着台に乗ろう"
 	var next_key := ""
 	for key in STEPS[room_index]:
 		if seen.has(key):

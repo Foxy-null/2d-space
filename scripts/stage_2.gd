@@ -29,6 +29,10 @@ func _ready() -> void:
 	player.get_node("Camera2D").enabled = false
 	player.respawned.connect(_on_respawned)
 	for room in rooms.get_children():
+		for hint in room.get_children():
+			if hint is Label:
+				hint.add_theme_color_override("font_outline_color", ArtDraw.INK)
+				hint.add_theme_constant_override("outline_size", 2)
 		room.get_node("Goal").activated.connect(_on_arrival.bind(room.get_index()))
 	_set_room(0, false)
 	player.respawn()
