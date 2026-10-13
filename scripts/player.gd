@@ -11,6 +11,7 @@ signal object_released(object: Grabbable, was_thrown: bool)
 
 @export var wall_actions_enabled := true
 @export var dash_enabled := true
+@export var use_default_respawn_bounds := true
 
 @export var grab_range := 60.0
 @export var carry_offset := Vector2(0, -48)
@@ -165,7 +166,7 @@ func _physics_process(delta: float) -> void:
 	_contacts_valid = true
 	if is_on_floor() and not grounded:
 		_refill_on_landing()
-	if global_position.y < -260.0 or global_position.y > 980.0:
+	if use_default_respawn_bounds and (global_position.y < -260.0 or global_position.y > 980.0):
 		respawn()
 	_notify_resources()
 

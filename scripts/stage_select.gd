@@ -11,3 +11,7 @@ func _start_tutorial() -> void:
 
 func _start_stage_two() -> void:
 	get_tree().change_scene_to_file("res://scenes/stage_2.tscn")
+
+
+func _start_stage_three() -> void:
+	get_tree().change_scene_to_file("res://scenes/stage_3.tscn")

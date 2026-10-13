@@ -19,7 +19,8 @@ func _run() -> void:
 	_check(not stages.get_child(0).disabled, "Tutorial must be playable")
 	_check(not stages.get_child(1).disabled and stages.get_child(1).text.contains("壁キックと重力"), "Stage 2 must be playable")
 	_check(stages.get_child(1).position.x > stages.get_child(0).position.x, "Stage 2 follows stage 1")
-	for index in range(2, 5):
+	_check(not stages.get_child(2).disabled and stages.get_child(2).text.contains("星のぼりの塔"), "Stage 3 must be playable")
+	for index in range(3, 5):
 		var button: Button = stages.get_child(index)
 		_check(button.text.begins_with("ステージ %d" % (index + 1)) and button.text.contains("準備中"), "Stage numbers must increase from left to right and show availability")
 		_check(button.position.x > stages.get_child(index - 1).position.x, "Stage cards must be horizontal")
@@ -29,7 +30,10 @@ func _run() -> void:
 	await _key(KEY_RIGHT)
 	_check(root.gui_get_focus_owner() == stages.get_child(1), "Right selects stage 2")
 	await _key(KEY_RIGHT)
-	_check(root.gui_get_focus_owner() == stages.get_child(1), "Navigation must skip unavailable stages")
+	_check(root.gui_get_focus_owner() == stages.get_child(2), "Right selects stage 3")
+	await _key(KEY_RIGHT)
+	_check(root.gui_get_focus_owner() == stages.get_child(2), "Navigation must skip unavailable stages")
+	await _key(KEY_LEFT)
 	await _key(KEY_LEFT)
 	_check(root.gui_get_focus_owner() == stages.get_child(0), "Left returns to stage 1")
 	if OS.get_cmdline_user_args().has("--screenshots"):
@@ -78,6 +82,13 @@ func _run() -> void:
 	await _step()
 	stick.axis_value = 0.0
 	Input.parse_input_event(stick)
+	await _joy_button(JOY_BUTTON_DPAD_RIGHT)
+	_check(root.gui_get_focus_owner() == menu.get_node("Margin/Content/Stages/Stage3"), "Stick/D-pad navigation reaches stage 3")
+	await _joy_button(JOY_BUTTON_A)
+	_check(current_scene.scene_file_path == "res://scenes/stage_3.tscn", "Gamepad accept starts stage 3")
+	await _joy_button(JOY_BUTTON_BACK)
+	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Back returns from the tower")
+	menu = current_scene
 	await _joy_button(JOY_BUTTON_DPAD_RIGHT)
 	_check(root.gui_get_focus_owner() == menu.get_node("Margin/Content/Stages/Stage2"), "Stick/D-pad navigation must select stage 2")
 	await _joy_button(JOY_BUTTON_A)
