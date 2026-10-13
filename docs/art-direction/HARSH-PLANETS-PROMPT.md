@@ -36,4 +36,3 @@ Style:
 Gently uneven dark hand-drawn outlines, big mostly flat color fields, at most one small secondary tone per material, VERY few cracks or surface marks, original modest handmade game art. Simple readable cartoon shapes can convey genuine menace and heat while staying in the same drawing style as the earlier friendly worlds. Background outlines weaker than foreground, but do NOT mute the world's visual harshness into pastel safety. No glossy 3D, realistic texture, paper grain, painterly shading, heavy gradients, cinematic lighting or clutter. Avoid decoration on collision edges that suggests different playable geometry.
 These are atmosphere and art-direction concepts, not implementation of damage rules. Do not add spikes, enemies, moving floors, new gates or new interactable objects. Output a single crisp two-panel comparison board.
 ```
-

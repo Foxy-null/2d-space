@@ -61,4 +61,3 @@ The rock-and-earth supports of the goal and spring should stay simple and integr
 Keep exact labels: 宇宙基地; 生活圏のある惑星; 未開発の惑星; 過酷な惑星：荒野の例.
 Avoid: realistic texture, paper grain, painterly gradients, new gimmicks, hazards, characters, redesigns, extra text or HUD. Output one cohesive simple four-panel comparison board.
 ```
-

@@ -70,4 +70,3 @@ Match the modest original handmade art: gently uneven lines, broad mostly flat c
 
 Environment: an extremely INHOSPITABLE PLANET FULL OF EVIL AURA matching the approved harsh direction. Deep near-black plum sky, giant black celestial disk in the upper right circled by a lopsided broad purple vortex, distant crooked hooked rock spires, flat curled bands of purple miasma around the distant valley. A cursed oppressive landscape, not a gentle purple sunset. Few broad shapes and flat layered silhouettes. Keep the central background behind future gameplay gadgets dark and quiet, bright purple mostly in sky vortex and valley bottom. No monster faces, eyes, skulls, blood, enemies, magic collectibles or laser beams. The engine adds slow drifting mist independently. No volumetric fog, neon bloom or paper texture.
 ```
-
