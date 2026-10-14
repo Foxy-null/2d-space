@@ -138,7 +138,7 @@ alignment = 1
 [node name="Stage1" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_right = NodePath("../Stage2")
 focus_neighbor_left = NodePath("../Stage1")
-focus_neighbor_bottom = NodePath("../../Preview")
+focus_neighbor_bottom = NodePath("../../Extras/FreeStage")
 custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -148,7 +148,7 @@ text = "ステージ 1\n\nチュートリアル\n\nプレイする"
 [node name="Stage2" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_right = NodePath("../Stage3")
 focus_neighbor_left = NodePath("../Stage1")
-focus_neighbor_bottom = NodePath("../../Preview")
+focus_neighbor_bottom = NodePath("../../Extras/FreeStage")
 custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -162,7 +162,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage2")
 focus_neighbor_right = NodePath("../Stage4")
-focus_neighbor_bottom = NodePath("../../Preview")
+focus_neighbor_bottom = NodePath("../../Extras/FreeStage")
 text = "ステージ 3\n\n壁キックと重力\n\nプレイする"
 
 [node name="Stage4" type="Button" parent="Margin/Content/Stages"]
@@ -172,7 +172,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage3")
 focus_neighbor_right = NodePath("../Stage4")
-focus_neighbor_bottom = NodePath("../../Preview")
+focus_neighbor_bottom = NodePath("../../Extras/FreeStage")
 text = "ステージ 4\n\n星渡りの回廊\n\nプレイする"
 
 [node name="Stage5" type="Button" parent="Margin/Content/Stages"]
@@ -184,10 +184,25 @@ focus_mode = 0
 disabled = true
 text = "ステージ 5\n\n準備中\n\nプレイできません"
 
-[node name="Preview" type="Button" parent="Margin/Content"]
+[node name="Extras" type="HBoxContainer" parent="Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="FreeStage" type="Button" parent="Margin/Content/Extras"]
+custom_minimum_size = Vector2(380, 44)
+layout_mode = 2
+focus_neighbor_top = NodePath("../../Stages/Stage1")
+focus_neighbor_left = NodePath(".")
+focus_neighbor_right = NodePath("../Preview")
+text = "自由制作ステージ（補助枠）"
+
+[node name="Preview" type="Button" parent="Margin/Content/Extras"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
-focus_neighbor_top = NodePath("../Stages/Stage1")
+size_flags_horizontal = 3
+focus_neighbor_top = NodePath("../../Stages/Stage4")
+focus_neighbor_left = NodePath("../FreeStage")
+focus_neighbor_right = NodePath(".")
 text = "5つの環境を見る — 背景とギミックのプレビュー"
 
 [node name="Availability" type="Label" parent="Margin/Content"]
@@ -204,7 +219,9 @@ text = "選択：方向キー / 十字キー / スティック　　決定：Ent
 
 [connection signal="pressed" from="Margin/Content/Stages/Stage2" to="." method="_start_stage_two"]
 
-[connection signal="pressed" from="Margin/Content/Preview" to="." method="_preview_environments"]
+[connection signal="pressed" from="Margin/Content/Extras/Preview" to="." method="_preview_environments"]
+
+[connection signal="pressed" from="Margin/Content/Extras/FreeStage" to="." method="_start_free_stage"]
 
 [connection signal="pressed" from="Margin/Content/Stages/Stage3" to="." method="_start_stage_three"]
 

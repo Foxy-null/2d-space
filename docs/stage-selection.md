@@ -18,6 +18,8 @@ F5でプロジェクトを起動すると、5つのステージを左から右�
 
 背景は宇宙基地。選択中の枠を水色で示す。
 
+本編の下に「自由制作ステージ（補助枠）」と環境プレビューのボタンを並べる。自由制作ステージは本編の番号に含めず、ステージ5は準備中のままとする。各本編のボタンから下入力で自由制作ステージへ、右入力で環境プレビューへ移れる。自由制作ステージは [編集用の1画面](free-stage.md) から開始する。
+
 ![ステージ選択画面](screenshots/stage-selection.png)
 
 ## 環境プレビュー
@@ -44,6 +46,7 @@ F5でプロジェクトを起動すると、5つのステージを左から右�
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔。
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力。
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊。
+- `scenes/free_stage.tscn` / `scripts/free_stage.gd`：自由制作ステージの補助枠。
 - `tests/stage_select_test.gd`：起動、表示順、3種類の入力、準備中の項目、戻る操作、再入場時の初期化。
 
 ```powershell

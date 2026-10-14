@@ -15,6 +15,8 @@
 
 F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」を自由に選べます。ステージ5は準備中です。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
 
+本編とは別の補助枠に「自由制作ステージ」を用意しています。既存のキャラクター・背景・ボタン・到着台を使う1画面の土台で、Godotで自由に配置を編集できます。編集箇所は [自由制作ステージ](docs/free-stage.md) を参照してください。
+
 クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。クリア後も、引き続き自由に練習できます。
 
 チュートリアル全17部屋は宇宙基地、ステージ2・3は生活圏のある惑星を舞台にしています。プレビューでは画面上部の選択欄、数字キー1〜5、ゲームパッドのL／Rで環境を切り替えられます。「背景の動き」、Mキー、ゲームパッドのY／△で背景を一時停止できます。移動・ジャンプ・運搬などは本編と同じ操作です。溶岩の波・泡・火の粉や瘴気は背景表現で、追加のダメージ判定はありません。
@@ -180,10 +182,11 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜4の開始と環境プレビュー
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜4・自由制作ステージの開始と環境プレビュー
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全6区間、連続カメラ、復帰地点
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力反転を組み合わせた6部屋の本編ステージ
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全6部屋
+- `scenes/free_stage.tscn` / `scripts/free_stage.gd`：本編とは別の自由制作ステージ、開始地点と到着台
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
@@ -196,6 +199,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/free_stage_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/ascent_backdrop_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/environment_art_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
@@ -216,6 +220,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 `STAGE_2_TEST_OK` は、実入力による全24段の登頂、復帰地点の更新、落下・やり直し、頂上の到着台、カメラ、お助けメニュー、再入場を確認します。`ASCENT_BACKDROP_TEST_OK` は背景の高度連動、地表が視界から離れること、区間境界の連続性、降下と復帰時の景色、既存の地形表現を確認します。
 
 `STAGE_4_TEST_OK` は、実入力による全6部屋の通過、クリスタル・反転ゲートの連携、部屋移動、落下・やり直し、メニュー、再入場を確認します。
+
+`FREE_STAGE_TEST_OK` は、自由制作の土台から実入力で到着台へ進み、クリア後の練習・やり直し・配置したギミックの復帰・選択画面への帰還・再入場を確認します。選択画面からのマウス・キーボード・ゲームパッド操作は `STAGE_SELECT_TEST_OK` に含みます。
 
 `STAGE_3_TEST_OK` は、ダッシュなしの実入力で全6部屋を攻略し、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
 

@@ -1,0 +1,124 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/free_stage.gd" id="1_stage"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="3_hud"]
+[ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="4_backdrop"]
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="5_terrain"]
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="6_goal"]
+
+[sub_resource type="RectangleShape2D" id="FloorShape"]
+size = Vector2(1280, 80)
+
+[sub_resource type="RectangleShape2D" id="BoundaryShape"]
+size = Vector2(40, 1000)
+
+[node name="FreeStage" type="Node2D"]
+metadata/environment_theme = 0
+script = ExtResource("1_stage")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="Backdrop" type="Node2D" parent="Background"]
+script = ExtResource("4_backdrop")
+
+[node name="Terrain" type="Node2D" parent="."]
+
+[node name="Floor" type="StaticBody2D" parent="Terrain"]
+position = Vector2(640, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Floor"]
+shape = SubResource("FloorShape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Floor"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-640, -40, 640, -40, 640, 40, -640, 40)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="LeftBoundary" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-20, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/LeftBoundary"]
+shape = SubResource("BoundaryShape")
+
+[node name="RightBoundary" type="StaticBody2D" parent="Terrain"]
+position = Vector2(1300, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/RightBoundary"]
+shape = SubResource("BoundaryShape")
+
+[node name="Objects" type="Node2D" parent="."]
+
+[node name="Spawn" type="Marker2D" parent="."]
+position = Vector2(120, 614)
+
+[node name="Goal" parent="." instance=ExtResource("6_goal")]
+position = Vector2(1100, 640)
+mission_required = false
+
+[node name="GoalHint" type="Label" parent="."]
+offset_left = 945.0
+offset_top = 665.0
+offset_right = 1256.0
+offset_bottom = 696.0
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
+text = "到着台に乗ってゴールへ"
+mouse_filter = 2
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(120, 614)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+player_path = NodePath("../Player")
+tutorial_mode = true
+
+[node name="ReturnToStageSelect" type="Button" parent="HUD"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -286.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = 64.0
+grow_horizontal = 0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "ステージ選択へ戻る"
+
+[node name="Retry" type="Button" parent="HUD"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -286.0
+offset_top = 80.0
+offset_right = -24.0
+offset_bottom = 124.0
+grow_horizontal = 0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "やり直す [R / Start]"
+
+[node name="Completion" type="Label" parent="HUD"]
+visible = false
+offset_left = 340.0
+offset_top = 330.0
+offset_right = 940.0
+offset_bottom = 400.0
+theme_override_colors/font_color = Color(0.55, 1, 0.75, 1)
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 28
+text = "自由制作ステージ クリア！\nそのまま自由に練習できます"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[connection signal="activated" from="Goal" to="." method="_on_completed"]
+
+[connection signal="pressed" from="HUD/ReturnToStageSelect" to="." method="_return_to_stage_select"]
+
+[connection signal="pressed" from="HUD/Retry" to="." method="_retry"]
