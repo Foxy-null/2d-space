@@ -159,7 +159,7 @@ flowchart TD
 - 同 `sharedassets2.assets`：`shiro`。
 - 同 `sharedassets3.assets`：`雲`。
 - 同 `sharedassets4.assets`：`星`。
-- 現作：`docs/sprites/legacy-character-poses.png`、`docs/screenshots/stage-2/room_1.png`、`docs/screenshots/characters/main.png`、`docs/screenshots/arrival/overview.png`。
+- 現作：`docs/sprites/legacy-character-poses.png`、`docs/screenshots/stage-3/room_1.png`、`docs/screenshots/characters/main.png`、`docs/screenshots/arrival/overview.png`。
 - 用語と仕掛けの意味：`CONTEXT.md`。重力反転時の接地、到着台、重量スイッチは既存の定義に従う。
 
 背景素材は内蔵image_genで生成し、仕掛けと地形は既存の描画にAの形・輪郭・配色を反映した。背景の波・泡・火の粉・瘴気などはゲーム内で連続ループさせる。到着台の解錠・押下、反転中の視認性、既存の移動・運搬などを動作確認する。生成記録は [背景素材のプロンプト](../assets/environments/PROMPTS.md)、確認結果は [3回の画面レビュー](art-direction/IMPLEMENTATION-REVIEW.md) に記録する。
