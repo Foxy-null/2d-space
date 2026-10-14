@@ -20,7 +20,8 @@ func _run() -> void:
 	_check(not stages.get_child(1).disabled and stages.get_child(1).text.contains("壁キックと重力"), "Stage 2 must be playable")
 	_check(stages.get_child(1).position.x > stages.get_child(0).position.x, "Stage 2 follows stage 1")
 	_check(not stages.get_child(2).disabled and stages.get_child(2).text.contains("星のぼりの塔"), "Stage 3 must be playable")
-	for index in range(3, 5):
+	_check(not stages.get_child(3).disabled and stages.get_child(3).text.contains("星渡りの回廊"), "Stage 4 must be playable")
+	for index in range(4, 5):
 		var button: Button = stages.get_child(index)
 		_check(button.text.begins_with("ステージ %d" % (index + 1)) and button.text.contains("準備中"), "Stage numbers must increase from left to right and show availability")
 		_check(button.position.x > stages.get_child(index - 1).position.x, "Stage cards must be horizontal")
@@ -32,7 +33,16 @@ func _run() -> void:
 	await _key(KEY_RIGHT)
 	_check(root.gui_get_focus_owner() == stages.get_child(2), "Right selects stage 3")
 	await _key(KEY_RIGHT)
-	_check(root.gui_get_focus_owner() == stages.get_child(2), "Navigation must skip unavailable stages")
+	_check(root.gui_get_focus_owner() == stages.get_child(3), "Right selects stage 4")
+	await _key(KEY_RIGHT)
+	_check(root.gui_get_focus_owner() == stages.get_child(3), "Navigation must skip unavailable stages")
+	await _key(KEY_ENTER)
+	_check(current_scene.scene_file_path == "res://scenes/stage_4.tscn", "Enter starts stage 4")
+	await _key(KEY_ESCAPE)
+	menu = current_scene
+	stages = menu.get_node("Margin/Content/Stages")
+	await _key(KEY_RIGHT)
+	await _key(KEY_RIGHT)
 	await _key(KEY_LEFT)
 	await _key(KEY_LEFT)
 	_check(root.gui_get_focus_owner() == stages.get_child(0), "Left returns to stage 1")
@@ -103,6 +113,10 @@ func _run() -> void:
 	await _click(current_scene.get_node("HUD/HelpButton"))
 	await _click(current_scene.get_node("HUD/HelpMenu/Rows/ReturnToStageSelect"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "The stage 2 mouse return button must open stage selection")
+	await _click(current_scene.get_node("Margin/Content/Stages/Stage4"))
+	_check(current_scene.scene_file_path == "res://scenes/stage_4.tscn", "Mouse starts stage 4")
+	await _joy_button(JOY_BUTTON_BACK)
+	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Back returns from stage 4")
 	print("STAGE_SELECT_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
 
