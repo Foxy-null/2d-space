@@ -171,7 +171,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage3")
-focus_neighbor_right = NodePath("../Stage4")
+focus_neighbor_right = NodePath("../Stage5")
 focus_neighbor_bottom = NodePath("../../Preview")
 text = "ステージ 4\n\n星渡りの回廊\n\nプレイする"
 
@@ -180,9 +180,10 @@ custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-focus_mode = 0
-disabled = true
-text = "ステージ 5\n\n準備中\n\nプレイできません"
+focus_neighbor_left = NodePath("../Stage4")
+focus_neighbor_right = NodePath("../Stage5")
+focus_neighbor_bottom = NodePath("../../Preview")
+text = "ステージ 5\n\n星嵐の試練\n\nプレイする"
 
 [node name="Preview" type="Button" parent="Margin/Content"]
 custom_minimum_size = Vector2(0, 42)
@@ -192,7 +193,7 @@ text = "5つの環境を見る — 背景とギミックのプレビュー"
 
 [node name="Availability" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "ステージ1〜4は自由に選べます。ステージ5は準備中です。"
+text = "ステージ1〜5は自由に選べます。ステージ5は上級者向け・2面ごとの復帰です。"
 
 [node name="Controls" type="Label" parent="Margin/Content"]
 layout_mode = 2
@@ -209,3 +210,5 @@ text = "選択：方向キー / 十字キー / スティック　　決定：Ent
 [connection signal="pressed" from="Margin/Content/Stages/Stage3" to="." method="_start_stage_three"]
 
 [connection signal="pressed" from="Margin/Content/Stages/Stage4" to="." method="_start_stage_four"]
+
+[connection signal="pressed" from="Margin/Content/Stages/Stage5" to="." method="_start_stage_five"]

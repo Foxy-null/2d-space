@@ -24,6 +24,7 @@ var _pressed := false
 var _step := "jump"
 var _unlock_fx := 1.0
 var _unlock_tween: Tween
+var _reset_cap_on_physics := false
 
 @onready var cap: AnimatableBody2D = $Cap
 
@@ -68,6 +69,10 @@ func set_progress(remaining: int, total: int, step: String, objective: String, c
 
 
 func _physics_process(delta: float) -> void:
+	if _reset_cap_on_physics:
+		cap.position.y = 0.0
+		cap.sync_to_physics = true
+		_reset_cap_on_physics = false
 	if locked or _pressed:
 		return
 	if not pressing:
@@ -90,6 +95,18 @@ func _physics_process(delta: float) -> void:
 
 func is_pressed() -> bool:
 	return _pressed
+
+
+func reset_activation() -> void:
+	# Explicit reset for courses that replay multiple rooms from one checkpoint.
+	_pressed = false
+	pressing = false
+	# Teleport the cap even when its room is paused outside the active screen.
+	cap.sync_to_physics = false
+	cap.position.y = 0.0
+	_reset_cap_on_physics = true
+	$PressSound.stop()
+	queue_redraw()
 
 
 func _process(_delta: float) -> void:
