@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/free_stage.gd" id="1_stage"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
@@ -6,9 +6,28 @@
 [ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="4_backdrop"]
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="5_terrain"]
 [ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="6_goal"]
+[ext_resource type="PackedScene" path="res://scenes/refill_crystal.tscn" id="7_crystal"]
 
-[sub_resource type="RectangleShape2D" id="FloorShape"]
-size = Vector2(1280, 80)
+[sub_resource type="RectangleShape2D" id="EntranceShape"]
+size = Vector2(280, 40)
+
+[sub_resource type="RectangleShape2D" id="ExitShape"]
+size = Vector2(220, 40)
+
+[sub_resource type="RectangleShape2D" id="Rest1Shape"]
+size = Vector2(300, 40)
+
+[sub_resource type="RectangleShape2D" id="Rest2Shape"]
+size = Vector2(180, 40)
+
+[sub_resource type="RectangleShape2D" id="Rest3Shape"]
+size = Vector2(140, 40)
+
+[sub_resource type="RectangleShape2D" id="Rest4Shape"]
+size = Vector2(90, 40)
+
+[sub_resource type="RectangleShape2D" id="Rest5Shape"]
+size = Vector2(70, 40)
 
 [sub_resource type="RectangleShape2D" id="BoundaryShape"]
 size = Vector2(40, 1000)
@@ -25,16 +44,430 @@ script = ExtResource("4_backdrop")
 
 [node name="Terrain" type="Node2D" parent="."]
 
-[node name="Floor" type="StaticBody2D" parent="Terrain"]
-position = Vector2(640, 680)
+[node name="Checkpoints" type="Node2D" parent="."]
 
-[node name="Collision" type="CollisionShape2D" parent="Terrain/Floor"]
-shape = SubResource("FloorShape")
+[node name="Objects" type="Node2D" parent="."]
 
-[node name="Visual" type="Polygon2D" parent="Terrain/Floor"]
+[node name="Section1" type="Marker2D" parent="Checkpoints"]
+position = Vector2(140, 640)
+
+[node name="Spawn" type="Marker2D" parent="Checkpoints/Section1"]
+position = Vector2(0, -26)
+
+[node name="Floor" type="StaticBody2D" parent="Checkpoints/Section1"]
+position = Vector2(0, 20)
+
+[node name="Collision" type="CollisionShape2D" parent="Checkpoints/Section1/Floor"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Checkpoints/Section1/Floor"]
 script = ExtResource("5_terrain")
-polygon = PackedVector2Array(-640, -40, 640, -40, 640, 40, -640, 40)
+polygon = PackedVector2Array(-140.0, -20, 140.0, -20, 140.0, 20, -140.0, 20)
 color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Label" type="Label" parent="Checkpoints/Section1"]
+offset_left = -116.0
+offset_top = 48.0
+offset_right = 160.0
+text = "復帰地点 01 / 06"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 3
+mouse_filter = 2
+
+[node name="Section1" type="Node2D" parent="Terrain"]
+position = Vector2(0, 0)
+
+[node name="Landing" type="StaticBody2D" parent="Terrain/Section1"]
+position = Vector2(1170, 660)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section1/Landing"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section1/Landing"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-110.0, -20, 110.0, -20, 110.0, 20, -110.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Rest" type="StaticBody2D" parent="Terrain/Section1"]
+position = Vector2(650, 660)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section1/Rest"]
+shape = SubResource("Rest1Shape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section1/Rest"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-150.0, -20, 150.0, -20, 150.0, 20, -150.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Section1" type="Node2D" parent="Objects"]
+position = Vector2(0, 0)
+
+[node name="Crystal1" parent="Objects/Section1" instance=ExtResource("7_crystal")]
+position = Vector2(350, 550)
+
+[node name="Crystal2" parent="Objects/Section1" instance=ExtResource("7_crystal")]
+position = Vector2(490, 535)
+
+[node name="Crystal3" parent="Objects/Section1" instance=ExtResource("7_crystal")]
+position = Vector2(630, 535)
+
+[node name="Crystal4" parent="Objects/Section1" instance=ExtResource("7_crystal")]
+position = Vector2(770, 535)
+
+[node name="Crystal5" parent="Objects/Section1" instance=ExtResource("7_crystal")]
+position = Vector2(910, 550)
+
+[node name="Crystal6" parent="Objects/Section1" instance=ExtResource("7_crystal")]
+position = Vector2(1030, 560)
+
+[node name="Section2" type="Marker2D" parent="Checkpoints"]
+position = Vector2(1420, 640)
+
+[node name="Spawn" type="Marker2D" parent="Checkpoints/Section2"]
+position = Vector2(0, -26)
+
+[node name="Floor" type="StaticBody2D" parent="Checkpoints/Section2"]
+position = Vector2(0, 20)
+
+[node name="Collision" type="CollisionShape2D" parent="Checkpoints/Section2/Floor"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Checkpoints/Section2/Floor"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-140.0, -20, 140.0, -20, 140.0, 20, -140.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Label" type="Label" parent="Checkpoints/Section2"]
+offset_left = -116.0
+offset_top = 48.0
+offset_right = 160.0
+text = "復帰地点 02 / 06"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 3
+mouse_filter = 2
+
+[node name="Section2" type="Node2D" parent="Terrain"]
+position = Vector2(1280, 0)
+
+[node name="Landing" type="StaticBody2D" parent="Terrain/Section2"]
+position = Vector2(1170, 660)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section2/Landing"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section2/Landing"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-110.0, -20, 110.0, -20, 110.0, 20, -110.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Rest" type="StaticBody2D" parent="Terrain/Section2"]
+position = Vector2(640, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section2/Rest"]
+shape = SubResource("Rest2Shape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section2/Rest"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-90.0, -20, 90.0, -20, 90.0, 20, -90.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Section2" type="Node2D" parent="Objects"]
+position = Vector2(1280, 0)
+
+[node name="Crystal1" parent="Objects/Section2" instance=ExtResource("7_crystal")]
+position = Vector2(350, 540)
+
+[node name="Crystal2" parent="Objects/Section2" instance=ExtResource("7_crystal")]
+position = Vector2(490, 500)
+
+[node name="Crystal3" parent="Objects/Section2" instance=ExtResource("7_crystal")]
+position = Vector2(630, 460)
+
+[node name="Crystal4" parent="Objects/Section2" instance=ExtResource("7_crystal")]
+position = Vector2(770, 460)
+
+[node name="Crystal5" parent="Objects/Section2" instance=ExtResource("7_crystal")]
+position = Vector2(910, 500)
+
+[node name="Crystal6" parent="Objects/Section2" instance=ExtResource("7_crystal")]
+position = Vector2(1030, 540)
+
+[node name="Section3" type="Marker2D" parent="Checkpoints"]
+position = Vector2(2700, 640)
+
+[node name="Spawn" type="Marker2D" parent="Checkpoints/Section3"]
+position = Vector2(0, -26)
+
+[node name="Floor" type="StaticBody2D" parent="Checkpoints/Section3"]
+position = Vector2(0, 20)
+
+[node name="Collision" type="CollisionShape2D" parent="Checkpoints/Section3/Floor"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Checkpoints/Section3/Floor"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-140.0, -20, 140.0, -20, 140.0, 20, -140.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Label" type="Label" parent="Checkpoints/Section3"]
+offset_left = -116.0
+offset_top = 48.0
+offset_right = 160.0
+text = "復帰地点 03 / 06"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 3
+mouse_filter = 2
+
+[node name="Section3" type="Node2D" parent="Terrain"]
+position = Vector2(2560, 0)
+
+[node name="Landing" type="StaticBody2D" parent="Terrain/Section3"]
+position = Vector2(1170, 660)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section3/Landing"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section3/Landing"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-110.0, -20, 110.0, -20, 110.0, 20, -110.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Rest" type="StaticBody2D" parent="Terrain/Section3"]
+position = Vector2(640, 520)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section3/Rest"]
+shape = SubResource("Rest3Shape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section3/Rest"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-70.0, -20, 70.0, -20, 70.0, 20, -70.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Section3" type="Node2D" parent="Objects"]
+position = Vector2(2560, 0)
+
+[node name="Crystal1" parent="Objects/Section3" instance=ExtResource("7_crystal")]
+position = Vector2(350, 530)
+
+[node name="Crystal2" parent="Objects/Section3" instance=ExtResource("7_crystal")]
+position = Vector2(490, 460)
+
+[node name="Crystal3" parent="Objects/Section3" instance=ExtResource("7_crystal")]
+position = Vector2(630, 390)
+
+[node name="Crystal4" parent="Objects/Section3" instance=ExtResource("7_crystal")]
+position = Vector2(770, 390)
+
+[node name="Crystal5" parent="Objects/Section3" instance=ExtResource("7_crystal")]
+position = Vector2(910, 460)
+
+[node name="Crystal6" parent="Objects/Section3" instance=ExtResource("7_crystal")]
+position = Vector2(1030, 530)
+
+[node name="Section4" type="Marker2D" parent="Checkpoints"]
+position = Vector2(3980, 640)
+
+[node name="Spawn" type="Marker2D" parent="Checkpoints/Section4"]
+position = Vector2(0, -26)
+
+[node name="Floor" type="StaticBody2D" parent="Checkpoints/Section4"]
+position = Vector2(0, 20)
+
+[node name="Collision" type="CollisionShape2D" parent="Checkpoints/Section4/Floor"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Checkpoints/Section4/Floor"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-140.0, -20, 140.0, -20, 140.0, 20, -140.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Label" type="Label" parent="Checkpoints/Section4"]
+offset_left = -116.0
+offset_top = 48.0
+offset_right = 160.0
+text = "復帰地点 04 / 06"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 3
+mouse_filter = 2
+
+[node name="Section4" type="Node2D" parent="Terrain"]
+position = Vector2(3840, 0)
+
+[node name="Landing" type="StaticBody2D" parent="Terrain/Section4"]
+position = Vector2(1170, 660)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section4/Landing"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section4/Landing"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-110.0, -20, 110.0, -20, 110.0, 20, -110.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Rest" type="StaticBody2D" parent="Terrain/Section4"]
+position = Vector2(640, 590)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section4/Rest"]
+shape = SubResource("Rest4Shape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section4/Rest"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-45.0, -20, 45.0, -20, 45.0, 20, -45.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Section4" type="Node2D" parent="Objects"]
+position = Vector2(3840, 0)
+
+[node name="Crystal1" parent="Objects/Section4" instance=ExtResource("7_crystal")]
+position = Vector2(350, 540)
+
+[node name="Crystal2" parent="Objects/Section4" instance=ExtResource("7_crystal")]
+position = Vector2(490, 470)
+
+[node name="Crystal3" parent="Objects/Section4" instance=ExtResource("7_crystal")]
+position = Vector2(630, 380)
+
+[node name="Crystal4" parent="Objects/Section4" instance=ExtResource("7_crystal")]
+position = Vector2(770, 450)
+
+[node name="Crystal5" parent="Objects/Section4" instance=ExtResource("7_crystal")]
+position = Vector2(910, 530)
+
+[node name="Crystal6" parent="Objects/Section4" instance=ExtResource("7_crystal")]
+position = Vector2(1030, 480)
+
+[node name="Section5" type="Marker2D" parent="Checkpoints"]
+position = Vector2(5260, 640)
+
+[node name="Spawn" type="Marker2D" parent="Checkpoints/Section5"]
+position = Vector2(0, -26)
+
+[node name="Floor" type="StaticBody2D" parent="Checkpoints/Section5"]
+position = Vector2(0, 20)
+
+[node name="Collision" type="CollisionShape2D" parent="Checkpoints/Section5/Floor"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Checkpoints/Section5/Floor"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-140.0, -20, 140.0, -20, 140.0, 20, -140.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Label" type="Label" parent="Checkpoints/Section5"]
+offset_left = -116.0
+offset_top = 48.0
+offset_right = 160.0
+text = "復帰地点 05 / 06"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 3
+mouse_filter = 2
+
+[node name="Section5" type="Node2D" parent="Terrain"]
+position = Vector2(5120, 0)
+
+[node name="Landing" type="StaticBody2D" parent="Terrain/Section5"]
+position = Vector2(1170, 660)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section5/Landing"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section5/Landing"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-110.0, -20, 110.0, -20, 110.0, 20, -110.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Rest" type="StaticBody2D" parent="Terrain/Section5"]
+position = Vector2(650, 630)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section5/Rest"]
+shape = SubResource("Rest5Shape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section5/Rest"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-35.0, -20, 35.0, -20, 35.0, 20, -35.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Section5" type="Node2D" parent="Objects"]
+position = Vector2(5120, 0)
+
+[node name="Crystal1" parent="Objects/Section5" instance=ExtResource("7_crystal")]
+position = Vector2(350, 535)
+
+[node name="Crystal2" parent="Objects/Section5" instance=ExtResource("7_crystal")]
+position = Vector2(510, 425)
+
+[node name="Crystal3" parent="Objects/Section5" instance=ExtResource("7_crystal")]
+position = Vector2(670, 510)
+
+[node name="Crystal4" parent="Objects/Section5" instance=ExtResource("7_crystal")]
+position = Vector2(830, 400)
+
+[node name="Crystal5" parent="Objects/Section5" instance=ExtResource("7_crystal")]
+position = Vector2(990, 510)
+
+[node name="Section6" type="Marker2D" parent="Checkpoints"]
+position = Vector2(6540, 640)
+
+[node name="Spawn" type="Marker2D" parent="Checkpoints/Section6"]
+position = Vector2(0, -26)
+
+[node name="Floor" type="StaticBody2D" parent="Checkpoints/Section6"]
+position = Vector2(0, 20)
+
+[node name="Collision" type="CollisionShape2D" parent="Checkpoints/Section6/Floor"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Checkpoints/Section6/Floor"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-140.0, -20, 140.0, -20, 140.0, 20, -140.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Label" type="Label" parent="Checkpoints/Section6"]
+offset_left = -116.0
+offset_top = 48.0
+offset_right = 160.0
+text = "復帰地点 06 / 06"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 3
+mouse_filter = 2
+
+[node name="Section6" type="Node2D" parent="Terrain"]
+position = Vector2(6400, 0)
+
+[node name="Landing" type="StaticBody2D" parent="Terrain/Section6"]
+position = Vector2(1170, 660)
+
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Section6/Landing"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Terrain/Section6/Landing"]
+script = ExtResource("5_terrain")
+polygon = PackedVector2Array(-110.0, -20, 110.0, -20, 110.0, 20, -110.0, 20)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Section6" type="Node2D" parent="Objects"]
+position = Vector2(6400, 0)
+
+[node name="Crystal1" parent="Objects/Section6" instance=ExtResource("7_crystal")]
+position = Vector2(350, 535)
+
+[node name="Crystal2" parent="Objects/Section6" instance=ExtResource("7_crystal")]
+position = Vector2(515, 415)
+
+[node name="Crystal3" parent="Objects/Section6" instance=ExtResource("7_crystal")]
+position = Vector2(680, 510)
+
+[node name="Crystal4" parent="Objects/Section6" instance=ExtResource("7_crystal")]
+position = Vector2(845, 390)
+
+[node name="Crystal5" parent="Objects/Section6" instance=ExtResource("7_crystal")]
+position = Vector2(1010, 500)
 
 [node name="LeftBoundary" type="StaticBody2D" parent="Terrain"]
 position = Vector2(-20, 360)
@@ -43,41 +476,51 @@ position = Vector2(-20, 360)
 shape = SubResource("BoundaryShape")
 
 [node name="RightBoundary" type="StaticBody2D" parent="Terrain"]
-position = Vector2(1300, 360)
+position = Vector2(7700, 360)
 
 [node name="Collision" type="CollisionShape2D" parent="Terrain/RightBoundary"]
 shape = SubResource("BoundaryShape")
 
-[node name="Objects" type="Node2D" parent="."]
-
-[node name="Spawn" type="Marker2D" parent="."]
-position = Vector2(120, 614)
-
 [node name="Goal" parent="." instance=ExtResource("6_goal")]
-position = Vector2(1100, 640)
+position = Vector2(7560, 640)
 mission_required = false
 
 [node name="GoalHint" type="Label" parent="."]
-offset_left = 945.0
-offset_top = 665.0
-offset_right = 1256.0
-offset_bottom = 696.0
+offset_left = 7385.0
+offset_top = 685.0
+offset_right = 7670.0
+text = "到着台に乗ってゴールへ"
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 18
-text = "到着台に乗ってゴールへ"
 mouse_filter = 2
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
-position = Vector2(120, 614)
+position = Vector2(140, 614)
+use_default_respawn_bounds = false
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(640, 360)
-
+position_smoothing_enabled = true
+position_smoothing_speed = 12.0
+limit_left = 0
+limit_right = 7680
+limit_top = 0
+limit_bottom = 720
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 player_path = NodePath("../Player")
 tutorial_mode = true
+
+[node name="Hint" type="Label" parent="HUD"]
+offset_left = 24.0
+offset_top = 216.0
+offset_right = 970.0
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
+theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
+theme_override_constants/outline_size = 4
+mouse_filter = 2
 
 [node name="ReturnToStageSelect" type="Button" parent="HUD"]
 anchor_left = 1.0
@@ -113,7 +556,7 @@ theme_override_colors/font_color = Color(0.55, 1, 0.75, 1)
 theme_override_colors/font_outline_color = Color(0.018, 0.027, 0.075, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 28
-text = "自由制作ステージ クリア！\nそのまま自由に練習できます"
+text = "流星ダッシュ クリア！\nそのまま自由に練習できます"
 horizontal_alignment = 1
 mouse_filter = 2
 
