@@ -8,7 +8,7 @@
 
 ## A
 
-参照画像の順序：現作 `docs/screenshots/stage-2/room_1.png`、前作の忍者の復元画像 `docs/sprites/legacy-character-poses.png`、添付ZIPから抽出した前作素材の参照一覧。
+参照画像の順序：現作 `docs/screenshots/stage-3/room_1.png`、前作の忍者の復元画像 `docs/sprites/legacy-character-poses.png`、添付ZIPから抽出した前作素材の参照一覧。
 
 ```text
 Use case: style-transfer.

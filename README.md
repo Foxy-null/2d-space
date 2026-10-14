@@ -13,17 +13,25 @@
 
 ## ステージ選択
 
-F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」と「ステージ2：壁キックと重力」は自由に選べ、それぞれ1部屋目から始まります。ステージ3〜5は「準備中」と表示し、選択できません。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
+F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」を自由に選べます。ステージ5は準備中です。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
 
 クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。クリア後も、引き続き自由に練習できます。
 
-チュートリアル全17部屋は宇宙基地、本編全6部屋は生活圏のある惑星で統一しています。プレビューでは画面上部の選択欄、数字キー1〜5、ゲームパッドのL／Rで環境を切り替えられます。「背景の動き」、Mキー、ゲームパッドのY／△で背景を一時停止できます。移動・ジャンプ・運搬などは本編と同じ操作です。溶岩の波・泡・火の粉や瘴気は背景表現で、追加のダメージ判定はありません。
+チュートリアル全17部屋は宇宙基地、ステージ2・3は生活圏のある惑星を舞台にしています。プレビューでは画面上部の選択欄、数字キー1〜5、ゲームパッドのL／Rで環境を切り替えられます。「背景の動き」、Mキー、ゲームパッドのY／△で背景を一時停止できます。移動・ジャンプ・運搬などは本編と同じ操作です。溶岩の波・泡・火の粉や瘴気は背景表現で、追加のダメージ判定はありません。
 
 合意した仕様は [ステージ選択の仕様書](docs/stage-selection.md) に記録しています。
 
 ![ステージ1〜5を横に並べた選択画面](docs/screenshots/stage-selection.png)
 
-## ステージ2：壁キックと重力
+## ステージ2：星のぼりの塔
+
+`sota_sodex_1st`から取り込んだ、上へ連続スクロールする全6区間・24段のコースです。壁登り・壁キック、Spring、ダッシュ回復・追加ジャンプのクリスタル、生物をつないで頂上を目指します。各区間の広い足場に着地すると復帰地点を更新し、落下やR / Startで最新の復帰地点へ戻ります。
+
+生活圏の惑星のふもとから、雲の上、星が見える上空へ登ります。街と山は登るにつれて下へ遠ざかり、雲と星は足場よりゆっくり動きます。背景は高度に合わせて連続して変わり、降下ややり直しでも同じ高さの景色へ戻ります。
+
+配置は `scenes/stage_2.tscn`、進行は `scripts/stage_2.gd`、背景は `scripts/ascent_backdrop.gd`。詳しくは [第2ステージの仕様](docs/stage-2.md) を参照してください。
+
+## ステージ3：壁キックと重力
 
 壁キックと重力反転を使う6部屋の本編ステージです。1部屋目はSpringから壁キック・重力反転・天井のSpringへ、2部屋目は天井側の反発板から壁への掴み替えへつなぎます。3〜6部屋目は後半にも天井の穴があり、空中ジャンプのクリスタル、縦風と移動ゲート、短い足場のSpring、向かい風と横移動ゲートを、それぞれ違う経路で使います。ダッシュと壁登りは最初から使え、全6部屋をダッシュなしでも攻略できます。
 
@@ -33,9 +41,15 @@ F5で起動すると、ステージ1〜5が左から順に並んだ選択画面�
 
 3部屋目の床の穴は730px幅に広げ、壁の上からのジャンプとダッシュでも届かないようにしました。4部屋目は既存の重力ゲートを広げ、床の壁を登って重力反転を避ける抜け道を防いでいます。
 
-配置は `scenes/stage_2.tscn`、進行は `scripts/stage_2.gd` で調整します。合意した仕様と6部屋の課題は [第２ステージの仕様書](docs/stage-2.md) に記録しています。
+配置は `scenes/stage_3.tscn`、進行は `scripts/stage_3.gd` で調整します。合意した仕様と6部屋の課題は [第３ステージの仕様書](docs/stage-3.md) に記録しています。
 
-![空中ジャンプで後半の大きな穴を越える3部屋目](docs/screenshots/stage-2/room_3.png)
+![空中ジャンプで後半の大きな穴を越える3部屋目](docs/screenshots/stage-3/room_3.png)
+
+## ステージ4：星渡りの回廊
+
+`sota_sodex_1st`から取り込んだ、床・天井のない空間をダッシュ回復クリスタルと重力反転ゲートで渡る全6部屋です。部屋の入口と出口で休憩でき、次の部屋へ進むと復帰地点が更新されます。落下やR / Startで現在の部屋から再開します。
+
+H / Y・△のお助けメニューで経路のヒントを表示できます。配置・操作・テストは [第4ステージの仕様](docs/stage-4.md) を参照してください。
 
 ## チュートリアル
 
@@ -166,8 +180,10 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1・2の開始
-- `scenes/stage_2.tscn` / `scripts/stage_2.gd`：壁キックと重力反転を組み合わせた6部屋の本編ステージ
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜4の開始と環境プレビュー
+- `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全6区間、連続カメラ、復帰地点
+- `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力反転を組み合わせた6部屋の本編ステージ
+- `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全6部屋
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
@@ -178,6 +194,10 @@ F6で実行する `main.tscn` のPhase 2配置：
 ```powershell
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/ascent_backdrop_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/environment_art_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase1_movement_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 240 --path . --script res://tests/wall_jump_regression_test.gd
@@ -193,7 +213,11 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 `STAGE_SELECT_TEST_OK` は、選択画面からの起動、マウス・キーボード・ゲームパッドの入力、準備中のステージの無効化、クリア後の任意練習、選択画面へ戻る操作、再選択時の進捗初期化を確認します。
 
-`STAGE_2_TEST_OK` は、ダッシュなしの実入力で全6部屋を攻略し、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
+`STAGE_2_TEST_OK` は、実入力による全24段の登頂、復帰地点の更新、落下・やり直し、頂上の到着台、カメラ、お助けメニュー、再入場を確認します。`ASCENT_BACKDROP_TEST_OK` は背景の高度連動、地表が視界から離れること、区間境界の連続性、降下と復帰時の景色、既存の地形表現を確認します。
+
+`STAGE_4_TEST_OK` は、実入力による全6部屋の通過、クリスタル・反転ゲートの連携、部屋移動、落下・やり直し、メニュー、再入場を確認します。
+
+`STAGE_3_TEST_OK` は、ダッシュなしの実入力で全6部屋を攻略し、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
 
 `CHARACTER_SPRITES_TEST_OK` は、元画像の使い分け、少数フレームの歩行・壁登り・運搬、両重力の左右向きと壁キック、大きなアイテムの縦横比・表示幅・手との接点、追加ジャンプ表示の位置を確認します。
 

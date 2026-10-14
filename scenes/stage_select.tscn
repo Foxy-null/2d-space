@@ -127,7 +127,7 @@ text = "ステージ選択"
 
 [node name="Description" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "チュートリアルで練習して、壁キックと重力のコースに挑戦しよう。"
+text = "チュートリアルで練習して、星のぼり・壁キック・空中移動に挑戦しよう。"
 
 [node name="Stages" type="HBoxContainer" parent="Margin/Content"]
 layout_mode = 2
@@ -146,32 +146,34 @@ size_flags_vertical = 4
 text = "ステージ 1\n\nチュートリアル\n\nプレイする"
 
 [node name="Stage2" type="Button" parent="Margin/Content/Stages"]
-focus_neighbor_right = NodePath("../Stage2")
+focus_neighbor_right = NodePath("../Stage3")
 focus_neighbor_left = NodePath("../Stage1")
 focus_neighbor_bottom = NodePath("../../Preview")
 custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-text = "ステージ 2\n\n壁キックと重力\n\nプレイする"
+text = "ステージ 2\n\n星のぼりの塔\n\nプレイする"
 
 [node name="Stage3" type="Button" parent="Margin/Content/Stages"]
 custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-focus_mode = 0
-disabled = true
-text = "ステージ 3\n\n準備中\n\nプレイできません"
+focus_neighbor_left = NodePath("../Stage2")
+focus_neighbor_right = NodePath("../Stage4")
+focus_neighbor_bottom = NodePath("../../Preview")
+text = "ステージ 3\n\n壁キックと重力\n\nプレイする"
 
 [node name="Stage4" type="Button" parent="Margin/Content/Stages"]
 custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-focus_mode = 0
-disabled = true
-text = "ステージ 4\n\n準備中\n\nプレイできません"
+focus_neighbor_left = NodePath("../Stage3")
+focus_neighbor_right = NodePath("../Stage4")
+focus_neighbor_bottom = NodePath("../../Preview")
+text = "ステージ 4\n\n星渡りの回廊\n\nプレイする"
 
 [node name="Stage5" type="Button" parent="Margin/Content/Stages"]
 custom_minimum_size = Vector2(200, 232)
@@ -190,7 +192,7 @@ text = "5つの環境を見る — 背景とギミックのプレビュー"
 
 [node name="Availability" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "ステージ1・2は自由に選べます。ステージ3〜5は準備中です。"
+text = "ステージ1〜4は自由に選べます。ステージ5は準備中です。"
 
 [node name="Controls" type="Label" parent="Margin/Content"]
 layout_mode = 2
@@ -203,3 +205,7 @@ text = "選択：方向キー / 十字キー / スティック　　決定：Ent
 [connection signal="pressed" from="Margin/Content/Stages/Stage2" to="." method="_start_stage_two"]
 
 [connection signal="pressed" from="Margin/Content/Preview" to="." method="_preview_environments"]
+
+[connection signal="pressed" from="Margin/Content/Stages/Stage3" to="." method="_start_stage_three"]
+
+[connection signal="pressed" from="Margin/Content/Stages/Stage4" to="." method="_start_stage_four"]
