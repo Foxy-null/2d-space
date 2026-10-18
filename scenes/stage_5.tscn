@@ -1,4 +1,6 @@
-[gd_scene load_steps=67 format=3]
+[gd_scene load_steps=76 format=3]
+[ext_resource type="Script" path="res://scripts/stage_clear.gd" id="stage_clear"]
+
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="air_art_terrain"]
 
 [ext_resource type="Script" path="res://scripts/stage_5.gd" id="air_1"]
@@ -240,6 +242,30 @@ size = Vector2(50, 40)
 [sub_resource type="RectangleShape2D" id="wall_Shape_ExitSpringPlatform"]
 size = Vector2(140, 28)
 
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step1"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step2"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step3"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step4"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step5"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_2_HighLanding"]
+size = Vector2(260, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_2_DescentLanding"]
+size = Vector2(180, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_3_CeilingRun"]
+size = Vector2(840, 40)
+
 [node name="Stage5" type="Node2D"]
 metadata/environment_theme = 4
 script = ExtResource("air_1")
@@ -287,50 +313,49 @@ text = "次の面へ →"
 theme_override_font_sizes/font_size = 18
 
 [node name="Items" type="Node2D" parent="Rooms/Room1"]
-
-[node name="Crystal1" parent="Rooms/Room1/Items" instance=ExtResource("air_4")]
-position = Vector2(280, 430)
-
-[node name="Crystal2" parent="Rooms/Room1/Items" instance=ExtResource("air_4")]
-position = Vector2(430, 380)
-
-[node name="Crystal3" parent="Rooms/Room1/Items" instance=ExtResource("air_4")]
-position = Vector2(580, 310)
-
-[node name="Crystal4" parent="Rooms/Room1/Items" instance=ExtResource("air_4")]
-position = Vector2(730, 280)
-
-[node name="Crystal5" parent="Rooms/Room1/Items" instance=ExtResource("air_4")]
-position = Vector2(880, 350)
-
-[node name="Crystal6" parent="Rooms/Room1/Items" instance=ExtResource("air_4")]
-position = Vector2(1030, 430)
-
-[node name="Gate1" parent="Rooms/Room1/Items" instance=ExtResource("air_5")]
-position = Vector2(430, 380)
-scale = Vector2(0.5, 0.75)
-target_gravity = -1
-
-[node name="Gate2" parent="Rooms/Room1/Items" instance=ExtResource("air_5")]
-position = Vector2(850, 350)
-scale = Vector2(0.5, 0.75)
-target_gravity = 1
-
-[node name="Route" type="Line2D" parent="Rooms/Room1" groups=["stage_5_hints"]]
-visible = false
-z_index = -1
-points = PackedVector2Array(160, 480, 280, 430, 430, 380, 580, 310, 730, 280, 880, 350, 1030, 430, 1140, 490)
-width = 2.0
-default_color = Color(0.4, 1, 0.75, 0.4)
-
 [node name="Spawn" type="Marker2D" parent="Rooms/Room1"]
 position = Vector2(90, 512)
-[node name="Crosswind" parent="Rooms/Room1" instance=ExtResource("wall_8_wind")]
-position = Vector2(670, 360)
-wind_direction = Vector2(-1, 0)
-wind_acceleration = 350.0
-max_wind_speed = 80.0
-area_size = Vector2(480, 440)
+[node name="Step1" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(290, 500)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step1"]
+shape = SubResource("Pattern_1_Step1")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step1"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="Step2" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(460, 440)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step2"]
+shape = SubResource("Pattern_1_Step2")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step2"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="Step3" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(630, 380)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step3"]
+shape = SubResource("Pattern_1_Step3")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step3"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="Step4" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(800, 440)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step4"]
+shape = SubResource("Pattern_1_Step4")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step4"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="Step5" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(970, 500)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step5"]
+shape = SubResource("Pattern_1_Step5")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step5"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+
 [node name="Room2" type="Node2D" parent="Rooms"]
 position = Vector2(1280, 0)
 
@@ -370,58 +395,30 @@ text = "次の面へ →"
 theme_override_font_sizes/font_size = 18
 
 [node name="Items" type="Node2D" parent="Rooms/Room2"]
-
-[node name="Crystal1" parent="Rooms/Room2/Items" instance=ExtResource("air_4")]
-position = Vector2(280, 430)
-
-[node name="Crystal2" parent="Rooms/Room2/Items" instance=ExtResource("air_4")]
-position = Vector2(430, 350)
-
-[node name="Crystal3" parent="Rooms/Room2/Items" instance=ExtResource("air_4")]
-position = Vector2(580, 270)
-
-[node name="Crystal4" parent="Rooms/Room2/Items" instance=ExtResource("air_4")]
-position = Vector2(730, 270)
-
-[node name="Crystal5" parent="Rooms/Room2/Items" instance=ExtResource("air_4")]
-position = Vector2(880, 350)
-
-[node name="Crystal6" parent="Rooms/Room2/Items" instance=ExtResource("air_4")]
-position = Vector2(1030, 430)
-
-[node name="Gate1" parent="Rooms/Room2/Items" instance=ExtResource("air_5")]
-position = Vector2(430, 350)
-scale = Vector2(0.5, 0.75)
-target_gravity = -1
-moving_enabled = true
-move_offset = Vector2(0, 40)
-move_speed = 95.0
-endpoint_wait_time = 0.08
-
-[node name="Gate2" parent="Rooms/Room2/Items" instance=ExtResource("air_5")]
-position = Vector2(850, 350)
-scale = Vector2(0.5, 0.75)
-target_gravity = 1
-moving_enabled = true
-move_offset = Vector2(0, 40)
-move_speed = 95.0
-endpoint_wait_time = 0.08
-
-[node name="Route" type="Line2D" parent="Rooms/Room2" groups=["stage_5_hints"]]
-visible = false
-z_index = -1
-points = PackedVector2Array(160, 480, 280, 430, 430, 350, 580, 270, 730, 270, 880, 350, 1030, 430, 1140, 490)
-width = 2.0
-default_color = Color(0.4, 1, 0.75, 0.4)
-
 [node name="Spawn" type="Marker2D" parent="Rooms/Room2"]
 position = Vector2(90, 512)
-[node name="Crosswind" parent="Rooms/Room2" instance=ExtResource("wall_8_wind")]
-position = Vector2(670, 360)
-wind_direction = Vector2(-1, 0)
-wind_acceleration = 350.0
-max_wind_speed = 80.0
-area_size = Vector2(480, 440)
+[node name="LaunchSpring" parent="Rooms/Room2" instance=ExtResource("wall_7_spring")]
+position = Vector2(160, 540)
+spring_speed = 1100.0
+[node name="HighLanding" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(480, 330)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/HighLanding"]
+shape = SubResource("Pattern_2_HighLanding")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/HighLanding"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-130, -14, 130, -14, 130, 14, -130, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="DescentLanding" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(860, 430)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/DescentLanding"]
+shape = SubResource("Pattern_2_DescentLanding")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/DescentLanding"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-90, -14, 90, -14, 90, 14, -90, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="JumpCrystal" parent="Rooms/Room2/Items" instance=ExtResource("wall_10_jump_crystal")]
+position = Vector2(670, 300)
+
 [node name="Room3" type="Node2D" parent="Rooms"]
 position = Vector2(2560, 0)
 
@@ -461,60 +458,25 @@ text = "次の面へ →"
 theme_override_font_sizes/font_size = 18
 
 [node name="Items" type="Node2D" parent="Rooms/Room3"]
-
-[node name="Crystal1" parent="Rooms/Room3/Items" instance=ExtResource("air_4")]
-position = Vector2(280, 430)
-
-[node name="Crystal2" parent="Rooms/Room3/Items" instance=ExtResource("air_4")]
-position = Vector2(430, 390)
-
-[node name="Crystal3" parent="Rooms/Room3/Items" instance=ExtResource("air_4")]
-position = Vector2(580, 430)
-
-[node name="Crystal4" parent="Rooms/Room3/Items" instance=ExtResource("air_4")]
-position = Vector2(730, 470)
-
-[node name="Crystal5" parent="Rooms/Room3/Items" instance=ExtResource("air_4")]
-position = Vector2(880, 430)
-
-[node name="Crystal6" parent="Rooms/Room3/Items" instance=ExtResource("air_4")]
-position = Vector2(1030, 430)
-
-[node name="Gate1" parent="Rooms/Room3/Items" instance=ExtResource("air_5")]
-position = Vector2(360, 430)
-scale = Vector2(0.5, 0.75)
-target_gravity = -1
-
-[node name="Gate2" parent="Rooms/Room3/Items" instance=ExtResource("air_5")]
-position = Vector2(580, 420)
-scale = Vector2(0.5, 0.75)
-target_gravity = 1
-
-[node name="Gate3" parent="Rooms/Room3/Items" instance=ExtResource("air_5")]
-position = Vector2(780, 480)
-scale = Vector2(0.5, 0.75)
-target_gravity = -1
-
-[node name="Gate4" parent="Rooms/Room3/Items" instance=ExtResource("air_5")]
-position = Vector2(960, 430)
-scale = Vector2(0.5, 0.75)
-target_gravity = 1
-
-[node name="Route" type="Line2D" parent="Rooms/Room3" groups=["stage_5_hints"]]
-visible = false
-z_index = -1
-points = PackedVector2Array(160, 480, 280, 430, 430, 390, 580, 430, 730, 470, 880, 430, 1030, 430, 1140, 490)
-width = 2.0
-default_color = Color(0.4, 1, 0.75, 0.4)
-
 [node name="Spawn" type="Marker2D" parent="Rooms/Room3"]
 position = Vector2(90, 512)
-[node name="Crosswind" parent="Rooms/Room3" instance=ExtResource("wall_8_wind")]
-position = Vector2(670, 360)
-wind_direction = Vector2(-1, 0)
-wind_acceleration = 350.0
-max_wind_speed = 80.0
-area_size = Vector2(480, 440)
+[node name="CeilingRun" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(600, 180)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/CeilingRun"]
+shape = SubResource("Pattern_3_CeilingRun")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/CeilingRun"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-420, -20, 420, -20, 420, 20, -420, 20)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="UpGate" parent="Rooms/Room3/Items" instance=ExtResource("air_5")]
+position = Vector2(220, 440)
+scale = Vector2(0.8, 1.8)
+target_gravity = -1
+[node name="DownGate" parent="Rooms/Room3/Items" instance=ExtResource("air_5")]
+position = Vector2(990, 260)
+scale = Vector2(0.8, 1.8)
+target_gravity = 1
+
 [node name="Room4" type="Node2D" parent="Rooms"]
 position = Vector2(3840, 0)
 
@@ -2397,6 +2359,7 @@ layout_mode = 2
 text = "ステージ選択へ戻る"
 
 [node name="Completion" type="Label" parent="HUD"]
+script = ExtResource("stage_clear")
 visible = false
 offset_left = 290.0
 offset_top = 150.0

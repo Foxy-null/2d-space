@@ -1,4 +1,6 @@
-[gd_scene load_steps=80 format=3]
+[gd_scene load_steps=81 format=3]
+
+[ext_resource type="Script" path="res://scripts/stage_clear.gd" id="stage_clear"]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -2386,6 +2388,7 @@ theme_override_font_sizes/font_size = 16
 theme_override_font_sizes/font_size = 16
 
 [node name="Completion" type="Label" parent="HUD"]
+script = ExtResource("stage_clear")
 visible = false
 offset_left = 390.0
 offset_top = 565.0

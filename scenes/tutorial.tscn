@@ -1,4 +1,6 @@
-[gd_scene load_steps=103 format=3]
+[gd_scene load_steps=104 format=3]
+
+[ext_resource type="Script" path="res://scripts/stage_clear.gd" id="stage_clear"]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -2410,6 +2412,7 @@ player_path = NodePath("../Player")
 tutorial_mode = true
 
 [node name="Completion" type="Label" parent="HUD"]
+script = ExtResource("stage_clear")
 visible = false
 offset_left = 400.0
 offset_top = 520.0

@@ -43,12 +43,17 @@ func _run() -> void:
 			DirAccess.make_dir_recursive_absolute("res://docs/screenshots/stage-5")
 			RenderingServer.force_draw()
 			root.get_texture().get_image().save_png("res://docs/screenshots/stage-5/room_%d.png" % (index + 1))
-		if index < 4:
+		if index < 3:
+			await _cross_pattern_room(index)
+		elif index == 3:
 			await _cross_air_room(index)
 		else:
 			await _cross_wall_room(index)
 		_check(respawns == before, "Room %d crosses without a fall" % (index + 1))
-		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
+		if index >= 2:
+			_check(flips.has(-1) and flips.has(1), "Gravity route uses both directions")
+		else:
+			_check(flips.is_empty(), "Jump and Spring routes use normal gravity")
 		if index >= 4:
 			_check(actions.get("wall_jump", 0) >= [1, 4, 3, 5][index - 4], "Later rooms retain their wall-kick combinations")
 		print("STAGE_5_ROOM_%d_OK (actions=%s, flips=%s)" % [index + 1, actions, flips])
@@ -63,7 +68,7 @@ func _run() -> void:
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://docs/screenshots/stage-5/clear.png")
-	_check(collected >= 20, "The course uses its dash and jump crystals")
+	_check(collected >= 7, "The course uses its dash and jump crystals")
 	# R after completion must replay the last pair, including its physically pressed switches.
 	await _key(KEY_R)
 	_check(stage.room_index == 6 and stage.checkpoint_index == 6 and not stage.completed, "R returns to room 7 and resets final completion")
@@ -178,6 +183,46 @@ func _cross_air_room(index: int) -> void:
 			break
 	_release_inputs()
 	_check(reached, "Air room %d must be traversable" % (index + 1))
+
+
+func _land_at(x: float, limit := 160) -> void:
+	for frame in limit:
+		_release_inputs()
+		if absf(_x() - x) > 8:
+			Input.action_press("move_right" if _x() < x else "move_left")
+		if player.is_on_floor() and absf(_x() - x) < 24:
+			return
+		await _step()
+	_check(false, "Land on the next distinct platform at %s" % x)
+
+
+func _cross_pattern_room(index: int) -> void:
+	match index:
+		0:
+			for x in [290, 460, 630, 800, 970, 1170]:
+				await _jump()
+				await _land_at(x)
+		1:
+			_drive("move_right")
+			await _until(func(): return player.velocity.y < -700, 60, "Launch from the entrance Spring")
+			await _land_at(480)
+			await _jump()
+			_drive("move_right")
+			await _until(func(): return player.is_air_jump_ready(), 90, "Collect the midair jump crystal")
+			await _jump()
+			await _land_at(860)
+			await _jump()
+			await _land_at(1170)
+		2:
+			_drive("move_right")
+			await _step(8)
+			await _jump()
+			await _until(func(): return player.gravity_direction == -1, 70, "Enter the ceiling route")
+			await _until(func(): return player.is_on_floor(), 90, "Land upside down on the long ceiling")
+			_check(player.position.y < 250, "Ceiling route travels across the top of the room")
+			await _until(func(): return player.gravity_direction == 1, 220, "Leave through the far Down gate")
+			await _land_at(1170)
+	_release_inputs()
 
 
 func _cross_wall_room(index: int) -> void:
