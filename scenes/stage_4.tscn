@@ -47,9 +47,9 @@ position = Vector2(640, 360)
 
 [node name="Info" type="PanelContainer" parent="HUD"]
 offset_left = 24.0
-offset_top = 16.0
+offset_top = 40.0
 offset_right = 920.0
-offset_bottom = 100.0
+offset_bottom = 124.0
 mouse_filter = 2
 
 [node name="Rows" type="VBoxContainer" parent="HUD/Info"]
@@ -74,16 +74,16 @@ tooltip_text = "壁スタミナ（着地で回復）"
 
 [node name="HelpButton" type="Button" parent="HUD"]
 offset_left = 1030.0
-offset_top = 20.0
+offset_top = 44.0
 offset_right = 1256.0
-offset_bottom = 64.0
+offset_bottom = 88.0
 focus_mode = 0
 text = "お助けメニュー [H / Y]"
 
 [node name="Hint" type="Label" parent="HUD"]
 visible = false
 offset_left = 24.0
-offset_top = 110.0
+offset_top = 155.0
 offset_right = 1230.0
 theme_override_font_sizes/font_size = 19
 

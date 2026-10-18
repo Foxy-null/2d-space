@@ -1,5 +1,5 @@
 extends Node2D
-## Room-local geometry. Gaps are deliberately wide; timing supplies the danger.
+## Six distinct carry routes in room-local coordinates.
 
 const TERRAIN = preload("res://scripts/terrain_art.gd")
 const SPIKE = preload("res://scenes/spike_block.tscn")
@@ -18,59 +18,66 @@ func _ready() -> void:
 	var hazards := Node2D.new()
 	hazards.name = "Hazards"
 	add_child(hazards)
-	# A safe entry shaft introduces the alternating wall kicks used throughout.
-	_block("LeftWall", Rect2(0, 180, 36, 540))
+	_block("LeftWall", Rect2(0, 100, 36, 620))
 	_block("Entrance", Rect2(36, 620, 184, 40))
-	var first_top: float = [240, 220, 220, 200, 200, 180][room_number]
-	var middle_top: float = [350, 300, 340, 300, 350, 330][room_number]
-	var high_top: float = [220, 210, 210, 190, 190, 180][room_number]
-	var final_top: float = [350, 330, 300, 320, 330, 300][room_number]
-	var high_x: float = 780 if room_number == 5 else 800
-	var final_x: float = 1070 if room_number in [2, 5] else 1040
-	for rect in [Rect2(270, first_top, 40, 720 - first_top), Rect2(550, middle_top, 40, 700 - middle_top), Rect2(high_x, high_top, 40, 670 - high_top), Rect2(final_x, final_top, 40, 700 - final_top)]:
-		walls.append(rect)
-		_block("Wall%d" % walls.size(), rect)
-	if room_number == 0:
-		_block("Rest", Rect2(550, 510, 145, 35))
-	exit_top = 480 if room_number in [2, 3, 5] else 500
+	# Each route has its own silhouette and movement problem.
+	match room_number:
+		0: # Rising stairs.
+			walls = [Rect2(320, 530, 130, 32), Rect2(570, 420, 130, 32), Rect2(820, 330, 140, 32), Rect2(1030, 440, 100, 32)]
+		1: # Wall-kick shaft and high-to-low transfers.
+			walls = [Rect2(270, 300, 40, 420), Rect2(550, 430, 100, 32), Rect2(800, 310, 40, 390), Rect2(1040, 440, 80, 32)]
+		2: # Covered low crossing.
+			walls = [Rect2(300, 580, 150, 32), Rect2(570, 550, 160, 32), Rect2(850, 580, 150, 32)]
+			_block("LowRoof", Rect2(250, 260, 800, 45))
+		3: # Ridge followed by descending landings.
+			walls = [Rect2(310, 510, 110, 32), Rect2(530, 370, 110, 32), Rect2(750, 450, 90, 32), Rect2(980, 550, 100, 32)]
+		4: # Long jumps over wide gaps.
+			walls = [Rect2(350, 550, 90, 40), Rect2(670, 500, 90, 40), Rect2(970, 550, 90, 40)]
+		5: # Right, back left, then a long jump to the right.
+			walls = [Rect2(300, 510, 120, 32), Rect2(560, 390, 120, 32), Rect2(340, 270, 130, 32), Rect2(790, 360, 130, 32), Rect2(1040, 450, 90, 32)]
+	for rect in walls:
+		_block("Platform%d" % get_child_count(), rect)
+	exit_top = 500.0
 	_block("Exit", Rect2(1160, exit_top, 120, 40))
 	_block("ExitBarrier", Rect2(1280, 100, 24, 620))
 	_label("Checkpoint", Vector2(45, 667), "CHECKPOINT %02d / 06" % (room_number + 1), Color("81f6c2"), 16)
-	_label("ExitLabel", Vector2(1155, exit_top + 48), "ゴール" if room_number == 5 else "次の部屋 →", Color.WHITE, 16)
-	# Every patrol intersects an actual wall-kick or transfer lane. No filler spikes.
+	_label("ExitLabel", Vector2(1100, exit_top + 48), "相棒と進む →", Color.WHITE, 16)
+	var ceiling := SPIKE.instantiate()
+	ceiling.name = "CeilingSpikes"
+	ceiling.position = Vector2(640, 16)
+	ceiling.travel = Vector2.ZERO
+	ceiling.ceiling_strip = true
+	ceiling.room_number = room_number
+	$Hazards.add_child(ceiling)
 	match room_number:
 		0:
-			_spike(Vector2(155, 250), Vector2(0, 190), 3.5, 0.0)
-			_spike(Vector2(690, 220), Vector2(0, 240), 3.4, 0.0)
+			_spike(Vector2(500, 350), Vector2(0, 220), 3.8, 0.0)
 		1:
-			_spike(Vector2(110, 370), Vector2(95, 0), 2.9, 0.25)
-			_spike(Vector2(680, 160), Vector2(0, 300), 3.1, 0.15)
+			_spike(Vector2(150, 320), Vector2(0, 190), 3.6, 0.4)
+			_spike(Vector2(700, 230), Vector2(0, 260), 3.8, 0.0)
 		2:
-			_spike(Vector2(155, 320), Vector2(0, 210), 3.2, 0.4)
-			_spike(Vector2(885, 125), Vector2(110, 0), 2.8, 0.2)
+			_spike(Vector2(480, 410), Vector2(0, 160), 3.4, 0.0)
+			_spike(Vector2(770, 400), Vector2(0, 170), 3.7, 0.4)
 		3:
-			_spike(Vector2(100, 380), Vector2(105, 0), 2.6, 0.2)
-			_spike(Vector2(365, 105), Vector2(240, 0), 2.8, 0.0)
-			_spike(Vector2(890, 115), Vector2(95, 0), 2.5, 0.4)
+			_spike(Vector2(680, 220), Vector2(0, 300), 3.6, 0.0)
+			_spike(Vector2(870, 360), Vector2(0, 250), 3.5, 0.3)
 		4:
-			_spike(Vector2(160, 300), Vector2(0, 250), 2.7, 0.3)
-			_spike(Vector2(680, 180), Vector2(0, 290), 2.6, 0.2)
-			_spike(Vector2(945, 90), Vector2(0, 300), 2.8, 0.0)
+			_spike(Vector2(500, 360), Vector2(0, 250), 3.7, 0.0)
+			_spike(Vector2(830, 350), Vector2(0, 260), 3.9, 0.3)
 		5:
-			_spike(Vector2(150, 310), Vector2(0, 240), 2.6, 0.35)
-			_spike(Vector2(365, 90), Vector2(240, 0), 2.5, 0.1)
-			_spike(Vector2(950, 75), Vector2(0, 300), 2.7, 0.25)
-	if room_number in [2, 5]:
-		var creature := CREATURE.instantiate()
-		creature.name = "JumpCreature"
-		creature.position = Vector2(175, 580)
-		items.add_child(creature)
-		_label("CarryHint", Vector2(45, 115), "緑の相棒を出口まで運ぼう  /  Shift長押し：運ぶ  /  空中ジャンプ＋1", Color("a7f5ac"), 19)
+			_spike(Vector2(490, 180), Vector2(0, 330), 4.0, 0.0)
+			_spike(Vector2(960, 250), Vector2(0, 290), 3.8, 0.0)
+	var creature := CREATURE.instantiate()
+	creature.name = "JumpCreature"
+	creature.position = Vector2(175, 580)
+	items.add_child(creature)
+	_label("CarryHint", Vector2(45, 130), "相棒を持って出口へ / Shift長押し / 壁登り不可・壁キックと空中ジャンプ＋1", Color("a7f5ac"), 18)
 	if room_number == 5:
 		var goal := GOAL.instantiate()
 		goal.name = "Goal"
 		goal.position = Vector2(1220, exit_top)
 		add_child(goal)
+		goal.get_node("Bubble").hide()
 
 
 func _block(label: String, rect: Rect2) -> void:
@@ -94,7 +101,7 @@ func _block(label: String, rect: Rect2) -> void:
 
 func _spike(at: Vector2, travel: Vector2, period: float, phase: float) -> void:
 	var spike := SPIKE.instantiate()
-	spike.name = "Spike%d" % ($Hazards.get_child_count() + 1)
+	spike.name = "Spike%d" % ($Hazards.get_child_count())
 	spike.position = at
 	spike.travel = travel
 	spike.period = period

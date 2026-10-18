@@ -1,13 +1,13 @@
 extends Node2D
 
-const TITLES := ["広い回廊", "空中の関門", "相棒と越える", "横切る三連", "上下の関門", "最後の三関門"]
+const TITLES := ["相棒と登る階段", "壁キックの峡谷", "低い天井の回廊", "峠を越えて下る", "離れ小島の大跳躍", "折り返しの頂"]
 const HINTS := [
-	"左右の壁を交互に蹴って上へ。赤いトゲは触れると即やり直し。中央の台で休もう。",
-	"床のない壁渡り。トゲの往復を見て、通り道が空いた瞬間に壁を蹴ろう。",
-	"Shiftを押したまま緑の相棒を運ぼう。運搬中も壁キック可能。空中でジャンプがもう1回。",
-	"左右へ横切る3つのトゲ。安全な壁面でタイミングを調整してから渡ろう。",
-	"上下のトゲが通過したら壁を蹴ろう。壁掴みで待つとスタミナを使うので注意。",
-	"緑の相棒と最後まで。壁キックと追加ジャンプで3つの関門を越え、到着台へ！",
+	"全室、相棒を持ったまま出口へ。空中ジャンプは頂点近くで使い、段ごとに着地して回復。",
+	"相棒を持つと壁登りはできない。左右の壁を交互に蹴って峡谷を登ろう。",
+	"低い屋根の下を渡る。頭をぶつけると高さを失うので、追加ジャンプは慌てずに。",
+	"最初は登り、峠からは下り。飛びすぎないよう空中で向きを調整しよう。",
+	"小島の間は広い。横へ走って跳び、落ち始める前に相棒のジャンプを使おう。",
+	"中央の足場から左上へ折り返す。その後は右の低い足場へ大きく渡ろう。",
 ]
 const ROOM_WIDTH := 1280.0
 var room_index := 0
@@ -126,11 +126,10 @@ func _on_completed() -> void:
 
 func _update_hud() -> void:
 	$HUD/Info/Rows/Title.text = "ステージ4　星渡りの回廊　｜　%02d / 06　%s" % [room_index + 1, TITLES[room_index]]
-	$HUD/Info/Rows/Status.text = "トゲ：接触で即死　 ダッシュ：%s　 追加ジャンプ：%d　 復帰：部屋%d" % ["使用可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), room_index + 1]
+	$HUD/Info/Rows/Status.text = "相棒の運搬が必須　 ダッシュ：%s　 追加ジャンプ：%d　 復帰：部屋%d" % ["使用可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), room_index + 1]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
 	$HUD/Hint.text = HINTS[room_index]
-	if room_index in [2, 5]:
-		rooms.get_child(room_index).get_node("ExitLabel").text = "ゴール" if completed else ("相棒と進む →" if _carry_requirement_met() else "緑の相棒が必要")
+	rooms.get_child(room_index).get_node("ExitLabel").text = "ゴール" if completed else ("相棒と進む →" if _carry_requirement_met() else "緑の相棒が必要")
 	if room_index == 5 and not completed:
 		var goal: ArrivalSwitch = $Rooms/Room6/Goal
 		var should_lock := not _carry_requirement_met()
@@ -139,4 +138,4 @@ func _update_hud() -> void:
 
 
 func _carry_requirement_met() -> bool:
-	return room_index not in [2, 5] or player.get_held_object() == rooms.get_child(room_index).get_node("Items/JumpCreature")
+	return player.get_held_object() == rooms.get_child(room_index).get_node("Items/JumpCreature")

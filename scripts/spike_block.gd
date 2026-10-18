@@ -9,6 +9,7 @@ signal player_hit
 @export_range(0.0, 1.0) var phase := 0.0
 @export var room_number := 0
 @export var half_size := 20.0
+@export var ceiling_strip := false
 
 var elapsed := 0.0
 var origin := Vector2.ZERO
@@ -53,7 +54,7 @@ func _physics_process(delta: float) -> void:
 	position = origin + travel * _progress()
 	queue_redraw()
 	var player_shape := player.get_node("CollisionShape2D") as CollisionShape2D
-	var extent := (player_shape.shape as RectangleShape2D).size * 0.5 + Vector2.ONE * half_size
+	var extent := (player_shape.shape as RectangleShape2D).size * 0.5 + hit_extent()
 	var end := player.global_position - global_position
 	var start := end
 	if tracking and previous_player.distance_to(player.global_position) < 200.0:
@@ -93,7 +94,18 @@ func _hit(player: PlayerController) -> void:
 	pending_hit = false
 
 
+func hit_extent() -> Vector2:
+	return Vector2(640, 16) if ceiling_strip else Vector2.ONE * half_size
+
+
 func _draw() -> void:
+	if ceiling_strip:
+		draw_rect(Rect2(-640, -16, 1280, 16), Color("333b50"))
+		for x in range(-640, 640, 20):
+			var points := PackedVector2Array([Vector2(x, 0), Vector2(x + 10, 16), Vector2(x + 20, 0)])
+			draw_colored_polygon(points, Color("ff5361"))
+			draw_polyline(points, Color("6c263c"), 1.5, true)
+		return
 	var a := origin - position
 	var b := a + travel
 	var amber := Color("e6ad6477")

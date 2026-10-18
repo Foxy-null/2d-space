@@ -29,8 +29,11 @@ func _run() -> void:
 	check(stage.rooms.get_child_count() == 6 and player.is_on_floor(), "Six rooms and safe entrance")
 	for room in stage.rooms.get_children():
 		check(not room.has_node("Route"), "No speculative route arrows")
-		check(room.has_node("Rest") == (room.room_number == 0), "Five rooms have no intermediate resting platform")
+		check(room.has_node("Items/JumpCreature"), "Every room supplies its own companion")
+		check(room.has_node("Hazards/CeilingSpikes"), "Upper boundary has visible spikes")
 		for hazard in room.get_node("Hazards").get_children():
+			if hazard.ceiling_strip:
+				continue
 			for fraction in [0.0, 0.25, 0.5, 0.75, 1.0]:
 				var at: Vector2 = hazard.origin + hazard.travel * fraction
 				var bounds := Rect2(at - Vector2.ONE * hazard.half_size, Vector2.ONE * hazard.half_size * 2)
@@ -38,7 +41,7 @@ func _run() -> void:
 					check(not bounds.intersects(wall), "Patrol stays clear of terrain")
 	check(SpikeBlock.segment_hits_box(Vector2(-100, 0), Vector2(100, 0), Vector2(43, 51)), "Swept collision detects a full crossing")
 	check(not SpikeBlock.segment_hits_box(Vector2(-100, 70), Vector2(100, 70), Vector2(43, 51)), "Safe clearance remains safe")
-	var delays := [0, 0, 42, 0, 63, 63]
+	var delays := [0, 112, 0, 0, 28, 49]
 	for section in 6:
 		var arrived := false
 		var used_delay := 0
@@ -56,17 +59,18 @@ func _run() -> void:
 				check(deaths == before + (1 if section < 5 else 0), "Successful route has no death")
 				break
 			if attempt % 10 == 0:
-				print("SEARCH room=", section + 1, " attempt=", attempt, " pos=", player.position, " actions=", actions)
+				print("SEARCH room=", section + 1, " attempt=", attempt, " pos=", player.position, " last=", samples.back() if not samples.is_empty() else Vector2.ZERO, " actions=", actions)
 		check(arrived, "Room %d must be traversable with live hazards" % (section + 1))
 		if not arrived:
 			break
 		print("STAGE_4_ROOM_%d_OK delay=%d actions=%s" % [section + 1, used_delay, actions])
-		check(actions.get("wall_jump", 0) >= 3, "Wall kicks are central")
+		check(not actions.has("climb"), "Carry route never climbs a wall")
 		check(not actions.has("dash"), "Can pass without dash")
-		if section in [2, 5]:
-			check(actions.get("creature_jump", 0) > 0, "Use the carried creature's additional jump")
+		check(actions.get("creature_jump", 0) > 0, "Use the carried creature's additional jump")
 		var room: Node2D = stage.rooms.get_child(section)
 		for hazard in room.get_node("Hazards").get_children():
+			if hazard.ceiling_strip:
+				continue
 			var useful := false
 			for sample in samples:
 				var start: Vector2 = sample - (room.position + hazard.origin)
@@ -81,6 +85,7 @@ func _run() -> void:
 		check(stage.completed and stage.get_node("HUD/Completion").visible, "Real final arrival completes stage")
 		await verify_retry_and_help()
 		await verify_collision()
+		await verify_ceiling()
 		await verify_carry_gate()
 		stage.get_node("HUD/Help/Rows/Return").pressed.emit()
 		await step(3)
@@ -151,16 +156,53 @@ func verify_collision() -> void:
 
 
 func verify_carry_gate() -> void:
-	stage.room_index = 2
-	stage._set_checkpoint()
-	player.respawn()
-	await step(5)
-	player.position = Vector2(2 * 1280 + 1262, 454)
-	await step(10)
-	check(stage.room_index == 2, "Cannot exit room 3 without carrying its creature")
+	for section in 6:
+		release()
+		stage.room_index = section
+		stage.completed = false
+		stage._set_checkpoint()
+		player.respawn()
+		await step(5)
+		check(not stage._carry_requirement_met(), "Every room requires its companion")
+		if section < 5:
+			player.position = Vector2(section * 1280 + 1262, 474)
+			await step(10)
+			check(stage.room_index == section, "Cannot leave any room empty-handed")
+		else:
+			stage._on_completed()
+			check(not stage.completed, "Cannot complete the last room empty-handed")
+		player.respawn()
+		await step(5)
+		Input.action_press("move_right")
+		Input.action_press("wall_grab")
+		for frame in 30:
+			await step()
+			if player.get_held_object() != null:
+				break
+		release()
+		check(stage._carry_requirement_met(), "Holding the room's companion satisfies its gate")
 	stage.room_index = 5
 	stage.completed = false
 	stage._set_checkpoint()
 	player.respawn()
 	await step(5)
 	check(stage.rooms.get_child(5).get_node("Goal").locked, "Final goal requires its creature")
+
+
+func verify_ceiling() -> void:
+	for section in 6:
+		stage.room_index = section
+		stage._set_checkpoint()
+		for x in [80, 640, 1200]:
+			release()
+			player.respawn()
+			await step(5)
+			player.position = Vector2(section * 1280 + x, 68)
+			player.velocity = Vector2.ZERO
+			var before := deaths
+			Input.action_press("move_up")
+			Input.action_press("dash")
+			await step(2)
+			release()
+			check(deaths == before + 1, "Visible ceiling spikes stop upward movement inside the screen")
+			check(stage.room_index == section and absf(player.position.x - (section * 1280 + 110)) < 2, "Ceiling death returns to the same entrance")
