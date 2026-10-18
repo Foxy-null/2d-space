@@ -1,4 +1,4 @@
-[gd_scene load_steps=81 format=3]
+[gd_scene load_steps=82 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -216,7 +216,10 @@ size = Vector2(50, 40)
 size = Vector2(140, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_SpringCeiling_Room1"]
-size = Vector2(480, 160)
+size = Vector2(120, 160)
+
+[sub_resource type="RectangleShape2D" id="Shape_EntryCeiling_Room1"]
+size = Vector2(260, 160)
 
 [sub_resource type="RectangleShape2D" id="Shape_Room1Bridge"]
 size = Vector2(580, 80)
@@ -458,21 +461,52 @@ spring_speed = 900.0
 position = Vector2(680, 430)
 target_gravity = -1
 
+[node name="EntryCeiling" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(770, 0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/EntryCeiling"]
+shape = SubResource("Shape_EntryCeiling_Room1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/EntryCeiling"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130, -80, 130, -80, 130, 80, -130, 80)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="Edge" type="Line2D" parent="Rooms/Room1/EntryCeiling"]
+points = PackedVector2Array(-130, 80, 130, 80)
+width = 2.0
+default_color = Color(0.4, 0.75, 0.9, 0.65)
+antialiased = true
+
 [node name="SpringCeiling" type="StaticBody2D" parent="Rooms/Room1"]
-position = Vector2(880, 0)
+position = Vector2(1060, 0)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/SpringCeiling"]
 shape = SubResource("Shape_SpringCeiling_Room1")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/SpringCeiling"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-240, -80, 240, -80, 240, 80, -240, 80)
+polygon = PackedVector2Array(-60, -80, 60, -80, 60, 80, -60, 80)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Edge" type="Line2D" parent="Rooms/Room1/SpringCeiling"]
-points = PackedVector2Array(-240, 80, 240, 80)
+points = PackedVector2Array(-60, 80, 60, 80)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
+antialiased = true
+
+[node name="CeilingPitWarning" type="Node2D" parent="Rooms/Room1"]
+
+[node name="EntryLip" type="Line2D" parent="Rooms/Room1/CeilingPitWarning"]
+points = PackedVector2Array(876, 80, 900, 80, 900, 0)
+width = 2.0
+default_color = Color(1, 0.57, 0.3, 0.8)
+antialiased = true
+
+[node name="ExitLip" type="Line2D" parent="Rooms/Room1/CeilingPitWarning"]
+points = PackedVector2Array(1024, 80, 1000, 80, 1000, 0)
+width = 2.0
+default_color = Color(1, 0.57, 0.3, 0.8)
 antialiased = true
 
 [node name="ReturnSpring" parent="Rooms/Room1" instance=ExtResource("7_spring")]

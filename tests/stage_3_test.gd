@@ -93,6 +93,8 @@ func _run() -> void:
 	for index in 6:
 		if index >= 2:
 			await _fall_into_pit([0, 0, 350, 620, 470, 340][index])
+		if index == 0:
+			await _fall_into_ceiling_pit(900)
 		if index > 0:
 			await _fall_into_ceiling_pit([0, 500, 330, 320, 330, 530][index])
 			await _fall_into_ceiling_pit([0, 950, 700, 850, 920, 950][index])
@@ -104,7 +106,13 @@ func _run() -> void:
 				await _kick_pair(false, -180, true)
 				_check(actions.has("launch_spring"), "The first room launches from its Spring into the wall kicks")
 				_drive("move_right")
-				await _until(func(): return actions.has("return_spring"), 160, "The first room's kicks enter Up gravity and its ceiling Spring")
+				await _until(func(): return player.is_on_floor() and _x() > 864 and _x() < 900, 160, "The first room's kicks reach the ceiling before its pit")
+				_check(player.gravity_direction == -1, "Room 1 crosses the ceiling pit while inverted")
+				await _jump()
+				await _until(func(): return _x() >= 1000, 70, "Jump across Room 1's ceiling pit")
+				_release_inputs()
+				await _until(func(): return actions.has("return_spring"), 100, "Land on the ceiling Spring after crossing the pit")
+				_drive("move_right")
 				await _until(func(): return player.gravity_direction == 1, 100, "The ceiling Spring passes through Down gravity before the arrival switch")
 			1:
 				await _cross_ceiling_pit(500, 600)
