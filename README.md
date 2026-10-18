@@ -13,7 +13,7 @@
 
 ## ステージ選択
 
-F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」を自由に選べます。ステージ5は準備中です。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
+F5で起動すると、ステージ1〜5が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」「ステージ5：溶岩ジャンプ回廊」を自由に選べます。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
 
 クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。クリア後も、引き続き自由に練習できます。
 
@@ -50,6 +50,14 @@ F5で起動すると、ステージ1〜5が左から順に並んだ選択画面�
 `sota_sodex_1st`から取り込んだ、床・天井のない空間をダッシュ回復クリスタルと重力反転ゲートで渡る全6部屋です。部屋の入口と出口で休憩でき、次の部屋へ進むと復帰地点が更新されます。落下やR / Startで現在の部屋から再開します。
 
 H / Y・△のお助けメニューで経路のヒントを表示できます。配置・操作・テストは [第4ステージの仕様](docs/stage-4.md) を参照してください。
+
+## ステージ5：溶岩ジャンプ回廊
+
+既存の溶岩の惑星を舞台にした、全3部屋の短いコースです。1部屋目は飛び石をジャンプで渡り、2部屋目はSpringと追加ジャンプで高台をつなぎ、3部屋目は重力反転で天井を歩きます。最後に旗のある到着台を踏むとクリアです。
+
+落下やR / Startで、その部屋の入口から再挑戦できます。H / Y・△のお助けメニューでヒントを表示でき、Esc / Back・Selectで選択画面へ戻れます。再選択すると1部屋目から始まります。配置は `scenes/stage_5.tscn`、進行は `scripts/stage_5.gd` で調整できます。
+
+![溶岩の惑星をジャンプで渡る第5ステージ](docs/screenshots/stage-5/room_1.png)
 
 ## チュートリアル
 
@@ -180,10 +188,11 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜4の開始と環境プレビュー
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜5の開始と環境プレビュー
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全6区間、連続カメラ、復帰地点
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力反転を組み合わせた6部屋の本編ステージ
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全6部屋
+- `scenes/stage_5.tscn` / `scripts/stage_5.gd`：溶岩ジャンプ回廊の全3部屋
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
@@ -196,6 +205,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/ascent_backdrop_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/environment_art_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
@@ -211,11 +221,13 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 それぞれ `BASE_SYSTEM_TEST_OK` / `PHASE1_MOVEMENT_TEST_OK` / `PHASE2_ENVIRONMENT_TEST_OK` と終了コード0で成功です。baseは入力・移動・壁・重力とデモ配置、Phase 1は両重力・左右両側の接地からのGrab／低い段差のマントル／ジャンプ優先と接地中のスタミナ、空中のマントル／スタミナ・Dash・色・ジャンプ連携・2種類のクリスタルの効果分離／再出現・Respawnを検証します。Phase 2はGate往復・実接触、4方向Spring、反射と速度範囲、追加ジャンプを付与しないことと未使用の権利の保持、同frame着地回復、Wind合成・能力相互作用・削除を検証します。
 
-`STAGE_SELECT_TEST_OK` は、選択画面からの起動、マウス・キーボード・ゲームパッドの入力、準備中のステージの無効化、クリア後の任意練習、選択画面へ戻る操作、再選択時の進捗初期化を確認します。
+`STAGE_SELECT_TEST_OK` は、全5ステージの選択画面からの起動、マウス・キーボード・ゲームパッドの入力、クリア後の任意練習、選択画面へ戻る操作、再選択時の進捗初期化を確認します。
 
 `STAGE_2_TEST_OK` は、実入力による全24段の登頂、復帰地点の更新、落下・やり直し、頂上の到着台、カメラ、お助けメニュー、再入場を確認します。`ASCENT_BACKDROP_TEST_OK` は背景の高度連動、地表が視界から離れること、区間境界の連続性、降下と復帰時の景色、既存の地形表現を確認します。
 
 `STAGE_4_TEST_OK` は、実入力による全6部屋の通過、クリスタル・反転ゲートの連携、部屋移動、落下・やり直し、メニュー、再入場を確認します。
+
+`STAGE_5_TEST_OK` は、位置変更や能力の強制補充を使わずに全3部屋を実入力で攻略し、Spring・追加ジャンプ・重力反転・最後の到着台を確認します。部屋移動、落下・Rによる復帰、ヒントとメニュー、切り替え中の退出、再選択時の初期化も検証します。
 
 `STAGE_3_TEST_OK` は、ダッシュなしの実入力で全6部屋を攻略し、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
 

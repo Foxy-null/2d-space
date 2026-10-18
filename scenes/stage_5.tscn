@@ -1,0 +1,370 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="air_art_terrain"]
+
+[ext_resource type="Script" path="res://scripts/stage_5.gd" id="air_1"]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="air_2"]
+
+[ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="air_3"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="air_5"]
+
+[ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="wall_7_spring"]
+
+[ext_resource type="PackedScene" path="res://scenes/jump_crystal.tscn" id="wall_10_jump_crystal"]
+
+
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
+
+[sub_resource type="RectangleShape2D" id="air_Platform"]
+size = Vector2(180, 40)
+
+[sub_resource type="RectangleShape2D" id="air_Boundary"]
+size = Vector2(32, 1000)
+
+
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step1"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step2"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step3"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step4"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_1_Step5"]
+size = Vector2(110, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_2_HighLanding"]
+size = Vector2(260, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_2_DescentLanding"]
+size = Vector2(180, 28)
+
+[sub_resource type="RectangleShape2D" id="Pattern_3_CeilingRun"]
+size = Vector2(840, 40)
+
+[node name="Stage5" type="Node2D"]
+metadata/environment_theme = 3
+script = ExtResource("air_1")
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+[node name="Stars" type="Node2D" parent="Background"]
+script = ExtResource("air_3")
+[node name="Rooms" type="Node2D" parent="."]
+[node name="Room1" type="Node2D" parent="Rooms"]
+position = Vector2(0, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(90, 560)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Entrance"]
+shape = SubResource("air_Platform")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Entrance"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-90, -20, 90, -20, 90, 20, -90, 20)
+color = Color(0.12, 0.3, 0.4, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(1190, 560)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Exit"]
+shape = SubResource("air_Platform")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Exit"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-90, -20, 90, -20, 90, 20, -90, 20)
+color = Color(0.12, 0.3, 0.4, 1)
+
+[node name="Label" type="Label" parent="Rooms/Room1"]
+offset_left = 26.0
+offset_top = 580.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 17
+modulate = Color(0.4, 1, 0.75, 1)
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room1"]
+offset_left = 1070.0
+offset_top = 580.0
+text = "次の部屋へ →"
+theme_override_font_sizes/font_size = 18
+
+[node name="Items" type="Node2D" parent="Rooms/Room1"]
+[node name="Spawn" type="Marker2D" parent="Rooms/Room1"]
+position = Vector2(90, 512)
+[node name="Step1" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(290, 500)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step1"]
+shape = SubResource("Pattern_1_Step1")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step1"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="Step2" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(460, 440)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step2"]
+shape = SubResource("Pattern_1_Step2")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step2"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="Step3" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(630, 380)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step3"]
+shape = SubResource("Pattern_1_Step3")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step3"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="Step4" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(800, 440)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step4"]
+shape = SubResource("Pattern_1_Step4")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step4"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="Step5" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(970, 500)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Step5"]
+shape = SubResource("Pattern_1_Step5")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Step5"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-55, -14, 55, -14, 55, 14, -55, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+
+[node name="Room2" type="Node2D" parent="Rooms"]
+position = Vector2(1280, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(90, 560)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Entrance"]
+shape = SubResource("air_Platform")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Entrance"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-90, -20, 90, -20, 90, 20, -90, 20)
+color = Color(0.12, 0.3, 0.4, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(1190, 560)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Exit"]
+shape = SubResource("air_Platform")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Exit"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-90, -20, 90, -20, 90, 20, -90, 20)
+color = Color(0.12, 0.3, 0.4, 1)
+
+[node name="Label" type="Label" parent="Rooms/Room2"]
+offset_left = 26.0
+offset_top = 580.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 17
+modulate = Color(0.4, 1, 0.75, 1)
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room2"]
+offset_left = 1070.0
+offset_top = 580.0
+text = "次の部屋へ →"
+theme_override_font_sizes/font_size = 18
+
+[node name="Items" type="Node2D" parent="Rooms/Room2"]
+[node name="Spawn" type="Marker2D" parent="Rooms/Room2"]
+position = Vector2(90, 512)
+[node name="LaunchSpring" parent="Rooms/Room2" instance=ExtResource("wall_7_spring")]
+position = Vector2(160, 540)
+spring_speed = 1100.0
+[node name="HighLanding" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(480, 330)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/HighLanding"]
+shape = SubResource("Pattern_2_HighLanding")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/HighLanding"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-130, -14, 130, -14, 130, 14, -130, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="DescentLanding" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(860, 430)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/DescentLanding"]
+shape = SubResource("Pattern_2_DescentLanding")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/DescentLanding"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-90, -14, 90, -14, 90, 14, -90, 14)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="JumpCrystal" parent="Rooms/Room2/Items" instance=ExtResource("wall_10_jump_crystal")]
+position = Vector2(670, 300)
+
+[node name="Room3" type="Node2D" parent="Rooms"]
+position = Vector2(2560, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(90, 560)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Entrance"]
+shape = SubResource("air_Platform")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Entrance"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-90, -20, 90, -20, 90, 20, -90, 20)
+color = Color(0.12, 0.3, 0.4, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(1190, 560)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Exit"]
+shape = SubResource("air_Platform")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Exit"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-90, -20, 90, -20, 90, 20, -90, 20)
+color = Color(0.12, 0.3, 0.4, 1)
+
+[node name="Label" type="Label" parent="Rooms/Room3"]
+offset_left = 26.0
+offset_top = 580.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 17
+modulate = Color(0.4, 1, 0.75, 1)
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room3"]
+offset_left = 1070.0
+offset_top = 580.0
+text = "旗の到着台がゴール"
+theme_override_font_sizes/font_size = 18
+
+[node name="Items" type="Node2D" parent="Rooms/Room3"]
+[node name="Spawn" type="Marker2D" parent="Rooms/Room3"]
+position = Vector2(90, 512)
+[node name="CeilingRun" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(600, 180)
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/CeilingRun"]
+shape = SubResource("Pattern_3_CeilingRun")
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/CeilingRun"]
+script = ExtResource("air_art_terrain")
+polygon = PackedVector2Array(-420, -20, 420, -20, 420, 20, -420, 20)
+color = Color(0.12, 0.3, 0.4, 1)
+[node name="UpGate" parent="Rooms/Room3/Items" instance=ExtResource("air_5")]
+position = Vector2(220, 440)
+scale = Vector2(0.8, 1.8)
+target_gravity = -1
+[node name="DownGate" parent="Rooms/Room3/Items" instance=ExtResource("air_5")]
+position = Vector2(990, 260)
+scale = Vector2(0.8, 1.8)
+target_gravity = 1
+
+[node name="Goal" parent="Rooms/Room3" instance=ExtResource("goal")]
+position = Vector2(1160, 540)
+mission_required = false
+
+[node name="LeftBoundary" type="StaticBody2D" parent="."]
+position = Vector2(-16, 360)
+[node name="Collision" type="CollisionShape2D" parent="LeftBoundary"]
+shape = SubResource("air_Boundary")
+[node name="RightBoundary" type="StaticBody2D" parent="."]
+position = Vector2(3856, 360)
+[node name="Collision" type="CollisionShape2D" parent="RightBoundary"]
+shape = SubResource("air_Boundary")
+[node name="Player" parent="." instance=ExtResource("air_2")]
+position = Vector2(90, 512)
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Info" type="PanelContainer" parent="HUD"]
+offset_left = 24.0
+offset_top = 16.0
+offset_right = 920.0
+offset_bottom = 100.0
+mouse_filter = 2
+
+[node name="Rows" type="VBoxContainer" parent="HUD/Info"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="HUD/Info/Rows"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Status" type="Label" parent="HUD/Info/Rows"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+
+[node name="Stamina" type="ProgressBar" parent="HUD/Info/Rows"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+max_value = 3.0
+value = 3.0
+show_percentage = false
+tooltip_text = "壁スタミナ（着地で回復）"
+
+[node name="HelpButton" type="Button" parent="HUD"]
+offset_left = 1030.0
+offset_top = 20.0
+offset_right = 1256.0
+offset_bottom = 64.0
+focus_mode = 0
+text = "お助けメニュー [H / Y]"
+
+[node name="Hint" type="Label" parent="HUD"]
+visible = false
+offset_left = 24.0
+offset_top = 110.0
+offset_right = 1230.0
+theme_override_font_sizes/font_size = 19
+
+[node name="Help" type="PanelContainer" parent="HUD"]
+visible = false
+offset_left = 390.0
+offset_top = 180.0
+offset_right = 890.0
+offset_bottom = 480.0
+
+[node name="Rows" type="VBoxContainer" parent="HUD/Help"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="HUD/Help/Rows"]
+layout_mode = 2
+text = "溶岩ジャンプ回廊"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+
+[node name="Controls" type="Label" parent="HUD/Help/Rows"]
+layout_mode = 2
+text = "移動：A/D・方向キー　ジャンプ：Space / W\n壁を掴む：Shift　登る：↑　ダッシュ：X ＋ 方向\nやり直し：R / Start　メニュー：H / Y・△\n部屋を進むと復帰地点を更新。上下の画面外でやり直し。"
+horizontal_alignment = 1
+
+[node name="Resume" type="Button" parent="HUD/Help/Rows"]
+layout_mode = 2
+text = "プレイを再開する"
+
+[node name="Hints" type="CheckButton" parent="HUD/Help/Rows"]
+layout_mode = 2
+text = "ヒントを表示する"
+
+[node name="Retry" type="Button" parent="HUD/Help/Rows"]
+layout_mode = 2
+text = "復帰地点からやり直す"
+
+[node name="Return" type="Button" parent="HUD/Help/Rows"]
+layout_mode = 2
+text = "ステージ選択へ戻る"
+
+[node name="Completion" type="Label" parent="HUD"]
+visible = false
+offset_left = 290.0
+offset_top = 280.0
+offset_right = 990.0
+text = "ステージ5クリア！\nEsc / Back・Select でステージ選択へ"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.5, 1, 0.75, 1)
+theme_override_colors/font_outline_color = Color(0.1, 0.05, 0.06, 1)
+theme_override_constants/outline_size = 6
