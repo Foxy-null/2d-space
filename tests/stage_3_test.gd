@@ -22,6 +22,7 @@ func _run() -> void:
 	_check(current_scene.scene_file_path == "res://scenes/stage_3.tscn", "Keyboard selection must start stage 3")
 	stage = current_scene
 	player = stage.player
+	await _verify_gate_motion()
 	player.movement_action.connect(func(action: String): actions[action] = actions.get(action, 0) + 1)
 	player.gravity_changed.connect(func(inverted: bool): flips.append(-1 if inverted else 1))
 	player.respawned.connect(func(): respawns += 1)
@@ -85,6 +86,7 @@ func _run() -> void:
 	_check_hints(true)
 	await _toggle_hints()
 	_check_hints(false)
+	await _walk_lower_path()
 	await _verify_shortcuts()
 	stage._set_room(0, false)
 	player.respawn()
@@ -162,6 +164,8 @@ func _run() -> void:
 				await _kick_pair(true, -10, true)
 				_check(actions.has("spring"), "The final ceiling route uses the inverted Spring")
 				await _kick_gate(960, -1, "MovingUpGate")
+				_release_inputs()
+				await _until(func(): return player.is_on_floor(), 120, "Settle on the ceiling before approaching the final gap")
 				await _cross_ceiling_pit(950, 1070)
 				_check(actions.has("exit_wind"), "The final ceiling pit is crossed against a headwind")
 				await _kick_gate(1110, 1, "DownGate")
@@ -258,6 +262,34 @@ func _run() -> void:
 	_release_inputs()
 	print("STAGE_3_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
+
+
+func _verify_gate_motion() -> void:
+	var gates: Array[Area2D] = []
+	for room in stage.rooms.get_children():
+		for node in room.get_children():
+			if node is Area2D and node.get_script() == preload("res://scripts/gravity_gate.gd") and node.target_gravity == -1:
+				_check(node.moving_enabled and node.move_offset.x != 0 and is_zero_approx(node.move_offset.y), "Every red gate moves horizontally")
+				node.reset_for_respawn()
+				gates.append(node)
+	await _step(10)
+	for gate in gates:
+		var initial: Vector2 = gate.get("_initial_position")
+		_check(not is_equal_approx(gate.position.x, initial.x) and is_equal_approx(gate.position.y, initial.y), "Red gates actually travel sideways without changing height")
+		gate.reset_for_respawn()
+
+
+func _walk_lower_path() -> void:
+	var path: StaticBody2D = stage.rooms.get_child(0).get_node("GapPath")
+	player.set_gravity_direction(-1)
+	player.position = path.position + Vector2(-20, 40)
+	await _step(3)
+	_drive("move_right")
+	await _until(func(): return _x() > path.position.x + 20, 40, "Walk across the new path below the ceiling gap")
+	_check(player.is_on_floor() and absf(player.position.y - (path.position.y + 40)) < 1.0, "The lower path supports inverted walking")
+	_release_inputs()
+	player.respawn()
+	await _step(3)
 
 
 func _verify_shortcuts() -> void:
@@ -395,7 +427,8 @@ func _kick_gate(wall_x: int, target: int, moving_gate: String = "", from_air := 
 		Input.action_release("move_down")
 		var gate: Area2D = stage.rooms.get_child(stage.room_index).get_node(moving_gate)
 		if gate.get("move_offset").x != 0:
-			await _until(func(): return gate.position.x >= 1000 and gate.position.x <= 1030, 150, "Wait for the horizontal return gate")
+			var start_x: float = gate.get("_initial_position").x
+			await _until(func(): return absf(gate.position.x - start_x) < 30, 150, "Wait for the horizontal gate near the wall-kick path")
 		else:
 			var low := 450 if target > 0 else 400
 			if stage.room_index == 5 and target < 0:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=78 format=3]
+[gd_scene load_steps=85 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -211,6 +211,28 @@ size = Vector2(120, 160)
 
 [sub_resource type="RectangleShape2D" id="Shape_EntryCeiling_Room1"]
 size = Vector2(260, 160)
+
+[sub_resource type="RectangleShape2D" id="Shape_LowerPath100"]
+size = Vector2(100, 28)
+
+[sub_resource type="RectangleShape2D" id="Shape_LowerPath130"]
+size = Vector2(130, 28)
+
+[sub_resource type="RectangleShape2D" id="Shape_LowerPath140"]
+size = Vector2(140, 28)
+
+[sub_resource type="RectangleShape2D" id="Shape_LowerPath170"]
+size = Vector2(170, 28)
+
+[sub_resource type="RectangleShape2D" id="Shape_LowerPath290"]
+size = Vector2(290, 28)
+
+[sub_resource type="RectangleShape2D" id="Shape_LowerPath60"]
+size = Vector2(60, 28)
+
+[sub_resource type="RectangleShape2D" id="Shape_LowerPath80"]
+size = Vector2(80, 28)
+
 
 [node name="Stage3" type="Node2D"]
 metadata/environment_theme = 1
@@ -429,6 +451,9 @@ spring_speed = 900.0
 [node name="UpGate" parent="Rooms/Room1" instance=ExtResource("5_gate")]
 position = Vector2(680, 430)
 target_gravity = -1
+moving_enabled = true
+move_offset = Vector2(-30, 0)
+move_speed = 60.0
 
 [node name="EntryCeiling" type="StaticBody2D" parent="Rooms/Room1"]
 position = Vector2(770, 0)
@@ -486,6 +511,17 @@ spring_speed = 900.0
 [node name="DownGate" parent="Rooms/Room1" instance=ExtResource("5_gate")]
 position = Vector2(1130, 260)
 target_gravity = 1
+
+[node name="GapPath" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(940, 152)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/GapPath"]
+shape = SubResource("Shape_LowerPath80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/GapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-40, -14, 40, -14, 40, 14, -40, 14)
+color = Color(0.24, 0.38, 0.56, 1)
 
 [node name="Room2" type="Node2D" parent="Rooms"]
 position = Vector2(1280, 0)
@@ -646,6 +682,9 @@ antialiased = true
 [node name="UpGate" parent="Rooms/Room2" instance=ExtResource("5_gate")]
 position = Vector2(180, 570)
 target_gravity = -1
+moving_enabled = true
+move_offset = Vector2(80, 0)
+move_speed = 100.0
 
 [node name="ExitKickWall" type="StaticBody2D" parent="Rooms/Room2"]
 position = Vector2(1078, 270)
@@ -772,6 +811,29 @@ mouse_filter = 2
 position = Vector2(940, 180)
 minimum_bounce_speed = 850.0
 maximum_bounce_speed = 1000.0
+
+[node name="GapPath" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(550, 152)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/GapPath"]
+shape = SubResource("Shape_LowerPath100")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/GapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-50, -14, 50, -14, 50, 14, -50, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
+[node name="ExitGapPath" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(990, 562)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/ExitGapPath"]
+shape = SubResource("Shape_LowerPath80")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/ExitGapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-40, -14, 40, -14, 40, 14, -40, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
 
 [node name="Room3" type="Node2D" parent="Rooms"]
 position = Vector2(2560, 0)
@@ -939,6 +1001,9 @@ antialiased = true
 [node name="UpGate" parent="Rooms/Room3" instance=ExtResource("5_gate")]
 position = Vector2(150, 420)
 target_gravity = -1
+moving_enabled = true
+move_offset = Vector2(-60, 0)
+move_speed = 100.0
 
 [node name="ExitKickWall" type="StaticBody2D" parent="Rooms/Room3"]
 position = Vector2(1118, 270)
@@ -1086,6 +1151,40 @@ mouse_filter = 2
 
 [node name="ExitJumpCrystal" parent="Rooms/Room3" instance=ExtResource("10_jump_crystal")]
 position = Vector2(840, 195)
+
+[node name="GapPath" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(400, 152)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/GapPath"]
+shape = SubResource("Shape_LowerPath140")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/GapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-70, -14, 70, -14, 70, 14, -70, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
+[node name="ExitGapPath" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(730, 152)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/ExitGapPath"]
+shape = SubResource("Shape_LowerPath60")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitGapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-30, -14, 30, -14, 30, 14, -30, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
+[node name="CrystalExitPath" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(1010, 152)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/CrystalExitPath"]
+shape = SubResource("Shape_LowerPath100")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/CrystalExitPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-50, -14, 50, -14, 50, 14, -50, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
 
 [node name="Room4" type="Node2D" parent="Rooms"]
 position = Vector2(3840, 0)
@@ -1267,6 +1366,9 @@ antialiased = true
 [node name="UpGate" parent="Rooms/Room4" instance=ExtResource("5_gate")]
 position = Vector2(190, 420)
 target_gravity = -1
+moving_enabled = true
+move_offset = Vector2(-24, 0)
+move_speed = 100.0
 
 [node name="CollisionShape2D" parent="Rooms/Room4/UpGate" index="0"]
 shape = SubResource("Shape_Room4UpGate")
@@ -1315,6 +1417,9 @@ antialiased = true
 [node name="SecondUpGate" parent="Rooms/Room4" instance=ExtResource("5_gate")]
 position = Vector2(750, 380)
 target_gravity = -1
+moving_enabled = true
+move_offset = Vector2(-24, 0)
+move_speed = 100.0
 
 [node name="CollisionShape2D" parent="Rooms/Room4/SecondUpGate" index="0"]
 shape = SubResource("Shape_Room4UpGate")
@@ -1490,6 +1595,29 @@ wind_direction = Vector2(0, -1)
 wind_acceleration = 300.0
 max_wind_speed = 60.0
 area_size = Vector2(220, 240)
+
+[node name="GapPath" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(385, 152)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/GapPath"]
+shape = SubResource("Shape_LowerPath130")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/GapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-65, -14, 65, -14, 65, 14, -65, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
+[node name="ExitGapPath" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(935, 152)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/ExitGapPath"]
+shape = SubResource("Shape_LowerPath170")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitGapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-85, -14, 85, -14, 85, 14, -85, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
 
 [node name="Room5" type="Node2D" parent="Rooms"]
 position = Vector2(5120, 0)
@@ -1706,10 +1834,10 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="UpGate" parent="Rooms/Room5" instance=ExtResource("5_gate")]
-position = Vector2(270, 300)
+position = Vector2(270, 420)
 target_gravity = -1
 moving_enabled = true
-move_offset = Vector2(0, 180)
+move_offset = Vector2(-80, 0)
 move_speed = 140.0
 endpoint_wait_time = 0.2
 
@@ -1897,6 +2025,18 @@ position = Vector2(1040, 288)
 rotation = 3.1415927
 spring_speed = 750.0
 
+[node name="GapPath" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(400, 152)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/GapPath"]
+shape = SubResource("Shape_LowerPath140")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/GapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-70, -14, 70, -14, 70, 14, -70, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
+
 [node name="Room6" type="Node2D" parent="Rooms"]
 position = Vector2(6400, 0)
 
@@ -2063,6 +2203,9 @@ antialiased = true
 [node name="UpGate" parent="Rooms/Room6" instance=ExtResource("5_gate")]
 position = Vector2(170, 420)
 target_gravity = -1
+moving_enabled = true
+move_offset = Vector2(-60, 0)
+move_speed = 100.0
 
 [node name="LeftKickWall" type="StaticBody2D" parent="Rooms/Room6"]
 position = Vector2(408.0, 510.0)
@@ -2146,7 +2289,7 @@ antialiased = true
 position = Vector2(922, 380)
 target_gravity = -1
 moving_enabled = true
-move_offset = Vector2(0, 80)
+move_offset = Vector2(-24, 0)
 move_speed = 180.0
 endpoint_wait_time = 0.12
 
@@ -2351,6 +2494,29 @@ wind_direction = Vector2(-1, 0)
 wind_acceleration = 300.0
 max_wind_speed = 100.0
 area_size = Vector2(240, 280)
+
+[node name="GapPath" type="StaticBody2D" parent="Rooms/Room6"]
+position = Vector2(675, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/GapPath"]
+shape = SubResource("Shape_LowerPath290")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room6/GapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-145, -14, 145, -14, 145, 14, -145, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
+[node name="ExitGapPath" type="StaticBody2D" parent="Rooms/Room6"]
+position = Vector2(1020, 152)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/ExitGapPath"]
+shape = SubResource("Shape_LowerPath100")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room6/ExitGapPath"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-50, -14, 50, -14, 50, 14, -50, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector2(72, 614)
