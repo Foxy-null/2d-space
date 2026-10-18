@@ -21,7 +21,7 @@ func _run() -> void:
 	_check(stages.get_child(1).position.x > stages.get_child(0).position.x, "Stage 2 follows stage 1")
 	_check(not stages.get_child(2).disabled and stages.get_child(2).text.contains("壁キックと重力"), "Stage 3 must be the gravity course")
 	_check(not stages.get_child(3).disabled and stages.get_child(3).text.contains("星渡りの回廊"), "Stage 4 must be playable")
-	_check(not stages.get_child(4).disabled and stages.get_child(4).text.contains("溶岩ジャンプ回廊"), "Stage 5 must be playable")
+	_check(not stages.get_child(4).disabled and stages.get_child(4).text.contains("暴風バンパー峡谷"), "Stage 5 must be playable")
 	_check(stages.get_child(4).position.x > stages.get_child(3).position.x, "Stage cards must be horizontal")
 	await _key(KEY_RIGHT)
 	_check(root.gui_get_focus_owner() == stages.get_child(1), "Right selects stage 2")

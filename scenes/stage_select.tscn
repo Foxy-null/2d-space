@@ -127,7 +127,7 @@ text = "ステージ選択"
 
 [node name="Description" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "チュートリアルで練習して、星のぼり・壁キック・溶岩の惑星に挑戦しよう。"
+text = "チュートリアルで練習して、星のぼり・壁キック・暴風の峡谷に挑戦しよう。"
 
 [node name="Stages" type="HBoxContainer" parent="Margin/Content"]
 layout_mode = 2
@@ -183,7 +183,7 @@ size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage4")
 focus_neighbor_right = NodePath("../Stage5")
 focus_neighbor_bottom = NodePath("../../Preview")
-text = "ステージ 5\n\n溶岩ジャンプ回廊\n\nプレイする"
+text = "ステージ 5\n\n暴風バンパー峡谷\n\nプレイする"
 
 [node name="Preview" type="Button" parent="Margin/Content"]
 custom_minimum_size = Vector2(0, 42)
