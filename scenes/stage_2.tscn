@@ -1,4 +1,6 @@
-[gd_scene load_steps=38 format=3]
+[gd_scene load_steps=39 format=3]
+
+[ext_resource type="Script" path="res://scripts/stage_clear.gd" id="stage_clear"]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -626,6 +628,7 @@ layout_mode = 2
 text = "ステージ選択へ戻る"
 
 [node name="Completion" type="Label" parent="HUD"]
+script = ExtResource("stage_clear")
 visible = false
 offset_left = 290.0
 offset_top = 150.0
