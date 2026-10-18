@@ -9,7 +9,7 @@ const HINTS := [
 	"空中ジャンプで後半の穴を越す。",
 	"縦風を越え、移動ゲートを待つ。",
 	"短い足場のSpringで床へ戻る。",
-	"向かい風と横移動ゲートを越す。",
+	"向かい風と壁沿いの反転ゲートを越す。",
 ]
 
 var room_index := 0
@@ -70,7 +70,7 @@ func set_hints_visible(value: bool) -> void:
 	$HUD/HelpMenu/Rows/ToggleHints.set_pressed_no_signal(value)
 	$HUD/HelpMenu/Rows/ToggleHints.text = "ヒントを非表示にする" if value else "ヒントを表示する"
 	hud.show_stage_room(room_index, TITLES[room_index], HINTS[room_index] if value else "", rooms.get_child_count())
-	$HUD/Completion.text = "ステージ3クリア！\n左へ戻って、自由に練習できます" if value else "ステージ3クリア！"
+	$HUD/Completion.text = "ステージ3クリア！\nR / Startでこの部屋をもう一度遊べます" if value else "ステージ3クリア！"
 
 
 func _return_to_stage_select() -> void:
@@ -140,11 +140,6 @@ func _update_room() -> void:
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
-	var bridge := room.get_node_or_null("ReturnBridge")
-	if bridge != null:
-		bridge.visible = done
-		bridge.get_node("Collision").set_deferred("disabled", not done)
-		room.get_node("PitWarning").visible = not done
 	room.get_node("Goal").set_progress(0, 0, "", "", done)
 	room.get_node("ExitHint").text = ("クリア！　自由に練習できます" if room_index == 5 else "次の部屋へ →") if done else "到着台に乗ると出口が開く"
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)

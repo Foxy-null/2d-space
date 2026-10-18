@@ -72,8 +72,7 @@ func _run() -> void:
 		var goal: ArrivalSwitch = room.get_node("Goal")
 		_check(not goal.locked and not goal.get_node("Bubble").visible, "Goals are unlocked without tutorial counters")
 		_check(not goal.get_node("UnlockSound").playing, "Starting a room must not play an unlock chime")
-	var bridge: StaticBody2D = stage.rooms.get_child(4).get_node("ReturnBridge")
-	_check(not bridge.visible and bridge.get_node("Collision").disabled, "The first moving-gate challenge keeps its gap")
+	_check(not stage.rooms.get_child(4).has_node("ReturnBridge"), "The moving-gate challenge has no automatic return bridge")
 	var camera_position: Vector2 = stage.camera.position
 	Input.action_press("move_right")
 	Input.action_press("dash")
@@ -174,7 +173,7 @@ func _run() -> void:
 		_check(respawns == respawns_before, "The no-dash route crosses room %d without falling" % (index + 1))
 		if index != 1:
 			var room: Node2D = stage.rooms.get_child(index)
-			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
+			_check(not room.has_node("ReturnBridge") and room.get_node("PitWarning").visible, "Clearing the room leaves its pit open and marked")
 		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 3, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
 		_check(not actions.has("dash"), "Room %d can be completed without dash" % (index + 1))
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
@@ -215,7 +214,7 @@ func _run() -> void:
 	player.global_position.x = 5 * 1280 - 5
 	await _step(25)
 	_check(stage.room_index == 4 and player.position.x > 4 * 1280 + 1200, "Backtracking uses the right entrance")
-	_check(bridge.visible and not bridge.get_node("Collision").disabled, "Backtracking preserves the return bridge")
+	_check(not stage.rooms.get_child(4).has_node("ReturnBridge") and stage.rooms.get_child(4).get_node("PitWarning").visible, "Backtracking leaves the floor pit open and marked")
 	_check(stage.completed and stage.cleared.size() == 6 and not stage.get_node("HUD/Completion").visible, "Backtracking preserves cleared rooms without a completion overlay")
 	await _retry()
 	_check(player.position.x > 4 * 1280 + 1200, "Retry after backtracking keeps the right entrance")
@@ -224,18 +223,17 @@ func _run() -> void:
 	_check(gate.position != gate.get("_initial_position"), "Moving gates actually travel")
 	await _retry()
 	_check(gate.position.distance_to(gate.get("_initial_position")) < 5, "Retry resets the moving gate")
+	var falls_before := respawns
 	_drive("move_left")
 	for frame in 180:
-		if _x() < 820 and player.is_on_floor():
+		if respawns > falls_before:
 			break
 		Input.action_release("jump")
 		if player.is_on_floor() and player.is_on_wall():
 			Input.action_press("jump")
 		await _step()
-	_check(stage.room_index == 4 and _x() < 820 and player.is_on_floor(), "Backtrack over the arrival switch onto the return bridge")
-	_drive("move_right")
-	await _until(func(): return _x() > 1055, 100, "Walk under the exit landing without getting stuck")
-	_check(player.is_on_floor(), "The return bridge provides room below the exit landing")
+	_check(respawns > falls_before and stage.room_index == 4 and _x() > 1200, "Walking into a cleared room's pit still falls and returns to its entrance")
+	_check(stage.cleared.has(4) and not stage.rooms.get_child(4).has_node("ReturnBridge"), "A pit fall retains the clear without filling the hole")
 	_release_inputs()
 	await _key(KEY_H)
 	_check_help(true)
@@ -308,7 +306,7 @@ func _verify_shortcuts() -> void:
 
 func _fall_into_pit(edge_x: int) -> void:
 	var room: Node2D = stage.rooms.get_child(stage.room_index)
-	_check(not room.get_node("ReturnBridge").visible and room.get_node("ReturnBridge/Collision").disabled and room.get_node("PitWarning").visible, "A fresh room has an open and marked pit")
+	_check(not room.has_node("ReturnBridge") and room.get_node("PitWarning").visible, "A fresh room has an open and marked pit")
 	_release_inputs()
 	player.global_position = room.to_global(Vector2(edge_x - 24, 614))
 	await _step(3)
@@ -387,6 +385,8 @@ func _kick_gate(wall_x: int, target: int, moving_gate: String = "", from_air := 
 	_drive("move_left", true, inverted)
 	var kick_y := 440 if wall_x >= 1000 else 280
 	var climb_y := 480
+	if stage.room_index == 5 and target < 0 and wall_x == 960:
+		climb_y = 590
 	if stage.room_index == 3 and target < 0:
 		climb_y = 540 if wall_x == 280 else 500
 	await _until(func(): return player.is_wall_grabbing() and (player.position.y > kick_y if inverted else player.position.y < climb_y), 110, "Climb to the gate's height at x=%d" % wall_x)
@@ -398,6 +398,8 @@ func _kick_gate(wall_x: int, target: int, moving_gate: String = "", from_air := 
 			await _until(func(): return gate.position.x >= 1000 and gate.position.x <= 1030, 150, "Wait for the horizontal return gate")
 		else:
 			var low := 450 if target > 0 else 400
+			if stage.room_index == 5 and target < 0:
+				low = 445
 			await _until(func(): return gate.position.y >= low and gate.position.y <= low + 20 and gate.get("_toward_b"), 200, "Hold the wall until the small moving gate reaches the kick path")
 	await _jump()
 	Input.action_release("wall_grab")

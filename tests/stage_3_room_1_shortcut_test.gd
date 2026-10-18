@@ -27,7 +27,7 @@ func _run() -> void:
 		if respawns > attempt_respawns or (player.is_on_floor() and player.position.y > 600):
 			break
 		await _step()
-	if stage.rooms.get_child(0).has_node("ReturnBridge"):
+	if stage.rooms.get_child(0).has_node("PitWarning"):
 		_check(respawns > attempt_respawns and flips.is_empty(), "The reported drop falls into the pit without touching a gravity gate")
 		_check(player.position.distance_to(stage.rooms.get_child(0).get_node("Spawn").position) < 20, "The pit returns to the entrance")
 		_check(player.gravity_direction == 1 and player.is_dash_ready() and player.get_wall_stamina() > 2.9, "The pit restores gravity, dash and wall stamina")
