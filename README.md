@@ -55,7 +55,7 @@ H / Y・△のお助けメニューで経路のヒントを表示できます。
 
 ギャラリーの「未開発の惑星」を舞台に、バンパーの反射と風をつなぐ高難度の全12部屋です。Godot 4.7.2で `project.godot` をインポートしてF5を押し、「ステージ5：暴風バンパー峡谷」を選ぶと試遊できます。`scenes/stage_5.tscn` を開いてF6でも直接起動できます。
 
-各部屋のバンパーを番号順に反射すると出口の柵が開きます。浅くかするだけでは反射しません。反射でダッシュが回復し、ダッシュ中は風の影響を受けません。入口と出口以外に休憩用の足場はなく、赤い帯に触れたり画面外へ出たりすると、その部屋の入口へ戻って反射の進捗もリセットされます。第9室には壁キックに使える岩壁があります。通常の移動・ジャンプ・壁アクション・ダッシュの能力値は変更していません。
+各部屋のバンパーを番号順に反射すると出口の柵が開きます。第1〜11室は出口の足場に着地すると、その1回で次の部屋へ進みます。空中で画面右端を越えた場合も次へ進み、クリアした部屋をやり直す必要はありません。第12室は最後の到着台への着地でクリアです。浅くかするだけでは反射しません。反射でダッシュが回復し、ダッシュ中は風の影響を受けません。途中に休憩用の足場はなく、赤い帯に触れたり出口以外の画面外へ出たりすると、その部屋の入口へ戻って反射の進捗もリセットされます。第9室には壁キックに使える岩壁があります。通常の移動・ジャンプ・壁アクション・ダッシュの能力値は変更していません。
 
 | 部屋 | 課題 |
 | --- | --- |
@@ -75,6 +75,8 @@ H / Y・△のお助けメニューで経路のヒントを表示できます。
 移動はA/D・方向キー、ジャンプはSpace / W、ダッシュはX＋方向、やり直しはR / Startです。H / Y・△のお助けメニューでヒントと経路線を表示でき、Esc / Back・Selectで選択画面へ戻れます。再選択すると1部屋目から始まります。配置は `scenes/stage_5.tscn`、進行は `scripts/stage_5.gd` で調整できます。
 
 `tests/stage_5_test.gd` は、通常の入力だけで全12部屋・43個の反射からゴールまで到達することを検証します。この到達確認ではテレポート、速度の代入、能力の補充、進捗の直接変更を使いません。順序違い・やり直し・障害物・画面外・ヒント・選択画面への復帰も別に確認します。
+
+`tests/stage_5_exit_test.gd` は第1〜11室の出口への着地と、ダッシュで空中から右端を越える場合を確認します。どちらも1回で次の部屋へ進み、二重に進まず、未達成の反射を飛ばせないことを検証します。
 
 ## チュートリアル
 
@@ -223,6 +225,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_exit_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/ascent_backdrop_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/environment_art_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd

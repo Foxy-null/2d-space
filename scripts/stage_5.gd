@@ -57,11 +57,24 @@ func _physics_process(_delta: float) -> void:
 	if transitioning or help_visible:
 		return
 	var local_x := player.position.x - room_index * ROOM_WIDTH
-	if player.position.y < -52 or player.position.y > 772 or local_x < -24 or local_x > ROOM_WIDTH + 24:
+	if player.position.y < -52 or player.position.y > 772 or local_x < -24:
 		player.respawn()
-	elif local_x >= 1260 and room_index < rooms.get_child_count() - 1 and player.is_on_floor() and next_bumper == _bumpers().get_child_count():
+	elif room_index < rooms.get_child_count() - 1 and next_bumper == _bumpers().get_child_count() and (_landed_on_exit() or local_x >= ROOM_WIDTH):
 		_transition_to_next()
+	elif local_x > ROOM_WIDTH + 24:
+		player.respawn()
 	_update_hud()
+
+
+func _landed_on_exit() -> bool:
+	if not player.is_on_floor():
+		return false
+	var exit := rooms.get_child(room_index).get_node("Exit")
+	for index in player.get_slide_collision_count():
+		var contact := player.get_slide_collision(index)
+		if contact.get_collider() == exit and contact.get_normal().dot(Vector2.UP) > 0.8:
+			return true
+	return false
 
 
 func _set_checkpoint() -> void:
@@ -109,7 +122,7 @@ func _update_route() -> void:
 	var unlocked := next_bumper == _bumpers().get_child_count()
 	room.get_node("ExitLock/Collision").set_deferred("disabled", unlocked)
 	room.get_node("ExitLock").visible = not unlocked
-	room.get_node("ExitLabel").text = ("旗の台へ →" if room_index == TITLES.size() - 1 else "次の部屋へ →") if unlocked else "番号順に反射して解錠"
+	room.get_node("ExitLabel").text = ("旗の台へ →" if room_index == TITLES.size() - 1 else "着地して次の部屋へ →") if unlocked else "番号順に反射して解錠"
 	for index in _bumpers().get_child_count():
 		_bumpers().get_child(index).modulate = Color(0.55, 0.7, 0.65) if index < next_bumper else Color.WHITE
 

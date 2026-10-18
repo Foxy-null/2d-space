@@ -44,9 +44,10 @@ F5でプロジェクトを起動すると、5つのステージを左から右�
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔。
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力。
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊。
-- `scenes/stage_5.tscn` / `scripts/stage_5.gd`：暴風バンパー峡谷。「未開発の惑星」を背景に、番号順のバンパー反射と風を使う12部屋。反射をすべてつなぐと部屋の出口が開き、落下や赤い障害物への接触で現在の部屋の入口へ戻る。
+- `scenes/stage_5.tscn` / `scripts/stage_5.gd`：暴風バンパー峡谷。「未開発の惑星」を背景に、番号順のバンパー反射と風を使う12部屋。反射をすべてつなぐと部屋の出口が開く。第1〜11室は出口の足場への着地、または画面右端を越えた時点で次の部屋へ進む。落下や赤い障害物への接触で現在の部屋の入口へ戻る。
 - `tests/stage_select_test.gd`：起動、表示順、3種類の入力、全5ステージの選択、戻る操作、再入場時の初期化。
-- `tests/stage_5_test.gd`：全3部屋の実入力攻略、最終到着台、復帰、ヒント、メニュー、再入場時の初期化。
+- `tests/stage_5_test.gd`：全12部屋の実入力攻略、最終到着台、復帰、ヒント、メニュー、再入場時の初期化。
+- `tests/stage_5_exit_test.gd`：第1〜11室の出口着地・空中ダッシュ退出で1回だけ次室へ進むことと、未達成時の退出禁止。
 
 ```powershell
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
