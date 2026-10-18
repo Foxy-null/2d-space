@@ -18,6 +18,8 @@ func _run() -> void:
 	_check(stage.rooms.get_child(0).get_node("UpGate/CollisionShape2D").shape.size == Vector2(64, 160), "Room 1 Up gate uses the original, small size")
 	_check(stage.rooms.get_child(0).get_node("DownGate/CollisionShape2D").shape.size == Vector2(64, 160), "Room 1 Down gate retains its original size")
 	_check(stage.rooms.get_child(1).get_node("UpGate/CollisionShape2D").shape.size == Vector2(64, 160), "Room 2 retains the shared gate's original size")
+	await _check_gate_motion()
+	await _check_gap_floor()
 	await _prepare()
 	await _climb_second_wall(false)
 	_release_inputs()
@@ -76,10 +78,38 @@ func _run() -> void:
 	quit(1 if failed else 0)
 
 
+func _check_gate_motion() -> void:
+	var gate: Area2D = stage.rooms.get_child(0).get_node("UpGate")
+	gate.reset_for_respawn()
+	await _step(61)
+	_check(gate.position.distance_to(Vector2(600, 430)) < 1.0, "Room 1's red gate reaches its left endpoint without changing height")
+	await _step(60)
+	_check(gate.position.x > 600 and gate.position.x < 680 and is_equal_approx(gate.position.y, 430), "The red gate waits and then travels back to the right")
+	await _retry()
+	_check(gate.position.distance_to(Vector2(680, 430)) < 5, "Retry restarts the red gate from its original position")
+
+
+func _check_gap_floor() -> void:
+	player.set_gravity_direction(-1)
+	player.position = stage.rooms.get_child(0).get_node("DownGate").position
+	await _step(3)
+	_check(player.gravity_direction == 1, "The blue gate restores normal gravity before approaching the added floor")
+	_drive("move_left")
+	await _until(func(): return _x() < 970, 90, "Move toward the added floor after passing the blue gate")
+	_release_inputs()
+	await _until(func(): return player.is_on_floor(), 60, "Land on the floor below the ceiling gap")
+	_drive("move_right")
+	await _until(func(): return _x() > 970, 40, "Walk across the new floor below the ceiling gap")
+	_check(player.is_on_floor() and absf(player.position.y - 614) < 1, "The added floor supports normal-gravity walking at the existing floor height")
+	_release_inputs()
+
+
 func _prepare() -> void:
 	if failed:
 		quit(1)
 		return
+	_release_inputs()
+	await _step(3)
 	await _retry()
 	flips.clear()
 	attempt_respawns = respawns

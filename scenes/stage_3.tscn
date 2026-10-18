@@ -1,4 +1,4 @@
-[gd_scene load_steps=78 format=3]
+[gd_scene load_steps=79 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -211,6 +211,9 @@ size = Vector2(120, 160)
 
 [sub_resource type="RectangleShape2D" id="Shape_EntryCeiling_Room1"]
 size = Vector2(260, 160)
+
+[sub_resource type="RectangleShape2D" id="Shape_GapFloor_Room1"]
+size = Vector2(100, 80)
 
 [node name="Stage3" type="Node2D"]
 metadata/environment_theme = 1
@@ -429,6 +432,9 @@ spring_speed = 900.0
 [node name="UpGate" parent="Rooms/Room1" instance=ExtResource("5_gate")]
 position = Vector2(680, 430)
 target_gravity = -1
+moving_enabled = true
+move_offset = Vector2(-80, 0)
+move_speed = 80.0
 
 [node name="EntryCeiling" type="StaticBody2D" parent="Rooms/Room1"]
 position = Vector2(770, 0)
@@ -486,6 +492,17 @@ spring_speed = 900.0
 [node name="DownGate" parent="Rooms/Room1" instance=ExtResource("5_gate")]
 position = Vector2(1130, 260)
 target_gravity = 1
+
+[node name="GapFloor" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(950, 680)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/GapFloor"]
+shape = SubResource("Shape_GapFloor_Room1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/GapFloor"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-50, -40, 50, -40, 50, 40, -50, 40)
+color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Room2" type="Node2D" parent="Rooms"]
 position = Vector2(1280, 0)
