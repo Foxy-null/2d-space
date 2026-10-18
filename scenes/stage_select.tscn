@@ -175,6 +175,15 @@ focus_neighbor_right = NodePath("../Stage4")
 focus_neighbor_bottom = NodePath("../../Preview")
 text = "ステージ 4\n\n星渡りの回廊\n\nプレイする"
 
+[node name="Stage5" type="Button" parent="Margin/Content/Stages"]
+custom_minimum_size = Vector2(200, 232)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_mode = 0
+disabled = true
+text = "ステージ 5\n\n準備中\n\nプレイできません"
+
 [node name="Preview" type="Button" parent="Margin/Content"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
@@ -183,7 +192,7 @@ text = "5つの環境を見る — 背景とギミックのプレビュー"
 
 [node name="Availability" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "ステージ1〜4は自由に選べます。"
+text = "ステージ1〜4は自由に選べます。ステージ5は準備中です。"
 
 [node name="Controls" type="Label" parent="Margin/Content"]
 layout_mode = 2

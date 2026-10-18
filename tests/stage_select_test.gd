@@ -14,7 +14,8 @@ func _run() -> void:
 	await _step(3)
 	var menu := current_scene
 	var stages: HBoxContainer = menu.get_node("Margin/Content/Stages")
-	_check(stages.get_child_count() == 4, "Show exactly four stages")
+	_check(stages.get_child_count() == 5, "Show four playable stages and a stage 5 placeholder")
+	_check(stages.get_child(4).disabled and stages.get_child(4).focus_mode == Control.FOCUS_NONE and stages.get_child(4).text.contains("準備中"), "Stage 5 is unavailable and cannot receive focus")
 	_check(root.gui_get_focus_owner() == stages.get_child(0), "Stage 1 must initially have keyboard/gamepad focus")
 	_check(not stages.get_child(0).disabled, "Tutorial must be playable")
 	_check(not stages.get_child(1).disabled and stages.get_child(1).text.contains("星のぼりの塔"), "Stage 2 must be the tower")
