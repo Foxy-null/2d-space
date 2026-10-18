@@ -101,7 +101,7 @@ func _run() -> void:
 		var respawns_before := respawns
 		match index:
 			0:
-				await _kick_pair(false, 0, true)
+				await _kick_pair(false, -180, true)
 				_check(actions.has("launch_spring"), "The first room launches from its Spring into the wall kicks")
 				_drive("move_right")
 				await _until(func(): return actions.has("return_spring"), 160, "The first room's kicks enter Up gravity and its ceiling Spring")
@@ -164,7 +164,7 @@ func _run() -> void:
 		await _reach_goal()
 		_check(stage.cleared.has(index), "Actual arrival must clear room %d" % (index + 1))
 		_check(respawns == respawns_before, "The no-dash route crosses room %d without falling" % (index + 1))
-		if index >= 2:
+		if index != 1:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
 		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 3, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
