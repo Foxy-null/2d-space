@@ -52,21 +52,32 @@ func _ready() -> void:
 	match room_number:
 		0:
 			_spike(Vector2(500, 350), Vector2(0, 220), 3.8, 0.0)
+			_spike(Vector2(750, 210), Vector2(0, 250), 4.2, 0.55)
 		1:
 			_spike(Vector2(150, 320), Vector2(0, 190), 3.6, 0.4)
 			_spike(Vector2(700, 230), Vector2(0, 260), 3.8, 0.0)
+			_spike(Vector2(430, 200), Vector2(0, 260), 4.1, 0.5)
+			_spike(Vector2(940, 120), Vector2(0, 380), 4.3, 0.25)
 		2:
 			_spike(Vector2(480, 410), Vector2(0, 160), 3.4, 0.0)
 			_spike(Vector2(770, 400), Vector2(0, 170), 3.7, 0.4)
+			_spike(Vector2(260, 380), Vector2(300, 0), 4.2, 0.5)
+			_spike(Vector2(1080, 360), Vector2(0, 290), 3.9, 0.2)
 		3:
 			_spike(Vector2(680, 220), Vector2(0, 300), 3.6, 0.0)
 			_spike(Vector2(870, 360), Vector2(0, 250), 3.5, 0.3)
+			_spike(Vector2(450, 300), Vector2(0, 230), 4.2, 0.5)
+			_spike(Vector2(1120, 330), Vector2(0, 240), 4.0, 0.15)
 		4:
 			_spike(Vector2(500, 360), Vector2(0, 250), 3.7, 0.0)
 			_spike(Vector2(830, 350), Vector2(0, 260), 3.9, 0.3)
+			_spike(Vector2(280, 390), Vector2(0, 210), 4.3, 0.5)
+			_spike(Vector2(1120, 350), Vector2(0, 220), 4.1, 0.15)
 		5:
 			_spike(Vector2(490, 180), Vector2(0, 330), 4.0, 0.0)
 			_spike(Vector2(960, 250), Vector2(0, 290), 3.8, 0.0)
+			_spike(Vector2(250, 200), Vector2(0, 400), 4.3, 0.5)
+			_spike(Vector2(710, 180), Vector2(0, 300), 4.5, 0.4)
 	var creature := CREATURE.instantiate()
 	creature.name = "JumpCreature"
 	creature.position = Vector2(175, 580)
