@@ -1,4 +1,4 @@
-[gd_scene load_steps=80 format=3]
+[gd_scene load_steps=81 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -218,6 +218,9 @@ size = Vector2(140, 28)
 [sub_resource type="RectangleShape2D" id="Shape_SpringCeiling_Room1"]
 size = Vector2(160, 40)
 
+[sub_resource type="RectangleShape2D" id="Shape_Room1UpGate"]
+size = Vector2(240, 480)
+
 [node name="Stage3" type="Node2D"]
 metadata/environment_theme = 1
 script = ExtResource("1_stage")
@@ -392,8 +395,11 @@ position = Vector2(490, 640)
 spring_speed = 900.0
 
 [node name="UpGate" parent="Rooms/Room1" instance=ExtResource("5_gate")]
-position = Vector2(860, 430)
+position = Vector2(948, 400)
 target_gravity = -1
+
+[node name="CollisionShape2D" parent="Rooms/Room1/UpGate" index="0"]
+shape = SubResource("Shape_Room1UpGate")
 
 [node name="SpringCeiling" type="StaticBody2D" parent="Rooms/Room1"]
 position = Vector2(1040, 60)
@@ -2480,3 +2486,5 @@ mouse_filter = 2
 [connection signal="pressed" from="HUD/HelpMenu/Rows/ReturnToStageSelect" to="." method="_return_to_stage_select"]
 
 [connection signal="toggled" from="HUD/HelpMenu/Rows/ToggleHints" to="." method="set_hints_visible"]
+
+[editable path="Rooms/Room1/UpGate"]
