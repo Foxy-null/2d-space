@@ -8,7 +8,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	for number in range(1, 6):
+	for number in range(1, 5):
 		var path := "res://scenes/tutorial.tscn" if number == 1 else "res://scenes/stage_%d.tscn" % number
 		change_scene_to_file(path)
 		await _step(4)
