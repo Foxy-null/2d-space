@@ -17,10 +17,12 @@
 
 - ロゴは0.65秒で、少し小さい状態から通常の大きさへ拡大しながら表示する。
 - 起動から0.8秒後にSTARTが現れ始め、操作説明も続いて表示する。レイアウトの位置は動かさない。
+- STARTの表示に合わせて、既存の忍者が画面左から弧を描いて飛び込み、約1.5秒でボタンの横に着地する。着地時は足元に金色の粒が広がる。
 - ロゴの周囲に金色と水色の星を12個配置し、それぞれ異なるタイミングで約2.8秒かけて明滅させる。
 - 表示後のロゴは約5.6秒の周期で、最大1.2%だけ緩やかに拡大・縮小する。
-- 演出中もEnter／Space・ゲームパッドA／×でステージ選択へ直接進める。STARTが現れ始めるまでは、透明なボタンがクリックを受け取らないようにする。
-- OSが「アニメーションを減らす」設定を通知した場合は、登場演出・きらめき・拡大縮小と背景の動きを止め、ロゴとSTARTを最初から表示する。通知の有無は [GodotのAPI](https://docs.godotengine.org/en/stable/classes/class_displayserver.html#class-displayserver-method-accessibility-should-reduce-animation) で確認する。
+- 決定すると忍者が上空へ跳び出し、星の流れるワープと暗転を0.28秒間表示してからステージ選択へ進む。遷移中は再入力で演出を重複させない。
+- 登場演出中もEnter／Space・ゲームパッドA／×でワープへ進める。STARTが現れ始めるまでは、透明なボタンがクリックを受け取らないようにする。
+- OSが「アニメーションを減らす」設定を通知した場合は、登場演出・きらめき・拡大縮小・背景の動きとワープを止め、ロゴとSTART、待機姿勢の忍者を最初から表示する。決定後は即座にステージ選択へ進む。通知の有無は [GodotのAPI](https://docs.godotengine.org/en/stable/classes/class_displayserver.html#class-displayserver-method-accessibility-should-reduce-animation) で確認する。
 
 ![スタート画面](screenshots/start-screen.png)
 
@@ -49,8 +51,8 @@ godot --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.
 
 描画ありで同じテストに `-- --screenshots` を付けると、スタート画面とステージ選択の画像を `docs/screenshots/` に保存する。
 
-`tests/stage_select_test.gd` では、登場順・STARTの表示完了・クリック受付開始・演出中の決定操作と、既存の画面遷移を確認する。ゲームパッドは入力イベントで検証し、実機では未確認。
+`tests/stage_select_test.gd` では、登場順・STARTの表示完了・クリック受付開始・忍者の着地・ワープ中の連打・演出中の決定操作と、既存の画面遷移を確認する。ゲームパッドは入力イベントで検証し、実機では未確認。
 
-Godot 4.7.2で69項目がヘッドレス・描画ありの双方で成功した。7秒の動画から登場順と星の変化を確認し、START表示後の画像を更新した。OSの動きを減らす設定は実機では未確認。
+Godot 4.7.2で73項目がヘッドレス・描画ありの双方で成功した。登場から決定までの7秒の動画で、忍者の経路・着地・ワープを確認し、START表示後の画像を更新した。OSの動きを減らす設定は実機では未確認。
 
 変更しにくい設計上の選択はないため、ADRは作成しない。

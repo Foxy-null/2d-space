@@ -28,9 +28,22 @@ func _run() -> void:
 		_check(is_equal_approx(start_button.modulate.a, 1.0) and is_equal_approx(current_scene.get_node("Center/Content/Controls").modulate.a, 1.0), "START and its controls finish fading in")
 		_check(start_button.mouse_filter == Control.MOUSE_FILTER_STOP, "The revealed START button accepts mouse clicks")
 		_check(logo.scale.x >= 1.0 and logo.scale.x <= 1.012, "Idle motion keeps the logo within its gentle scale range")
+		await _step(15)
+		var ninja: AnimatedSprite2D = current_scene.get_node("Mascot/Ninja")
+		_check(ninja.animation == &"idle" and ninja.position.is_zero_approx(), "The ninja lands beside START after its entrance")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://docs/screenshots/start-screen.png")
+	if DisplayServer.accessibility_should_reduce_animation() != 1:
+		var title := current_scene
+		start_button.pressed.emit()
+		start_button.pressed.emit()
+		_check(start_button.disabled, "Starting locks the button against repeated activation")
+		await _step(3)
+		_check(current_scene == title, "The launch effect plays before changing scenes")
+		await _step(20)
+		_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Repeated activation completes one launch into stage selection")
+		await _key(KEY_ESCAPE)
 	for key in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
 		await _key(key)
 		_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Keyboard accept opens stage selection")
@@ -177,6 +190,7 @@ func _joy_button(button: JoyButton) -> void:
 
 
 func _click(button: Button) -> void:
+	var from_title := current_scene.scene_file_path == "res://scenes/start_screen.tscn"
 	var motion := InputEventMouseMotion.new()
 	motion.position = button.get_global_rect().get_center()
 	motion.global_position = motion.position
@@ -193,17 +207,18 @@ func _click(button: Button) -> void:
 	event = event.duplicate()
 	event.pressed = false
 	root.push_input(event, true)
-	await _step(3)
+	await _step(23 if from_title else 3)
 
 
 func _press(event: InputEvent) -> void:
+	var from_title := current_scene.scene_file_path == "res://scenes/start_screen.tscn"
 	event.set("pressed", true)
 	Input.parse_input_event(event)
 	await _step()
 	event = event.duplicate()
 	event.set("pressed", false)
 	Input.parse_input_event(event)
-	await _step(3)
+	await _step(23 if from_title else 3)
 
 
 func _step(count: int = 1) -> void:
