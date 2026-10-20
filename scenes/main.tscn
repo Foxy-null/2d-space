@@ -1,4 +1,6 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/stage.tscn" id="2_stage"]
@@ -123,3 +125,16 @@ position = Vector2(530, 640)
 offset_left = 210.0
 offset_top = 655.0
 text = "HOLD SHIFT: CARRY / RELEASE: DROP OR THROW"
+
+[node name="PauseButton" type="Button" parent="HUD"]
+offset_left = 1030.0
+offset_top = 20.0
+offset_right = 1256.0
+offset_bottom = 64.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "ポーズ [Esc]"
+
+[node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
+
+[connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]

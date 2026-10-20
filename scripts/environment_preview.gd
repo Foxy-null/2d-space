@@ -72,7 +72,6 @@ func _ready() -> void:
 		$UI/Toolbar/Environment.add_item(theme)
 	$UI/Toolbar/Environment.item_selected.connect(set_environment)
 	$UI/Toolbar/Motion.toggled.connect(func(value): backdrop.motion_enabled = value)
-	$UI/Toolbar/Return.pressed.connect(_return)
 	var arguments := OS.get_cmdline_user_args()
 	for i in arguments.size():
 		if arguments[i] == "--environment" and i + 1 < arguments.size():
@@ -112,9 +111,7 @@ func _physics_process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("return_to_stage_select"):
-		_return()
-	elif event is InputEventKey and event.pressed and not event.echo:
+	if event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode >= KEY_1 and event.physical_keycode <= KEY_5:
 			set_environment(event.physical_keycode - KEY_1)
 		elif event.physical_keycode == KEY_M:
@@ -126,7 +123,3 @@ func _unhandled_input(event: InputEvent) -> void:
 			set_environment(posmod(environment_theme + 1, 5))
 		elif event.button_index == JOY_BUTTON_Y:
 			$UI/Toolbar/Motion.button_pressed = not $UI/Toolbar/Motion.button_pressed
-
-
-func _return() -> void:
-	get_tree().change_scene_to_file("res://scenes/stage_select.tscn")

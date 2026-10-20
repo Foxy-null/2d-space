@@ -44,22 +44,23 @@ func _run() -> void:
 	_check_hints(false)
 	_check_help(false)
 	_check_status(false)
-	await _key(KEY_H)
+	await _key(KEY_ESCAPE)
 	_check_help(true)
 	_check_hints(false)
 	var echo_event := InputEventKey.new()
-	echo_event.physical_keycode = KEY_H
+	echo_event.physical_keycode = KEY_ESCAPE
 	echo_event.pressed = true
 	echo_event.echo = true
 	Input.parse_input_event(echo_event)
 	await _step()
-	_check(stage.help_menu_visible, "Holding H must not repeatedly toggle the help menu")
-	await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+	_check(paused, "Holding Esc must not repeatedly toggle the help menu")
+	await _click(stage.get_node("PauseMenu/Overlay/Center/Panel/Rows/Menu/Hints"))
 	_check_hints(true)
-	await _click(stage.get_node("HUD/HelpButton"))
+	await _click(stage.get_node("PauseMenu").menu.get_node("Resume"))
 	_check_help(false)
 	await _gamepad_hints()
 	_check_help(true)
+	await _key(KEY_DOWN)
 	await _gamepad_hints(JOY_BUTTON_A)
 	_check_hints(false)
 	await _key(KEY_ESCAPE)
@@ -116,16 +117,16 @@ func _run() -> void:
 				await _kick_gate(240, -1)
 				await _cross_ceiling_pit(330, 470)
 				_check_status(true)
-				await _click(stage.get_node("HUD/HelpButton"))
+				await _click(stage.get_node("HUD/PauseButton"))
 				_check_help(true)
-				await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+				await _click(stage.get_node("PauseMenu/Overlay/Center/Panel/Rows/Menu/Hints"))
 				_check_hints(true)
-				await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+				await _click(stage.get_node("PauseMenu/Overlay/Center/Panel/Rows/Menu/Hints"))
 				_check_hints(false)
 				if OS.get_cmdline_user_args().has("--screenshots"):
 					RenderingServer.force_draw()
 					root.get_texture().get_image().save_png("res://docs/screenshots/stage-3/help_menu_inverted.png")
-				await _key(KEY_H)
+				await _key(KEY_ESCAPE)
 				_check_help(false)
 				if OS.get_cmdline_user_args().has("--screenshots"):
 					RenderingServer.force_draw()
@@ -229,9 +230,14 @@ func _run() -> void:
 	await _until(func(): return _x() > 1055, 100, "Walk under the exit landing without getting stuck")
 	_check(player.is_on_floor(), "The return bridge provides room below the exit landing")
 	_release_inputs()
-	await _key(KEY_H)
+	await _key(KEY_ESCAPE)
 	_check_help(true)
 	await _key(KEY_DOWN)
+	await _key(KEY_DOWN)
+	await _key(KEY_DOWN)
+	await _key(KEY_ENTER)
+	_check(paused and stage.get_node("PauseMenu").confirmation.visible, "Return waits for confirmation")
+	await _key(KEY_UP)
 	await _key(KEY_ENTER)
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Keyboard navigation selects the return button inside the help menu")
 	await _key(KEY_RIGHT)
@@ -242,11 +248,12 @@ func _run() -> void:
 	_check(stage.room_index == 0 and stage.cleared.is_empty() and not stage.completed, "Re-selecting stage 3 starts fresh")
 	_check_hints(false)
 	_check_help(false)
-	_check(stage.get_node("HUD/HelpButton").focus_mode == Control.FOCUS_NONE, "Jump cannot focus the help trigger during gameplay")
+	_check(stage.get_node("HUD/PauseButton").focus_mode == Control.FOCUS_NONE, "Jump cannot focus the help trigger during gameplay")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await _screenshots()
-	await _click(stage.get_node("HUD/HelpButton"))
-	await _click(stage.get_node("HUD/HelpMenu/Rows/ReturnToStageSelect"))
+	await _click(stage.get_node("HUD/PauseButton"))
+	await _click(stage.get_node("PauseMenu/Overlay/Center/Panel/Rows/Menu/Return"))
+	await _click(stage.get_node("PauseMenu").confirmation.get_node("Return"))
 	await _step(3)
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "The return button opens stage selection")
 	_release_inputs()
@@ -410,12 +417,14 @@ func _reach_goal() -> void:
 		if stage.room_index == 0 and goal.pressing:
 			menu_during_press = true
 			_release_inputs()
-			await _key(KEY_H)
+			await _key(KEY_ESCAPE)
 			_check_help(true)
 			await _step(20)
-			_check(goal.is_pressed() and stage.cleared.has(0), "Opening help during the physical arrival press must not lose completion")
-			await _key(KEY_H)
+			_check(not goal.is_pressed() and not stage.cleared.has(0), "Pausing freezes the arrival press before completion")
+			await _key(KEY_ESCAPE)
 			_check_help(false)
+			await _step(20)
+			_check(goal.is_pressed() and stage.cleared.has(0), "The arrival press completes after resuming")
 			break
 		Input.action_release("jump")
 		if _x() >= 1140:
@@ -487,15 +496,15 @@ func _check_hints(expected: bool) -> void:
 
 
 func _toggle_hints() -> void:
-	await _key(KEY_H)
-	await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
-	await _key(KEY_H)
+	await _key(KEY_ESCAPE)
+	await _click(stage.get_node("PauseMenu/Overlay/Center/Panel/Rows/Menu/Hints"))
+	await _key(KEY_ESCAPE)
 
 
 func _check_help(expected: bool) -> void:
-	_check(stage.help_menu_visible == expected and stage.get_node("HUD/HelpMenu").visible == expected, "The help menu follows its setting and starts closed")
-	_check(stage.get_node("HUD/HelpMenu/Rows/ReturnToStageSelect").is_visible_in_tree() == expected, "Return and hint controls stay inside the help menu")
-	_check(player.controls_enabled != expected, "Opening the menu suspends character input and closing restores it")
+	_check(paused == expected and stage.get_node("PauseMenu/Overlay").visible == expected, "The help menu follows its setting and starts closed")
+	_check(stage.get_node("PauseMenu/Overlay/Center/Panel/Rows/Menu/Return").is_visible_in_tree() == expected, "Return and hint controls stay inside the help menu")
+	_check(player.can_process() != expected, "Opening the menu stops the player and closing resumes it")
 	_check((root.gui_get_focus_owner() != null) == expected, "Only the open help menu owns keyboard and controller focus")
 
 
@@ -504,10 +513,7 @@ func _check_status(inverted: bool) -> void:
 	var gauge: ProgressBar = stage.get_node("HUD/Status/Rows/Stamina")
 	_check((status.position.y > 360) == inverted, "Resources switch to the side opposite gravity in the same frame")
 	_check((stage.get_node("HUD/Margin/Panel/Rows/Title").get_global_rect().position.y > 360) == inverted, "The room count and title switch sides with the stamina gauge")
-	_check((stage.get_node("HUD/HelpButton").position.y > 360) == inverted, "The help trigger switches sides with the stamina gauge")
-	var menu_rect: Rect2 = stage.get_node("HUD/HelpMenu").get_global_rect()
-	var button_rect: Rect2 = stage.get_node("HUD/HelpButton").get_global_rect()
-	_check(menu_rect.end.y < button_rect.position.y if inverted else menu_rect.position.y > button_rect.end.y, "The menu opens above the lower HUD and below the upper HUD")
+	_check((stage.get_node("HUD/PauseButton").position.y > 360) == inverted, "The help trigger switches sides with the stamina gauge")
 	_check(is_equal_approx(gauge.value, player.get_wall_stamina()) and is_equal_approx(gauge.max_value, player.wall_stamina_max), "The stamina gauge displays the actual remaining resource")
 	_check(not stage.get_node("HUD/Status/Rows/Resources").text.contains("秒") and not stage.get_node("HUD/Margin/Panel/Rows/Gravity").visible, "Stamina seconds and gravity text are absent")
 
@@ -531,7 +537,7 @@ func _click(button: Control) -> void:
 	await _step(2)
 
 
-func _gamepad_hints(button: JoyButton = JOY_BUTTON_Y) -> void:
+func _gamepad_hints(button: JoyButton = JOY_BUTTON_BACK) -> void:
 	var event := InputEventJoypadButton.new()
 	event.button_index = button
 	event.pressed = true
@@ -556,10 +562,10 @@ func _screenshots() -> void:
 			RenderingServer.force_draw()
 			root.get_texture().get_image().save_png("res://docs/screenshots/stage-3/room_5_hints.png")
 			await _toggle_hints()
-			await _key(KEY_H)
+			await _key(KEY_ESCAPE)
 			RenderingServer.force_draw()
 			root.get_texture().get_image().save_png("res://docs/screenshots/stage-3/help_menu.png")
-			await _key(KEY_H)
+			await _key(KEY_ESCAPE)
 
 
 func _step(count: int = 1) -> void:

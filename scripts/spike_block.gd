@@ -42,7 +42,7 @@ func _progress() -> float:
 
 func _physics_process(delta: float) -> void:
 	var stage := get_tree().get_first_node_in_group("stage_four")
-	if stage == null or stage.room_index != room_number or stage.help_visible or stage.transitioning:
+	if stage == null or stage.room_index != room_number or stage.transitioning:
 		tracking = false
 		return
 	var player: PlayerController = stage.player
@@ -88,7 +88,7 @@ func _hit(player: PlayerController) -> void:
 	if not pending_hit or not is_instance_valid(player):
 		return
 	var stage := get_tree().get_first_node_in_group("stage_four")
-	if stage != null and stage.room_index == room_number and player.controls_enabled and not stage.help_visible and not stage.transitioning:
+	if stage != null and stage.room_index == room_number and player.controls_enabled and not stage.transitioning:
 		player_hit.emit()
 		player.respawn()
 	pending_hit = false

@@ -87,7 +87,9 @@ func _run() -> void:
 		await verify_collision()
 		await verify_ceiling()
 		await verify_carry_gate()
-		stage.get_node("HUD/Help/Rows/Return").pressed.emit()
+		stage.get_node("PauseMenu").open()
+		stage.get_node("PauseMenu").confirm_return()
+		stage.get_node("PauseMenu").return_to_select()
 		await step(3)
 		current_scene.get_node("Margin/Content/Stages/Stage4").pressed.emit()
 		await step(5)
@@ -104,14 +106,14 @@ func verify_retry_and_help() -> void:
 	player.respawn()
 	await step(5)
 	var hazard: SpikeBlock = stage.rooms.get_child(5).get_node("Hazards/Spike1")
-	stage.set_help_visible(true)
+	stage.get_node("PauseMenu").open()
 	var before := player.position
 	var spike_before := hazard.position
 	await step(20)
 	check(player.position == before and hazard.position == spike_before, "Help freezes player and patrols")
-	stage.get_node("HUD/Help/Rows/Hints").button_pressed = true
+	stage.get_node("PauseMenu").menu.get_node("Hints").pressed.emit()
 	check(stage.get_node("HUD/Hint").visible, "Text hints can be enabled")
-	stage.get_node("HUD/Help/Rows/Retry").pressed.emit()
+	stage.get_node("PauseMenu").menu.get_node("Retry").pressed.emit()
 	await step(5)
 	check(player.controls_enabled and stage.hints_visible, "Retry preserves hints")
 	for y in [-100, 850]:

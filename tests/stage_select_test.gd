@@ -33,6 +33,7 @@ func _run() -> void:
 	await _key(KEY_ENTER)
 	_check(current_scene.scene_file_path == "res://scenes/stage_4.tscn", "Enter starts stage 4")
 	await _key(KEY_ESCAPE)
+	await _confirm_return()
 	menu = current_scene
 	stages = menu.get_node("Margin/Content/Stages")
 	await _key(KEY_RIGHT)
@@ -66,6 +67,7 @@ func _run() -> void:
 	await _joy_button(JOY_BUTTON_START)
 	_check(current_scene == tutorial and tutorial.room_index == 16, "Start must still retry the current room")
 	await _key(KEY_ESCAPE)
+	await _confirm_return()
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Esc must return to stage selection")
 	await _key(KEY_ENTER)
 	_check(current_scene.scene_file_path == "res://scenes/tutorial.tscn", "Enter must start the focused stage")
@@ -74,8 +76,9 @@ func _run() -> void:
 	tutorial = current_scene
 	_check(tutorial.room_index == 0 and tutorial.cleared.is_empty() and not tutorial.completed, "Re-entering a stage must reset progress")
 	_check(not tutorial.player.wall_actions_enabled and not tutorial.player.dash_enabled, "Re-entering must reset learned abilities")
-	_check(tutorial.get_node("HUD/ReturnToStageSelect").focus_mode == Control.FOCUS_NONE, "Jump/accept must not activate the mouse return button")
-	await _click(tutorial.get_node("HUD/ReturnToStageSelect"))
+	_check(tutorial.get_node("HUD/PauseButton").focus_mode == Control.FOCUS_NONE, "Jump/accept must not activate the mouse return button")
+	await _click(tutorial.get_node("HUD/PauseButton"))
+	await _confirm_return()
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "The mouse return button must open stage selection")
 	menu = current_scene
 	var stick := InputEventJoypadMotion.new()
@@ -93,11 +96,12 @@ func _run() -> void:
 	_check(current_scene.get_node("HUD/Margin/Panel/Rows/Title").text.begins_with("ステージ3"), "Stage 3 HUD matches its card")
 	current_scene.call("_transition_to", 1)
 	await _joy_button(JOY_BUTTON_BACK)
+	await _confirm_return()
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Back returns during a room transition")
 	await _click(current_scene.get_node("Margin/Content/Stages/Stage3"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_3.tscn", "Mouse starts stage 3")
-	await _click(current_scene.get_node("HUD/HelpButton"))
-	await _click(current_scene.get_node("HUD/HelpMenu/Rows/ReturnToStageSelect"))
+	await _click(current_scene.get_node("HUD/PauseButton"))
+	await _confirm_return()
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Stage 3 mouse return opens selection")
 	menu = current_scene
 	await _joy_button(JOY_BUTTON_DPAD_RIGHT)
@@ -107,18 +111,30 @@ func _run() -> void:
 	if failed:
 		return
 	await _joy_button(JOY_BUTTON_BACK)
+	await _confirm_return()
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Back returns from the tower")
 	await _click(current_scene.get_node("Margin/Content/Stages/Stage2"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_2.tscn", "A mouse click must start stage 2")
-	await _click(current_scene.get_node("HUD/HelpButton"))
-	await _click(current_scene.get_node("HUD/Help/Rows/Return"))
+	await _click(current_scene.get_node("HUD/PauseButton"))
+	await _confirm_return()
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "The stage 2 mouse return button must open stage selection")
 	await _click(current_scene.get_node("Margin/Content/Stages/Stage4"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_4.tscn", "Mouse starts stage 4")
 	await _joy_button(JOY_BUTTON_BACK)
+	await _confirm_return()
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Back returns from stage 4")
 	print("STAGE_SELECT_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
+
+
+func _confirm_return() -> void:
+	var stage := current_scene
+	var pause := stage.get_node("PauseMenu")
+	_check(paused and pause.overlay.visible, "Leaving starts in the pause menu")
+	await _click(pause.menu.get_node("Return"))
+	_check(current_scene == stage and paused, "Requesting a return waits for confirmation")
+	await _click(pause.confirmation.get_node("Return"))
+	_check(not paused, "Stage selection is not paused")
 
 
 func _key(code: Key) -> void:
