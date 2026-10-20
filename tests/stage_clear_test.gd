@@ -8,7 +8,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	for number in range(1, 5):
+	for number in [1, 2, 3, 4, 6]:
 		var path := "res://scenes/tutorial.tscn" if number == 1 else "res://scenes/stage_%d.tscn" % number
 		change_scene_to_file(path)
 		await _step(4)
@@ -30,6 +30,8 @@ func _run() -> void:
 			stage.player.position = Vector2(6510, 594)
 			_check(stage.player.try_begin_grab(stage.rooms.get_child(5).get_node("Items/JumpCreature")), "Stage 4 completion fixture carries the final companion")
 			stage._on_completed()
+		elif number == 6:
+			stage._complete("逃走成功")
 		elif number == 2:
 			stage._on_completed()
 		else:

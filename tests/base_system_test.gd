@@ -36,8 +36,10 @@ func _run() -> void:
 	await physics_frame
 	_check(player.velocity.y < 0.0, "Jump action did not launch the player")
 
+	player.global_position = main.get_node("GateUp").global_position
 	main.get_node("GateUp").emit_signal("body_entered", player)
 	_check(player.gravity_direction == -1 and player.up_direction == Vector2.DOWN, "Up gate did not invert gravity")
+	player.global_position = main.get_node("GateDown").global_position
 	main.get_node("GateDown").emit_signal("body_entered", player)
 	_check(player.gravity_direction == 1 and player.up_direction == Vector2.UP, "Down gate did not restore gravity")
 

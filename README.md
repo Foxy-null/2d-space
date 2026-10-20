@@ -13,15 +13,15 @@
 
 ## ステージ選択
 
-F5で起動すると、ステージ1〜4が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」を自由に選べます。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
+F5で起動すると、ステージ1〜6が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」「ステージ6：追跡者の終域」を自由に選べます。ステージ5は参考ブランチにあり、この試作では準備中です。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
 
-クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。クリア後も、引き続き自由に練習できます。
+クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。ステージ1〜4はクリア後も引き続き自由に練習できます。ステージ6はクリア時に追跡と操作が止まります。
 
 チュートリアル全17部屋は宇宙基地、ステージ2・3は生活圏のある惑星を舞台にしています。プレビューでは画面上部の選択欄、数字キー1〜5、ゲームパッドのL／Rで環境を切り替えられます。「背景の動き」、Mキー、ゲームパッドのY／△で背景を一時停止できます。移動・ジャンプ・運搬などは本編と同じ操作です。溶岩の波・泡・火の粉や瘴気は背景表現で、追加のダメージ判定はありません。
 
 合意した仕様は [ステージ選択の仕様書](docs/stage-selection.md) に記録しています。
 
-![ステージ1〜4を横に並べた選択画面](docs/screenshots/stage-selection.png)
+![ステージ1〜4・6を選べる画面](docs/screenshots/stage-selection.png)
 
 ## ステージ2：星のぼりの塔
 
@@ -51,9 +51,21 @@ F5で起動すると、ステージ1〜4が左から順に並んだ選択画面�
 
 H / Y・△のお助けメニューで操作のヒントを表示できます。配置・操作・テストは [第4ステージの仕様](docs/stage-4.md) を参照してください。
 
-全4ステージでクリア時に「ステージクリア！」と戻るボタンを表示します。Enter（テンキーも可）、ボタンのクリック、ゲームパッドAでステージ選択へ戻れます。
+ステージ1〜4・6でクリア時に「ステージクリア！」と戻るボタンを表示します。Enter（テンキーも可）、ボタンのクリック、ゲームパッドAでステージ選択へ戻れます。
 
 ![共通クリア画面の表示例](docs/screenshots/stage-clear.png)
+
+## ステージ6：追跡者の終域（試作）
+
+全12部屋で追跡敵から逃げる最終ステージの試作です。前半は溶岩、後半は邪悪なオーラの背景を使い、軽い箱・重い箱・重量スイッチ・和傘を本編へ導入しました。上下左右の重力、風、生物、ばね、バンパー、クリスタルを部屋ごとに組み合わせます。敵も同じ移動性能と能力を持ち、共有アイテムを拾って投げます。全室に投げられる物体があり、必須物体は供給場所で補充されます。
+
+左右重力では↑↓で壁沿いに歩き、Space / Aで壁から跳びます。物体もゲートの重力を受け、持った物体は投げた後も持ち主の重力を引き継ぎます。プレイヤーの投擲は敵を2秒怯ませ、敵の投擲は壁スタミナを最大値の3分の1減らして0.3秒怯ませます。
+
+捕獲されるとスタミナ残量で1回抽選し、満タンで10％、半分で55％、空で100％の確率でゲームオーバーとなってステージ選択へ戻ります。助かった場合は経路の後方へ投げ返され、2秒間は再捕獲されません。落下・トゲ・R / Startは現在の部屋の最初からやり直しです。H / Y・△のメニューでは追跡と物理が止まります。
+
+最後は二つの重量扉を突破し、左右重力と空中移動で上方の出口へ逃げ切るか、敵を檻に誘導して外側の封鎖スイッチで閉じ込めればクリアです。敵が到着台を押しただけでは部屋移動やクリアになりません。
+
+敵の姿は以前の実験用ポリゴンアバターです。本番PNGは `scenes/stage_6.tscn` のルートにある `enemy_avatar` へ割り当てられます。仕様と検証結果は [ステージ6の設計書](docs/stage-6.md) に記録しています。
 
 ## チュートリアル
 
@@ -184,10 +196,13 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜4の開始と環境プレビュー
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜4・6の開始と環境プレビュー
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全6区間、連続カメラ、復帰地点
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力反転を組み合わせた6部屋の本編ステージ
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全6部屋
+- `scenes/stage_6.tscn` / `scripts/stage_6.gd`：追跡、捕獲、投擲、全12部屋の進行
+- `scripts/stage_6_room.gd`：ステージ6の配置、供給、重量扉、檻
+- `scripts/chaser.gd`：共通の移動・運搬処理を使う追跡敵の経路と判断
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
@@ -200,6 +215,9 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_6_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_6_playthrough.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_clear_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/ascent_backdrop_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/environment_art_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
@@ -222,6 +240,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 `STAGE_4_TEST_OK` は、実入力による全6部屋の通過、クリスタル・反転ゲートの連携、部屋移動、落下・やり直し、メニュー、再入場を確認します。
 
 `STAGE_3_TEST_OK` は、ダッシュなしの実入力で全6部屋を攻略し、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
+
+`STAGE_6_TEST_OK` は、捕獲確率、追跡敵の実移動・取得・投擲、投擲衝突と怯み、4方向重力、供給、部屋復帰、二つのクリア条件を確認します。`STAGE_6_PLAYTHROUGH_OK` は敵を停止させてコースの成立性を切り分け、入力操作で12部屋の重量課題と逃走出口を通過したことを示します。封じ込めは配置を固定したテストで判定を確認し、追跡中の難易度や楽しさ、人による初回攻略時間は試遊で確認します。
 
 `CHARACTER_SPRITES_TEST_OK` は、元画像の使い分け、少数フレームの歩行・壁登り・運搬、両重力の左右向きと壁キック、大きなアイテムの縦横比・表示幅・手との接点、追加ジャンプ表示の位置を確認します。
 

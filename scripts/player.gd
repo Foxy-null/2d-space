@@ -47,7 +47,10 @@ var _parachute_grace_left := 0.0
 @export var dash_end_speed_ratio := 2.0 / 3.0
 @export var superdash_window := 0.12
 
+# Keep +/-1 for existing stages; +/-2 means right/left gravity.
 var gravity_direction := 1
+var stun_left := 0.0
+var stamina_recovery_left := 0.0
 var facing_direction := 1
 var _coyote_left := 0.0
 var _jump_buffer_left := 0.0
@@ -89,9 +92,16 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	stamina_recovery_left = maxf(0.0, stamina_recovery_left - delta)
+	if stun_left > 0.0:
+		stun_left = maxf(0.0, stun_left - delta)
+		if controls_enabled:
+			velocity += get_gravity_vector() * gravity_acceleration * delta
+			_move_player()
+		return
 	if not controls_enabled:
 		return
-	if Input.is_action_just_pressed("reset"):
+	if _just_pressed("reset"):
 		respawn()
 		return
 	var grounded := _contacts_valid and is_on_floor()
@@ -101,23 +111,25 @@ func _physics_process(delta: float) -> void:
 	_parachute_grace_left = maxf(0.0, _parachute_grace_left - delta)
 	_superdash_left = maxf(_superdash_left - delta, 0.0)
 	# Dash starts before release so a simultaneous release inherits dash velocity.
-	var input_axis := Input.get_axis("move_left", "move_right")
+	var tangent := get_walk_axis()
+	var down := get_gravity_vector()
+	var input_axis := get_movement_input().dot(tangent)
 	if absf(input_axis) > 0.1:
 		facing_direction = 1 if input_axis > 0.0 else -1
-	if dash_enabled and Input.is_action_just_pressed("dash") and _dash_ready and not is_dashing():
+	if dash_enabled and _just_pressed("dash") and _dash_ready and not is_dashing():
 		_start_dash(grounded)
 	_update_grab_input()
 	# Standing still can clear the cached wall contact. Probe both sides so
 	# grounded grabbing does not require another horizontal input.
-	if wall_actions_enabled and grounded and not on_wall and Input.is_action_pressed("wall_grab") and get_held_object() == null and not is_dashing():
+	if wall_actions_enabled and grounded and not on_wall and _pressed("wall_grab") and get_held_object() == null and not is_dashing():
 		var collision := KinematicCollision2D.new()
 		for side in [facing_direction, -facing_direction]:
-			if test_move(global_transform, Vector2(side, 0), collision) and absf(collision.get_normal().x) > 0.5:
+			if test_move(global_transform, tangent * side, collision) and absf(collision.get_normal().dot(tangent)) > 0.5:
 				wall_normal = collision.get_normal()
 				on_wall = true
 				break
-	var wants_wall_grab := wall_actions_enabled and Input.is_action_pressed("wall_grab") and on_wall and get_held_object() == null
-	if Input.is_action_just_pressed("jump") or (not wants_wall_grab and not is_dashing() and not (dash_enabled and Input.is_action_pressed("dash")) and Input.is_action_just_pressed("jump_up")):
+	var wants_wall_grab := wall_actions_enabled and _pressed("wall_grab") and on_wall and get_held_object() == null
+	if _just_pressed("jump") or (abs(gravity_direction) == 1 and not wants_wall_grab and not is_dashing() and not (dash_enabled and _pressed("dash")) and _just_pressed("jump_up")):
 		_jump_buffer_left = jump_buffer_time
 	else:
 		_jump_buffer_left = maxf(_jump_buffer_left - delta, 0.0)
@@ -126,18 +138,17 @@ func _physics_process(delta: float) -> void:
 		_tick_dash(delta, grounded)
 	else:
 		var acceleration := get_effective_acceleration(grounded)
-		var down := Vector2.DOWN * gravity_direction
-		var climb_axis := Input.get_axis("move_up", "move_down")
+		var climb_axis := get_movement_input().dot(down)
 		_wall_grabbing = wants_wall_grab and not _grab_exhausted
 		if _wall_grabbing and not grounded:
-			var rate := wall_stamina_climb_rate if climb_axis * gravity_direction < -0.5 else wall_stamina_rest_rate
+			var rate := wall_stamina_climb_rate if climb_axis < -0.5 else wall_stamina_rest_rate
 			_wall_stamina = maxf(_wall_stamina - delta * rate, 0.0)
 			if _wall_stamina <= 0.0:
 				_grab_exhausted = true
 				_wall_grabbing = false
 		if _wall_grabbing:
 			_last_wall_normal = wall_normal
-			velocity = Vector2(-_last_wall_normal.x * wall_stick_speed, climb_axis * wall_climb_speed)
+			velocity = -_last_wall_normal * wall_stick_speed + down * climb_axis * wall_climb_speed
 		else:
 			velocity += down * gravity_acceleration * delta
 			var wind_speed := _apply_wind(delta)
@@ -145,18 +156,18 @@ func _physics_process(delta: float) -> void:
 			var target_speed := move_target + wind_speed
 			if move_target * wind_speed < 0.0:
 				target_speed = signf(move_target) * maxf(target_speed * signf(move_target), absf(move_target) * MIN_HEADWIND_SPEED_RATIO)
-			velocity.x = move_toward(velocity.x, target_speed, acceleration * delta)
+			velocity += tangent * (move_toward(velocity.dot(tangent), target_speed, acceleration * delta) - velocity.dot(tangent))
 			var falling_speed := velocity.dot(down)
 			if falling_speed > max_fall_speed:
 				velocity += down * (max_fall_speed - falling_speed)
-			var pressing_into_wall := on_wall and input_axis * get_wall_normal().x < -0.1
+			var pressing_into_wall := on_wall and input_axis * get_wall_normal().dot(tangent) < -0.1
 			if wall_actions_enabled and pressing_into_wall and falling_speed > wall_slide_speed:
 				velocity += down * (wall_slide_speed - minf(falling_speed, max_fall_speed))
 		_apply_parachute()
 		_try_jump(grounded, on_wall)
 		var was_wall_grabbing := _wall_grabbing
 		_move_player()
-		if was_wall_grabbing and not is_on_wall() and climb_axis * gravity_direction < -0.5 and Input.is_action_pressed("wall_grab"):
+		if was_wall_grabbing and not is_on_wall() and climb_axis < -0.5 and _pressed("wall_grab"):
 			_try_mantle()
 	if not is_on_wall():
 		_wall_grabbing = false
@@ -166,6 +177,8 @@ func _physics_process(delta: float) -> void:
 	_contacts_valid = true
 	if is_on_floor() and not grounded:
 		_refill_on_landing()
+	elif is_on_floor() and stamina_recovery_left <= 0.0 and _wall_stamina < wall_stamina_max:
+		_refill_on_landing()
 	if use_default_respawn_bounds and (global_position.y < -260.0 or global_position.y > 980.0):
 		respawn()
 	_notify_resources()
@@ -173,9 +186,9 @@ func _physics_process(delta: float) -> void:
 
 func _start_dash(grounded: bool) -> void:
 	_impact_frame = -2
-	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	var direction := get_movement_input()
 	if direction.is_zero_approx():
-		_dash_direction = Vector2(facing_direction, 0.0)
+		_dash_direction = get_walk_axis() * facing_direction
 	else:
 		var angle := roundf(direction.angle() / (PI / 4.0)) * (PI / 4.0)
 		_dash_direction = Vector2.RIGHT.rotated(angle).round().normalized()
@@ -184,9 +197,9 @@ func _start_dash(grounded: bool) -> void:
 	_wall_grabbing = false
 	_superdash_left = 0.0
 	_superdash_speed = 0.0
-	if grounded and absf(_dash_direction.y) < 0.01:
+	if grounded and absf(_dash_direction.dot(get_gravity_vector())) < 0.01:
 		_superdash_left = dash_duration + superdash_window
-		_superdash_speed = _dash_direction.x * dash_speed * dash_end_speed_ratio
+		_superdash_speed = _dash_direction.dot(get_walk_axis()) * dash_speed * dash_end_speed_ratio
 	velocity = _dash_direction * dash_speed
 	movement_action.emit("dash")
 
@@ -210,25 +223,26 @@ func _tick_dash(delta: float, grounded: bool) -> void:
 
 
 func _try_jump(grounded: bool, on_wall: bool) -> void:
+	var down := get_gravity_vector()
 	if _jump_buffer_left <= 0.0:
 		return
 	if grounded or _coyote_left > 0.0:
 		if _superdash_left > 0.0:
-			velocity.x = _superdash_speed
-			velocity.y = -gravity_direction * jump_speed
+			velocity += get_walk_axis() * (_superdash_speed - velocity.dot(get_walk_axis()))
+			velocity += down * (-jump_speed - velocity.dot(down))
 			movement_action.emit("superdash")
 		else:
-			velocity.y = -gravity_direction * get_effective_jump_speed()
+			velocity += down * (-get_effective_jump_speed() - velocity.dot(down))
 			movement_action.emit("jump")
 	elif wall_actions_enabled and on_wall:
-		velocity = Vector2(get_wall_normal().x * wall_jump_speed, -gravity_direction * wall_jump_up_speed)
+		velocity = get_wall_normal() * wall_jump_speed - down * wall_jump_up_speed
 		movement_action.emit("wall_jump")
 	elif _air_jump_ready:
 		_air_jump_ready = false
-		velocity.y = -gravity_direction * get_effective_jump_speed()
+		velocity += down * (-get_effective_jump_speed() - velocity.dot(down))
 		movement_action.emit("air_jump")
 	elif get_held_object() != null and _held.consume_extra_jump():
-		velocity.y = -gravity_direction * get_effective_jump_speed()
+		velocity += down * (-get_effective_jump_speed() - velocity.dot(down))
 		movement_action.emit("creature_jump")
 	else:
 		return
@@ -240,15 +254,17 @@ func _try_jump(grounded: bool, on_wall: bool) -> void:
 func _refill_on_landing() -> void:
 	if get_held_object() != null:
 		_held.refill_extra_jump()
-	_wall_stamina = wall_stamina_max
-	_grab_exhausted = false
+	if stamina_recovery_left <= 0.0:
+		_wall_stamina = wall_stamina_max
+		_grab_exhausted = false
 	_dash_ready = true
 
 
 func refill_movement_resources() -> void:
 	_dash_ready = true
-	_wall_stamina = wall_stamina_max
-	_grab_exhausted = false
+	if stamina_recovery_left <= 0.0:
+		_wall_stamina = wall_stamina_max
+		_grab_exhausted = false
 	_notify_resources()
 
 
@@ -379,8 +395,8 @@ func _apply_wind(delta: float) -> float:
 		speed_limit = maxf(speed_limit, wind[2])
 	if is_dashing() or _wall_grabbing or acceleration.is_zero_approx():
 		return 0.0
-	var horizontal_speed := clampf(acceleration.x * HORIZONTAL_WIND_RESPONSE_TIME, -speed_limit, speed_limit)
-	var down := Vector2.DOWN * gravity_direction
+	var horizontal_speed := clampf(acceleration.dot(get_walk_axis()) * HORIZONTAL_WIND_RESPONSE_TIME, -speed_limit, speed_limit)
+	var down := get_gravity_vector()
 	var lift := -acceleration.dot(down)
 	var parachute_limit := _held.fall_speed_limit() if get_held_object() != null else INF
 	if lift > 0.0 and not is_finite(parachute_limit):
@@ -398,7 +414,7 @@ func _apply_wind(delta: float) -> float:
 		# Cap only wind's lift, preserving faster jump/launch momentum and crosswind.
 		var available_lift := maxf(parachute_limit + velocity.dot(down), 0.0)
 		wind_velocity += down * maxf(-wind_velocity.dot(down) - available_lift, 0.0)
-	velocity.y += wind_velocity.y
+	velocity += down * wind_velocity.dot(down)
 	# Horizontal wind offsets the movement target independently of vertical wind.
 	# Default wind (900) gives a 324 px/s drift independently of tick rate.
 	return horizontal_speed
@@ -438,22 +454,60 @@ func _notify_resources() -> void:
 		resources_changed.emit(_wall_stamina, wall_stamina_max, _dash_ready, _air_jump_ready)
 
 
+func get_gravity_vector() -> Vector2:
+	match gravity_direction:
+		-1: return Vector2.UP
+		2: return Vector2.RIGHT
+		-2: return Vector2.LEFT
+	return Vector2.DOWN
+
+
+func get_walk_axis() -> Vector2:
+	return Vector2.RIGHT if abs(gravity_direction) == 1 else Vector2.DOWN
+
+
+func get_movement_input() -> Vector2:
+	return Vector2(Input.get_axis("move_left", "move_right"), Input.get_axis("move_up", "move_down"))
+
+
+func _pressed(action: StringName) -> bool:
+	return Input.is_action_pressed(action)
+
+
+func _just_pressed(action: StringName) -> bool:
+	return Input.is_action_just_pressed(action)
+
+
+func apply_stun(duration: float, impulse := Vector2.ZERO, stamina_damage := 0.0) -> void:
+	stun_left = maxf(stun_left, duration)
+	if stamina_damage > 0.0:
+		_wall_stamina = maxf(0.0, _wall_stamina - stamina_damage)
+		stamina_recovery_left = 1.0
+	_dash_left = 0.0
+	_wall_grabbing = false
+	if not impulse.is_zero_approx():
+		velocity = impulse
+	movement_action.emit("stunned")
+	_notify_resources()
+
+
 func set_gravity_direction(direction: int) -> void:
-	var next_direction := -1 if direction < 0 else 1
-	if next_direction == gravity_direction:
+	if direction not in [-2, -1, 1, 2] or direction == gravity_direction:
 		return
-	gravity_direction = next_direction
+	gravity_direction = direction
+	var down := get_gravity_vector()
 	if not is_dashing():
-		velocity.y = 0.0
+		velocity -= down * velocity.dot(down)
 	_coyote_left = 0.0
 	_contacts_valid = false
 	_apply_up_direction()
+	$CollisionShape2D.rotation = PI / 2.0 if abs(direction) == 2 else 0.0
 	if get_held_object() != null:
 		_update_carry_position()
 	if _gravity_tween:
 		_gravity_tween.kill()
 	_gravity_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	_gravity_tween.tween_property(visuals, "rotation", PI if gravity_direction < 0 else 0.0, 0.12)
+	_gravity_tween.tween_property(visuals, "rotation", Vector2.DOWN.angle_to(down), 0.12)
 	gravity_changed.emit(gravity_direction < 0)
 
 
@@ -461,13 +515,18 @@ func set_respawn_position(location: Vector2) -> void:
 	_spawn_position = location
 
 
-func respawn() -> void:
+func respawn(reset_objects := true) -> void:
 	for object in _separating_objects.duplicate():
 		_clear_object_separation(object)
+	if get_held_object() != null and not reset_objects:
+		_held.end_carry(Vector2.ZERO)
 	_held = null
+	stun_left = 0.0
+	stamina_recovery_left = 0.0
 	_parachute_grace_left = 0.0
-	for object in get_tree().get_nodes_in_group("grabbable"):
-		object.reset_for_respawn()
+	if reset_objects:
+		for object in get_tree().get_nodes_in_group("grabbable"):
+			object.reset_for_respawn()
 	carry_changed.emit("NONE")
 	_air_jump_ready = false
 	_motion_frame = -2
@@ -503,14 +562,14 @@ func _consume_jump() -> void:
 
 
 func _apply_up_direction() -> void:
-	up_direction = Vector2.UP * gravity_direction
+	up_direction = -get_gravity_vector()
 	floor_snap_length = 8.0
 
 
 func _try_mantle() -> void:
-	if absf(_last_wall_normal.x) < 0.5:
+	if absf(_last_wall_normal.dot(get_walk_axis())) < 0.5:
 		return
-	var motion := Vector2(-_last_wall_normal.x * mantle_distance, 0.0)
+	var motion := -_last_wall_normal * mantle_distance
 	if not test_move(global_transform, motion):
 		global_position += motion
 		velocity = Vector2.ZERO
@@ -539,7 +598,7 @@ func get_effective_jump_speed() -> float:
 func _apply_parachute() -> void:
 	if get_held_object() == null or is_dashing() or _parachute_grace_left > 0.0:
 		return
-	var down := Vector2.DOWN * gravity_direction
+	var down := get_gravity_vector()
 	var excess := velocity.dot(down) - _held.fall_speed_limit()
 	if excess > 0.0:
 		velocity -= down * excess
@@ -547,10 +606,10 @@ func _apply_parachute() -> void:
 
 func _update_grab_input() -> void:
 	if get_held_object() != null:
-		if not Input.is_action_pressed("wall_grab"):
+		if not _pressed("wall_grab"):
 			release_grab()
 		return
-	if not Input.is_action_pressed("wall_grab") or is_dashing():
+	if not _pressed("wall_grab") or is_dashing():
 		return
 	# A direct shape query is synchronous (no Area enter/exit delivery delay).
 	var shape := CircleShape2D.new()
@@ -573,7 +632,7 @@ func _update_grab_input() -> void:
 func try_begin_grab(object: Grabbable) -> bool:
 	if get_held_object() != null or is_dashing() or not is_instance_valid(object) or is_instance_valid(object.carrier):
 		return false
-	if _wall_grabbing and not Input.is_action_just_pressed("wall_grab"):
+	if _wall_grabbing and not _just_pressed("wall_grab"):
 		return false
 	var local_position := object.collider.global_transform.affine_inverse() * global_position
 	var half_size := (object.collider.shape as RectangleShape2D).size * 0.5
@@ -596,9 +655,12 @@ func try_begin_grab(object: Grabbable) -> bool:
 func _update_carry_position() -> void:
 	var half_height := (_held.collider.shape as RectangleShape2D).size.y * 0.5
 	# The collider's bottom meets the raised palms, 28px above the player origin.
-	var offset := Vector2(carry_offset.x, (carry_offset.y + 20.0 - half_height) * gravity_direction)
+	var down := get_gravity_vector()
+	var offset := down * (carry_offset.y + 20.0 - half_height) + get_walk_axis() * carry_offset.x
+	if _held.directional_gravity_enabled:
+		_held.set_gravity_direction(gravity_direction)
 	if is_finite(_held.fall_speed_limit()):
-		offset.x += facing_direction * 14.0
+		offset += get_walk_axis() * facing_direction * 14.0
 	_held.global_position = global_position + offset
 
 

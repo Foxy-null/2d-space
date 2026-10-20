@@ -92,6 +92,13 @@ func is_pressed() -> bool:
 	return _pressed
 
 
+func reset_for_respawn() -> void:
+	_pressed = false
+	pressing = false
+	cap.position.y = 0.0
+	queue_redraw()
+
+
 func _process(_delta: float) -> void:
 	if not locked and _unlock_fx < 1.0:
 		queue_redraw()
