@@ -68,6 +68,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	if help_visible:
 		return
+	for block in $AssistBlocks.get_children():
+		if player in block.get_collision_exceptions() and not _assist_overlaps_player(block):
+			block.remove_collision_exception_with(player)
 	# 更新は着地時のみ。通過しただけでは復帰地点を変えない。
 	if player.is_on_floor():
 		for index in range(checkpoint_index + 1, checkpoints.get_child_count()):
@@ -138,13 +141,19 @@ func _toggle_assist() -> void:
 			var block := ASSIST_BLOCK.instantiate()
 			block.position = point
 			$AssistBlocks.add_child(block)
-		# Restart away from the new solid platforms so none can appear inside the player.
-		_retry()
+			if _assist_overlaps_player(block):
+				block.add_collision_exception_with(player)
 	else:
 		for block in $AssistBlocks.get_children():
 			block.free()
-		set_help_visible(false)
+	set_help_visible(false)
 	_update_hud()
+
+
+func _assist_overlaps_player(block: StaticBody2D) -> bool:
+	var block_shape: CollisionShape2D = block.get_node("CollisionShape2D")
+	var player_shape: CollisionShape2D = player.get_node("CollisionShape2D")
+	return block_shape.shape.collide(block_shape.global_transform, player_shape.shape, player_shape.global_transform)
 
 
 func _return_to_select() -> void:
@@ -160,7 +169,7 @@ func _on_completed() -> void:
 func _update_hud() -> void:
 	$HUD/AssistBlockButton.visible = section_deaths >= 5 and not completed
 	$HUD/AssistBlockButton.text = "？ ブロックを解除" if assist_enabled else "？ おたすけブロック"
-	$HUD/AssistBlockButton.tooltip_text = "その場で追加した足場を解除します。再設置もできます。" if assist_enabled else "復帰地点に戻り、この区間に足場を%d個追加します。" % ASSIST_POSITIONS[checkpoint_index].size()
+	$HUD/AssistBlockButton.tooltip_text = "その場で追加した足場を解除します。再設置もできます。" if assist_enabled else "その場でこの区間に足場を%d個追加します。" % ASSIST_POSITIONS[checkpoint_index].size()
 	$HUD/Info/Rows/Title.text = "ステージ2　星のぼりの塔　｜　%02d / 06　%s" % [checkpoint_index + 1, TITLES[checkpoint_index]]
 	$HUD/Info/Rows/Status.text = "高度 %dm　　ダッシュ：%s　　追加ジャンプ：%d　　復帰地点：%d" % [maxi(0, int((START_Y - player.position.y) / 10.0)), "使用可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), checkpoint_index + 1]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()

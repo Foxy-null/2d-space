@@ -20,6 +20,17 @@ func _check(ok: bool, message: String) -> void:
 		push_error(message)
 
 
+func _watch_toggle(stage: Node2D, button: Button) -> void:
+	var position: Vector2 = stage.player.global_position
+	var camera_position: Vector2 = stage.camera.position
+	var velocity: Vector2 = stage.player.velocity
+	var respawns_before := respawns
+	button.pressed.connect(func():
+		_check(stage.player.global_position.is_equal_approx(position) and stage.camera.position.is_equal_approx(camera_position), "Toggling assistance preserves the current position and camera: %s -> %s, %s -> %s" % [position, stage.player.global_position, camera_position, stage.camera.position])
+		_check(stage.player.velocity == velocity and respawns == respawns_before, "Toggling assistance preserves motion without respawning")
+	, CONNECT_ONE_SHOT)
+
+
 func _key(code: Key) -> void:
 	var event := InputEventKey.new()
 	event.physical_keycode = code
@@ -111,6 +122,12 @@ func _run() -> void:
 			await _step(3)
 			_check(stage.section_deaths == death + 1, "Each fall counts exactly once")
 			_check(button.visible == (death == 4), "Assistance appears on the fifth death")
+		var ledge: Node2D = stage.get_node("Terrain/S%dL2" % (section + 1))
+		stage.player.position = ledge.position + Vector2(0, -121)
+		stage.player.velocity = Vector2.ZERO
+		await _step(3)
+		stage.camera.position.y = clampf(stage.player.position.y - 80, -3920, 360)
+		_watch_toggle(stage, button)
 		if section == 0:
 			await _capture("assist-unlocked")
 			await _click(button)
@@ -130,7 +147,7 @@ func _run() -> void:
 			await _step(3)
 		_check(stage.assist_enabled and blocks.get_child_count() == expected_count, "Each section uses the requested number of platforms")
 		_check(not button.disabled and button.text.contains("解除"), "Installed assistance can be removed with the same button")
-		_check(not stage.help_visible and stage.player.controls_enabled, "Installing resumes play at the checkpoint")
+		_check(not stage.help_visible and stage.player.controls_enabled, "Installing resumes play at the current position")
 		_check(root.gui_get_focus_owner() == null, "A later jump cannot activate the assist button")
 		var positions: Array[Vector2] = []
 		for block in blocks.get_children():
@@ -186,13 +203,34 @@ func _run() -> void:
 		_check(not stage.player.test_move(probe, Vector2(0, -60)), "Removed platforms no longer block movement")
 		_check(stage.section_deaths == 5 and button.visible and not button.disabled, "Removal keeps assistance unlocked")
 		_check(not stage.help_visible and stage.player.controls_enabled and root.gui_get_focus_owner() == null, "Removal resumes play without retaining button focus")
+		_watch_toggle(stage, button)
 		button.pressed.emit()
 		await _step(3)
 		_check(stage.assist_enabled and blocks.get_child_count() == expected_count, "Assistance can be reinstalled without more deaths")
 		for toggle in 4:
+			_watch_toggle(stage, button)
 			button.pressed.emit()
 			_check(blocks.get_child_count() == (0 if toggle % 2 == 0 else expected_count), "Rapid toggling never leaves duplicate platforms")
 		await _step(3)
+		if section == 0:
+			button.pressed.emit()
+			stage.player.position = stage.ASSIST_POSITIONS[section][0] + Vector2(0, 14)
+			stage.player.velocity = Vector2.ZERO
+			_watch_toggle(stage, button)
+			button.pressed.emit()
+			var overlapping: StaticBody2D = blocks.get_child(0)
+			_check(stage.player in overlapping.get_collision_exceptions(), "A new platform cannot push an overlapping player out")
+			var overlap_position: Vector2 = stage.player.position
+			var overlap_respawns := respawns
+			await _step()
+			_check(stage.player.position.distance_to(overlap_position) < 3 and respawns == overlap_respawns, "Spawning inside a platform preserves position under real physics")
+			stage.player.position = overlapping.position - Vector2(0, 80)
+			await _step(2)
+			_check(stage.player not in overlapping.get_collision_exceptions(), "The platform becomes solid after the player leaves it")
+			var overlap_probe: Transform2D = stage.player.global_transform
+			var overlap_hit := KinematicCollision2D.new()
+			overlap_probe.origin = overlapping.position + Vector2(0, 60)
+			_check(stage.player.test_move(overlap_probe, Vector2(0, -60), overlap_hit) and overlap_hit.get_collider() == overlapping, "After leaving, the platform blocks passage from below")
 		stage.player.position.y = stage.checkpoints.get_child(section).position.y + 200
 		await _step(3)
 		_check(stage.section_deaths == 6 and blocks.get_child_count() == expected_count, "A further death preserves the installed platforms")
