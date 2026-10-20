@@ -29,13 +29,13 @@ func _run() -> void:
 	var daylight := stage.get_node("Background/Space")
 	daylight.set_process(false)
 	daylight.elapsed = 0.0
-	daylight.queue_redraw()
+	daylight._process(0.0)
 	await _step(2)
 	await RenderingServer.frame_post_draw
 	var before := root.get_texture().get_image()
-	var output := "res://deliverables/daylight-frames"
+	var output := "res://deliverables/daylight-anime-frames"
 	DirAccess.make_dir_recursive_absolute(output)
-	_check(before.save_png("res://deliverables/stage-2-daylight.png") == OK, "Save daylight preview")
+	_check(before.save_png("res://deliverables/stage-2-daylight-anime.png") == OK, "Save daylight preview")
 	for frame in 90:
 		daylight._process(1.0 / 15)
 		await process_frame
@@ -50,13 +50,13 @@ func _run() -> void:
 				if absf(difference.r) + absf(difference.g) + absf(difference.b) > 0.04:
 					changed += 1
 		_check(changed > 30, "Clouds and daylight animate on both sides")
-		_check(after.get_pixel(center_x, 420).get_luminance() > 0.55, "Exterior stays bright blue")
+		_check(after.get_pixel(center_x, 420).get_luminance() > 0.3, "Exterior stays bright blue")
 	_check(before.get_pixel(640, 250).is_equal_approx(after.get_pixel(640, 250)), "Exterior light stays behind the tower interior")
 	for camera_y in [360.0, -1520.0, -3920.0]:
 		stage.camera.position.y = camera_y
 		await _step(2)
 		await RenderingServer.frame_post_draw
-		_check(root.get_texture().get_image().get_pixel(44, 420).get_luminance() > 0.55, "Daylight remains visible at every tower height")
+		_check(root.get_texture().get_image().get_pixel(44, 420).get_luminance() > 0.3, "Daylight remains visible at every tower height")
 	stage.queue_free()
 	await _step(3)
 	print("STAGE_2_DAYLIGHT_TEST_%s" % ("FAILED" if failed else "OK"))

@@ -25,9 +25,9 @@
 
 背景の動作は `scripts/ascent_backdrop.gd`、地表と空の境目は `assets/environments/ascent.gdshader`、検証は `tests/ascent_backdrop_test.gd`。
 
-青空の比較案は `scenes/stage_2_daylight.tscn`。通常のステージ2を継承し、壁の外側だけを青空、太陽、流れる雲、揺らぐ光の帯に変える。Godotエディターでこのシーンを開いてF6で試せる。通常のステージ選択からは宇宙版を開始する。
+青空の比較案は `scenes/stage_2_daylight.tscn`。通常のステージ2を継承し、壁の外側だけを透明感のある青空と立体的な積雲、柔らかな逆光に変える。雲の絵をゆっくり動かし、光の帯も緩やかに揺らす。Godotエディターでこのシーンを開いてF6で試せる。通常のステージ選択からは宇宙版を開始する。
 
-青空版の描画とアニメーションは `scripts/daylight_backdrop.gd`。`xvfb-run -a godot --audio-driver Dummy --fixed-fps 15 --path . --script tests/stage_2_daylight_test.gd` で表示・動き・高度による表示を確認し、`deliverables/` に静止画と動画用フレームを保存する。
+青空版の描画は `scripts/daylight_backdrop.gd`、雲と光の動きは `assets/environments/daylight.gdshader`。背景画像は `assets/environments/daylight-anime.png`、生成プロンプトは同じディレクトリの `PROMPTS.md` に記録する。`xvfb-run -a godot --audio-driver Dummy --fixed-fps 15 --path . --script tests/stage_2_daylight_test.gd` で表示・動き・高度による表示を確認し、`deliverables/` に静止画と動画用フレームを保存する。
 
 ## 復帰地点と落下
 
