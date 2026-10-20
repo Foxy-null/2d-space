@@ -38,7 +38,10 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_texture_rect(_sky, get_viewport_rect(), false)
+	# The sky rectangle also clips the ground and clouds to the tower walls.
+	var left := get_viewport().canvas_transform * Vector2(116, 0)
+	var right := get_viewport().canvas_transform * Vector2(1164, 0)
+	draw_texture_rect(_sky, Rect2(left.x, 0, right.x - left.x, get_viewport_rect().size.y), false)
 
 
 func _draw_motion(canvas: Node2D) -> void:
