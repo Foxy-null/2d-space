@@ -169,7 +169,7 @@ func _on_player_respawned() -> void:
 
 
 static func capture_probability(stamina: float, maximum: float) -> float:
-	return 1.0 - 0.9 * clampf(stamina / maximum, 0.0, 1.0) if maximum > 0.0 else 1.0
+	return 1.0 - clampf(stamina / maximum, 0.0, 1.0) if maximum > 0.0 else 1.0
 
 
 func _capture() -> void:
