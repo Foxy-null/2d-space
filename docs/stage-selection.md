@@ -56,4 +56,4 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 `STAGE_SELECT_TEST_OK` と終了コード0を成功条件とする。環境プレビューは `tests/environment_art_test.gd`、各攻略コースは対応するステージテストで確認する。
 
-共通クリア画面は `tests/stage_clear_test.gd` で全4ステージの表示と復帰を確認する。成功条件は `STAGE_CLEAR_TEST_OK`（32項目）。忍者の登場とワープの追加後、ステージ選択の73項目はヘッドレスと描画ありの双方で成功した。共通クリア画面の32項目はスタート画面追加時にヘッドレスで成功した。
+共通クリア画面は `tests/stage_clear_test.gd` で全4ステージの表示と復帰を確認する。成功条件は `STAGE_CLEAR_TEST_OK`（32項目）。提供ロゴへの差し替えとパーティクル調整後、ステージ選択の76項目はヘッドレスと描画ありの双方で成功した。共通クリア画面の32項目はスタート画面追加時にヘッドレスで成功した。

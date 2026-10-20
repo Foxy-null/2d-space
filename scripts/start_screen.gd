@@ -46,7 +46,7 @@ func _ready() -> void:
 
 
 func _fly_ninja(progress: float) -> void:
-	_ninja.position = Vector2(-size.x * 0.5, -20).bezier_interpolate(Vector2(-360, -300), Vector2(-100, -250), Vector2.ZERO, progress)
+	_ninja.position = Vector2(-size.x * 0.5, -20).bezier_interpolate(Vector2(-360, -300), Vector2(-100, -170), Vector2.ZERO, progress)
 	_ninja.rotation = -0.35 * sin(progress * PI)
 
 
@@ -70,16 +70,20 @@ func _process(delta: float) -> void:
 
 func _draw_sparkles() -> void:
 	var center := _logo.size * 0.5
-	for index in 12:
-		var phase := fposmod(_elapsed / 2.8 + float(index) / 12.0, 1.0)
+	var texture_size := _logo.texture.get_size()
+	var picture_size := texture_size * minf(_logo.size.x / texture_size.x, _logo.size.y / texture_size.y)
+	for index in 8:
+		var phase := fposmod(_elapsed / 3.6 + float(index) / 8.0, 1.0)
 		var glow := pow(sin(phase * PI), 2.0)
-		var angle := TAU * float(index) / 12.0 + 0.035 * sin(_elapsed * TAU / 20.0 + index)
-		var point := center + Vector2(cos(angle) * (center.x + 8.0), sin(angle) * (center.y + 8.0))
-		var tint := Color(1.0, 0.85, 0.45, glow * 0.9) if index % 2 == 0 else Color(0.65, 0.96, 1.0, glow * 0.9)
-		var radius := 3.0 + glow * 7.0
-		_logo.draw_line(point - Vector2(radius, 0), point + Vector2(radius, 0), tint, 2.0, true)
-		_logo.draw_line(point - Vector2(0, radius), point + Vector2(0, radius), tint, 2.0, true)
-		_logo.draw_circle(point, 1.5, tint)
+		var angle := TAU * (float(index) + 0.5) / 8.0 + 0.025 * sin(_elapsed * TAU / 24.0 + index)
+		var point := center + Vector2(cos(angle), sin(angle)) * (picture_size * 0.5 + Vector2(16, 16))
+		var radius := 5.0 + glow * 6.0
+		var points := PackedVector2Array()
+		for corner in 8:
+			var distance := radius if corner % 2 == 0 else radius * 0.28
+			points.append(point + Vector2.RIGHT.rotated(corner * TAU / 8.0 + _elapsed * 0.18 + index) * distance)
+		_logo.draw_colored_polygon(points, Color(1.0, 0.84, 0.38, glow * 0.8))
+		_logo.draw_circle(point, radius * 0.14, Color(1.0, 0.96, 0.77, glow * 0.9))
 
 
 func _draw_effects() -> void:
@@ -93,9 +97,9 @@ func _draw_effects() -> void:
 		_effects.draw_rect(Rect2(Vector2.ZERO, size), Color(0.018, 0.027, 0.075, _launch_progress))
 		for index in 24:
 			var direction := Vector2.RIGHT.rotated(TAU * float(index) / 24.0)
-			var start := size * 0.5 + direction * (120.0 + _launch_progress * 240.0)
+			var start := _logo.get_global_rect().get_center() + direction * (120.0 + _launch_progress * 240.0)
 			var end := start + direction * _launch_progress * 420.0
-			_effects.draw_line(start, end, Color(0.65, 0.96, 1, sin(_launch_progress * PI) * 0.85), 1.0 + _launch_progress * 2.0, true)
+			_effects.draw_line(start, end, Color(1, 0.89, 0.62, sin(_launch_progress * PI) * 0.75), 1.0 + _launch_progress * 2.0, true)
 
 
 func _start() -> void:

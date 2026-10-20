@@ -31,6 +31,9 @@ func _run() -> void:
 		await _step(15)
 		var ninja: AnimatedSprite2D = current_scene.get_node("Mascot/Ninja")
 		_check(ninja.animation == &"idle" and ninja.position.is_zero_approx(), "The ninja lands beside START after its entrance")
+	_check(logo.get_global_rect().end.y + 16.0 <= start_button.get_global_rect().position.y, "The portrait logo leaves a clear gap before START")
+	_check(absf(current_scene.get_node("Mascot/Ninja").global_position.y - start_button.get_global_rect().get_center().y) < 8.0, "The ninja lands at the height of the START button")
+	_check(current_scene.get_node("Center/Content/Controls").get_global_rect().end.y <= root.get_visible_rect().size.y - 16.0, "The control hint remains inside the screen")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://docs/screenshots/start-screen.png")
