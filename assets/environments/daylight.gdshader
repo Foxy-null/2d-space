@@ -10,17 +10,19 @@ void fragment() {
 	uv.y += 0.002 * sin(phase * 2.0 + UV.x * 4.0);
 	vec4 sky = texture(TEXTURE, uv);
 	// Keep the sun and its shafts inside each 116px strip beside the tower.
-	float panel_x = min(UV.x, 1.0 - UV.x) * (1280.0 / 116.0);
 	float side = step(0.5, UV.x);
-	float source_x = 0.25 + 0.06 * side + 0.025 * sin(phase + side * 0.9);
+	float panel_x = (UV.x - side * (1.0 - 116.0 / 1280.0)) * (1280.0 / 116.0);
+	float light_phase = phase * 3.0;
+	float source_x = 0.25 + 0.06 * side + 0.025 * sin(light_phase + side * 0.9);
 	float from_sun = UV.y + 0.03;
-	vec2 beam_offset = vec2(panel_x - source_x) - from_sun * vec2(0.55, 0.16);
-	vec2 halo = beam_offset / vec2(0.24, 0.18);
+	float slant = (0.52 + 0.07 * sin(light_phase)) * (720.0 / 116.0);
+	vec3 beam_offset = vec3(panel_x - source_x - from_sun * slant) + vec3(0.0, 1.5, 3.0);
+	vec3 halo = beam_offset / vec3(0.24, 0.22, 0.26);
 	halo = exp(-halo * halo);
-	vec2 core = beam_offset / vec2(0.075, 0.055);
+	vec3 core = beam_offset / vec3(0.075, 0.065, 0.07);
 	core = exp(-core * core);
-	float light = dot(halo, vec2(1.0, 0.65)) * (0.23 + 0.04 * sin(phase * 2.0));
-	light += dot(core, vec2(1.0, 0.55)) * 0.12;
+	float light = dot(halo, vec3(1.0, 0.85, 0.65)) * (0.28 + 0.05 * sin(light_phase * 2.0));
+	light += dot(core, vec3(1.0, 0.8, 0.6)) * 0.12;
 	light *= smoothstep(-0.01, 0.12, UV.y) * (1.0 - 0.4 * UV.y);
 	float sun_distance = length(vec2(panel_x - source_x, from_sun * (720.0 / 116.0)));
 	float glare = 0.4 * exp(-sun_distance * 3.2);

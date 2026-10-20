@@ -19,6 +19,18 @@ func _check(ok: bool, message: String) -> void:
 		push_error(message)
 
 
+func _ray_peak_x(picture: Image, y: float, strip_x: float) -> int:
+	var scale := Vector2(picture.get_size()) / Vector2(1280, 720)
+	var brightest := -1.0
+	var peak := 0
+	for x in range(8, 80):
+		var light := picture.get_pixelv(Vector2(strip_x + x, y) * scale).get_luminance()
+		if light > brightest:
+			brightest = light
+			peak = x
+	return peak
+
+
 func _run() -> void:
 	change_scene_to_file("res://scenes/stage_2_daylight.tscn")
 	await _step(4)
@@ -70,10 +82,10 @@ func _run() -> void:
 			var picture := root.get_texture().get_image()
 			var scale := Vector2(picture.get_size()) / Vector2(1280, 720)
 			_check(picture.get_pixelv(Vector2(44, 420) * scale).get_luminance() > 0.3, "Daylight remains visible at every tower height and window size")
-			for pair in [Vector2(32, 100), Vector2(1242, 1180)]:
-				var sun := picture.get_pixelv(Vector2(pair.x, 115) * scale).get_luminance()
-				var sky := picture.get_pixelv(Vector2(pair.y, 115) * scale).get_luminance()
-				_check(sun - sky > 0.15, "Sunlight stays clearly visible inside both narrow strips")
+			for strip_x in [0.0, 1164.0]:
+				var upper := _ray_peak_x(picture, 260, strip_x)
+				var lower := _ray_peak_x(picture, 320, strip_x)
+				_check(lower - upper > 12, "Both strips receive diagonal sunlight from upper left to lower right")
 	stage.queue_free()
 	await _step(3)
 	print("STAGE_2_DAYLIGHT_TEST_%s" % ("FAILED" if failed else "OK"))
