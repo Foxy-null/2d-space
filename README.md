@@ -11,9 +11,17 @@
 - Godot 4.7.2 Stable（Standard版）、Git
 - Godotに `project.godot` をインポートし、`F5` で実行します。
 
+## スタート画面
+
+F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galaxy」の手描き風ロゴとSTARTを表示します。STARTのクリック、Enter／Space、ゲームパッドA／×でステージ選択へ進みます。選択画面の「タイトルに戻る」、Esc／Back・Selectでスタート画面へ戻れます。
+
+仕様は [スタート画面](docs/start-screen.md)、ロゴの生成記録は [タイトル素材](assets/ui/PROMPTS.md) に記録しています。
+
+![スタート画面](docs/screenshots/start-screen.png)
+
 ## ステージ選択
 
-F5で起動すると、ステージ1〜4が左から順に並んだ選択画面を表示します。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」を自由に選べます。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
+STARTから、ステージ1〜4が左から順に並んだ選択画面へ進みます。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」を自由に選べます。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
 
 クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。クリア後も、引き続き自由に練習できます。
 
@@ -184,7 +192,8 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜4の開始と環境プレビュー
+- `scenes/start_screen.tscn` / `scripts/start_screen.gd`：通常起動するスタート画面、作品のロゴとステージ選択への入口
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：ステージ1〜4の開始と環境プレビュー、タイトルへ戻る操作
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全6区間、連続カメラ、復帰地点
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力反転を組み合わせた6部屋の本編ステージ
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全6部屋

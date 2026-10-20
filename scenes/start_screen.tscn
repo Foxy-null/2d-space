@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/start_screen.gd" id="1_start"]
+[ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="2_background"]
+[ext_resource type="Texture2D" path="res://assets/ui/title-logo.png" id="3_logo"]
+[ext_resource type="Theme" path="res://assets/ui/menu-theme.tres" id="4_theme"]
+
+[node name="StartScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("4_theme")
+script = ExtResource("1_start")
+
+[node name="Backdrop" type="Node2D" parent="."]
+script = ExtResource("2_background")
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Content" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Logo" type="TextureRect" parent="Center/Content"]
+custom_minimum_size = Vector2(920, 350)
+layout_mode = 2
+mouse_filter = 2
+accessibility_name = "忍者ぶっとびくん Galaxy"
+texture = ExtResource("3_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Start" type="Button" parent="Center/Content"]
+custom_minimum_size = Vector2(280, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 30
+text = "START"
+
+[node name="Controls" type="Label" parent="Center/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "クリック / Enter・Space / A・× でスタート"
+horizontal_alignment = 1
+
+[connection signal="pressed" from="Center/Content/Start" to="." method="_start"]

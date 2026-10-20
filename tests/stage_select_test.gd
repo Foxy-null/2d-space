@@ -9,9 +9,35 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	_check(ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/stage_select.tscn", "F5 must start at stage selection")
+	_check(ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/start_screen.tscn", "F5 must start at the title screen")
 	change_scene_to_file(ProjectSettings.get_setting("application/run/main_scene"))
 	await _step(3)
+	_check(current_scene.scene_file_path == "res://scenes/start_screen.tscn", "Show the title screen on launch")
+	_check(current_scene.get_node("Center/Content/Logo").texture != null, "The title logo must load")
+	_check(root.gui_get_focus_owner() == current_scene.get_node("Center/Content/Start"), "START must initially have keyboard/gamepad focus")
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		RenderingServer.force_draw()
+		root.get_texture().get_image().save_png("res://docs/screenshots/start-screen.png")
+	for key in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
+		await _key(key)
+		_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Keyboard accept opens stage selection")
+		await _key(KEY_ESCAPE)
+		_check(current_scene.scene_file_path == "res://scenes/start_screen.tscn", "Esc returns from stage selection to the title")
+		_check(root.gui_get_focus_owner() == current_scene.get_node("Center/Content/Start"), "Returning to the title restores START focus")
+	await _click(current_scene.get_node("Center/Content/Start"))
+	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Clicking START opens stage selection")
+	await _click(current_scene.get_node("ReturnTitle"))
+	_check(current_scene.scene_file_path == "res://scenes/start_screen.tscn", "The title return button opens the title screen")
+	await _joy_button(JOY_BUTTON_A)
+	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Gamepad accept opens stage selection from the title")
+	await _joy_button(JOY_BUTTON_BACK)
+	_check(current_scene.scene_file_path == "res://scenes/start_screen.tscn", "Back returns from stage selection to the title")
+	await _key(KEY_ENTER)
+	await _key(KEY_UP)
+	_check(root.gui_get_focus_owner() == current_scene.get_node("ReturnTitle"), "The title return button is reachable with directional input")
+	await _key(KEY_ENTER)
+	_check(current_scene.scene_file_path == "res://scenes/start_screen.tscn", "The focused title return button works with Enter")
+	await _key(KEY_ENTER)
 	var menu := current_scene
 	var stages: HBoxContainer = menu.get_node("Margin/Content/Stages")
 	_check(stages.get_child_count() == 5, "Show four playable stages and a stage 5 placeholder")
