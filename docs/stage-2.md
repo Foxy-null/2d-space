@@ -21,13 +21,13 @@
 
 背景はプレイヤーを追うカメラの高さに合わせる。区間の境界では切り替えず、降下や落下からの復帰でも、その高さの景色へ戻る。地表の繰り返しや背景画像の縦引き伸ばしは行わない。足場・左右の壁は現行の生活圏の地形表現に揃え、当たり判定を保つ。
 
-左右の壁の外側には、高度によらず青紺の宇宙とゆっくり流れる星を表示する。左側に環のある暖色の惑星、右側に青い惑星と小さな紫の惑星を置き、大きな五芒星も散らす。惑星と大きな星は明るい色のベタ塗りと太い輪郭線で描く。塔の内側の空・地表・雲は壁の外側へはみ出さない。
+左右の壁の外側には、高度によらず透明感のある青空と差し込む日差しを表示する。雲は下端の薄いものを中心に残し、左右それぞれ幅116pxの帯の中で、左上から右下へ45度前後の光の筋を伸ばす。左右で光の向きはそろえ、位置・角度・明るさを10秒周期で動かす。明るい芯と柔らかなにじみを付け、雲も緩やかに動かす。塔の内側の空・地表・雲は壁の外側へはみ出さない。
 
 背景の動作は `scripts/ascent_backdrop.gd`、地表と空の境目は `assets/environments/ascent.gdshader`、検証は `tests/ascent_backdrop_test.gd`。
 
-青空の比較案は `scenes/stage_2_daylight.tscn`。通常のステージ2を継承し、壁の外側だけを透明感のある青空と差し込む日差しに変える。雲は下端の薄いものを中心に残し、左右それぞれ幅116pxの帯の中で、左上から右下へ45度前後の光の筋を伸ばす。左右で光の向きはそろえ、位置・角度・明るさを10秒周期で動かす。明るい芯と柔らかなにじみを付け、雲も緩やかに動かす。Godotエディターでこのシーンを開いてF6で試せる。通常のステージ選択からは宇宙版を開始する。
+青空は通常の `scenes/stage_2.tscn` に適用し、ステージ選択からの起動でも表示する。比較用に作った `scenes/stage_2_daylight.tscn` も引き続き開ける。
 
-青空版の描画は `scripts/daylight_backdrop.gd`、雲と光の動きは `assets/environments/daylight.gdshader`。背景画像は `assets/environments/daylight-open-sky.png`、生成プロンプトは同じディレクトリの `PROMPTS.md` に記録する。`xvfb-run -a godot --audio-driver Dummy --fixed-fps 15 --path . --script tests/stage_2_daylight_test.gd` で表示・動き・高度による表示を確認し、`deliverables/` に静止画と動画用フレームを保存する。
+青空の描画は `scripts/daylight_backdrop.gd`、雲と光の動きは `assets/environments/daylight.gdshader`。背景画像は `assets/environments/daylight-open-sky.png`、生成プロンプトは同じディレクトリの `PROMPTS.md` に記録する。`xvfb-run -a godot --audio-driver Dummy --fixed-fps 15 --path . --script tests/stage_2_daylight_test.gd` でステージ選択から起動し、表示・動き・高度による表示を確認して、`deliverables/` に静止画と動画用フレームを保存する。
 
 ## 復帰地点と落下
 

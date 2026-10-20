@@ -37,13 +37,8 @@ func _run() -> void:
 			await RenderingServer.frame_post_draw
 			var picture := root.get_texture().get_image()
 			for center_x in [44, 1242]:
-				var bright_pixels := 0
-				for y in range(120, 680):
-					for x in range(center_x - 12, center_x + 13):
-						if picture.get_pixel(x, y).get_luminance() > 0.35:
-							bright_pixels += 1
-				_check(bright_pixels > 300, "Large planets remain visible outside both tower walls")
-			_check(picture.get_pixel(83, 640).get_luminance() > 0.7, "Large stars remain visible outside the tower")
+				var exterior := picture.get_pixel(center_x, 420)
+				_check(exterior.get_luminance() > 0.3 and exterior.b > exterior.r, "Bright blue sky remains outside both tower walls at every height")
 			picture.save_png("res://docs/screenshots/stage-2/height_%d.png" % int(360 - camera_y))
 	_check(snapshots[-1520.0][0] > 720, "Ground leaves the view in the middle of the climb")
 	_check(snapshots[-3920.0][1].get_luminance() < snapshots[360.0][1].get_luminance(), "The upper sky becomes deep enough to see stars")

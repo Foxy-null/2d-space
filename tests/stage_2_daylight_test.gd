@@ -32,8 +32,11 @@ func _ray_peak_x(picture: Image, y: float, strip_x: float) -> int:
 
 
 func _run() -> void:
-	change_scene_to_file("res://scenes/stage_2_daylight.tscn")
+	change_scene_to_file("res://scenes/stage_select.tscn")
+	await _step(3)
+	current_scene.get_node("Margin/Content/Stages/Stage2").pressed.emit()
 	await _step(4)
+	_check(current_scene.scene_file_path == "res://scenes/stage_2.tscn", "Stage selection opens the standard tower with daylight")
 	var stage := current_scene
 	stage.set_physics_process(false)
 	stage.player.set_physics_process(false)
