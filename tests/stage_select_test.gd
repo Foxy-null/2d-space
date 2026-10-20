@@ -15,6 +15,19 @@ func _run() -> void:
 	_check(current_scene.scene_file_path == "res://scenes/start_screen.tscn", "Show the title screen on launch")
 	_check(current_scene.get_node("Center/Content/Logo").texture != null, "The title logo must load")
 	_check(root.gui_get_focus_owner() == current_scene.get_node("Center/Content/Start"), "START must initially have keyboard/gamepad focus")
+	var logo: TextureRect = current_scene.get_node("Center/Content/Logo")
+	var start_button: Button = current_scene.get_node("Center/Content/Start")
+	if DisplayServer.accessibility_should_reduce_animation() == 1:
+		_check(not current_scene.is_processing() and not current_scene.get_node("Backdrop").motion_enabled, "Reduced motion disables title and background animation")
+	else:
+		_check(logo.modulate.a < 1.0 and is_zero_approx(start_button.modulate.a), "The logo enters before START appears")
+		_check(start_button.mouse_filter == Control.MOUSE_FILTER_IGNORE, "The hidden START button must not capture mouse clicks")
+		await _step(35)
+		_check(logo.modulate.a > 0.95 and is_zero_approx(start_button.modulate.a), "The logo is readable before the button enters")
+		await _step(50)
+		_check(is_equal_approx(start_button.modulate.a, 1.0) and is_equal_approx(current_scene.get_node("Center/Content/Controls").modulate.a, 1.0), "START and its controls finish fading in")
+		_check(start_button.mouse_filter == Control.MOUSE_FILTER_STOP, "The revealed START button accepts mouse clicks")
+		_check(logo.scale.x >= 1.0 and logo.scale.x <= 1.012, "Idle motion keeps the logo within its gentle scale range")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://docs/screenshots/start-screen.png")
@@ -24,6 +37,7 @@ func _run() -> void:
 		await _key(KEY_ESCAPE)
 		_check(current_scene.scene_file_path == "res://scenes/start_screen.tscn", "Esc returns from stage selection to the title")
 		_check(root.gui_get_focus_owner() == current_scene.get_node("Center/Content/Start"), "Returning to the title restores START focus")
+	await _step(80)
 	await _click(current_scene.get_node("Center/Content/Start"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Clicking START opens stage selection")
 	await _click(current_scene.get_node("ReturnTitle"))
