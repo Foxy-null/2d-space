@@ -2,7 +2,7 @@
 
 ## 確定した仕様
 
-F5でプロジェクトを起動すると、4つのステージを左から右へ並べた選択画面を表示する。
+スタート画面のSTARTから、4つのステージを左から右へ並べた選択画面に進む。起動時のロゴと操作は [スタート画面](start-screen.md) を参照。
 
 | ステージ | 表示 | 開始地点 |
 | --- | --- | --- |
@@ -28,6 +28,7 @@ F5でプロジェクトを起動すると、4つのステージを左から右�
 | 操作 | マウス | キーボード | ゲームパッド |
 | --- | --- | --- | --- |
 | ステージを選ぶ | ステージをクリック | 方向キー＋Enter | 十字キー／左スティック＋A／× |
+| スタート画面へ戻る | タイトルに戻る | 選択画面でEsc | 選択画面でBack／Select |
 | 選択画面へ戻る | 戻るボタン | Esc | Back／Select |
 | 現在の復帰地点からやり直す | 本編のお助けメニュー | R | Start |
 
@@ -47,7 +48,7 @@ F5でプロジェクトを起動すると、4つのステージを左から右�
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊。
 - `scripts/stage_clear.gd`：共通クリア表示と選択画面へ戻るボタン。
 - `tests/stage_clear_test.gd`：全4ステージのクリア表示、Enter・テンキーEnter・クリックでの復帰。
-- `tests/stage_select_test.gd`：起動、表示順、3種類の入力、準備中の項目、戻る操作、再入場時の初期化。
+- `tests/stage_select_test.gd`：スタート画面からの起動と往復、表示順、3種類の入力、準備中の項目、戻る操作、再入場時の初期化。
 
 ```powershell
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
@@ -55,4 +56,4 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 `STAGE_SELECT_TEST_OK` と終了コード0を成功条件とする。環境プレビューは `tests/environment_art_test.gd`、各攻略コースは対応するステージテストで確認する。
 
-共通クリア画面は `tests/stage_clear_test.gd` で全4ステージの表示と復帰を確認する。成功条件は `STAGE_CLEAR_TEST_OK`（32項目）。ステージ選択は43項目、ステージ1〜4の攻略・復帰と到着台を含む計8本のヘッドレステストが成功した。クリア画面は描画ありでも32項目が成功した。
+共通クリア画面は `tests/stage_clear_test.gd` で全4ステージの表示と復帰を確認する。成功条件は `STAGE_CLEAR_TEST_OK`（32項目）。提供ロゴへの差し替えとパーティクル調整後、ステージ選択の76項目はヘッドレスと描画ありの双方で成功した。共通クリア画面の32項目はスタート画面追加時にヘッドレスで成功した。

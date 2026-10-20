@@ -1,79 +1,8 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_select.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="2_stars"]
-
-[sub_resource type="StyleBoxFlat" id="Style_normal"]
-content_margin_left = 16.0
-content_margin_top = 24.0
-content_margin_right = 16.0
-content_margin_bottom = 24.0
-bg_color = Color(0.075, 0.15, 0.25, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-
-[sub_resource type="StyleBoxFlat" id="Style_hover"]
-content_margin_left = 16.0
-content_margin_top = 24.0
-content_margin_right = 16.0
-content_margin_bottom = 24.0
-bg_color = Color(0.1, 0.24, 0.35, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-
-[sub_resource type="StyleBoxFlat" id="Style_pressed"]
-content_margin_left = 16.0
-content_margin_top = 24.0
-content_margin_right = 16.0
-content_margin_bottom = 24.0
-bg_color = Color(0.07, 0.32, 0.4, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-
-[sub_resource type="StyleBoxFlat" id="Style_disabled"]
-content_margin_left = 16.0
-content_margin_top = 24.0
-content_margin_right = 16.0
-content_margin_bottom = 24.0
-bg_color = Color(0.055, 0.08, 0.15, 0.95)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-
-[sub_resource type="StyleBoxFlat" id="Style_focus"]
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.4, 0.95, 1, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-
-[sub_resource type="Theme" id="Theme_menu"]
-default_font_size = 20
-Button/colors/font_color = Color(0.82, 0.94, 1, 1)
-Button/colors/font_disabled_color = Color(0.55, 0.64, 0.75, 1)
-Button/colors/font_focus_color = Color(0.82, 0.94, 1, 1)
-Button/colors/font_hover_color = Color(1, 1, 1, 1)
-Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/font_sizes/font_size = 22
-Button/styles/normal = SubResource("Style_normal")
-Button/styles/hover = SubResource("Style_hover")
-Button/styles/pressed = SubResource("Style_pressed")
-Button/styles/hover_pressed = SubResource("Style_pressed")
-Button/styles/disabled = SubResource("Style_disabled")
-Button/styles/focus = SubResource("Style_focus")
-Label/colors/font_color = Color(0.78, 0.87, 1, 1)
+[ext_resource type="Theme" path="res://assets/ui/menu-theme.tres" id="3_theme"]
 
 [node name="StageSelect" type="Control"]
 layout_mode = 3
@@ -82,7 +11,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = SubResource("Theme_menu")
+theme = ExtResource("3_theme")
 script = ExtResource("1_menu")
 
 [node name="Background" type="ColorRect" parent="."]
@@ -136,6 +65,7 @@ theme_override_constants/separation = 16
 alignment = 1
 
 [node name="Stage1" type="Button" parent="Margin/Content/Stages"]
+focus_neighbor_top = NodePath("../../../../ReturnTitle")
 focus_neighbor_right = NodePath("../Stage2")
 focus_neighbor_left = NodePath("../Stage1")
 focus_neighbor_bottom = NodePath("../../Preview")
@@ -146,6 +76,7 @@ size_flags_vertical = 4
 text = "ステージ 1\n\nチュートリアル\n\nプレイする"
 
 [node name="Stage2" type="Button" parent="Margin/Content/Stages"]
+focus_neighbor_top = NodePath("../../../../ReturnTitle")
 focus_neighbor_right = NodePath("../Stage3")
 focus_neighbor_left = NodePath("../Stage1")
 focus_neighbor_bottom = NodePath("../../Preview")
@@ -156,6 +87,7 @@ size_flags_vertical = 4
 text = "ステージ 2\n\n星のぼりの塔\n\nプレイする"
 
 [node name="Stage3" type="Button" parent="Margin/Content/Stages"]
+focus_neighbor_top = NodePath("../../../../ReturnTitle")
 custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -166,6 +98,7 @@ focus_neighbor_bottom = NodePath("../../Preview")
 text = "ステージ 3\n\n壁キックと重力\n\nプレイする"
 
 [node name="Stage4" type="Button" parent="Margin/Content/Stages"]
+focus_neighbor_top = NodePath("../../../../ReturnTitle")
 custom_minimum_size = Vector2(200, 232)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -188,6 +121,7 @@ text = "ステージ 5\n\n準備中\n\nプレイできません"
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 focus_neighbor_top = NodePath("../Stages/Stage1")
+focus_neighbor_bottom = NodePath("../../../ReturnTitle")
 text = "5つの環境を見る — 背景とギミックのプレビュー"
 
 [node name="Availability" type="Label" parent="Margin/Content"]
@@ -199,6 +133,22 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.73, 0.88, 1)
 theme_override_font_sizes/font_size = 18
 text = "選択：方向キー / 十字キー / スティック　　決定：Enter / A・×　　マウスでも選べます"
+
+[node name="ReturnTitle" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -290.0
+offset_top = 48.0
+offset_right = -64.0
+offset_bottom = 122.0
+grow_horizontal = 0
+focus_neighbor_top = NodePath("../Margin/Content/Preview")
+focus_neighbor_bottom = NodePath("../Margin/Content/Stages/Stage1")
+text = "タイトルに戻る"
+
+[connection signal="pressed" from="ReturnTitle" to="." method="_return_to_title"]
 
 [connection signal="pressed" from="Margin/Content/Stages/Stage1" to="." method="_start_tutorial"]
 
