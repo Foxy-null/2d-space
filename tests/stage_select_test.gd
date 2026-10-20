@@ -52,21 +52,21 @@ func _run() -> void:
 	var tutorial := current_scene
 	_check(tutorial.room_index == 0, "Stage 1 must begin in room 1")
 	# Complete the final required room to verify navigation leaves optional practice available.
-	tutorial.call("_set_room", 15, false)
+	tutorial.call("_set_room", 16, false)
 	tutorial.player.respawn()
-	for lesson in tutorial.STEPS[15]:
+	for lesson in tutorial.STEPS[16]:
 		tutorial.seen[lesson] = true
-	tutorial.call("_on_arrival", 15)
+	tutorial.call("_on_arrival", 16)
 	await _step(3)
 	_check(tutorial.completed and current_scene == tutorial, "Completion must keep the tutorial open")
 	_check(tutorial.get_node("HUD/Completion").visible, "Main completion remains visible")
-	tutorial.call("_transition_to", 16)
+	tutorial.call("_transition_to", 17)
 	await _step(40)
-	_check(tutorial.room_index == 16 and tutorial.player.controls_enabled, "Optional room 17 must still be playable")
+	_check(tutorial.room_index == 17 and tutorial.player.controls_enabled, "Optional room 18 must still be playable")
 	await _joy_button(JOY_BUTTON_B)
 	_check(current_scene == tutorial, "The dash button must not return to stage selection")
 	await _joy_button(JOY_BUTTON_START)
-	_check(current_scene == tutorial and tutorial.room_index == 16, "Start must still retry the current room")
+	_check(current_scene == tutorial and tutorial.room_index == 17, "Start must still retry the current room")
 	await _key(KEY_ESCAPE)
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Esc must return to stage selection")
 	await _key(KEY_ENTER)

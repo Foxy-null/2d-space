@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/tutorial_chaser.gd" id="1"]
+[ext_resource type="SpriteFrames" path="res://assets/characters/jump-creature-frames.tres" id="2"]
+
+[sub_resource type="RectangleShape2D" id="Shape"]
+size = Vector2(48, 52)
+
+[sub_resource type="Shader" id="RedCreature"]
+code = "shader_type canvas_item;
+void fragment() {
+    vec4 pixel = COLOR;
+    if (pixel.g > pixel.r && pixel.g > pixel.b) {
+        pixel.r = pixel.g;
+        pixel.g = pixel.b;
+    }
+    COLOR = pixel;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="Material"]
+shader = SubResource("RedCreature")
+
+[node name="Chaser" type="CharacterBody2D"]
+collision_layer = 0
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape")
+
+[node name="Body" type="AnimatedSprite2D" parent="."]
+material = SubResource("Material")
+position = Vector2(0, -5.5)
+scale = Vector2(0.1, 0.1)
+sprite_frames = ExtResource("2")

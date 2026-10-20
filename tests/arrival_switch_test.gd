@@ -16,7 +16,7 @@ func _run() -> void:
 	player = tutorial.player
 	await _step(5)
 	# Every room, including the four elevated goals, has a physical locked lid.
-	for index in 17:
+	for index in tutorial.rooms.get_child_count():
 		await _enter(index)
 		var goal := _goal()
 		var floor_probe := PhysicsRayQueryParameters2D.create(goal.global_position + Vector2(0, -1), goal.global_position + Vector2(0, 2), 1,
@@ -145,7 +145,7 @@ func _step(count: int = 1) -> void:
 
 func _screenshots() -> void:
 	DirAccess.make_dir_recursive_absolute("res://docs/screenshots/arrival")
-	for index in [0, 5, 7, 12, 14, 16]:
+	for index in [0, 5, 7, 12, 14, 16, 17]:
 		await _enter(index)
 		await _capture("room_%d_locked" % (index + 1))
 	tutorial.cleared.erase(8)

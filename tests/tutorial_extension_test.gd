@@ -15,9 +15,9 @@ func _run() -> void:
 	root.add_child(tutorial)
 	player = tutorial.player
 	await _step(5)
-	_check(tutorial.rooms.get_child_count() == 17, "16 main rooms plus one optional room")
+	_check(tutorial.rooms.get_child_count() == 18, "17 main rooms plus one optional room")
 	await _test_airborne_sequence()
-	for index in range(4, 17):
+	for index in range(4, 18):
 		await _enter(index)
 		var goal: Area2D = _room().get_node("Goal")
 		player.global_position = goal.global_position + Vector2(0, -10)
@@ -39,25 +39,60 @@ func _run() -> void:
 			13: await _parachute_course()
 			14: await _combo_course()
 			15: await _glider_combo_course()
-			16: await _superdash_course()
+			16: await _escape_course()
+			17: await _superdash_course()
 		_check(tutorial.cleared.has(index), "Natural input must complete every lesson and land on its target")
 		_check(_room().get_node("ExitBarrier/Collision").disabled, "Successful lesson must open the exit")
 		if index == 12:
 			await _test_creature_exit()
 			await _enter(index)
 		if index == 15:
-			_check(tutorial.completed and not tutorial.cleared.has(16), "Main completion must not require optional Superdash")
+			_check(not tutorial.completed, "The chase lesson is required before main completion")
+		if index == 16:
+			_check(tutorial.completed and not tutorial.cleared.has(17), "Main completion must not require optional Superdash")
 		if tutorial.cleared.has(index):
 			player.respawn()
 			await _step(4)
 			_check(tutorial.cleared.has(index) and _room().get_node("ExitBarrier/Collision").disabled, "Completed lessons stay open after retry")
 		_release()
-	_check(tutorial.completed and tutorial.cleared.has(15), "The main course completes independently of optional Superdash")
+	_check(tutorial.completed and tutorial.cleared.has(16), "The main course completes independently of optional Superdash")
 	await _test_retry()
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await _screenshots()
 	print("TUTORIAL_EXTENSION_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
+
+
+func _escape_course() -> void:
+	var direction := 1
+	var heading_to_goal := false
+	for frame in 700:
+		if tutorial.cleared.has(tutorial.CHASE_ROOM):
+			break
+		var goal: Area2D = _room().get_node("Goal")
+		if _local().x > 1130:
+			direction = -1
+		elif _local().x < 340:
+			direction = 1
+		if tutorial.seen.has("escape") and direction > 0:
+			heading_to_goal = true
+		if heading_to_goal:
+			direction = int(signf(goal.global_position.x - player.global_position.x)) if absf(goal.global_position.x - player.global_position.x) > 20 else 0
+		Input.action_release("move_left")
+		Input.action_release("move_right")
+		if direction != 0:
+			Input.action_press("move_left" if direction < 0 else "move_right")
+		Input.action_release("jump")
+		Input.action_release("dash")
+		Input.action_release("move_up")
+		if player.is_on_floor() and (player.is_on_wall() or absf(player.global_position.x - tutorial.chaser.global_position.x) < 220):
+			Input.action_press("jump")
+		elif heading_to_goal and not player.is_on_floor() and player.velocity.y < -100 and player.is_dash_ready() and (tutorial.chaser.global_position.x - player.global_position.x) * direction > 0 and absf(player.global_position.x - tutorial.chaser.global_position.x) < 220:
+			Input.action_press("move_up")
+			Input.action_press("dash")
+		await _step()
+	_release()
+	_check(tutorial.seen.has("escape"), "Real movement evades the pursuing enemy until the seal opens")
 
 
 func _refill_course() -> void:
@@ -315,7 +350,7 @@ func _test_retry() -> void:
 func _screenshots() -> void:
 	tutorial.cleared.clear()
 	tutorial.completed = false
-	for index in range(4, 17):
+	for index in range(4, 18):
 		await _enter(index)
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://docs/screenshots/tutorial/room_%d.png" % (index+1))

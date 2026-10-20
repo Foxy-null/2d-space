@@ -21,10 +21,10 @@ func _run() -> void:
 		stage.set_physics_process(false)
 		stage.player.set_physics_process(false)
 		if number == 1:
-			stage._set_room(15, false)
-			for key in stage.STEPS[15]:
+			stage._set_room(16, false)
+			for key in stage.STEPS[16]:
 				stage.seen[key] = true
-			stage._on_arrival(15)
+			stage._on_arrival(16)
 		elif number == 4:
 			stage.room_index = 5
 			stage.player.position = Vector2(6510, 594)

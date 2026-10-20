@@ -17,7 +17,7 @@ F5で起動すると、ステージ1〜6が左から順に並んだ選択画面�
 
 クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。プレイ中はEsc／Back・Select、または画面右上の「ステージ選択へ戻る」で選択画面へ戻れます。再選択時は最初から始まり、進捗は保存しません。ステージ1〜4はクリア後も引き続き自由に練習できます。ステージ6はクリア時に追跡と操作が止まります。
 
-チュートリアル全17部屋は宇宙基地、ステージ2・3は生活圏のある惑星を舞台にしています。プレビューでは画面上部の選択欄、数字キー1〜5、ゲームパッドのL／Rで環境を切り替えられます。「背景の動き」、Mキー、ゲームパッドのY／△で背景を一時停止できます。移動・ジャンプ・運搬などは本編と同じ操作です。溶岩の波・泡・火の粉や瘴気は背景表現で、追加のダメージ判定はありません。
+チュートリアル全18部屋は宇宙基地、ステージ2・3は生活圏のある惑星を舞台にしています。プレビューでは画面上部の選択欄、数字キー1〜5、ゲームパッドのL／Rで環境を切り替えられます。「背景の動き」、Mキー、ゲームパッドのY／△で背景を一時停止できます。移動・ジャンプ・運搬などは本編と同じ操作です。溶岩の波・泡・火の粉や瘴気は背景表現で、追加のダメージ判定はありません。
 
 合意した仕様は [ステージ選択の仕様書](docs/stage-selection.md) に記録しています。
 
@@ -71,7 +71,7 @@ H / Y・△のお助けメニューで操作のヒントを表示できます。
 
 選択画面から開始するチュートリアルは `scenes/tutorial.tscn` です。各部屋は1280×720の1画面で、カメラは部屋の中では固定されます。課題をクリアしてプレイヤーの右端が画面右端に届くか、画面左端を越えると隣室へ0.28秒でスライドし、切り替え中だけ操作が止まります。
 
-本編は16部屋、最後に任意のSuperdash練習部屋があります。最初の4部屋で移動の基本を体験し、続く部屋でCrystal、Spring、風、運搬、生物とそれらの連携を練習します。
+本編は17部屋、最後に任意のSuperdash練習部屋があります。最初の4部屋で移動の基本を体験し、続く部屋でCrystal、Spring、風、運搬、生物とそれらの連携を練習します。
 
 | 部屋 | 課題と配置 | 新しく使える操作 |
 | --- | --- | --- |
@@ -84,9 +84,11 @@ H / Y・△のお助けメニューで操作のヒントを表示できます。
 - 部屋に入ると入口を復帰地点にし、重力Down、速度0、Dash回復、スタミナ最大の状態で始めます。
 - 落下またはR / Startで、現在の部屋の入口へ戻ります。その部屋のDash Crystalもすぐに戻ります。
 - 左端から前の部屋へ戻れます。習得した壁アクションとDashは、戻ったりやり直したりしても使用可能です。
-- 16部屋目の到着台を押すと本編の完了を表示します。その後も戻って練習したり、17部屋目でSuperdashを試したりできます。
+- 17部屋目「敵から逃げる」では、動き出すと赤い生物が追跡します。5秒逃げ切ると到着台の封印が解け、プレイヤーが押すと本編クリアです。敵は緑の生物の色替えで、プレイヤーより遅く追い、段差を跳び越えます。
+- 捕まった場合はゲームオーバーにせず、その部屋の入口へ戻し、敵・残り時間・到着台の封印をリセットします。落下やR / Startも同じです。解放後も、到着台を押すまでは追跡と捕獲が続きます。
+- クリア後は敵が止まり、前の部屋へ戻って練習したり、18部屋目で任意のSuperdashを試したりできます。
 
-部屋の足場・入口・説明文は `scenes/tutorial.tscn` の `Rooms/Room1` ～ `Room17`、切り替えと解禁は `scripts/tutorial.gd` で調整します。風・Spring・運搬などをまとめた既存デモは `scenes/main.tscn` に残しています。GodotでそのSceneを開き、F6で実行できます。
+部屋の足場・入口・説明文は `scenes/tutorial.tscn` の `Rooms/Room1` ～ `Room18`、切り替えと解禁は `scripts/tutorial.gd` で調整します。風・Spring・運搬などをまとめた既存デモは `scenes/main.tscn` に残しています。GodotでそのSceneを開き、F6で実行できます。
 
 ### 到着台
 
@@ -203,7 +205,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/stage_6.tscn` / `scripts/stage_6.gd`：追跡、捕獲、投擲、全12部屋の進行
 - `scripts/stage_6_room.gd`：ステージ6の配置、供給、重量扉、檻
 - `scripts/chaser.gd`：共通の移動・運搬処理を使う追跡敵の経路と判断
-- `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
+- `scenes/tutorial.tscn` / `scripts/tutorial.gd`：18部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
 調整値はPlayer／CrystalのInspectorから変更できます。同じSceneを複数人で同時編集せず、担当ごとにブランチを分けます。
@@ -227,6 +229,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/p
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase3_grab_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_rooms_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_extension_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_chase_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/arrival_switch_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/character_sprites_test.gd
 ```
@@ -249,7 +252,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 `WALL_JUMP_REGRESSION_TEST_OK` は、30・60・120回／秒の物理更新、両重力・壁の両側で、同じ壁への連続キックが高さを増やさず、スタミナ残量0でも無料で使えることを確認します。SpaceとWの入力、重い箱・傘の保持、傘と壁方向への横風の組み合わせも対象です。
 
-`TUTORIAL_EXTENSION_TEST_OK` は追加した部屋を実入力で攻略します。`ARRIVAL_SWITCH_TEST_OK` は全17面のケースへの接地、残り目標の表示、解除時のフィードバック、ケース上からの着地、押し込みへの追従、完了後の出口解禁、やり直し前後のロックと固定、下降中のジャンプを確認します。
+`TUTORIAL_EXTENSION_TEST_OK` は追跡中の5秒回避と到着台の押下を含む追加部屋を実入力で攻略します。`TUTORIAL_CHASE_TEST_OK` は21項目で追跡開始、捕獲・手動リトライ・落下時の初期化、封印解除とクリアの区別、敵による誤クリアの防止、クリア後の停止を確認します。追跡部屋を追加した後、既存ステージを含む18本の自動テストが成功しました。`ARRIVAL_SWITCH_TEST_OK` は全18面のケースへの接地、残り目標の表示、解除時のフィードバック、ケース上からの着地、押し込みへの追従、完了後の出口解禁、やり直し前後のロックと固定、下降中のジャンプを確認します。
 
 
 ## Phase 3：Grab / Carry

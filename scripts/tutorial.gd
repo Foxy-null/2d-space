@@ -2,11 +2,13 @@ extends Node2D
 
 const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
-const MAIN_ROOM_COUNT := 16
+const MAIN_ROOM_COUNT := 17
+const CHASE_ROOM := MAIN_ROOM_COUNT - 1
+const CHASE_DURATION := 5.0
 const TITLES := ["移動・ジャンプ", "よじ登り・壁キック", "ダッシュ", "重力切り替え",
 	"ダッシュの補充", "追加ジャンプ", "Spring", "PinballSpring", "風", "動く重力ゲート",
 	"掴む・運ぶ・置く", "投げる", "Jump Creature", "Parachute Creature",
-	"追加ジャンプの連携", "滑空・風・重力の連携", "Superdash（任意）"]
+	"追加ジャンプの連携", "滑空・風・重力の連携", "敵から逃げる", "Superdash（任意）"]
 const CONTROLS := [
 	"移動：A / D・← / →　ジャンプ：Space / W・A / ×",
 	"掴む：Shift・ZL / ZR　登る：↑ / ↓　壁キック：Space・A / ×",
@@ -24,6 +26,7 @@ const CONTROLS := [
 	"赤い和傘を保持してゆっくり落下　離すと通常の落下へ",
 	"紫のばね靴 ＋ 緑の生物で追加ジャンプ2回　白い山形に注目",
 	"傘を保持して上昇気流へ　反転しても落下がゆっくりになる",
+	"赤い敵から5秒逃げよう　捕まったら部屋の入口からやり直し",
 	"地上で水平ダッシュ → すぐジャンプ　Space・A / ×を使おう",
 ]
 const STEPS := [
@@ -35,7 +38,7 @@ const STEPS := [
 	["throw", "throw_button"], ["creature_jump", "creature_landed", "second_creature_jump"],
 	["glide", "parachute_release", "fast_fall"],
 	["two_jumps", "combo_air", "combo_creature"],
-	["wind_lift", "inverted_glide", "down"], ["superdash"],
+	["wind_lift", "inverted_glide", "down"], ["escape"], ["superdash"],
 ]
 const STEP_LABELS := {
 	"jump": "段差と穴を越えよう", "climb": "壁を掴んで登ろう",
@@ -57,6 +60,7 @@ const STEP_LABELS := {
 	"combo_air": "空中ジャンプ1回目", "combo_creature": "着地せず2回目を跳ぶ",
 	"wind_lift": "傘で上昇気流に乗ろう", "inverted_glide": "反転中も傘で降りよう",
 	"superdash": "地上ダッシュから跳ぶ",
+	"escape": "5秒間、赤い敵から逃げよう",
 }
 
 var room_index := 0
@@ -70,14 +74,20 @@ var _wind_time := 0.0
 var _glide_time := 0.0
 var _thrown_object: Grabbable
 var _released_parachute := false
+var _chase_elapsed := 0.0
+var _chase_started := false
+var _chase_seconds := -1
 
 @onready var rooms: Node2D = $Rooms
 @onready var player: PlayerController = $Player
 @onready var camera: Camera2D = $Camera2D
 @onready var hud: CanvasLayer = $HUD
+@onready var chaser: CharacterBody2D = $Rooms/Room17/Chaser
 
 
 func _ready() -> void:
+	chaser.target = player
+	chaser.add_collision_exception_with(player)
 	player.get_node("Camera2D").enabled = false
 	player.respawned.connect(_on_respawned)
 	player.movement_action.connect(_on_action)
@@ -123,6 +133,9 @@ func _return_to_stage_select() -> void:
 func _physics_process(delta: float) -> void:
 	if transitioning:
 		return
+	if room_index == CHASE_ROOM and not cleared.has(CHASE_ROOM):
+		if _observe_chase(delta):
+			return
 	_observe_lesson(delta)
 	var left := room_index * ROOM_SIZE.x
 	var collision_shape := player.get_node("CollisionShape2D") as CollisionShape2D
@@ -137,6 +150,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _set_room(index: int, from_right: bool) -> void:
+	chaser.active = false
 	room_index = index
 	furthest_room = maxi(furthest_room, index)
 	var room := rooms.get_child(index) as Node2D
@@ -176,10 +190,16 @@ func _on_respawned() -> void:
 	_glide_time = 0.0
 	_thrown_object = null
 	_released_parachute = false
+	_chase_elapsed = 0.0
+	_chase_started = false
+	_chase_seconds = -1
+	chaser.reset_for_respawn()
 	for area in rooms.get_child(room_index).find_children("*", "Area2D", true, false):
 		if area.has_method("reset_for_respawn"):
 			area.reset_for_respawn()
 	_update_lesson()
+	if room_index == CHASE_ROOM and not cleared.has(CHASE_ROOM):
+		_update_chase_hint()
 	if not transitioning:
 		camera.position = _camera_position()
 		camera.reset_smoothing()
@@ -209,6 +229,7 @@ func _on_arrival(index: int) -> void:
 	cleared[index] = true
 	if index == MAIN_ROOM_COUNT - 1:
 		completed = true
+		chaser.active = false
 	_update_lesson()
 
 
@@ -217,7 +238,7 @@ func _update_lesson() -> void:
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
-	room.get_node("ExitHint").text = "任意のSuperdash →" if done and room_index == 15 else ("次の部屋へ →" if done else "到着台を押すと開く")
+	room.get_node("ExitHint").text = "任意のSuperdash →" if done and room_index == CHASE_ROOM else ("次の部屋へ →" if done else "到着台を押すと開く")
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
 	var count := 0
 	var next := "足跡の到着台に乗ろう"
@@ -230,10 +251,42 @@ func _update_lesson() -> void:
 			next = STEP_LABELS[key]
 	room.get_node("Goal").set_progress(STEPS[room_index].size() - count, STEPS[room_index].size(), next_key, next, done)
 	hud.show_lesson_progress("体験済み ✓　自由に練習できます" if done else "目標 %d/%d：%s" % [count, STEPS[room_index].size(), next], done)
-	$HUD/Completion.visible = completed and room_index >= 15
-	$HUD/Completion.text = "チュートリアル完了！　右は任意のSuperdash部屋" if room_index == 15 else "本編クリア済み　Superdashも自由に練習できます"
-	if room_index == 16:
+	$HUD/Completion.visible = completed and room_index >= CHASE_ROOM
+	$HUD/Completion.text = "チュートリアル完了！　右は任意のSuperdash部屋" if room_index == CHASE_ROOM else "本編クリア済み　Superdashも自由に練習できます"
+	if room_index == MAIN_ROOM_COUNT:
 		room.get_node("ExitHint").text = "練習完了 ✓" if done else "到着台へ着地しよう"
+	if room_index == CHASE_ROOM and done:
+		room.get_node("ChaseStatus").text = "逃げ切った！　チュートリアル完了"
+
+
+func _observe_chase(delta: float) -> bool:
+	if not _active():
+		return false
+	if not _chase_started:
+		if player.global_position.distance_to(rooms.get_child(CHASE_ROOM).get_node("Spawn").global_position) <= 40.0:
+			return false
+		_chase_started = true
+		chaser.active = true
+		_chase_seconds = -1
+	if chaser.touches_player():
+		_retry()
+		rooms.get_child(CHASE_ROOM).get_node("ChaseStatus").text = "捕まった！　動いてもう一度やってみよう"
+		return true
+	_chase_elapsed = minf(CHASE_DURATION, _chase_elapsed + delta)
+	if _chase_elapsed >= CHASE_DURATION:
+		_mark("escape")
+	_update_chase_hint()
+	return false
+
+
+func _update_chase_hint() -> void:
+	var seconds := ceili(CHASE_DURATION - _chase_elapsed)
+	if seconds == _chase_seconds:
+		return
+	_chase_seconds = seconds
+	var hint: Label = rooms.get_child(CHASE_ROOM).get_node("ChaseStatus")
+	hint.text = "封印が解けた！　到着台を押そう" if seconds == 0 else ("封印解除まで あと %d 秒" % seconds if _chase_started else "動くと開始！　5秒間、赤い敵から逃げよう")
+	hint.modulate = Color("8ef0bd") if seconds == 0 else Color.WHITE
 
 
 func _on_action(action: String) -> void:
