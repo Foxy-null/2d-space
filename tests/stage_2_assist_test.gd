@@ -1,6 +1,7 @@
 extends SceneTree
 
 var failed := false
+var respawns := 0
 
 
 func _initialize() -> void:
@@ -89,11 +90,16 @@ func _run() -> void:
 	var stage := current_scene
 	var button: Button = stage.get_node("HUD/AssistBlockButton")
 	var blocks: Node2D = stage.get_node("AssistBlocks")
+	stage.player.respawned.connect(func(): respawns += 1)
+	var expected_counts := [2, 2, 1, 2, 3, 1]
+	var added_positions := {1: Vector2(860, -880), 3: Vector2(880, -2280), 4: Vector2(410, -3020)}
+	var removed_positions := {1: Vector2(770, -530), 2: Vector2(490, -1250), 3: Vector2(770, -1970), 5: Vector2(770, -3410)}
 	_check(stage.section_deaths == 0, "Initial spawn is not a death")
 	_check(not button.visible, "Assistance stays hidden before five deaths")
 	stage._toggle_assist()
 	_check(blocks.get_child_count() == 0, "Assistance cannot be enabled before unlocking")
 	for section in 6:
+		var expected_count: int = expected_counts[section]
 		stage._set_checkpoint(section)
 		stage.player.respawn()
 		await _step(3)
@@ -122,18 +128,22 @@ func _run() -> void:
 		else:
 			button.pressed.emit()
 			await _step(3)
-		_check(stage.assist_enabled and blocks.get_child_count() == 2, "Each section adds only two platforms")
+		_check(stage.assist_enabled and blocks.get_child_count() == expected_count, "Each section uses the requested number of platforms")
 		_check(not button.disabled and button.text.contains("解除"), "Installed assistance can be removed with the same button")
 		_check(not stage.help_visible and stage.player.controls_enabled, "Installing resumes play at the checkpoint")
 		_check(root.gui_get_focus_owner() == null, "A later jump cannot activate the assist button")
+		var positions: Array[Vector2] = []
 		for block in blocks.get_children():
-			var point: Vector2 = stage.checkpoints.get_child(section).position
-			_check(block.position.y < point.y and block.position.y > point.y - 720, "Both platforms stay in the current section")
+			positions.append(block.position)
 			var hit := KinematicCollision2D.new()
 			stage.player.position = block.position + Vector2(0, 60)
 			_check(stage.player.test_move(stage.player.transform, Vector2(0, -100), hit) and hit.get_collider() == block and hit.get_normal().y > 0.9, "Platforms stop the player from passing through from below")
 			stage.player.position = block.position - Vector2(0, 80)
 			_check(stage.player.test_move(stage.player.transform, Vector2(0, 100), hit) and hit.get_collider() == block and hit.get_normal().y < -0.9, "Platforms support landing from above")
+		if added_positions.has(section):
+			_check(positions.has(added_positions[section]), "An empty red-circled location receives a platform")
+		if removed_positions.has(section):
+			_check(not positions.has(removed_positions[section]), "An occupied red-circled location is cleared")
 		stage.player.respawn()
 		await _step(3)
 		if section == 0:
@@ -142,7 +152,14 @@ func _run() -> void:
 			await _jump_to(stage.player, blocks.get_child(0).position)
 			await _jump_to(stage.player, Vector2(620, 460))
 			stage.player.wall_actions_enabled = true
+		else:
+			stage.player.position = blocks.get_child(-1).position + Vector2(0, -26.1)
+			await _step(3)
+			_check(stage.player.is_on_floor(), "Removal is tested while standing on an assist platform")
 		var removed_position: Vector2 = blocks.get_child(0).global_position
+		var removal_position: Vector2 = stage.player.global_position
+		var removal_camera: Vector2 = stage.camera.position
+		var respawns_before_removal := respawns
 		if section == 0:
 			await _click(button)
 			_check(stage.player.position.y < stage.checkpoints.get_child(section).position.y - 80, "Removing assistance preserves climbing progress")
@@ -159,8 +176,11 @@ func _run() -> void:
 			await _joy_button(JOY_BUTTON_A)
 		else:
 			button.pressed.emit()
+			_check(stage.player.global_position == removal_position and stage.camera.position == removal_camera, "Removal preserves the exact position and camera")
 			await _step(3)
 		_check(not stage.assist_enabled and blocks.get_child_count() == 0, "Removing assistance clears all extra platforms")
+		_check(respawns == respawns_before_removal, "Removing assistance never respawns the player")
+		_check(stage.player.global_position.distance_to(removal_position) < 80, "Removing assistance leaves the player at the current location")
 		var probe: Transform2D = stage.player.global_transform
 		probe.origin = removed_position + Vector2(0, 60)
 		_check(not stage.player.test_move(probe, Vector2(0, -60)), "Removed platforms no longer block movement")
@@ -168,14 +188,14 @@ func _run() -> void:
 		_check(not stage.help_visible and stage.player.controls_enabled and root.gui_get_focus_owner() == null, "Removal resumes play without retaining button focus")
 		button.pressed.emit()
 		await _step(3)
-		_check(stage.assist_enabled and blocks.get_child_count() == 2, "Assistance can be reinstalled without more deaths")
+		_check(stage.assist_enabled and blocks.get_child_count() == expected_count, "Assistance can be reinstalled without more deaths")
 		for toggle in 4:
 			button.pressed.emit()
-			_check(blocks.get_child_count() == (0 if toggle % 2 == 0 else 2), "Rapid toggling never leaves duplicate platforms")
+			_check(blocks.get_child_count() == (0 if toggle % 2 == 0 else expected_count), "Rapid toggling never leaves duplicate platforms")
 		await _step(3)
 		stage.player.position.y = stage.checkpoints.get_child(section).position.y + 200
 		await _step(3)
-		_check(stage.section_deaths == 6 and blocks.get_child_count() == 2, "A further death preserves the installed platforms")
+		_check(stage.section_deaths == 6 and blocks.get_child_count() == expected_count, "A further death preserves the installed platforms")
 		stage._retry()
 		await _step(3)
 		Input.action_press("reset")
@@ -184,7 +204,7 @@ func _run() -> void:
 		await _step(3)
 		_check(stage.section_deaths == 6, "Manual retries preserve the count without adding deaths")
 		_check(button.visible, "Retries preserve unlocked assistance")
-		_check(blocks.get_child_count() == 2, "Manual retries preserve installed platforms")
+		_check(blocks.get_child_count() == expected_count, "Manual retries preserve installed platforms")
 	stage._on_completed()
 	await _step(2)
 	_check(not button.visible, "Completion hides assistance")
