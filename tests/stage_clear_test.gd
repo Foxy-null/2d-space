@@ -25,7 +25,12 @@ func _run() -> void:
 			for key in stage.STEPS[15]:
 				stage.seen[key] = true
 			stage._on_arrival(15)
-		elif number in [2, 4]:
+		elif number == 4:
+			stage.room_index = 5
+			stage.player.position = Vector2(6510, 594)
+			_check(stage.player.try_begin_grab(stage.rooms.get_child(5).get_node("Items/JumpCreature")), "Stage 4 completion fixture carries the final companion")
+			stage._on_completed()
+		elif number == 2:
 			stage._on_completed()
 		else:
 			stage.room_index = stage.rooms.get_child_count() - 1
