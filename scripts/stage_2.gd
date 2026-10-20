@@ -32,7 +32,7 @@ func _ready() -> void:
 	$Goal.activated.connect(_on_completed)
 	$Goal.set_progress(0, 0, "", "", false)
 	$HUD/HelpButton.pressed.connect(func(): set_help_visible(not help_visible))
-	$HUD/AssistBlockButton.pressed.connect(_enable_assist)
+	$HUD/AssistBlockButton.pressed.connect(_toggle_assist)
 	$HUD/Help/Rows/Resume.pressed.connect(func(): set_help_visible(false))
 	$HUD/Help/Rows/Hints.toggled.connect(_set_hints)
 	$HUD/Help/Rows/Retry.pressed.connect(_retry)
@@ -121,18 +121,23 @@ func _retry() -> void:
 	player.respawn()
 
 
-func _enable_assist() -> void:
-	if section_deaths < 5 or assist_enabled or completed:
+func _toggle_assist() -> void:
+	if section_deaths < 5 or completed:
 		return
-	assist_enabled = true
-	var checkpoint_y: float = checkpoints.get_child(checkpoint_index).position.y
-	var x := 490.0 if checkpoint_index % 2 == 0 else 770.0
-	for rise in [90.0, 450.0]:
-		var block := ASSIST_BLOCK.instantiate()
-		block.position = Vector2(x, checkpoint_y - rise)
-		$AssistBlocks.add_child(block)
-	# Restart away from the new solid platforms so none can appear inside the player.
-	_retry()
+	assist_enabled = not assist_enabled
+	if assist_enabled:
+		var checkpoint_y: float = checkpoints.get_child(checkpoint_index).position.y
+		var x := 490.0 if checkpoint_index % 2 == 0 else 770.0
+		for rise in [90.0, 450.0]:
+			var block := ASSIST_BLOCK.instantiate()
+			block.position = Vector2(x, checkpoint_y - rise)
+			$AssistBlocks.add_child(block)
+		# Restart away from the new solid platforms so none can appear inside the player.
+		_retry()
+	else:
+		for block in $AssistBlocks.get_children():
+			block.free()
+		set_help_visible(false)
 	_update_hud()
 
 
@@ -148,8 +153,8 @@ func _on_completed() -> void:
 
 func _update_hud() -> void:
 	$HUD/AssistBlockButton.visible = section_deaths >= 5 and not completed
-	$HUD/AssistBlockButton.disabled = assist_enabled
-	$HUD/AssistBlockButton.text = "？ 設置済み" if assist_enabled else "？ おたすけブロック"
+	$HUD/AssistBlockButton.text = "？ ブロックを解除" if assist_enabled else "？ おたすけブロック"
+	$HUD/AssistBlockButton.tooltip_text = "追加した足場を解除します。再設置もできます。" if assist_enabled else "復帰地点に戻り、この区間に足場を2個追加します。"
 	$HUD/Info/Rows/Title.text = "ステージ2　星のぼりの塔　｜　%02d / 06　%s" % [checkpoint_index + 1, TITLES[checkpoint_index]]
 	$HUD/Info/Rows/Status.text = "高度 %dm　　ダッシュ：%s　　追加ジャンプ：%d　　復帰地点：%d" % [maxi(0, int((START_Y - player.position.y) / 10.0)), "使用可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), checkpoint_index + 1]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()

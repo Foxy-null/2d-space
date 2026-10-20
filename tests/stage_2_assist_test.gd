@@ -91,7 +91,7 @@ func _run() -> void:
 	var blocks: Node2D = stage.get_node("AssistBlocks")
 	_check(stage.section_deaths == 0, "Initial spawn is not a death")
 	_check(not button.visible, "Assistance stays hidden before five deaths")
-	stage._enable_assist()
+	stage._toggle_assist()
 	_check(blocks.get_child_count() == 0, "Assistance cannot be enabled before unlocking")
 	for section in 6:
 		stage._set_checkpoint(section)
@@ -123,11 +123,9 @@ func _run() -> void:
 			button.pressed.emit()
 			await _step(3)
 		_check(stage.assist_enabled and blocks.get_child_count() == 2, "Each section adds only two platforms")
-		_check(button.disabled and button.text.contains("設置済み"), "The button confirms installation and prevents repeated placement")
+		_check(not button.disabled and button.text.contains("解除"), "Installed assistance can be removed with the same button")
 		_check(not stage.help_visible and stage.player.controls_enabled, "Installing resumes play at the checkpoint")
 		_check(root.gui_get_focus_owner() == null, "A later jump cannot activate the assist button")
-		stage._enable_assist()
-		_check(blocks.get_child_count() == 2, "Repeated activation never adds extra platforms")
 		for block in blocks.get_children():
 			var point: Vector2 = stage.checkpoints.get_child(section).position
 			_check(block.position.y < point.y and block.position.y > point.y - 720, "Both platforms stay in the current section")
@@ -144,6 +142,37 @@ func _run() -> void:
 			await _jump_to(stage.player, blocks.get_child(0).position)
 			await _jump_to(stage.player, Vector2(620, 460))
 			stage.player.wall_actions_enabled = true
+		var removed_position: Vector2 = blocks.get_child(0).global_position
+		if section == 0:
+			await _click(button)
+			_check(stage.player.position.y < stage.checkpoints.get_child(section).position.y - 80, "Removing assistance preserves climbing progress")
+			await _capture("assist-removed")
+		elif section == 1:
+			await _key(KEY_H)
+			await _key(KEY_UP)
+			_check(root.gui_get_focus_owner() == button, "Keyboard navigation can select removal after installation")
+			await _key(KEY_ENTER)
+		elif section == 2:
+			await _joy_button(JOY_BUTTON_Y)
+			await _joy_button(JOY_BUTTON_DPAD_UP)
+			_check(root.gui_get_focus_owner() == button, "Gamepad navigation can select removal after installation")
+			await _joy_button(JOY_BUTTON_A)
+		else:
+			button.pressed.emit()
+			await _step(3)
+		_check(not stage.assist_enabled and blocks.get_child_count() == 0, "Removing assistance clears all extra platforms")
+		var probe: Transform2D = stage.player.global_transform
+		probe.origin = removed_position + Vector2(0, 60)
+		_check(not stage.player.test_move(probe, Vector2(0, -60)), "Removed platforms no longer block movement")
+		_check(stage.section_deaths == 5 and button.visible and not button.disabled, "Removal keeps assistance unlocked")
+		_check(not stage.help_visible and stage.player.controls_enabled and root.gui_get_focus_owner() == null, "Removal resumes play without retaining button focus")
+		button.pressed.emit()
+		await _step(3)
+		_check(stage.assist_enabled and blocks.get_child_count() == 2, "Assistance can be reinstalled without more deaths")
+		for toggle in 4:
+			button.pressed.emit()
+			_check(blocks.get_child_count() == (0 if toggle % 2 == 0 else 2), "Rapid toggling never leaves duplicate platforms")
+		await _step(3)
 		stage.player.position.y = stage.checkpoints.get_child(section).position.y + 200
 		await _step(3)
 		_check(stage.section_deaths == 6 and blocks.get_child_count() == 2, "A further death preserves the installed platforms")
