@@ -2,6 +2,7 @@ extends Node2D
 
 const SECTION_HEIGHT := 720.0
 const START_Y := 640.0
+const ASSIST_BLOCK := preload("res://scenes/assist_block.tscn")
 const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "頂上への連携"]
 const HINTS := [
 	"Shiftで壁を掴み、上へ登ってから反対の壁へキック。小さな足場で休憩できます。",
@@ -13,6 +14,8 @@ const HINTS := [
 ]
 
 var checkpoint_index := 0
+var section_deaths := 0
+var assist_enabled := false
 var completed := false
 var help_visible := false
 var hints_visible := false
@@ -29,6 +32,7 @@ func _ready() -> void:
 	$Goal.activated.connect(_on_completed)
 	$Goal.set_progress(0, 0, "", "", false)
 	$HUD/HelpButton.pressed.connect(func(): set_help_visible(not help_visible))
+	$HUD/AssistBlockButton.pressed.connect(_enable_assist)
 	$HUD/Help/Rows/Resume.pressed.connect(func(): set_help_visible(false))
 	$HUD/Help/Rows/Hints.toggled.connect(_set_hints)
 	$HUD/Help/Rows/Retry.pressed.connect(_retry)
@@ -66,6 +70,7 @@ func _physics_process(delta: float) -> void:
 	# 最高到達点からの大きな落下、または復帰地点より下への落下で再開。
 	var checkpoint_y: float = checkpoints.get_child(checkpoint_index).position.y
 	if player.position.y > minf(checkpoint_y + 180.0, peak_y + SECTION_HEIGHT - 80.0):
+		section_deaths += 1
 		player.respawn()
 	var target_y := clampf(player.position.y - 80.0, -3920.0, 360.0)
 	camera.position.y = lerpf(camera.position.y, target_y, 1.0 - exp(-8.0 * delta))
@@ -74,6 +79,10 @@ func _physics_process(delta: float) -> void:
 
 func _set_checkpoint(index: int) -> void:
 	checkpoint_index = index
+	section_deaths = 0
+	assist_enabled = false
+	for block in $AssistBlocks.get_children():
+		block.queue_free()
 	var point: Vector2 = checkpoints.get_child(index).position
 	player.set_respawn_position(point + Vector2(0, -28))
 	for child in checkpoints.get_children():
@@ -92,6 +101,7 @@ func _on_respawned() -> void:
 func set_help_visible(value: bool) -> void:
 	help_visible = value
 	$HUD/Help.visible = value
+	$HUD/AssistBlockButton.focus_mode = Control.FOCUS_ALL if value else Control.FOCUS_NONE
 	player.controls_enabled = not value
 	if value:
 		$HUD/Help/Rows/Resume.grab_focus()
@@ -111,6 +121,21 @@ func _retry() -> void:
 	player.respawn()
 
 
+func _enable_assist() -> void:
+	if section_deaths < 5 or assist_enabled or completed:
+		return
+	assist_enabled = true
+	var checkpoint_y: float = checkpoints.get_child(checkpoint_index).position.y
+	var x := 490.0 if checkpoint_index % 2 == 0 else 770.0
+	for rise in [90.0, 450.0]:
+		var block := ASSIST_BLOCK.instantiate()
+		block.position = Vector2(x, checkpoint_y - rise)
+		$AssistBlocks.add_child(block)
+	# Restart away from the new solid platforms so none can appear inside the player.
+	_retry()
+	_update_hud()
+
+
 func _return_to_select() -> void:
 	get_tree().change_scene_to_file("res://scenes/stage_select.tscn")
 
@@ -122,6 +147,9 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
+	$HUD/AssistBlockButton.visible = section_deaths >= 5 and not completed
+	$HUD/AssistBlockButton.disabled = assist_enabled
+	$HUD/AssistBlockButton.text = "？ 設置済み" if assist_enabled else "？ おたすけブロック"
 	$HUD/Info/Rows/Title.text = "ステージ2　星のぼりの塔　｜　%02d / 06　%s" % [checkpoint_index + 1, TITLES[checkpoint_index]]
 	$HUD/Info/Rows/Status.text = "高度 %dm　　ダッシュ：%s　　追加ジャンプ：%d　　復帰地点：%d" % [maxi(0, int((START_Y - player.position.y) / 10.0)), "使用可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), checkpoint_index + 1]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()

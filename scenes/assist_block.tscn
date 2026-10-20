@@ -1,0 +1,45 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/RoundedMplus1c-ExtraBold.ttf" id="font"]
+
+[sub_resource type="RectangleShape2D" id="Shape"]
+size = Vector2(112, 28)
+
+[sub_resource type="StyleBoxFlat" id="Gold"]
+bg_color = Color(1, 0.8, 0.31, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 3
+border_color = Color(0.42, 0.26, 0.15, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[node name="AssistBlock" type="StaticBody2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 14)
+shape = SubResource("Shape")
+
+[node name="Body" type="Panel" parent="."]
+offset_left = -56.0
+offset_right = 56.0
+offset_bottom = 28.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Gold")
+
+[node name="Mark" type="Label" parent="Body"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.25, 0.17, 0.2, 1)
+theme_override_fonts/font = ExtResource("font")
+theme_override_font_sizes/font_size = 20
+text = "？"
+horizontal_alignment = 1
+vertical_alignment = 1

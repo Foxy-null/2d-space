@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3]
+[gd_scene load_steps=45 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_clear.gd" id="stage_clear"]
 
@@ -13,6 +13,67 @@
 [ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/jump_creature.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="8"]
+[ext_resource type="FontFile" path="res://assets/fonts/RoundedMplus1c-ExtraBold.ttf" id="assist_font"]
+
+[sub_resource type="StyleBoxFlat" id="AssistNormal"]
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 0.84, 0.35, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.6, 0.33, 0.14, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="AssistHover"]
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 0.91, 0.55, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.6, 0.33, 0.14, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="AssistPressed"]
+content_margin_left = 12.0
+content_margin_top = 7.0
+content_margin_right = 12.0
+content_margin_bottom = 5.0
+bg_color = Color(0.94, 0.72, 0.28, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.33, 0.14, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="AssistFocus"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.97, 0.83, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
 
 [sub_resource type="RectangleShape2D" id="Shape_LeftBoundary"]
 size = Vector2(28, 4960)
@@ -381,6 +442,8 @@ script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-120, -95, 120, -95, 120, 95, -120, 95)
 color = Color(0.10, 0.29, 0.32, 1)
 
+[node name="AssistBlocks" type="Node2D" parent="."]
+
 [node name="Checkpoints" type="Node2D" parent="."]
 [node name="Checkpoint0" type="Marker2D" parent="Checkpoints"]
 position = Vector2(360, 640)
@@ -608,6 +671,32 @@ offset_bottom = 64.0
 focus_mode = 0
 text = "お助けメニュー [H / Y]"
 
+[node name="AssistBlockButton" type="Button" parent="HUD"]
+visible = false
+offset_left = 1030.0
+offset_top = 72.0
+offset_right = 1256.0
+offset_bottom = 116.0
+focus_mode = 0
+focus_neighbor_top = NodePath("../Help/Rows/Return")
+focus_neighbor_bottom = NodePath("../Help/Rows/Resume")
+focus_next = NodePath("../Help/Rows/Resume")
+focus_previous = NodePath("../Help/Rows/Return")
+tooltip_text = "復帰地点に戻り、この区間に足場を2個追加します。\n次のチェックポイントに着くまで残ります。"
+theme_override_colors/font_color = Color(0.19, 0.14, 0.2, 1)
+theme_override_colors/font_hover_color = Color(0.19, 0.14, 0.2, 1)
+theme_override_colors/font_pressed_color = Color(0.19, 0.14, 0.2, 1)
+theme_override_colors/font_focus_color = Color(0.19, 0.14, 0.2, 1)
+theme_override_colors/font_disabled_color = Color(0.3, 0.25, 0.25, 1)
+theme_override_fonts/font = ExtResource("assist_font")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("AssistNormal")
+theme_override_styles/hover = SubResource("AssistHover")
+theme_override_styles/pressed = SubResource("AssistPressed")
+theme_override_styles/disabled = SubResource("AssistPressed")
+theme_override_styles/focus = SubResource("AssistFocus")
+text = "？ おたすけブロック"
+
 [node name="Hint" type="Label" parent="HUD"]
 visible = false
 offset_left = 24.0
@@ -634,11 +723,13 @@ theme_override_font_sizes/font_size = 28
 
 [node name="Controls" type="Label" parent="HUD/Help/Rows"]
 layout_mode = 2
-text = "移動：A/D・方向キー　ジャンプ：Space / W\n壁を掴む：Shift　登る：↑　ダッシュ：X ＋ 方向\nやり直し：R / Start　メニュー：H / Y・△\n復帰地点に着地すると自動で更新します。"
+text = "移動：A/D・方向キー　ジャンプ：Space / W\n壁を掴む：Shift　登る：↑　ダッシュ：X ＋ 方向\nやり直し：R / Start　メニュー：H / Y・△\n復帰地点に着地すると自動で更新します。\n5回落下でおたすけ解放。↑でボタンを選べます。"
 horizontal_alignment = 1
 
 [node name="Resume" type="Button" parent="HUD/Help/Rows"]
 layout_mode = 2
+focus_neighbor_top = NodePath("../../../AssistBlockButton")
+focus_previous = NodePath("../../../AssistBlockButton")
 text = "登りを再開する"
 
 [node name="Hints" type="CheckButton" parent="HUD/Help/Rows"]
@@ -651,6 +742,8 @@ text = "復帰地点からやり直す"
 
 [node name="Return" type="Button" parent="HUD/Help/Rows"]
 layout_mode = 2
+focus_neighbor_bottom = NodePath("../../../AssistBlockButton")
+focus_next = NodePath("../../../AssistBlockButton")
 text = "ステージ選択へ戻る"
 
 [node name="Completion" type="Label" parent="HUD"]
