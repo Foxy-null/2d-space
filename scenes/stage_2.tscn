@@ -156,6 +156,7 @@ position = Vector2(360, 670)
 shape = SubResource("Shape_Checkpoint0")
 [node name="Body" type="Polygon2D" parent="Terrain/Checkpoint0"]
 script = ExtResource("art_terrain")
+metal_surface = true
 polygon = PackedVector2Array(-120, -30, 120, -30, 120, 30, -120, 30)
 color = Color(0.10, 0.29, 0.32, 1)
 
@@ -192,6 +193,7 @@ position = Vector2(900, 15)
 shape = SubResource("Shape_S1L4")
 [node name="Body" type="Polygon2D" parent="Terrain/S1L4"]
 script = ExtResource("art_terrain")
+metal_surface = true
 polygon = PackedVector2Array(-120, -95, 120, -95, 120, 95, -120, 95)
 color = Color(0.10, 0.29, 0.32, 1)
 
@@ -228,6 +230,7 @@ position = Vector2(360, -705)
 shape = SubResource("Shape_S2L4")
 [node name="Body" type="Polygon2D" parent="Terrain/S2L4"]
 script = ExtResource("art_terrain")
+metal_surface = true
 polygon = PackedVector2Array(-120, -95, 120, -95, 120, 95, -120, 95)
 color = Color(0.10, 0.29, 0.32, 1)
 
@@ -264,6 +267,7 @@ position = Vector2(900, -1425)
 shape = SubResource("Shape_S3L4")
 [node name="Body" type="Polygon2D" parent="Terrain/S3L4"]
 script = ExtResource("art_terrain")
+metal_surface = true
 polygon = PackedVector2Array(-120, -95, 120, -95, 120, 95, -120, 95)
 color = Color(0.10, 0.29, 0.32, 1)
 
@@ -300,6 +304,7 @@ position = Vector2(360, -2145)
 shape = SubResource("Shape_S4L4")
 [node name="Body" type="Polygon2D" parent="Terrain/S4L4"]
 script = ExtResource("art_terrain")
+metal_surface = true
 polygon = PackedVector2Array(-120, -95, 120, -95, 120, 95, -120, 95)
 color = Color(0.10, 0.29, 0.32, 1)
 
@@ -336,6 +341,7 @@ position = Vector2(900, -2865)
 shape = SubResource("Shape_S5L4")
 [node name="Body" type="Polygon2D" parent="Terrain/S5L4"]
 script = ExtResource("art_terrain")
+metal_surface = true
 polygon = PackedVector2Array(-120, -95, 120, -95, 120, 95, -120, 95)
 color = Color(0.10, 0.29, 0.32, 1)
 
@@ -385,6 +391,7 @@ offset_right = 116.0
 text = "復帰地点 1 / 6"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 4
 [node name="Checkpoint1" type="Marker2D" parent="Checkpoints"]
 position = Vector2(900, -80)
 [node name="Label" type="Label" parent="Checkpoints/Checkpoint1"]
@@ -394,6 +401,7 @@ offset_right = 116.0
 text = "復帰地点 2 / 6"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 4
 [node name="Checkpoint2" type="Marker2D" parent="Checkpoints"]
 position = Vector2(360, -800)
 [node name="Label" type="Label" parent="Checkpoints/Checkpoint2"]
@@ -403,6 +411,7 @@ offset_right = 116.0
 text = "復帰地点 3 / 6"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 4
 [node name="Checkpoint3" type="Marker2D" parent="Checkpoints"]
 position = Vector2(900, -1520)
 [node name="Label" type="Label" parent="Checkpoints/Checkpoint3"]
@@ -412,6 +421,7 @@ offset_right = 116.0
 text = "復帰地点 4 / 6"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 4
 [node name="Checkpoint4" type="Marker2D" parent="Checkpoints"]
 position = Vector2(360, -2240)
 [node name="Label" type="Label" parent="Checkpoints/Checkpoint4"]
@@ -421,6 +431,7 @@ offset_right = 116.0
 text = "復帰地点 5 / 6"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 4
 [node name="Checkpoint5" type="Marker2D" parent="Checkpoints"]
 position = Vector2(900, -2960)
 [node name="Label" type="Label" parent="Checkpoints/Checkpoint5"]
@@ -430,6 +441,7 @@ offset_right = 116.0
 text = "復帰地点 6 / 6"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
+theme_override_constants/outline_size = 4
 
 [node name="Items" type="Node2D" parent="."]
 [node name="Item0" parent="Items" instance=ExtResource("6")]

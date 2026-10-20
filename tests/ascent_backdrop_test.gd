@@ -17,8 +17,10 @@ func _run() -> void:
 	stage.player.set_physics_process(false)
 	_check(not stage.player.use_default_respawn_bounds, "The tower can rise beyond the shared demo bounds")
 	_check(backdrop.environment_theme == 1, "The tower stays on the inhabited planet")
+	var checkpoint_platforms := ["Checkpoint0", "S1L4", "S2L4", "S3L4", "S4L4", "S5L4"]
 	for art in stage.get_node("Terrain").find_children("*", "Polygon2D", true, false):
 		_check(art is TerrainArt and art.environment_theme == 1, "Tower terrain uses the current inhabited art")
+		_check(art.metal_surface == (String(art.get_parent().name) in checkpoint_platforms), "Only the six checkpoint platforms use metal")
 	var snapshots: Dictionary = {}
 	for camera_y in [360.0, -80.0, -800.0, -1520.0, -2240.0, -2960.0, -3920.0]:
 		stage.camera.position.y = camera_y
