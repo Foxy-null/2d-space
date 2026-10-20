@@ -23,7 +23,7 @@ func _ray_peak_x(picture: Image, y: float, strip_x: float) -> int:
 	var scale := Vector2(picture.get_size()) / Vector2(1280, 720)
 	var brightest := -1.0
 	var peak := 0
-	for x in range(8, 80):
+	for x in range(8, 108):
 		var light := picture.get_pixelv(Vector2(strip_x + x, y) * scale).get_luminance()
 		if light > brightest:
 			brightest = light
@@ -54,6 +54,8 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		_check(root.get_texture().get_image().save_png(output.path_join("%03d.png" % frame)) == OK, "Save animation frame")
 	var after := root.get_texture().get_image()
+	for strip_x in [0.0, 1164.0]:
+		_check(absi(_ray_peak_x(after, 200, strip_x) - _ray_peak_x(before, 200, strip_x)) > 24, "Sunbeams visibly travel across both strips within six seconds")
 	for center_x in [44, 1242]:
 		var changed := 0
 		var clear_sky := 0
@@ -83,8 +85,8 @@ func _run() -> void:
 			var scale := Vector2(picture.get_size()) / Vector2(1280, 720)
 			_check(picture.get_pixelv(Vector2(44, 420) * scale).get_luminance() > 0.3, "Daylight remains visible at every tower height and window size")
 			for strip_x in [0.0, 1164.0]:
-				var upper := _ray_peak_x(picture, 260, strip_x)
-				var lower := _ray_peak_x(picture, 320, strip_x)
+				var upper := _ray_peak_x(picture, 200, strip_x)
+				var lower := _ray_peak_x(picture, 260, strip_x)
 				_check(lower - upper > 12, "Both strips receive diagonal sunlight from upper left to lower right")
 	stage.queue_free()
 	await _step(3)

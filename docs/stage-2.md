@@ -25,7 +25,7 @@
 
 背景の動作は `scripts/ascent_backdrop.gd`、地表と空の境目は `assets/environments/ascent.gdshader`、検証は `tests/ascent_backdrop_test.gd`。
 
-青空の比較案は `scenes/stage_2_daylight.tscn`。通常のステージ2を継承し、壁の外側だけを透明感のある青空と差し込む日差しに変える。雲は下端の薄いものを中心に残し、左右それぞれ幅116pxの帯の中で、左上から右下へ複数の光の筋を伸ばす。左右で光の向きはそろえ、角度と明るさを緩やかに動かす。明るい芯と柔らかなにじみを付け、雲も緩やかに動かす。Godotエディターでこのシーンを開いてF6で試せる。通常のステージ選択からは宇宙版を開始する。
+青空の比較案は `scenes/stage_2_daylight.tscn`。通常のステージ2を継承し、壁の外側だけを透明感のある青空と差し込む日差しに変える。雲は下端の薄いものを中心に残し、左右それぞれ幅116pxの帯の中で、左上から右下へ45度前後の光の筋を伸ばす。左右で光の向きはそろえ、位置・角度・明るさを10秒周期で動かす。明るい芯と柔らかなにじみを付け、雲も緩やかに動かす。Godotエディターでこのシーンを開いてF6で試せる。通常のステージ選択からは宇宙版を開始する。
 
 青空版の描画は `scripts/daylight_backdrop.gd`、雲と光の動きは `assets/environments/daylight.gdshader`。背景画像は `assets/environments/daylight-open-sky.png`、生成プロンプトは同じディレクトリの `PROMPTS.md` に記録する。`xvfb-run -a godot --audio-driver Dummy --fixed-fps 15 --path . --script tests/stage_2_daylight_test.gd` で表示・動き・高度による表示を確認し、`deliverables/` に静止画と動画用フレームを保存する。
 
