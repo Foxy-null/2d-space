@@ -71,6 +71,14 @@ Match the modest original handmade art: gently uneven lines, broad mostly flat c
 Environment: an extremely INHOSPITABLE PLANET FULL OF EVIL AURA matching the approved harsh direction. Deep near-black plum sky, giant black celestial disk in the upper right circled by a lopsided broad purple vortex, distant crooked hooked rock spires, flat curled bands of purple miasma around the distant valley. A cursed oppressive landscape, not a gentle purple sunset. Few broad shapes and flat layered silhouettes. Keep the central background behind future gameplay gadgets dark and quiet, bright purple mostly in sky vortex and valley bottom. No monster faces, eyes, skulls, blood, enemies, magic collectibles or laser beams. The engine adds slow drifting mist independently. No volumetric fog, neon bloom or paper texture.
 ```
 
+## daylight-open-sky
+
+保存先：`daylight-open-sky.png`。内蔵のimage_genで`daylight-anime.png`を編集し、左右の帯の雲を減らした。生成元：`exec-fbd7d897-756c-4fd7-ab4f-99fc87f3035e.png`。光源と光の筋は、左右それぞれ幅116pxの帯に合わせて`daylight.gdshader`で描く。
+
+```text
+Use case: lighting-weather. Input image 1 is the EDIT TARGET: the current painted anime sky for a 2D game. Preserve its wide landscape size, luminous blue/cyan palette, refined cinematic Japanese anime painting, soft atmospheric depth, fine cloud edge treatment and original summer-day mood. Make a much clearer, sparer version: REMOVE about 85 percent of all existing clouds, especially the large banks hugging the left and right image edges. Critical composition constraint: the game will show ONLY the leftmost 9 percent and rightmost 9 percent of this image as two very narrow vertical strips. The upper 80 percent of BOTH of these edge strips must be almost entirely uninterrupted clear luminous blue sky, with room to clearly see animated sunlight. Keep ONLY a few small delicate white cloud wisps near the bottom edge, occupying under 15 percent of the whole image; no tall cloud banks, and no dense edges framing the image. Preserve gently varied painterly sky color, cobalt/azure at the top grading toward fresh pale cyan below, with subtle aerial haze rather than a flat digital fill. Remove the large baked-in sun glow at the upper left and any large baked-in rays: the engine will place an animated sun glow and descending shafts inside each narrow side strip. Do not insert an outlined sun icon. Sky only, no horizon, ground, buildings, people, birds, planets, stars, lettering, watermark or frames. Keep an opaque background. The key change is substantially LESS CLOUD, particularly in the exact far left and far right strips, while keeping the previous elegant illustrated atmosphere.
+```
+
 ## daylight-anime
 
 保存先：`daylight-anime.png`。内蔵のimage_genで生成。生成元：`exec-7cf2360c-f7f6-4ca9-9f77-6e2fff86ffa5.png`。画像サイズ：1672×941px。青空版の比較用シーンに使用し、雲と光の動きは`daylight.gdshader`で加える。

@@ -1,6 +1,6 @@
 extends Node2D
 
-const SKY := preload("res://assets/environments/daylight-anime.png")
+const SKY := preload("res://assets/environments/daylight-open-sky.png")
 const SUNLIGHT := preload("res://assets/environments/daylight.gdshader")
 
 var elapsed := 0.0
