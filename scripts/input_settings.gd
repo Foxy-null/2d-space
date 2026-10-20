@@ -68,6 +68,14 @@ func close_settings() -> void:
 		previous_focus.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	if panel.visible and waiting_action != "" and event is InputEventMouseButton and event.pressed:
+		var mouse := InputEventMouseButton.new()
+		mouse.button_index = event.button_index
+		set_keyboard_binding(waiting_action, waiting_slot, mouse)
+		waiting_action = ""
+		_refresh()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE and panel.visible:
 			if waiting_action != "":
@@ -117,12 +125,18 @@ func _refresh() -> void:
 	_label("操作設定", body).add_theme_font_size_override("font_size", 28)
 	var tabs := HBoxContainer.new()
 	body.add_child(tabs)
-	var first := _button("キーボード", tabs, func(): keyboard = true; _refresh())
+	var first := _button("キーボード・マウス", tabs, func(): keyboard = true; _refresh())
 	_button("コントローラー", tabs, func(): keyboard = false; _refresh())
 	_label("Esc: 入力待ちをキャンセル / 閉じる   F10: 設定を開く・閉じる（予約キー）", body)
-	status = _label("キー欄を選んでキーを押してください。同じキーを複数の操作に設定できます。" if keyboard else "ボタンごとに操作を選択。左スティック・トリガーは初期操作のまま使えます。", body)
+	status = _label("割り当て欄を選び、キーまたはマウスボタンを押してください。" if keyboard else "ボタンごとに操作を選択。左スティック・トリガーは初期操作のまま使えます。", body)
 	if waiting_action != "":
-		status.text = "入力待ち：%s — キーを押してください / Escでキャンセル" % LABELS[ACTIONS.find(waiting_action)]
+		status.text = "入力待ち：%s — キーまたはマウスボタンを押してください / Escでキャンセル" % LABELS[ACTIONS.find(waiting_action)]
+	if keyboard:
+		var presets := HBoxContainer.new()
+		body.add_child(presets)
+		_label("サンプル配置", presets)
+		_button("サンプル1（デフォルト）", presets, apply_keyboard_sample.bind(false))
+		_button("サンプル2（ダッシュ：右クリック）", presets, apply_keyboard_sample.bind(true))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_child(scroll)
@@ -138,24 +152,15 @@ func _refresh() -> void:
 			_label(LABELS[i], grid).custom_minimum_size.x = 300
 			var keys := keyboard_events(action)
 			for slot in 2:
-				var text := keys[slot].as_text_physical_keycode() if slot < keys.size() else "未設定"
+				var text := _binding_text(keys[slot]) if slot < keys.size() else "未設定"
 				var button := _button(text, grid, _wait.bind(action, slot))
 				button.disabled = waiting_action != ""
 				button.tooltip_text = "クリックで変更 / 右クリックで解除"
 				button.gui_input.connect(_key_cell_input.bind(action, slot))
 	else:
-		for index in PAD_NAMES.size():
-			_label(PAD_NAMES[index], grid).custom_minimum_size.x = 390
-			var choice := OptionButton.new()
-			choice.add_item("未設定")
-			for label in LABELS:
-				choice.add_item(label)
-			for i in ACTIONS.size():
-				for event in InputMap.action_get_events(ACTIONS[i]):
-					if event is InputEventJoypadButton and event.button_index == index:
-						choice.select(i + 1)
-			grid.add_child(choice)
-			choice.item_selected.connect(_assign_pad.bind(index))
+		body.remove_child(scroll)
+		scroll.queue_free()
+		_build_controller_layout()
 	_label("変更は自動保存されます。ゲーム内の操作説明は初期配置の表記です。", body)
 	var footer := HBoxContainer.new()
 	body.add_child(footer)
@@ -163,6 +168,42 @@ func _refresh() -> void:
 	_button("閉じる", footer, close_settings)
 	if panel.visible and waiting_action == "":
 		_focus_if_present.call_deferred(first)
+
+func _build_controller_layout() -> void:
+	var diagram := preload("res://scripts/controller_diagram.gd").new()
+	diagram.custom_minimum_size = Vector2(1040, 370)
+	diagram.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(diagram)
+	var left := [9, 4, 5, 7, 11, 13, 12, 14]
+	var right := [10, 6, 3, 2, 1, 0, 8]
+	for side in 2:
+		var indices: Array = left if side == 0 else right
+		for row in indices.size():
+			var index: int = indices[row]
+			var card := HBoxContainer.new()
+			card.position = Vector2(0 if side == 0 else 738, row * 44)
+			card.size = Vector2(302, 38)
+			diagram.add_child(card)
+			var name_label := _label(diagram.SHORT_NAMES[index], card)
+			name_label.custom_minimum_size = Vector2(100, 38)
+			name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			name_label.add_theme_color_override("font_color", Color("65e4e9"))
+			name_label.tooltip_text = PAD_NAMES[index]
+			var choice := OptionButton.new()
+			choice.name = "PadBinding%d" % index
+			choice.custom_minimum_size = Vector2(198, 38)
+			choice.add_item("未設定")
+			for action_label in LABELS:
+				choice.add_item(action_label)
+			for i in ACTIONS.size():
+				for event in InputMap.action_get_events(ACTIONS[i]):
+					if event is InputEventJoypadButton and event.button_index == index:
+						choice.select(i + 1)
+			card.add_child(choice)
+			choice.item_selected.connect(_assign_pad.bind(index))
+			choice.focus_entered.connect(diagram.highlight.bind(index))
+			choice.mouse_entered.connect(diagram.highlight.bind(index))
+			diagram.connections.append([Vector2(302 if side == 0 else 738, row * 44 + 19), index])
 
 func _focus_if_present(control: Control) -> void:
 	if is_instance_valid(control) and control.is_inside_tree() and panel.visible:
@@ -181,14 +222,31 @@ func _key_cell_input(event: InputEvent, action: String, slot: int) -> void:
 			save_settings()
 			_refresh()
 
-func keyboard_events(action: String) -> Array[InputEventKey]:
-	var keys: Array[InputEventKey] = []
+func _binding_text(event: InputEvent) -> String:
+	if event is InputEventKey:
+		return event.as_text_physical_keycode()
+	if event is InputEventMouseButton:
+		match event.button_index:
+			MOUSE_BUTTON_LEFT: return "マウス 左"
+			MOUSE_BUTTON_RIGHT: return "マウス 右"
+			MOUSE_BUTTON_MIDDLE: return "マウス 中央"
+			MOUSE_BUTTON_WHEEL_UP: return "ホイール 上"
+			MOUSE_BUTTON_WHEEL_DOWN: return "ホイール 下"
+			MOUSE_BUTTON_WHEEL_LEFT: return "ホイール 左"
+			MOUSE_BUTTON_WHEEL_RIGHT: return "ホイール 右"
+			MOUSE_BUTTON_XBUTTON1: return "マウス サイド 1"
+			MOUSE_BUTTON_XBUTTON2: return "マウス サイド 2"
+		return "マウス %d" % event.button_index
+	return event.as_text()
+
+func keyboard_events(action: String) -> Array[InputEvent]:
+	var keys: Array[InputEvent] = []
 	for event in InputMap.action_get_events(action):
-		if event is InputEventKey:
+		if event is InputEventKey or event is InputEventMouseButton:
 			keys.append(event)
 	return keys
 
-func set_keyboard_binding(action: String, slot: int, event: InputEventKey) -> void:
+func set_keyboard_binding(action: String, slot: int, event: InputEvent) -> void:
 	var keys := keyboard_events(action)
 	if slot < keys.size():
 		InputMap.action_erase_event(action, keys[slot])
@@ -214,14 +272,31 @@ func _assign_pad(selection: int, index: int) -> void:
 		InputMap.action_add_event(ACTIONS[selection - 1], event)
 	save_settings()
 
+func apply_keyboard_sample(mouse_dash: bool) -> void:
+	waiting_action = ""
+	for action in ACTIONS:
+		for event in keyboard_events(action):
+			InputMap.action_erase_event(action, event)
+		for event in defaults[action]:
+			if event is InputEventKey or event is InputEventMouseButton:
+				InputMap.action_add_event(action, event)
+	if mouse_dash:
+		for event in keyboard_events("dash"):
+			InputMap.action_erase_event("dash", event)
+		var mouse := InputEventMouseButton.new()
+		mouse.button_index = MOUSE_BUTTON_RIGHT
+		InputMap.action_add_event("dash", mouse)
+	save_settings()
+	_refresh()
+
 func reset_current_device() -> void:
 	waiting_action = ""
 	for action in ACTIONS:
 		for event in InputMap.action_get_events(action):
-			if (event is InputEventKey) == keyboard:
+			if (event is InputEventKey or event is InputEventMouseButton) == keyboard:
 				InputMap.action_erase_event(action, event)
 		for event in defaults[action]:
-			if (event is InputEventKey) == keyboard:
+			if (event is InputEventKey or event is InputEventMouseButton) == keyboard:
 				InputMap.action_add_event(action, event)
 	save_settings()
 	_refresh()
@@ -245,7 +320,7 @@ func load_settings() -> void:
 			continue
 		var valid := true
 		for event in events:
-			if not (event is InputEventKey or event is InputEventJoypadButton or event is InputEventJoypadMotion):
+			if not (event is InputEventKey or event is InputEventMouseButton or event is InputEventJoypadButton or event is InputEventJoypadMotion):
 				valid = false
 		if valid:
 			InputMap.action_erase_events(action)
