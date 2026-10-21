@@ -14,7 +14,6 @@ const HINTS := [
 
 var checkpoint_index := 0
 var completed := false
-var help_visible := false
 var hints_visible := false
 var peak_y := START_Y
 
@@ -28,34 +27,13 @@ func _ready() -> void:
 	player.respawned.connect(_on_respawned)
 	$Goal.activated.connect(_on_completed)
 	$Goal.set_progress(0, 0, "", "", false)
-	$HUD/HelpButton.pressed.connect(func(): set_help_visible(not help_visible))
-	$HUD/Help/Rows/Resume.pressed.connect(func(): set_help_visible(false))
-	$HUD/Help/Rows/Hints.toggled.connect(_set_hints)
-	$HUD/Help/Rows/Retry.pressed.connect(_retry)
-	$HUD/Help/Rows/Return.pressed.connect(_return_to_select)
 	_set_checkpoint(0)
 	player.respawn()
 	camera.make_current()
 	_update_hud()
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_echo():
-		return
-	if event.is_action_pressed("toggle_stage_hints"):
-		set_help_visible(not help_visible)
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("return_to_stage_select"):
-		get_viewport().set_input_as_handled()
-		if help_visible:
-			set_help_visible(false)
-		else:
-			_return_to_select()
-
-
 func _physics_process(delta: float) -> void:
-	if help_visible:
-		return
 	# 更新は着地時のみ。通過しただけでは復帰地点を変えない。
 	if player.is_on_floor():
 		for index in range(checkpoint_index + 1, checkpoints.get_child_count()):
@@ -89,30 +67,11 @@ func _on_respawned() -> void:
 	camera.reset_smoothing()
 
 
-func set_help_visible(value: bool) -> void:
-	help_visible = value
-	$HUD/Help.visible = value
-	player.controls_enabled = not value
-	if value:
-		$HUD/Help/Rows/Resume.grab_focus()
-	else:
-		get_viewport().gui_release_focus()
-
-
-func _set_hints(value: bool) -> void:
+func set_hints_visible(value: bool) -> void:
 	hints_visible = value
 	$HUD/Hint.visible = value
 	for hint in $Hints.get_children():
 		hint.visible = value
-
-
-func _retry() -> void:
-	set_help_visible(false)
-	player.respawn()
-
-
-func _return_to_select() -> void:
-	get_tree().change_scene_to_file("res://scenes/stage_select.tscn")
 
 
 func _on_completed() -> void:

@@ -1,4 +1,6 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
+
 [ext_resource type="Script" path="res://scripts/stage_4.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/starfield.gd" id="3"]
@@ -72,13 +74,13 @@ value = 3.0
 show_percentage = false
 tooltip_text = "壁スタミナ（着地で回復）"
 
-[node name="HelpButton" type="Button" parent="HUD"]
+[node name="PauseButton" type="Button" parent="HUD"]
 offset_left = 1030.0
 offset_top = 44.0
 offset_right = 1256.0
 offset_bottom = 88.0
 focus_mode = 0
-text = "お助けメニュー [H / Y]"
+text = "ポーズ [Esc]"
 
 [node name="Hint" type="Label" parent="HUD"]
 visible = false
@@ -87,51 +89,17 @@ offset_top = 155.0
 offset_right = 1230.0
 theme_override_font_sizes/font_size = 19
 
-[node name="Help" type="PanelContainer" parent="HUD"]
-visible = false
-offset_left = 390.0
-offset_top = 180.0
-offset_right = 890.0
-offset_bottom = 480.0
-
-[node name="Rows" type="VBoxContainer" parent="HUD/Help"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="Title" type="Label" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "星渡りの回廊"
-horizontal_alignment = 1
-theme_override_font_sizes/font_size = 28
-
-[node name="Controls" type="Label" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "移動：A/D・方向キー　ジャンプ：Space / W\n壁・生物を掴む：Shift長押し　登る：↑　ダッシュ：X ＋ 方向\nやり直し：R / Start　メニュー：H / Y・△\n部屋を進むと復帰地点を更新。トゲ接触・画面外でやり直し。"
-horizontal_alignment = 1
-
-[node name="Resume" type="Button" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "プレイを再開する"
-
-[node name="Hints" type="CheckButton" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "ヒントを表示する"
-
-[node name="Retry" type="Button" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "復帰地点からやり直す"
-
-[node name="Return" type="Button" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "ステージ選択へ戻る"
-
 [node name="Completion" type="Label" parent="HUD"]
 script = ExtResource("stage_clear")
 visible = false
 offset_left = 290.0
 offset_top = 150.0
 offset_right = 990.0
-text = "ステージ4クリア！ 星渡りの回廊 踏破！\nHでメニュー / Escでステージ選択へ"
+text = "ステージ4クリア！ 星渡りの回廊 踏破！\nEscでポーズ"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(0.5, 1, 0.75, 1)
+
+[node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
+
+[connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]
