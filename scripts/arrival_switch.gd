@@ -20,6 +20,7 @@ const CAP_SEAT_Y := SEAT_Y + 12.0
 
 var locked := true
 var pressing := false
+var activator: PlayerController
 var _pressed := false
 var _step := "jump"
 var _unlock_fx := 1.0
@@ -78,6 +79,7 @@ func _physics_process(delta: float) -> void:
 				var contact: KinematicCollision2D = body.get_slide_collision(index)
 				if contact.get_collider() == cap and contact.get_normal().dot(Vector2.UP) > 0.8:
 					pressing = true
+					activator = body
 	if pressing:
 		cap.position.y = move_toward(cap.position.y, TRAVEL, TRAVEL / PRESS_TIME * delta)
 		queue_redraw()
@@ -95,6 +97,7 @@ func is_pressed() -> bool:
 func reset_for_respawn() -> void:
 	_pressed = false
 	pressing = false
+	activator = null
 	cap.position.y = 0.0
 	queue_redraw()
 

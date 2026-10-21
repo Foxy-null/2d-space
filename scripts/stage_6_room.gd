@@ -12,6 +12,7 @@ const SPRING = preload("res://scenes/spring.tscn")
 const BUMPER = preload("res://scenes/pinball_spring.tscn")
 const CRYSTAL = preload("res://scenes/refill_crystal.tscn")
 const BUTTON = preload("res://scenes/pressure_button.tscn")
+const KEY = preload("res://scripts/escape_key.gd")
 const ARRIVAL = preload("res://scenes/arrival_switch.tscn")
 
 const TITLES := ["追跡者との投げ合い", "奪い合う開門スイッチ", "重荷を先へ送れ", "暴風の傘渡り", "逆さまの逃走路", "反発と空中ダッシュ", "横向きの重力迷宮", "重力を渡る縦の塔", "相棒と越える断崖", "二つの重量扉", "封鎖装置の予行", "追跡者との最終決着"]
@@ -27,7 +28,7 @@ const HINTS := [
 	"緑の相棒と紫のクリスタルは別の追加ジャンプ。着地で相棒の力が戻る。敵の投擲にも注意。",
 	"二つの扉には別々の重りが必要。敵へ投げる箱とスイッチへ置く箱を使い分けよう。",
 	"金のスイッチと縞の扉が対応する。箱を置き、閉じる側を確かめてから総合コースへ。",
-	"二つの開門スイッチを通り、右上の出口へ逃げ切るか、追跡者を檻へ誘導して金の封鎖スイッチを押そう。",
+	"共通の重量扉を突破。決着：敵への有効打／封鎖：檻へ誘導し金の重り台／逃走：対峙して封印を解き、檻の上の鍵を取って右上へ。",
 ]
 
 var number := 0
@@ -38,6 +39,11 @@ var exit_position := Vector2(1800, 700)
 var exit_rect := Rect2()
 var route: Array[Vector2] = []
 var prepared := false
+var chase_delay := 0.6
+var battle_arena := Rect2()
+var key_collected := false
+var escape_unlocked := false
+var escape_key: Area2D
 var preferred_item := ""
 var hazards: Array[Rect2] = []
 var moving_hazards: Array[Dictionary] = []
@@ -69,43 +75,69 @@ func _ready() -> void:
 			_hazard(Rect2(1170, 650, 70, 170), Vector2(0, -150), 3.0)
 			route.assign([Vector2(460, 790), Vector2(630, 620), Vector2(880, 790), Vector2(1060, 620), Vector2(1340, 510), Vector2(1600, 670)])
 		1:
-			_floor(0, 1920, 820)
-			_block(Rect2(450, 540, 180, 35))
-			_block(Rect2(1100, 590, 180, 35))
-			_block(Rect2(1550, 620, 150, 35))
-			_supply(LIGHT, Vector2(260, 780))
-			_weight_door(Vector2(590, 820), Rect2(800, 0, 38, 820), 2.0)
-			_hazard(Rect2(990, 750, 90, 70))
-			_hazard(Rect2(1420, 730, 90, 90), Vector2(180, 0), 3.6)
-			exit_position.y = 820
-			route.assign([Vector2(580, 790), Vector2(900, 790), Vector2(1200, 560), Vector2(1600, 590)])
+			size.x = 3000
+			spawn.x = 600
+			enemy_spawn.x = 80
+			chase_delay = 4.0
+			_floor(0, 3000, 820)
+			_supply(LIGHT, Vector2(700, 780))
+			_supply(LIGHT, Vector2(1650, 780))
+			_weight_door(Vector2(1120, 820), Rect2(1400, 0, 38, 820), 2.0)
+			_platforms([Rect2(580, 640, 230, 32), Rect2(930, 550, 200, 32), Rect2(1560, 650, 210, 32), Rect2(1900, 530, 180, 32), Rect2(2280, 610, 230, 32)])
+			_spring(Vector2(1770, 820))
+			_bumper(Vector2(2150, 390))
+			_hazard(Rect2(1940, 750, 80, 70), Vector2(160, 0), 4.0)
+			_hazard(Rect2(2580, 730, 90, 90))
+			_crystal(Vector2(1030, 460), 1)
+			_crystal(Vector2(2030, 440), 0)
+			_crystal(Vector2(2390, 510), 1)
+			exit_position = Vector2(2860, 820)
+			route.assign([Vector2(1120, 790), Vector2(1510, 790), Vector2(1650, 620), Vector2(2000, 500), Vector2(2390, 570), Vector2(2740, 680)])
 		2:
-			_floor(0, 430, 820)
-			_floor(520, 360, 760)
-			_floor(1000, 340, 650)
-			_floor(1450, 470, 760)
-			_supply(HEAVY, Vector2(260, 780))
-			_weight_door(Vector2(1200, 650), Rect2(1380, 0, 38, 960), 8.0)
-			_platforms([Rect2(470, 580, 90, 28), Rect2(910, 500, 90, 28)])
-			_hazard(Rect2(640, 550, 65, 55), Vector2(180, 0), 3.7)
-			exit_position.y = 760
+			size.x = 3200
+			spawn.x = 600
+			enemy_spawn.x = 80
+			prepared = true
+			chase_delay = 4.0
+			_floor(0, 1250, 820)
+			_floor(1250, 900, 730)
+			_floor(2150, 1050, 640)
+			_supply(HEAVY, Vector2(710, 780))
+			_supply(LIGHT, Vector2(1640, 690))
+			_weight_door(Vector2(1930, 730), Rect2(2190, 0, 38, 960), 8.0)
+			_platforms([Rect2(860, 600, 240, 32), Rect2(1390, 500, 210, 32), Rect2(2390, 470, 200, 32), Rect2(2750, 350, 180, 32)])
+			_crystal(Vector2(1100, 660), 0)
+			_crystal(Vector2(1590, 610), 1)
+			_crystal(Vector2(2520, 360), 0)
+			_crystal(Vector2(2890, 290), 1)
+			_hazard(Rect2(2630, 570, 80, 70), Vector2(140, 0), 4.2)
+			exit_position = Vector2(3060, 640)
 			preferred_item = "HEAVY"
-			route.assign([Vector2(380, 790), Vector2(560, 730), Vector2(820, 730), Vector2(1020, 620), Vector2(1250, 620), Vector2(1560, 730)])
+			route.assign([Vector2(1110, 790), Vector2(1310, 700), Vector2(1900, 700), Vector2(2250, 610), Vector2(2450, 440), Vector2(2810, 320), Vector2(3040, 510)])
 		3:
-			size.y = 1440
-			spawn = Vector2(180, 1274)
-			enemy_spawn = Vector2(55, 1274)
-			_floor(0, 430, 1300)
-			_floor(1450, 470, 480)
-			_platforms([Rect2(700, 990, 180, 32), Rect2(1090, 710, 190, 32)])
-			_supply(UMBRELLA, Vector2(270, 1260))
-			_supply(UMBRELLA, Vector2(785, 950))
-			_wind(Rect2(340, 370, 1170, 950), Vector2.UP, 2600.0, 500.0)
-			_hazard(Rect2(920, 510, 65, 390))
-			_hazard(Rect2(1290, 850, 70, 270), Vector2(0, -280), 4.6)
-			exit_position.y = 480
+			size = Vector2(2880, 1680)
+			spawn = Vector2(500, 1514)
+			enemy_spawn = Vector2(80, 1514)
+			chase_delay = 2.0
+			_floor(0, 750, 1540)
+			_floor(2520, 360, 620)
+			_platforms([Rect2(900, 1200, 260, 32), Rect2(1340, 1000, 220, 32), Rect2(1700, 750, 220, 32), Rect2(2190, 550, 180, 32)])
+			_supply(UMBRELLA, Vector2(610, 1500))
+			_supply(UMBRELLA, Vector2(1450, 960))
+			_wind(Rect2(710, 450, 620, 1110), Vector2.UP, 2600.0, 500.0)
+			_wind(Rect2(1410, 280, 1130, 850), Vector2.UP, 2600.0, 500.0)
+			_wind(Rect2(1100, 760, 620, 220), Vector2.RIGHT, 850.0, 260.0)
+			_hazard(Rect2(1240, 1260, 70, 420))
+			_hazard(Rect2(2030, 690, 65, 200), Vector2(0, -190), 5.0)
+			_crystal(Vector2(820, 1080), 0)
+			_crystal(Vector2(1270, 880), 1)
+			_crystal(Vector2(1620, 660), 0)
+			_crystal(Vector2(2110, 420), 1)
+			_crystal(Vector2(2470, 470), 0)
+			exit_position = Vector2(2740, 620)
 			preferred_item = "PARACHUTE"
-			route.assign([Vector2(470, 1110), Vector2(750, 960), Vector2(830, 400), Vector2(1160, 680), Vector2(1400, 450), Vector2(1650, 450)])
+			route.assign([Vector2(690, 1510), Vector2(820, 1340), Vector2(820, 1090), Vector2(1210, 1050), Vector2(1450, 970), Vector2(1610, 820), Vector2(1610, 640), Vector2(1950, 590), Vector2(2140, 480), Vector2(2440, 470), Vector2(2670, 590)])
+			_label(Vector2(880, 1270), "傘で足場の横へ → 上昇して回り込む", Color("a2ffd0"))
 		4:
 			_floor(0, 430, 820)
 			_floor(1450, 470, 740)
@@ -135,8 +167,23 @@ func _ready() -> void:
 			exit_position.y = 690
 			route.assign([Vector2(350, 790), Vector2(640, 470), Vector2(770, 390), Vector2(990, 340), Vector2(1240, 570), Vector2(1640, 660)])
 		6:
+			size.x = 2880
 			_floor(0, 510, 820)
 			_floor(1450, 470, 500)
+			_floor(2630, 250, 500)
+			_platforms([Rect2(1990, 580, 140, 32), Rect2(2390, 540, 160, 32)])
+			_spring(Vector2(1810, 500))
+			_bumper(Vector2(2210, 180))
+			_gate(Vector2(2270, 290), -2)
+			_block(Rect2(2090, 140, 36, 340))
+			_spring(Vector2(2126, 290), PI / 2.0)
+			_gate(Vector2(2580, 290), 1)
+			_crystal(Vector2(2410, 290), 0)
+			_crystal(Vector2(2060, 120), 1)
+			_label(Vector2(2080, 540), "← 重力を切替 → 壁ばねから跳び返す", Color("a2ffd0"))
+			_crystal(Vector2(2060, 280), 0)
+			_crystal(Vector2(2420, 280), 1)
+			_hazard(Rect2(2250, 630, 100, 330))
 			_block(Rect2(970, 320, 40, 500))
 			_block(Rect2(1320, 0, 40, 390))
 			_gate(Vector2(470, 670), 2)
@@ -146,8 +193,8 @@ func _ready() -> void:
 			_supply(LIGHT, Vector2(250, 780))
 			_crystal(Vector2(1150, 400), 0)
 			_hazard(Rect2(1010, 630, 70, 190))
-			exit_position.y = 500
-			route.assign([Vector2(470, 670), Vector2(944, 400), Vector2(944, 220), Vector2(1294, 250), Vector2(1294, 490), Vector2(1440, 440), Vector2(1640, 470)])
+			exit_position = Vector2(2740, 500)
+			route.assign([Vector2(470, 670), Vector2(944, 400), Vector2(944, 220), Vector2(1294, 250), Vector2(1294, 490), Vector2(1440, 440), Vector2(1640, 470), Vector2(1810, 470), Vector2(2030, 300), Vector2(2060, 100), Vector2(2270, 100), Vector2(2270, 290), Vector2(2152, 290), Vector2(2410, 290), Vector2(2580, 290), Vector2(2690, 390)])
 			_label(Vector2(1015, 240), "↑ 上端を越える", Color("a2ffd0"))
 			_label(Vector2(1130, 440), "↓ 下端を越える", Color("a2ffd0"))
 		7:
@@ -185,17 +232,23 @@ func _ready() -> void:
 			preferred_item = "JUMP"
 			route.assign([Vector2(330, 790), Vector2(680, 590), Vector2(1080, 380), Vector2(1350, 350), Vector2(1700, 590)])
 		9:
-			_floor(0, 1920, 820)
-			_supply(LIGHT, Vector2(260, 780))
-			_supply(HEAVY, Vector2(1160, 780))
-			_weight_door(Vector2(540, 820), Rect2(740, 0, 36, 820), 2.0)
-			_weight_door(Vector2(1290, 820), Rect2(1440, 0, 36, 820), 8.0)
-			_platforms([Rect2(840, 560, 130, 30), Rect2(1220, 500, 120, 30)])
-			_block(Rect2(1510, 550, 130, 30))
-			_hazard(Rect2(850, 750, 60, 70), Vector2(190, 0), 3.2)
-			_hazard(Rect2(1560, 610, 70, 210), Vector2(130, 0), 3.4)
-			exit_position.y = 820
-			route.assign([Vector2(540, 790), Vector2(860, 790), Vector2(1290, 790), Vector2(1480, 530), Vector2(1550, 520), Vector2(1780, 520)])
+			size.x = 3200
+			spawn.x = 600
+			enemy_spawn.x = 80
+			prepared = true
+			chase_delay = 4.0
+			_floor(0, 3200, 820)
+			_supply(LIGHT, Vector2(710, 780))
+			_supply(HEAVY, Vector2(1730, 780))
+			_weight_door(Vector2(1120, 820), Rect2(1390, 0, 36, 820), 2.0)
+			_weight_door(Vector2(2130, 820), Rect2(2400, 0, 36, 820), 8.0)
+			_platforms([Rect2(640, 620, 250, 32), Rect2(1030, 520, 210, 32), Rect2(1550, 610, 260, 32), Rect2(1960, 520, 220, 32), Rect2(2500, 650, 240, 32), Rect2(2820, 500, 180, 32)])
+			_spring(Vector2(2470, 820))
+			_hazard(Rect2(2710, 750, 75, 70), Vector2(130, 0), 4.0)
+			_crystal(Vector2(1710, 520), 1)
+			_crystal(Vector2(2620, 540), 0)
+			exit_position = Vector2(3060, 820)
+			route.assign([Vector2(1120, 790), Vector2(1500, 790), Vector2(2130, 790), Vector2(2470, 790), Vector2(2470, 620), Vector2(2610, 620), Vector2(2900, 470), Vector2(3050, 670)])
 		10:
 			_floor(0, 660, 820)
 			_floor(1450, 470, 540)
@@ -215,6 +268,11 @@ func _ready() -> void:
 			route.assign([Vector2(590, 790), Vector2(900, 640), Vector2(1160, 440), Vector2(1170, 300), Vector2(1380, 160), Vector2(1450, 300), Vector2(1660, 510)])
 		11:
 			_build_final()
+	if number != 11:
+		for index in range(1, route.size(), 3):
+			_crystal(route[index] - Vector2(0, 40), 0)
+		for index in range(2, route.size(), 3):
+			_crystal(route[index] - Vector2(0, 65), 1)
 	_block(Rect2(0, 0, 28, size.y + 200))
 	_block(Rect2(size.x - 28, 0, 28, size.y + 200))
 	if number == 7:
@@ -224,50 +282,81 @@ func _ready() -> void:
 	exit_rect = Rect2(exit_position + Vector2(-58, -185), Vector2(116, 180))
 	arrival = ARRIVAL.instantiate()
 	arrival.name = "Arrival"
-	arrival.mission_required = false
+	arrival.mission_required = number == 11
 	arrival.position = exit_position
 	add_child(arrival)
 	arrival.activated.connect(func(): exit_open = true)
+	if number == 11:
+		update_escape(false)
 	_label(exit_position + Vector2(-100, -220), "逃走出口" if number == 11 else "出口の到着台", Color("a2ffd0"))
 	_label(spawn + Vector2(10, 55), "物体の供給台 / Shiftで持つ", Color("ffdc78"))
 
 
 func _build_final() -> void:
-	size = Vector2(2560, 1440)
-	spawn = Vector2(180, 1274)
-	enemy_spawn = Vector2(55, 1274)
-	_floor(0, 640, 1300)
-	_floor(780, 620, 1120)
-	_floor(1540, 520, 850)
-	_floor(2440, 120, 350)
-	_platforms([Rect2(620, 1120, 110, 30), Rect2(1400, 950, 100, 30), Rect2(2160, 650, 200, 30), Rect2(2230, 480, 100, 30)])
-	_supply(LIGHT, Vector2(260, 1260))
-	_supply(HEAVY, Vector2(960, 1080))
-	_supply(CREATURE, Vector2(1740, 810))
-	_weight_door(Vector2(510, 1300), Rect2(740, 0, 36, 1440), 2.0)
-	_weight_door(Vector2(1260, 1120), Rect2(1480, 0, 36, 1440), 8.0)
-	_block(Rect2(1325, 800, 30, 320))
-	_gate(Vector2(2340, 550), 2)
-	_block(Rect2(2400, 360, 36, 440))
-	_gate(Vector2(2450, 240), 1)
-	_crystal(Vector2(2060, 560), 0)
-	_crystal(Vector2(2210, 350), 1)
-	_hazard(Rect2(1090, 950, 65, 170), Vector2(130, 0), 3.0)
-	_hazard(Rect2(1780, 540, 75, 90), Vector2(100, 0), 3.1)
-	_hazard(Rect2(2140, 870, 80, 570))
-	cage = Rect2(1580, 620, 300, 230)
-	_block(Rect2(1580, 590, 300, 30))
-	cage_doors.append(_block(Rect2(1548, 620, 30, 230)))
-	cage_doors.append(_block(Rect2(1882, 620, 30, 230)))
+	size = Vector2(3840, 1680)
+	spawn = Vector2(600, 1454)
+	enemy_spawn = Vector2(80, 1454)
+	prepared = true
+	chase_delay = 4.0
+	_floor(0, 2300, 1480)
+	_floor(2300, 190, 1390)
+	_floor(2490, 190, 1300)
+	_floor(2680, 190, 1210)
+	_floor(2870, 970, 1120)
+	# Broad steps let both actors reach the arena with the shared jump/climb physics.
+	battle_arena = Rect2(2290, 150, 1522, 1330)
+	_supply(LIGHT, Vector2(710, 1440))
+	_supply(HEAVY, Vector2(1670, 1440))
+	_weight_door(Vector2(1120, 1480), Rect2(1400, 0, 36, 1680), 2.0)
+	_weight_door(Vector2(1970, 1480), Rect2(2200, 0, 36, 1680), 8.0)
+	_platforms([Rect2(690, 1280, 240, 32), Rect2(1030, 1180, 220, 32), Rect2(1550, 1280, 240, 32), Rect2(1870, 1180, 220, 32)])
+	_supply(CREATURE, Vector2(2760, 1170))
+	_supply(LIGHT, Vector2(3250, 1080))
+	_supply(LIGHT, Vector2(3670, 1080))
+	cage = Rect2(2950, 880, 300, 240)
+	_block(Rect2(2950, 850, 300, 30))
+	cage_doors.append(_block(Rect2(2918, 880, 30, 240)))
+	cage_doors.append(_block(Rect2(3252, 880, 30, 240)))
 	for door in cage_doors:
 		_set_door(door, false)
-	seal_button = _button(Vector2(2220, 650), 2.0)
-	_supply(LIGHT, Vector2(1930, 810))
-	_label(Vector2(1580, 550), "追跡者を檻へ誘導", Color("ffdc78"))
-	_label(Vector2(2210, 700), "檻の中の敵を封鎖\n箱を置いて作動", Color("ffdc78"))
-	exit_position = Vector2(2470, 350)
-	preferred_item = "HEAVY"
-	route.assign([Vector2(510, 1270), Vector2(670, 1090), Vector2(900, 1090), Vector2(1340, 770), Vector2(1460, 920), Vector2(1600, 820), Vector2(1740, 820), Vector2(1860, 820), Vector2(1980, 820), Vector2(2060, 820), Vector2(2120, 570), Vector2(2240, 620), Vector2(2340, 550), Vector2(2374, 280), Vector2(2450, 200), Vector2(2470, 200)])
+	seal_button = _button(Vector2(3500, 1120), 2.0)
+	_platforms([Rect2(3350, 940, 170, 32), Rect2(3510, 780, 150, 32)])
+	_gate(Vector2(3590, 660), 2)
+	_block(Rect2(3650, 430, 36, 660))
+	_gate(Vector2(3720, 330), 1)
+	_floor(3686, 154, 480)
+	_crystal(Vector2(2860, 1000), 0)
+	_crystal(Vector2(3310, 840), 1)
+	_crystal(Vector2(3530, 680), 0)
+	_crystal(Vector2(3610, 550), 1)
+	_hazard(Rect2(3380, 1060, 65, 60), Vector2(110, 0), 4.5)
+	escape_key = KEY.new()
+	escape_key.position = Vector2(3100, 800)
+	add_child(escape_key)
+	escape_key.collected.connect(func(): key_collected = true)
+	_label(Vector2(2920, 740), "逃走の鍵 ↑ 檻の屋根へ", Color("ffdc78"))
+	_label(Vector2(2940, 1160), "封鎖：敵を檻へ → 金の重り台", Color("ffdc78"))
+	_label(Vector2(2540, 1470), "決着：怯んでいない敵に投擲を当てる", Color("ffdc78"))
+	exit_position = Vector2(3750, 480)
+	route.assign([Vector2(1120, 1450), Vector2(1970, 1450), Vector2(2340, 1360), Vector2(2540, 1270), Vector2(2740, 1180), Vector2(2910, 1090), Vector2(2900, 800), Vector2(3100, 824), Vector2(3430, 910), Vector2(3580, 750), Vector2(3590, 660), Vector2(3624, 380), Vector2(3720, 330), Vector2(3750, 350)])
+
+
+func update_escape(time_ready: bool) -> void:
+	var unlocked := time_ready and key_collected and all_weight_doors_open()
+	if unlocked == escape_unlocked and arrival.get_meta("escape_initialized", false):
+		return
+	escape_unlocked = unlocked
+	arrival.set_meta("escape_initialized", true)
+	arrival.set_progress(0 if unlocked else 1, 1, "escape", "対峙して封印を解除\n檻の上の鍵も必要")
+
+
+func item_on_switch(item: Grabbable) -> bool:
+	if seal_button != null and seal_button.get_overlapping_bodies().has(item):
+		return true
+	for entry in doors:
+		if entry.button.get_overlapping_bodies().has(item):
+			return true
+	return false
 
 
 func _physics_process(delta: float) -> void:
@@ -280,7 +369,8 @@ func _physics_process(delta: float) -> void:
 	if _supply_left <= 0.0:
 		_supply_left = 0.75
 		_restock()
-	queue_redraw()
+	if not moving_hazards.is_empty():
+		queue_redraw()
 
 
 func _restock() -> void:
@@ -301,9 +391,7 @@ func _restock() -> void:
 		else:
 			matching.sort_custom(func(a, b): return a.position.distance_squared_to(supply.at) > b.position.distance_squared_to(supply.at))
 			for item in matching:
-				var on_switch := seal_button != null and seal_button.get_overlapping_bodies().has(item)
-				for entry in doors:
-					on_switch = on_switch or entry.button.get_overlapping_bodies().has(item)
+				var on_switch := item_on_switch(item)
 				if item.carrier == null and not on_switch:
 					item.reset_for_respawn()
 					break
@@ -312,7 +400,12 @@ func _restock() -> void:
 func reset_state() -> void:
 	_elapsed = 0.0
 	exit_open = false
+	key_collected = false
+	escape_unlocked = false
 	arrival.reset_for_respawn()
+	if number == 11:
+		arrival.set_meta("escape_initialized", false)
+		update_escape(false)
 	for child in get_children():
 		if child.has_method("reset_for_respawn") and child != arrival:
 			child.reset_for_respawn()
@@ -439,9 +532,10 @@ func _wind(rect: Rect2, direction: Vector2, acceleration: float, limit: float) -
 	add_child(wind)
 
 
-func _spring(at: Vector2) -> void:
+func _spring(at: Vector2, angle := 0.0) -> void:
 	var spring := SPRING.instantiate()
 	spring.position = at
+	spring.rotation = angle
 	add_child(spring)
 
 

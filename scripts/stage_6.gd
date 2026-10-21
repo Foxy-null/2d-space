@@ -7,6 +7,8 @@ const BACKDROP = preload("res://scripts/stage_backdrop.gd")
 const CLEAR = preload("res://scripts/stage_clear.gd")
 
 @export var enemy_avatar: Texture2D
+@export_range(4, 12) var defeat_hits_required := 6
+@export var escape_seconds := 20.0
 var room_index := 0
 var completed := false
 var transitioning := false
@@ -35,6 +37,9 @@ var _loading := false
 var _generation := 0
 var _previous_player := Vector2.ZERO
 var _previous_enemy := Vector2.ZERO
+var _player_arrived := false
+var defeat_hits := 0
+var escape_elapsed := 0.0
 
 
 func _ready() -> void:
@@ -88,17 +93,20 @@ func _load_room(index: int) -> void:
 	room = ROOM.new()
 	room.number = index
 	_world.add_child(room)
+	room.arrival.activated.connect(func(): _player_arrived = room.arrival.activator == player)
 	set_meta("environment_theme", 3 if index < 6 else 4)
 	_backdrop.environment_theme = 3 if index < 6 else 4
 	player.set_respawn_position(room.spawn)
 	enemy.set_respawn_position(room.enemy_spawn)
 	player.respawn()
 	enemy.call("reset_pursuit")
-	enemy.set("route", room.route.duplicate())
 	enemy.set("course", room)
 	enemy.set("preferred_item", room.preferred_item)
 	enemy.set("active", false)
-	_chase_delay = -1.0 if room.prepared else 0.6
+	_chase_delay = -1.0 if room.prepared else room.chase_delay
+	_player_arrived = false
+	defeat_hits = 0
+	escape_elapsed = 0.0
 	_immunity_left = 0.6
 	_hit_grace = 0.0
 	_capture_pending = false
@@ -120,7 +128,7 @@ func _physics_process(delta: float) -> void:
 	_immunity_left = maxf(0.0, _immunity_left - delta)
 	_hit_grace = maxf(0.0, _hit_grace - delta)
 	if _chase_delay < 0.0 and player.position.distance_to(room.spawn) > 155.0:
-		_chase_delay = 0.0
+		_chase_delay = room.chase_delay
 	elif _chase_delay >= 0.0:
 		_chase_delay = maxf(0.0, _chase_delay - delta)
 		if _chase_delay <= 0.0:
@@ -129,15 +137,19 @@ func _physics_process(delta: float) -> void:
 		player.respawn()
 		return
 	if _out_of_course(enemy) or _touches_hazard(enemy, _previous_enemy):
-		enemy.call("reset_pursuit")
+		enemy.call("reset_pursuit", true)
 	_check_projectiles()
-	if not _capture_pending and _immunity_left <= 0.0 and enemy.get("active") and enemy.stun_left <= 0.0 and _actor_rect(enemy).grow(2).intersects(_actor_rect(player)):
+	if not _capture_pending and _immunity_left <= 0.0 and enemy.get("active") and enemy.stun_left <= 0.0 and enemy.get_held_object() == null and _actor_rect(enemy).grow(2).intersects(_actor_rect(player)):
 		_capture()
 	if _game_over_pending:
 		return
+	if room_index == 11:
+		if enemy.get("active") and room.battle_arena.has_point(player.position) and room.battle_arena.has_point(enemy.position):
+			escape_elapsed = minf(escape_seconds, escape_elapsed + delta)
+		room.update_escape(escape_elapsed >= escape_seconds)
 	if room_index == 11 and room.seal_enemy(enemy, player):
 		_complete("封じ込め成功")
-	elif room.exit_open and room.exit_rect.has_point(player.position) and (room_index != 11 or room.all_weight_doors_open()):
+	elif room.exit_open and (_player_arrived or room.exit_rect.has_point(player.position)) and (room_index != 11 or (room.all_weight_doors_open() and room.escape_unlocked)):
 		if room_index == 11:
 			_complete("逃走成功")
 		else:
@@ -160,7 +172,10 @@ func _on_player_respawned() -> void:
 	room.reset_state()
 	enemy.call("reset_pursuit")
 	enemy.set("active", false)
-	_chase_delay = -1.0 if room.prepared else 0.6
+	_chase_delay = -1.0 if room.prepared else room.chase_delay
+	_player_arrived = false
+	defeat_hits = 0
+	escape_elapsed = 0.0
 	_immunity_left = 0.6
 	_previous_player = player.position
 	_previous_enemy = enemy.position
@@ -173,7 +188,10 @@ static func capture_probability(stamina: float, maximum: float) -> float:
 
 
 func _capture() -> void:
+	if _capture_pending or enemy.get_held_object() != null:
+		return
 	_capture_pending = true
+	escape_elapsed = 0.0
 	var probability := capture_probability(player.get_wall_stamina(), player.wall_stamina_max)
 	if randf() < probability:
 		_game_over()
@@ -183,9 +201,6 @@ func _capture() -> void:
 	player.apply_stun(0.25)
 	enemy.apply_stun(0.4)
 	enemy.set("throw_pose_left", 0.5)
-	if enemy.get_held_object() != null:
-		enemy.velocity = Vector2.ZERO
-		enemy.release_grab()
 	_message.text = "捕獲をしのいだ！　投げ返し後 2秒間は再捕獲されません"
 	_message.show()
 	await get_tree().create_timer(0.25, false).timeout
@@ -242,7 +257,12 @@ func _check_projectiles() -> void:
 		var from: Vector2 = entry.previous + target.position - previous_target
 		if _segment_hits_rect(from, object.position, rect):
 			if target == enemy:
-				enemy.apply_stun(2.0)
+				if room_index == 11 and enemy.stun_left <= 0.0 and room.all_weight_doors_open() and room.battle_arena.has_point(enemy.position) and room.battle_arena.has_point(player.position):
+					defeat_hits += 1
+					if defeat_hits >= defeat_hits_required:
+						_complete("決着成功")
+				if enemy.stun_left <= 0.0:
+					enemy.apply_stun(2.0)
 			elif _hit_grace <= 0.0:
 				player.apply_stun(0.3, (object.position - entry.previous).normalized() * 140, player.wall_stamina_max / 3.0)
 				_hit_grace = 0.4
@@ -303,11 +323,13 @@ func _update_hud() -> void:
 	_title.text = "ステージ6　追跡者の終域　｜　%02d / 12　%s" % [room_index + 1, StageSixRoom.TITLES[room_index]]
 	var chance := roundi(capture_probability(player.get_wall_stamina(), player.wall_stamina_max) * 100)
 	var direction: String = {1: "↓", -1: "↑", 2: "→", -2: "←"}[player.gravity_direction]
-	_status.text = "重力 %s　 捕獲時の失敗率 %3d%%　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [direction, chance, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), "追跡中" if enemy.get("active") else "準備区間：入口から進むと追跡開始"]
+	_status.text = "重力 %s　 捕獲時の失敗率 %3d%%　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [direction, chance, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), "追跡中" if enemy.get("active") else ("追跡まで %.1f秒" % _chase_delay if _chase_delay >= 0 else "準備区間：入口から進むと追跡開始")]
 	_stamina.max_value = player.wall_stamina_max
 	_stamina.value = player.get_wall_stamina()
 	if not completed:
 		_hint.text = StageSixRoom.HINTS[room_index]
+		if room_index == 11:
+			_hint.text += "\n決着 %d/%d（怯み中は無効）　逃走封印 あと%d秒 / 鍵 %s" % [defeat_hits, defeat_hits_required, ceili(maxf(0.0, escape_seconds - escape_elapsed)), "取得済" if room.key_collected else "未取得"]
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -378,7 +400,7 @@ func _build_hud() -> void:
 	help_button.focus_mode = Control.FOCUS_NONE
 	help_button.pressed.connect(func(): set_help_visible(not help_visible))
 	hud.add_child(help_button)
-	var footer := _panel(Rect2(16, 640, 1248, 68))
+	var footer := _panel(Rect2(16, 604, 1248, 104))
 	hud.add_child(footer)
 	_hint = _text("", 19)
 	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

@@ -57,13 +57,13 @@ H / Y・△のお助けメニューで操作のヒントを表示できます。
 
 ## ステージ6：追跡者の終域（試作）
 
-全12部屋で追跡敵から逃げる最終ステージの試作です。前半は溶岩、後半は邪悪なオーラの背景を使い、軽い箱・重い箱・重量スイッチ・和傘を本編へ導入しました。上下左右の重力、風、生物、ばね、バンパー、クリスタルを部屋ごとに組み合わせます。敵も同じ移動性能と能力を持ち、共有アイテムを拾って投げます。全室に投げられる物体があり、必須物体は供給場所で補充されます。
+全12部屋で追跡敵から逃げる最終ステージの試作です。前半は溶岩、後半は邪悪なオーラの背景を使い、軽い箱・重い箱・重量スイッチ・和傘を本編へ導入しました。上下左右の重力、風、生物、ばね、バンパー、クリスタルを部屋ごとに組み合わせます。敵も同じ移動性能と能力を持ち、プレイヤーが通った道を追い、共有アイテムを拾って投げます。運搬中はプレイヤーを掴めません。箱を扱う部屋は作業場所と追跡開始までの猶予を広げ、傘の風渡りや横重力の壁ばねを組み合わせています。全室に投げられる物体があり、必須物体は供給場所で補充されます。
 
 左右重力では↑↓で壁沿いに歩き、Space / Aで壁から跳びます。物体もゲートの重力を受け、持った物体は投げた後も持ち主の重力を引き継ぎます。プレイヤーの投擲は敵を2秒怯ませ、敵の投擲は壁スタミナを最大値の3分の1減らして0.3秒怯ませます。
 
 捕獲されるとスタミナ残量で1回抽選し、満タンで0％、半分で50％、空で100％の確率でゲームオーバーとなってステージ選択へ戻ります。助かった場合は経路の後方へ投げ返され、2秒間は再捕獲されません。落下・トゲ・R / Startは現在の部屋の最初からやり直しです。H / Y・△のメニューでは追跡と物理が止まります。
 
-最後は二つの重量扉を突破し、左右重力と空中移動で上方の出口へ逃げ切るか、敵を檻に誘導して外側の封鎖スイッチで閉じ込めればクリアです。敵が到着台を押しただけでは部屋移動やクリアになりません。
+最後は二つの重量扉を突破した後、3通りの勝利を選べます。決着は敵への有効な投擲6回で、怯み中の追撃は数えません。封じ込めは敵を檻に誘導し、外側の金のスイッチへ箱を置きます。逃走は最後の区画で敵と20秒対峙し、檻の屋根の鍵を取ってから右上の到着台を押します。捕獲されると逃走の時間を数え直します。敵だけが到着台を押しても進行しません。
 
 敵の姿は以前の実験用ポリゴンアバターです。本番PNGは `scenes/stage_6.tscn` のルートにある `enemy_avatar` へ割り当てられます。仕様と検証結果は [ステージ6の設計書](docs/stage-6.md) に記録しています。
 
@@ -218,7 +218,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_6_test.gd
-Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_6_playthrough.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_6_chase_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_6_playthrough.gd -- --live
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_clear_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/ascent_backdrop_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/environment_art_test.gd

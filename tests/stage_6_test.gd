@@ -39,6 +39,7 @@ func _run() -> void:
 		await _step(2)
 		_check(stage.room_index == number and not stage.completed, "Enemy at an open exit never advances or clears the room")
 		stage.enemy.set_physics_process(true)
+	await _arrival_latency()
 	await _enemy_behavior()
 	await _four_gravities()
 	await _projectiles_and_retry()
@@ -53,7 +54,6 @@ func _enemy_behavior() -> void:
 	await _step(3)
 	stage.player.set_physics_process(false)
 	_place(stage.player, Vector2(450, 794))
-	stage.enemy.set("route", [Vector2(260, 794), Vector2(440, 740)] as Array[Vector2])
 	stage._immunity_left = 999.0
 	var actions: Array[String] = []
 	var throws: Array[Grabbable] = []
@@ -65,15 +65,15 @@ func _enemy_behavior() -> void:
 	var start: Vector2 = stage.enemy.position
 	await _step(180)
 	_check(stage.enemy.position.distance_to(start) > 60.0, "The autonomous enemy follows the course without player input")
-	_check(actions.has("jump") or actions.has("wall_jump"), "The enemy uses real movement actions along its route")
 	_check(not throws.is_empty(), "The enemy picks up shared stock and performs real throws")
 	stage.enemy.set_physics_process(false)
 	stage.enemy.respawn(false)
 	stage.enemy.set("_pickup_left", 0.0)
 	var stock: Grabbable = stage.room.get_node("Items").get_child(0)
 	stock.reset_for_respawn()
-	_place(stage.enemy, stock.position - Vector2(50, 0))
+	_place(stage.enemy, stock.position - Vector2(80, 0))
 	await _step(3)
+	stage.enemy.set("_pickup_left", 0.0)
 	_check(stage.enemy.try_begin_grab(stock), "Enemy can acquire shared stock before throwing")
 	stage.enemy.velocity = Vector2(300, 0)
 	stage.enemy.release_grab()
@@ -221,34 +221,92 @@ func _projectiles_and_retry() -> void:
 
 
 func _final_endings() -> void:
-	for result in ["封じ込め成功", "逃走成功"]:
+	for result in ["封じ込め成功", "逃走成功", "決着成功"]:
 		await _new_stage()
 		stage._load_room(11)
 		await _step(3)
 		stage.player.set_physics_process(false)
 		stage.enemy.set_physics_process(false)
-		stage.enemy.set("active", false)
-		_place(stage.player, stage.room.exit_rect.get_center())
-		_place(stage.enemy, stage.room.spawn)
-		stage.room.exit_open = true
-		await _step(2)
-		_check(not stage.completed, "The escape exit alone cannot bypass both final weight challenges")
-		if result == "封じ込め成功":
-			_place(stage.player, Vector2(2330, 610))
-			_place(stage.enemy, stage.room.cage.get_center())
-			_put_weight(stage.room.seal_button.position, stage.room.LIGHT)
-			await _step(15)
-			_check(not stage.completed, "Caging the enemy alone cannot bypass final weight challenges")
+		stage.enemy.set("active", true)
+		_place(stage.player, Vector2(3510, 1030))
+		_place(stage.enemy, stage.room.cage.get_center())
+		stage.escape_elapsed = stage.escape_seconds
+		stage.room.update_escape(true)
+		_check(stage.room.arrival.locked, "Time alone does not unlock escape without the key and weights")
+		_place(stage.enemy, stage.room.escape_key.position)
+		await _step(3)
+		_check(not stage.room.key_collected, "The enemy cannot collect the player's escape key")
+		_place(stage.player, stage.room.escape_key.position)
+		await _step(3)
+		_check(stage.room.key_collected and not stage.room.escape_key.visible, "Real player contact collects the escape key")
+		_place(stage.player, Vector2(3510, 1030))
+		_place(stage.enemy, stage.room.cage.get_center())
+		stage.room.update_escape(true)
+		_check(stage.room.arrival.locked, "The key and time cannot bypass common weight challenges")
 		for door in stage.room.doors:
 			_put_weight(door.button.position, stage.room.HEAVY if door.button.required_weight > 2 else stage.room.LIGHT)
 		await _step(30)
-		if not stage.completed:
-			print("FINAL_FIXTURE ", result, " doors=", stage.room.doors.map(func(entry): return entry.button.total_weight), " seal=", stage.room.seal_button.total_weight, " player=", stage.player.position, " enemy=", stage.enemy.position)
-		_check(stage.completed and stage.ending == result and stage._completion.card.visible, "Each difficult ending reaches the shared clear screen")
+		_check(stage.room.escape_unlocked and not stage.room.arrival.locked, "Escape requires both weights, the key and the chase timer")
+		if result == "封じ込め成功":
+			_put_weight(stage.room.seal_button.position, stage.room.LIGHT)
+			await _step(15)
+		elif result == "逃走成功":
+			_place(stage.player, stage.room.exit_rect.get_center())
+			stage.room.exit_open = true
+			await _step(2)
+		else:
+			var object: Grabbable = stage.room.get_node("Items").get_child(0)
+			for hit in stage.defeat_hits_required:
+				stage.enemy.stun_left = 0.0
+				_hit_enemy(object)
+				if hit == 0:
+					_hit_enemy(object)
+					_check(stage.defeat_hits == 1, "Repeated impacts during stun do not count toward defeat")
+				if hit < stage.defeat_hits_required - 1:
+					_check(not stage.completed, "Defeat requires all six fresh hits")
+		_check(stage.completed and stage.ending == result and stage._completion.card.visible, "All three endings reach the shared clear screen")
 		_check(not stage.player.controls_enabled and not stage.enemy.controls_enabled, "Both actors stop after completion")
 		if OS.get_cmdline_user_args().has("--screenshots"):
 			RenderingServer.force_draw()
-			root.get_texture().get_image().save_png("res://docs/screenshots/stage-6/%s.png" % ("seal" if result == "封じ込め成功" else "escape"))
+			root.get_texture().get_image().save_png("res://docs/screenshots/stage-6/%s.png" % {"封じ込め成功": "seal", "逃走成功": "escape", "決着成功": "defeat"}[result])
+	await _new_stage()
+	stage._load_room(11)
+	await _step(3)
+	stage.player.set_physics_process(false)
+	stage.enemy.set_physics_process(false)
+	stage._chase_delay = 0.0
+	_place(stage.player, Vector2(3500, 1000))
+	await _step(60)
+	_check(stage.escape_elapsed == 0.0, "Waiting while the enemy is stuck outside the arena does not release escape")
+	_place(stage.enemy, Vector2(3100, 1000))
+	await _step(60)
+	_check(stage.escape_elapsed > 0.9, "The escape clock runs while both actors are in the arena")
+	stage.player.respawn()
+	_check(stage.defeat_hits == 0 and stage.escape_elapsed == 0.0 and not stage.room.key_collected and stage.room.arrival.locked, "Retry resets the three ending objectives")
+
+
+func _hit_enemy(object: Grabbable) -> void:
+	object.position = stage.enemy.position - Vector2(150, 0)
+	object.linear_velocity = Vector2(1000, 0)
+	stage._on_release(object, true, stage.player)
+	object.position = stage.enemy.position + Vector2(150, 0)
+	stage._check_projectiles()
+
+
+func _arrival_latency() -> void:
+	stage._load_room(1)
+	stage.enemy.set_physics_process(false)
+	stage._chase_delay = 999.0
+	_place(stage.player, stage.room.exit_position + Vector2(65, -160))
+	var activated_at := [-1]
+	stage.room.arrival.activated.connect(func(): activated_at[0] = Engine.get_physics_frames())
+	for frame in 90:
+		await _step()
+		if stage.room_index == 2:
+			break
+	_check(activated_at[0] >= 0 and stage.room_index == 2, "Pressing the arrival cap at its edge advances the room")
+	_check(Engine.get_physics_frames() - activated_at[0] <= 2, "Room transition follows activation within two physics ticks")
+	stage.enemy.set_physics_process(true)
 
 
 func _capture_results() -> void:
@@ -257,6 +315,15 @@ func _capture_results() -> void:
 	stage.enemy.set_physics_process(false)
 	stage._update_hud()
 	_check(stage._status.text.contains("捕獲時の失敗率   0%"), "The HUD reports zero failure risk at full stamina")
+	var stock: Grabbable = stage.room.get_node("Items").get_child(0)
+	_place(stage.player, Vector2(450, 794))
+	_place(stage.enemy, stock.position - Vector2(80, 0))
+	await _step(3)
+	_check(stage.enemy.try_begin_grab(stock), "Enemy can hold an item in the capture fixture")
+	stage._capture()
+	_check(not stage._capture_pending and stage.enemy.get_held_object() == stock, "A carrying enemy cannot grab the player or discard its item to capture")
+	stage.enemy.velocity = Vector2.ZERO
+	stage.enemy.release_grab()
 	stage._capture()
 	await _step(20)
 	_check(not stage._game_over_pending and stage._immunity_left > 1.8 and stage.player.velocity.length() > 400, "A surviving capture throws the player back and grants recapture grace")
