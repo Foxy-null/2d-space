@@ -1,0 +1,2569 @@
+[gd_scene load_steps=44 format=3]
+
+[ext_resource type="Script" path="res://scripts/stage_5.gd" id="stage"]
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
+[ext_resource type="Script" path="res://scripts/stage_clear.gd" id="stage_clear"]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
+
+[ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="background"]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="player"]
+
+[ext_resource type="PackedScene" path="res://scenes/pinball_spring.tscn" id="bumper"]
+
+[ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
+
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
+
+[sub_resource type="RectangleShape2D" id="EntranceShape"]
+size = Vector2(180, 40)
+
+[sub_resource type="RectangleShape2D" id="ExitShape"]
+size = Vector2(140, 40)
+
+[sub_resource type="RectangleShape2D" id="LockShape"]
+size = Vector2(20, 1000)
+
+[sub_resource type="RectangleShape2D" id="Hazard1_1"]
+size = Vector2(32, 280)
+
+[sub_resource type="RectangleShape2D" id="Hazard1_2"]
+size = Vector2(32, 190)
+
+[sub_resource type="RectangleShape2D" id="Hazard2_1"]
+size = Vector2(28, 200)
+
+[sub_resource type="RectangleShape2D" id="Hazard2_2"]
+size = Vector2(28, 415)
+
+[sub_resource type="RectangleShape2D" id="Hazard3_1"]
+size = Vector2(28, 265)
+
+[sub_resource type="RectangleShape2D" id="Hazard3_2"]
+size = Vector2(28, 385)
+
+[sub_resource type="RectangleShape2D" id="Hazard3_3"]
+size = Vector2(28, 285)
+
+[sub_resource type="RectangleShape2D" id="Hazard3_4"]
+size = Vector2(28, 325)
+
+[sub_resource type="RectangleShape2D" id="Hazard4_1"]
+size = Vector2(28, 255)
+
+[sub_resource type="RectangleShape2D" id="Hazard4_2"]
+size = Vector2(28, 395)
+
+[sub_resource type="RectangleShape2D" id="Hazard4_3"]
+size = Vector2(28, 160)
+
+[sub_resource type="RectangleShape2D" id="Hazard4_4"]
+size = Vector2(28, 490)
+
+[sub_resource type="RectangleShape2D" id="Hazard5_1"]
+size = Vector2(28, 295)
+
+[sub_resource type="RectangleShape2D" id="Hazard5_2"]
+size = Vector2(28, 320)
+
+[sub_resource type="RectangleShape2D" id="Hazard6_1"]
+size = Vector2(28, 275)
+
+[sub_resource type="RectangleShape2D" id="Hazard6_2"]
+size = Vector2(28, 365)
+
+[sub_resource type="RectangleShape2D" id="Hazard7_1"]
+size = Vector2(28, 240)
+
+[sub_resource type="RectangleShape2D" id="Hazard7_2"]
+size = Vector2(28, 350)
+
+[sub_resource type="RectangleShape2D" id="Hazard8_1"]
+size = Vector2(28, 220)
+
+[sub_resource type="RectangleShape2D" id="Hazard8_2"]
+size = Vector2(28, 415)
+
+[sub_resource type="RectangleShape2D" id="Hazard9_1"]
+size = Vector2(28, 200)
+
+[sub_resource type="RectangleShape2D" id="Hazard9_2"]
+size = Vector2(28, 360)
+
+[sub_resource type="RectangleShape2D" id="WallShape"]
+size = Vector2(32, 220)
+
+[sub_resource type="RectangleShape2D" id="Hazard10_1"]
+size = Vector2(28, 165)
+
+[sub_resource type="RectangleShape2D" id="Hazard10_2"]
+size = Vector2(28, 480)
+
+[sub_resource type="RectangleShape2D" id="Hazard11_1"]
+size = Vector2(28, 160)
+
+[sub_resource type="RectangleShape2D" id="Hazard11_2"]
+size = Vector2(28, 460)
+
+[sub_resource type="RectangleShape2D" id="Hazard11_3"]
+size = Vector2(28, 120)
+
+[sub_resource type="RectangleShape2D" id="Hazard11_4"]
+size = Vector2(28, 505)
+
+[sub_resource type="RectangleShape2D" id="Hazard12_1"]
+size = Vector2(28, 155)
+
+[sub_resource type="RectangleShape2D" id="Hazard12_2"]
+size = Vector2(28, 480)
+
+[node name="Stage5" type="Node2D"]
+metadata/environment_theme = 2
+script = ExtResource("stage")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="Stars" type="Node2D" parent="Background"]
+script = ExtResource("background")
+
+[node name="Rooms" type="Node2D" parent="."]
+
+
+[node name="Room1" type="Node2D" parent="Rooms"]
+position = Vector2(0, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room1"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room1"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room1"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room1"]
+
+
+[node name="Wind1" parent="Rooms/Room1/Winds" instance=ExtResource("wind")]
+position = Vector2(580, 430)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 450.0
+max_wind_speed = 220.0
+area_size = Vector2(500, 320)
+
+[node name="Direction" type="Label" parent="Rooms/Room1/Winds/Wind1"]
+offset_left = -242.0
+offset_top = -154.0
+text = "風 →"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room1/Winds/Wind1"]
+points = PackedVector2Array(-250.0, -160.0, 250.0, -160.0, 250.0, 160.0, -250.0, 160.0, -250.0, -160.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room1"]
+
+
+[node name="Bumper1" parent="Rooms/Room1/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(300, 600)
+minimum_bounce_speed = 980.0
+maximum_bounce_speed = 1040.0
+
+[node name="Number" type="Label" parent="Rooms/Room1/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room1/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(820, 560)
+minimum_bounce_speed = 960.0
+maximum_bounce_speed = 1020.0
+
+[node name="Number" type="Label" parent="Rooms/Room1/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room1"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room1/Hazards"]
+position = Vector2(580, 140)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Hazards/Thorns1"]
+shape = SubResource("Hazard1_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Hazards/Thorns1"]
+polygon = PackedVector2Array(-16.0, -140.0, 16.0, -140.0, 16.0, 140.0, -16.0, 140.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room1/Hazards/Thorns1"]
+points = PackedVector2Array(-16.0, -132, 16.0, -122, -16.0, -112, 16.0, -102, -16.0, -92, 16.0, -82, -16.0, -72, 16.0, -62, -16.0, -52, 16.0, -42, -16.0, -32, 16.0, -22, -16.0, -12, 16.0, -2, -16.0, 8, 16.0, 18, -16.0, 28, 16.0, 38, -16.0, 48, 16.0, 58, -16.0, 68, 16.0, 78, -16.0, 88, 16.0, 98, -16.0, 108, 16.0, 118, -16.0, 128, 16.0, 138)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room1/Hazards"]
+position = Vector2(580, 625)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Hazards/Thorns2"]
+shape = SubResource("Hazard1_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Hazards/Thorns2"]
+polygon = PackedVector2Array(-16.0, -95.0, 16.0, -95.0, 16.0, 95.0, -16.0, 95.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room1/Hazards/Thorns2"]
+points = PackedVector2Array(-16.0, -87, 16.0, -77, -16.0, -67, 16.0, -57, -16.0, -47, 16.0, -37, -16.0, -27, 16.0, -17, -16.0, -7, 16.0, 3, -16.0, 13, 16.0, 23, -16.0, 33, 16.0, 43, -16.0, 53, 16.0, 63, -16.0, 73, 16.0, 83, -16.0, 93, 16.0, 103)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room1"]
+visible = false
+points = PackedVector2Array(90, 570, 300, 600, 820, 560, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room2" type="Node2D" parent="Rooms"]
+position = Vector2(1280, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room2"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room2"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room2"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room2"]
+
+
+[node name="Wind1" parent="Rooms/Room2/Winds" instance=ExtResource("wind")]
+position = Vector2(620, 430)
+wind_direction = Vector2(-1, 0)
+wind_acceleration = 400.0
+max_wind_speed = 200.0
+area_size = Vector2(460, 340)
+
+[node name="Direction" type="Label" parent="Rooms/Room2/Winds/Wind1"]
+offset_left = -222.0
+offset_top = -164.0
+text = "風 ←"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room2/Winds/Wind1"]
+points = PackedVector2Array(-230.0, -170.0, 230.0, -170.0, 230.0, 170.0, -230.0, 170.0, -230.0, -170.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room2"]
+
+
+[node name="Bumper1" parent="Rooms/Room2/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(290, 580)
+minimum_bounce_speed = 1000.0
+maximum_bounce_speed = 1060.0
+
+[node name="Number" type="Label" parent="Rooms/Room2/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room2/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(680, 430)
+minimum_bounce_speed = 880.0
+maximum_bounce_speed = 940.0
+
+[node name="Number" type="Label" parent="Rooms/Room2/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room2/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(990, 570)
+minimum_bounce_speed = 960.0
+maximum_bounce_speed = 1020.0
+
+[node name="Number" type="Label" parent="Rooms/Room2/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room2"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room2/Hazards"]
+position = Vector2(470, 100.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Hazards/Thorns1"]
+shape = SubResource("Hazard2_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -100.0, 14.0, -100.0, 14.0, 100.0, -14.0, 100.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room2/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -92, 14.0, -82, -14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78, -14.0, 88, 14.0, 98)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room2/Hazards"]
+position = Vector2(470, 552.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Hazards/Thorns2"]
+shape = SubResource("Hazard2_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -207.5, 14.0, -207.5, 14.0, 207.5, -14.0, 207.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room2/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -199, 14.0, -189, -14.0, -179, 14.0, -169, -14.0, -159, 14.0, -149, -14.0, -139, 14.0, -129, -14.0, -119, 14.0, -109, -14.0, -99, 14.0, -89, -14.0, -79, 14.0, -69, -14.0, -59, 14.0, -49, -14.0, -39, 14.0, -29, -14.0, -19, 14.0, -9, -14.0, 1, 14.0, 11, -14.0, 21, 14.0, 31, -14.0, 41, 14.0, 51, -14.0, 61, 14.0, 71, -14.0, 81, 14.0, 91, -14.0, 101, 14.0, 111, -14.0, 121, 14.0, 131, -14.0, 141, 14.0, 151, -14.0, 161, 14.0, 171, -14.0, 181, 14.0, 191, -14.0, 201, 14.0, 211)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room2"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room2/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room2"]
+visible = false
+points = PackedVector2Array(90, 570, 290, 580, 680, 430, 990, 570, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room3" type="Node2D" parent="Rooms"]
+position = Vector2(2560, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room3"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room3"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room3"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room3"]
+
+
+[node name="Wind1" parent="Rooms/Room3/Winds" instance=ExtResource("wind")]
+position = Vector2(430, 450)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 700.0
+max_wind_speed = 300.0
+area_size = Vector2(240, 340)
+
+[node name="Direction" type="Label" parent="Rooms/Room3/Winds/Wind1"]
+offset_left = -112.0
+offset_top = -164.0
+text = "風 →"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room3/Winds/Wind1"]
+points = PackedVector2Array(-120.0, -170.0, 120.0, -170.0, 120.0, 170.0, -120.0, 170.0, -120.0, -170.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Wind2" parent="Rooms/Room3/Winds" instance=ExtResource("wind")]
+position = Vector2(800, 460)
+wind_direction = Vector2(-1, 0)
+wind_acceleration = 500.0
+max_wind_speed = 240.0
+area_size = Vector2(260, 340)
+
+[node name="Direction" type="Label" parent="Rooms/Room3/Winds/Wind2"]
+offset_left = -122.0
+offset_top = -164.0
+text = "風 ←"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room3/Winds/Wind2"]
+points = PackedVector2Array(-130.0, -170.0, 130.0, -170.0, 130.0, 170.0, -130.0, 170.0, -130.0, -170.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room3"]
+
+
+[node name="Bumper1" parent="Rooms/Room3/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(280, 610)
+minimum_bounce_speed = 1000.0
+maximum_bounce_speed = 1060.0
+
+[node name="Number" type="Label" parent="Rooms/Room3/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room3/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(650, 500)
+minimum_bounce_speed = 960.0
+maximum_bounce_speed = 1020.0
+
+[node name="Number" type="Label" parent="Rooms/Room3/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room3/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(990, 570)
+minimum_bounce_speed = 940.0
+maximum_bounce_speed = 1000.0
+
+[node name="Number" type="Label" parent="Rooms/Room3/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room3"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room3/Hazards"]
+position = Vector2(480, 132.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Hazards/Thorns1"]
+shape = SubResource("Hazard3_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -132.5, 14.0, -132.5, 14.0, 132.5, -14.0, 132.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room3/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -124, 14.0, -114, -14.0, -104, 14.0, -94, -14.0, -84, 14.0, -74, -14.0, -64, 14.0, -54, -14.0, -44, 14.0, -34, -14.0, -24, 14.0, -14, -14.0, -4, 14.0, 6, -14.0, 16, 14.0, 26, -14.0, 36, 14.0, 46, -14.0, 56, 14.0, 66, -14.0, 76, 14.0, 86, -14.0, 96, 14.0, 106, -14.0, 116, 14.0, 126)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room3/Hazards"]
+position = Vector2(480, 567.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Hazards/Thorns2"]
+shape = SubResource("Hazard3_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -192.5, 14.0, -192.5, 14.0, 192.5, -14.0, 192.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room3/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -184, 14.0, -174, -14.0, -164, 14.0, -154, -14.0, -144, 14.0, -134, -14.0, -124, 14.0, -114, -14.0, -104, 14.0, -94, -14.0, -84, 14.0, -74, -14.0, -64, 14.0, -54, -14.0, -44, 14.0, -34, -14.0, -24, 14.0, -14, -14.0, -4, 14.0, 6, -14.0, 16, 14.0, 26, -14.0, 36, 14.0, 46, -14.0, 56, 14.0, 66, -14.0, 76, 14.0, 86, -14.0, 96, 14.0, 106, -14.0, 116, 14.0, 126, -14.0, 136, 14.0, 146, -14.0, 156, 14.0, 166, -14.0, 176, 14.0, 186)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns3" type="Area2D" parent="Rooms/Room3/Hazards"]
+position = Vector2(820, 142.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Hazards/Thorns3"]
+shape = SubResource("Hazard3_3")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Hazards/Thorns3"]
+polygon = PackedVector2Array(-14.0, -142.5, 14.0, -142.5, 14.0, 142.5, -14.0, 142.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room3/Hazards/Thorns3"]
+points = PackedVector2Array(-14.0, -134, 14.0, -124, -14.0, -114, 14.0, -104, -14.0, -94, 14.0, -84, -14.0, -74, 14.0, -64, -14.0, -54, 14.0, -44, -14.0, -34, 14.0, -24, -14.0, -14, 14.0, -4, -14.0, 6, 14.0, 16, -14.0, 26, 14.0, 36, -14.0, 46, 14.0, 56, -14.0, 66, 14.0, 76, -14.0, 86, 14.0, 96, -14.0, 106, 14.0, 116, -14.0, 126, 14.0, 136)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns4" type="Area2D" parent="Rooms/Room3/Hazards"]
+position = Vector2(820, 597.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Hazards/Thorns4"]
+shape = SubResource("Hazard3_4")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Hazards/Thorns4"]
+polygon = PackedVector2Array(-14.0, -162.5, 14.0, -162.5, 14.0, 162.5, -14.0, 162.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room3/Hazards/Thorns4"]
+points = PackedVector2Array(-14.0, -154, 14.0, -144, -14.0, -134, 14.0, -124, -14.0, -114, 14.0, -104, -14.0, -94, 14.0, -84, -14.0, -74, 14.0, -64, -14.0, -54, 14.0, -44, -14.0, -34, 14.0, -24, -14.0, -14, 14.0, -4, -14.0, 6, 14.0, 16, -14.0, 26, 14.0, 36, -14.0, 46, 14.0, 56, -14.0, 66, 14.0, 76, -14.0, 86, 14.0, 96, -14.0, 106, 14.0, 116, -14.0, 126, 14.0, 136, -14.0, 146, 14.0, 156)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room3"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room3"]
+visible = false
+points = PackedVector2Array(90, 570, 280, 610, 650, 500, 990, 570, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room4" type="Node2D" parent="Rooms"]
+position = Vector2(3840, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room4"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room4"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room4"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room4"]
+
+
+[node name="Wind1" parent="Rooms/Room4/Winds" instance=ExtResource("wind")]
+position = Vector2(610, 460)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 350.0
+max_wind_speed = 180.0
+area_size = Vector2(360, 320)
+
+[node name="Direction" type="Label" parent="Rooms/Room4/Winds/Wind1"]
+offset_left = -172.0
+offset_top = -154.0
+text = "風 →"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room4/Winds/Wind1"]
+points = PackedVector2Array(-180.0, -160.0, 180.0, -160.0, 180.0, 160.0, -180.0, 160.0, -180.0, -160.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room4"]
+
+
+[node name="Bumper1" parent="Rooms/Room4/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(285, 610)
+minimum_bounce_speed = 1020.0
+maximum_bounce_speed = 1080.0
+
+[node name="Number" type="Label" parent="Rooms/Room4/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room4/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(630, 450)
+minimum_bounce_speed = 900.0
+maximum_bounce_speed = 960.0
+
+[node name="Number" type="Label" parent="Rooms/Room4/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room4/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(990, 600)
+minimum_bounce_speed = 1000.0
+maximum_bounce_speed = 1060.0
+
+[node name="Number" type="Label" parent="Rooms/Room4/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room4"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room4/Hazards"]
+position = Vector2(460, 127.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Hazards/Thorns1"]
+shape = SubResource("Hazard4_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -127.5, 14.0, -127.5, 14.0, 127.5, -14.0, 127.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room4/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -119, 14.0, -109, -14.0, -99, 14.0, -89, -14.0, -79, 14.0, -69, -14.0, -59, 14.0, -49, -14.0, -39, 14.0, -29, -14.0, -19, 14.0, -9, -14.0, 1, 14.0, 11, -14.0, 21, 14.0, 31, -14.0, 41, 14.0, 51, -14.0, 61, 14.0, 71, -14.0, 81, 14.0, 91, -14.0, 101, 14.0, 111, -14.0, 121, 14.0, 131)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room4/Hazards"]
+position = Vector2(460, 562.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Hazards/Thorns2"]
+shape = SubResource("Hazard4_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -197.5, 14.0, -197.5, 14.0, 197.5, -14.0, 197.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room4/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -189, 14.0, -179, -14.0, -169, 14.0, -159, -14.0, -149, 14.0, -139, -14.0, -129, 14.0, -119, -14.0, -109, 14.0, -99, -14.0, -89, 14.0, -79, -14.0, -69, 14.0, -59, -14.0, -49, 14.0, -39, -14.0, -29, 14.0, -19, -14.0, -9, 14.0, 1, -14.0, 11, 14.0, 21, -14.0, 31, 14.0, 41, -14.0, 51, 14.0, 61, -14.0, 71, 14.0, 81, -14.0, 91, 14.0, 101, -14.0, 111, 14.0, 121, -14.0, 131, 14.0, 141, -14.0, 151, 14.0, 161, -14.0, 171, 14.0, 181, -14.0, 191, 14.0, 201)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns3" type="Area2D" parent="Rooms/Room4/Hazards"]
+position = Vector2(800, 80.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Hazards/Thorns3"]
+shape = SubResource("Hazard4_3")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Hazards/Thorns3"]
+polygon = PackedVector2Array(-14.0, -80.0, 14.0, -80.0, 14.0, 80.0, -14.0, 80.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room4/Hazards/Thorns3"]
+points = PackedVector2Array(-14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns4" type="Area2D" parent="Rooms/Room4/Hazards"]
+position = Vector2(800, 515.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Hazards/Thorns4"]
+shape = SubResource("Hazard4_4")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Hazards/Thorns4"]
+polygon = PackedVector2Array(-14.0, -245.0, 14.0, -245.0, 14.0, 245.0, -14.0, 245.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room4/Hazards/Thorns4"]
+points = PackedVector2Array(-14.0, -237, 14.0, -227, -14.0, -217, 14.0, -207, -14.0, -197, 14.0, -187, -14.0, -177, 14.0, -167, -14.0, -157, 14.0, -147, -14.0, -137, 14.0, -127, -14.0, -117, 14.0, -107, -14.0, -97, 14.0, -87, -14.0, -77, 14.0, -67, -14.0, -57, 14.0, -47, -14.0, -37, 14.0, -27, -14.0, -17, 14.0, -7, -14.0, 3, 14.0, 13, -14.0, 23, 14.0, 33, -14.0, 43, 14.0, 53, -14.0, 63, 14.0, 73, -14.0, 83, 14.0, 93, -14.0, 103, 14.0, 113, -14.0, 123, 14.0, 133, -14.0, 143, 14.0, 153, -14.0, 163, 14.0, 173, -14.0, 183, 14.0, 193, -14.0, 203, 14.0, 213, -14.0, 223, 14.0, 233, -14.0, 243, 14.0, 253)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room4"]
+visible = false
+points = PackedVector2Array(90, 570, 285, 610, 630, 450, 990, 600, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room5" type="Node2D" parent="Rooms"]
+position = Vector2(5120, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room5"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room5"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room5"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room5"]
+
+
+[node name="Wind1" parent="Rooms/Room5/Winds" instance=ExtResource("wind")]
+position = Vector2(660, 440)
+wind_direction = Vector2(-1, 0)
+wind_acceleration = 600.0
+max_wind_speed = 260.0
+area_size = Vector2(640, 400)
+
+[node name="Direction" type="Label" parent="Rooms/Room5/Winds/Wind1"]
+offset_left = -312.0
+offset_top = -194.0
+text = "風 ←"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room5/Winds/Wind1"]
+points = PackedVector2Array(-320.0, -200.0, 320.0, -200.0, 320.0, 200.0, -320.0, 200.0, -320.0, -200.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room5"]
+
+
+[node name="Bumper1" parent="Rooms/Room5/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(280, 610)
+minimum_bounce_speed = 1040.0
+maximum_bounce_speed = 1100.0
+
+[node name="Number" type="Label" parent="Rooms/Room5/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room5/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(620, 530)
+minimum_bounce_speed = 1000.0
+maximum_bounce_speed = 1060.0
+
+[node name="Number" type="Label" parent="Rooms/Room5/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room5/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(990, 590)
+minimum_bounce_speed = 1000.0
+maximum_bounce_speed = 1060.0
+
+[node name="Number" type="Label" parent="Rooms/Room5/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room5"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room5/Hazards"]
+position = Vector2(460, 147.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Hazards/Thorns1"]
+shape = SubResource("Hazard5_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -147.5, 14.0, -147.5, 14.0, 147.5, -14.0, 147.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room5/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -139, 14.0, -129, -14.0, -119, 14.0, -109, -14.0, -99, 14.0, -89, -14.0, -79, 14.0, -69, -14.0, -59, 14.0, -49, -14.0, -39, 14.0, -29, -14.0, -19, 14.0, -9, -14.0, 1, 14.0, 11, -14.0, 21, 14.0, 31, -14.0, 41, 14.0, 51, -14.0, 61, 14.0, 71, -14.0, 81, 14.0, 91, -14.0, 101, 14.0, 111, -14.0, 121, 14.0, 131, -14.0, 141, 14.0, 151)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room5/Hazards"]
+position = Vector2(460, 600.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Hazards/Thorns2"]
+shape = SubResource("Hazard5_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -160.0, 14.0, -160.0, 14.0, 160.0, -14.0, 160.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room5/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -152, 14.0, -142, -14.0, -132, 14.0, -122, -14.0, -112, 14.0, -102, -14.0, -92, 14.0, -82, -14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78, -14.0, 88, 14.0, 98, -14.0, 108, 14.0, 118, -14.0, 128, 14.0, 138, -14.0, 148, 14.0, 158)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room5"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room5"]
+visible = false
+points = PackedVector2Array(90, 570, 280, 610, 620, 530, 990, 590, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room6" type="Node2D" parent="Rooms"]
+position = Vector2(6400, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room6"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room6/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room6"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room6/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room6"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room6"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room6"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room6"]
+
+
+[node name="Wind1" parent="Rooms/Room6/Winds" instance=ExtResource("wind")]
+position = Vector2(900, 430)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 400.0
+max_wind_speed = 200.0
+area_size = Vector2(250, 320)
+
+[node name="Direction" type="Label" parent="Rooms/Room6/Winds/Wind1"]
+offset_left = -117.0
+offset_top = -154.0
+text = "風 →"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room6/Winds/Wind1"]
+points = PackedVector2Array(-125.0, -160.0, 125.0, -160.0, 125.0, 160.0, -125.0, 160.0, -125.0, -160.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room6"]
+
+
+[node name="Bumper1" parent="Rooms/Room6/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(280, 610)
+minimum_bounce_speed = 1100.0
+maximum_bounce_speed = 1160.0
+
+[node name="Number" type="Label" parent="Rooms/Room6/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room6/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(560, 130)
+minimum_bounce_speed = 850.0
+maximum_bounce_speed = 910.0
+
+[node name="Number" type="Label" parent="Rooms/Room6/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room6/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(820, 590)
+minimum_bounce_speed = 1000.0
+maximum_bounce_speed = 1060.0
+
+[node name="Number" type="Label" parent="Rooms/Room6/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper4" parent="Rooms/Room6/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(1040, 470)
+minimum_bounce_speed = 900.0
+maximum_bounce_speed = 960.0
+
+[node name="Number" type="Label" parent="Rooms/Room6/Bumpers/Bumper4"]
+offset_left = -7.0
+offset_top = -15.0
+text = "4"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room6"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room6/Hazards"]
+position = Vector2(690, 137.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/Hazards/Thorns1"]
+shape = SubResource("Hazard6_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room6/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -137.5, 14.0, -137.5, 14.0, 137.5, -14.0, 137.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room6/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -129, 14.0, -119, -14.0, -109, 14.0, -99, -14.0, -89, 14.0, -79, -14.0, -69, 14.0, -59, -14.0, -49, 14.0, -39, -14.0, -29, 14.0, -19, -14.0, -9, 14.0, 1, -14.0, 11, 14.0, 21, -14.0, 31, 14.0, 41, -14.0, 51, 14.0, 61, -14.0, 71, 14.0, 81, -14.0, 91, 14.0, 101, -14.0, 111, 14.0, 121, -14.0, 131, 14.0, 141)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room6/Hazards"]
+position = Vector2(690, 577.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/Hazards/Thorns2"]
+shape = SubResource("Hazard6_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room6/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -182.5, 14.0, -182.5, 14.0, 182.5, -14.0, 182.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room6/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -174, 14.0, -164, -14.0, -154, 14.0, -144, -14.0, -134, 14.0, -124, -14.0, -114, 14.0, -104, -14.0, -94, 14.0, -84, -14.0, -74, 14.0, -64, -14.0, -54, 14.0, -44, -14.0, -34, 14.0, -24, -14.0, -14, 14.0, -4, -14.0, 6, 14.0, 16, -14.0, 26, 14.0, 36, -14.0, 46, 14.0, 56, -14.0, 66, 14.0, 76, -14.0, 86, 14.0, 96, -14.0, 106, 14.0, 116, -14.0, 126, 14.0, 136, -14.0, 146, 14.0, 156, -14.0, 166, 14.0, 176)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room6"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room6/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room6"]
+visible = false
+points = PackedVector2Array(90, 570, 280, 610, 560, 130, 820, 590, 1040, 470, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room7" type="Node2D" parent="Rooms"]
+position = Vector2(7680, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room7"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room7/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room7"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room7/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room7"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room7"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room7"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room7"]
+
+
+[node name="Wind1" parent="Rooms/Room7/Winds" instance=ExtResource("wind")]
+position = Vector2(700, 480)
+wind_direction = Vector2(0, 1)
+wind_acceleration = 500.0
+max_wind_speed = 650.0
+area_size = Vector2(500, 380)
+
+[node name="Direction" type="Label" parent="Rooms/Room7/Winds/Wind1"]
+offset_left = -242.0
+offset_top = -184.0
+text = "風 ↓"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room7/Winds/Wind1"]
+points = PackedVector2Array(-250.0, -190.0, 250.0, -190.0, 250.0, 190.0, -250.0, 190.0, -250.0, -190.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room7"]
+
+
+[node name="Bumper1" parent="Rooms/Room7/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(290, 600)
+minimum_bounce_speed = 1030.0
+maximum_bounce_speed = 1090.0
+
+[node name="Number" type="Label" parent="Rooms/Room7/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room7/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(610, 500)
+minimum_bounce_speed = 1000.0
+maximum_bounce_speed = 1060.0
+
+[node name="Number" type="Label" parent="Rooms/Room7/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room7/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(990, 610)
+minimum_bounce_speed = 1000.0
+maximum_bounce_speed = 1060.0
+
+[node name="Number" type="Label" parent="Rooms/Room7/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room7"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room7/Hazards"]
+position = Vector2(800, 120.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/Hazards/Thorns1"]
+shape = SubResource("Hazard7_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room7/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -120.0, 14.0, -120.0, 14.0, 120.0, -14.0, 120.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room7/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -112, 14.0, -102, -14.0, -92, 14.0, -82, -14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78, -14.0, 88, 14.0, 98, -14.0, 108, 14.0, 118)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room7/Hazards"]
+position = Vector2(800, 585.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/Hazards/Thorns2"]
+shape = SubResource("Hazard7_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room7/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -175.0, 14.0, -175.0, 14.0, 175.0, -14.0, 175.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room7/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -167, 14.0, -157, -14.0, -147, 14.0, -137, -14.0, -127, 14.0, -117, -14.0, -107, 14.0, -97, -14.0, -87, 14.0, -77, -14.0, -67, 14.0, -57, -14.0, -47, 14.0, -37, -14.0, -27, 14.0, -17, -14.0, -7, 14.0, 3, -14.0, 13, 14.0, 23, -14.0, 33, 14.0, 43, -14.0, 53, 14.0, 63, -14.0, 73, 14.0, 83, -14.0, 93, 14.0, 103, -14.0, 113, 14.0, 123, -14.0, 133, 14.0, 143, -14.0, 153, 14.0, 163, -14.0, 173, 14.0, 183)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room7"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room7/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room7"]
+visible = false
+points = PackedVector2Array(90, 570, 290, 600, 610, 500, 990, 610, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room8" type="Node2D" parent="Rooms"]
+position = Vector2(8960, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room8"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room8/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room8/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room8"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room8/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room8/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room8"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room8"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room8"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room8"]
+
+
+[node name="Wind1" parent="Rooms/Room8/Winds" instance=ExtResource("wind")]
+position = Vector2(760, 440)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 600.0
+max_wind_speed = 280.0
+area_size = Vector2(380, 360)
+
+[node name="Direction" type="Label" parent="Rooms/Room8/Winds/Wind1"]
+offset_left = -182.0
+offset_top = -174.0
+text = "風 →"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room8/Winds/Wind1"]
+points = PackedVector2Array(-190.0, -180.0, 190.0, -180.0, 190.0, 180.0, -190.0, 180.0, -190.0, -180.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room8"]
+
+
+[node name="Bumper1" parent="Rooms/Room8/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(290, 610)
+minimum_bounce_speed = 1030.0
+maximum_bounce_speed = 1090.0
+
+[node name="Number" type="Label" parent="Rooms/Room8/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room8/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(670, 420)
+minimum_bounce_speed = 860.0
+maximum_bounce_speed = 920.0
+
+[node name="Number" type="Label" parent="Rooms/Room8/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room8/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(480, 600)
+minimum_bounce_speed = 1100.0
+maximum_bounce_speed = 1160.0
+
+[node name="Number" type="Label" parent="Rooms/Room8/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper4" parent="Rooms/Room8/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(1000, 540)
+minimum_bounce_speed = 950.0
+maximum_bounce_speed = 1010.0
+
+[node name="Number" type="Label" parent="Rooms/Room8/Bumpers/Bumper4"]
+offset_left = -7.0
+offset_top = -15.0
+text = "4"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room8"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room8/Hazards"]
+position = Vector2(810, 110.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room8/Hazards/Thorns1"]
+shape = SubResource("Hazard8_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room8/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -110.0, 14.0, -110.0, 14.0, 110.0, -14.0, 110.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room8/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -102, 14.0, -92, -14.0, -82, 14.0, -72, -14.0, -62, 14.0, -52, -14.0, -42, 14.0, -32, -14.0, -22, 14.0, -12, -14.0, -2, 14.0, 8, -14.0, 18, 14.0, 28, -14.0, 38, 14.0, 48, -14.0, 58, 14.0, 68, -14.0, 78, 14.0, 88, -14.0, 98, 14.0, 108)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room8/Hazards"]
+position = Vector2(810, 552.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room8/Hazards/Thorns2"]
+shape = SubResource("Hazard8_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room8/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -207.5, 14.0, -207.5, 14.0, 207.5, -14.0, 207.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room8/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -199, 14.0, -189, -14.0, -179, 14.0, -169, -14.0, -159, 14.0, -149, -14.0, -139, 14.0, -129, -14.0, -119, 14.0, -109, -14.0, -99, 14.0, -89, -14.0, -79, 14.0, -69, -14.0, -59, 14.0, -49, -14.0, -39, 14.0, -29, -14.0, -19, 14.0, -9, -14.0, 1, 14.0, 11, -14.0, 21, 14.0, 31, -14.0, 41, 14.0, 51, -14.0, 61, 14.0, 71, -14.0, 81, 14.0, 91, -14.0, 101, 14.0, 111, -14.0, 121, 14.0, 131, -14.0, 141, 14.0, 151, -14.0, 161, 14.0, 171, -14.0, 181, 14.0, 191, -14.0, 201, 14.0, 211)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room8"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room8/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room8/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room8"]
+visible = false
+points = PackedVector2Array(90, 570, 290, 610, 670, 420, 480, 600, 1000, 540, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room9" type="Node2D" parent="Rooms"]
+position = Vector2(10240, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room9"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room9/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room9"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room9/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room9"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room9"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room9"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room9"]
+
+
+[node name="Wind1" parent="Rooms/Room9/Winds" instance=ExtResource("wind")]
+position = Vector2(850, 430)
+wind_direction = Vector2(-1, 0)
+wind_acceleration = 350.0
+max_wind_speed = 180.0
+area_size = Vector2(280, 340)
+
+[node name="Direction" type="Label" parent="Rooms/Room9/Winds/Wind1"]
+offset_left = -132.0
+offset_top = -164.0
+text = "風 ←"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room9/Winds/Wind1"]
+points = PackedVector2Array(-140.0, -170.0, 140.0, -170.0, 140.0, 170.0, -140.0, 170.0, -140.0, -170.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room9"]
+
+
+[node name="Bumper1" parent="Rooms/Room9/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(280, 610)
+minimum_bounce_speed = 1050.0
+maximum_bounce_speed = 1110.0
+
+[node name="Number" type="Label" parent="Rooms/Room9/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room9/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(700, 390)
+minimum_bounce_speed = 850.0
+maximum_bounce_speed = 910.0
+
+[node name="Number" type="Label" parent="Rooms/Room9/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room9/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(1000, 580)
+minimum_bounce_speed = 960.0
+maximum_bounce_speed = 1020.0
+
+[node name="Number" type="Label" parent="Rooms/Room9/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room9"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room9/Hazards"]
+position = Vector2(420, 100.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/Hazards/Thorns1"]
+shape = SubResource("Hazard9_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room9/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -100.0, 14.0, -100.0, 14.0, 100.0, -14.0, 100.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room9/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -92, 14.0, -82, -14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78, -14.0, 88, 14.0, 98)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room9/Hazards"]
+position = Vector2(420, 580.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/Hazards/Thorns2"]
+shape = SubResource("Hazard9_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room9/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -180.0, 14.0, -180.0, 14.0, 180.0, -14.0, 180.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room9/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -172, 14.0, -162, -14.0, -152, 14.0, -142, -14.0, -132, 14.0, -122, -14.0, -112, 14.0, -102, -14.0, -92, 14.0, -82, -14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78, -14.0, 88, 14.0, 98, -14.0, 108, 14.0, 118, -14.0, 128, 14.0, 138, -14.0, 148, 14.0, 158, -14.0, 168, 14.0, 178)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="KickWall" type="StaticBody2D" parent="Rooms/Room9"]
+position = Vector2(540, 650)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/KickWall"]
+shape = SubResource("WallShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room9/KickWall"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-16.0, -110.0, 16.0, -110.0, 16.0, 110.0, -16.0, 110.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room9"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room9/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room9"]
+visible = false
+points = PackedVector2Array(90, 570, 280, 610, 700, 390, 1000, 580, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room10" type="Node2D" parent="Rooms"]
+position = Vector2(11520, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room10"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room10/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room10"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room10/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room10"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room10"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room10"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room10"]
+
+
+[node name="Wind1" parent="Rooms/Room10/Winds" instance=ExtResource("wind")]
+position = Vector2(650, 410)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 850.0
+max_wind_speed = 400.0
+area_size = Vector2(700, 480)
+
+[node name="Direction" type="Label" parent="Rooms/Room10/Winds/Wind1"]
+offset_left = -342.0
+offset_top = -234.0
+text = "風 →"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room10/Winds/Wind1"]
+points = PackedVector2Array(-350.0, -240.0, 350.0, -240.0, 350.0, 240.0, -350.0, 240.0, -350.0, -240.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room10"]
+
+
+[node name="Bumper1" parent="Rooms/Room10/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(280, 610)
+minimum_bounce_speed = 1030.0
+maximum_bounce_speed = 1090.0
+
+[node name="Number" type="Label" parent="Rooms/Room10/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room10/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(540, 440)
+minimum_bounce_speed = 880.0
+maximum_bounce_speed = 940.0
+
+[node name="Number" type="Label" parent="Rooms/Room10/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room10/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(800, 590)
+minimum_bounce_speed = 1020.0
+maximum_bounce_speed = 1080.0
+
+[node name="Number" type="Label" parent="Rooms/Room10/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper4" parent="Rooms/Room10/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(1030, 430)
+minimum_bounce_speed = 860.0
+maximum_bounce_speed = 920.0
+
+[node name="Number" type="Label" parent="Rooms/Room10/Bumpers/Bumper4"]
+offset_left = -7.0
+offset_top = -15.0
+text = "4"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room10"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room10/Hazards"]
+position = Vector2(670, 82.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/Hazards/Thorns1"]
+shape = SubResource("Hazard10_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room10/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -82.5, 14.0, -82.5, 14.0, 82.5, -14.0, 82.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room10/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -74, 14.0, -64, -14.0, -54, 14.0, -44, -14.0, -34, 14.0, -24, -14.0, -14, 14.0, -4, -14.0, 6, 14.0, 16, -14.0, 26, 14.0, 36, -14.0, 46, 14.0, 56, -14.0, 66, 14.0, 76)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room10/Hazards"]
+position = Vector2(670, 520.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/Hazards/Thorns2"]
+shape = SubResource("Hazard10_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room10/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -240.0, 14.0, -240.0, 14.0, 240.0, -14.0, 240.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room10/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -232, 14.0, -222, -14.0, -212, 14.0, -202, -14.0, -192, 14.0, -182, -14.0, -172, 14.0, -162, -14.0, -152, 14.0, -142, -14.0, -132, 14.0, -122, -14.0, -112, 14.0, -102, -14.0, -92, 14.0, -82, -14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78, -14.0, 88, 14.0, 98, -14.0, 108, 14.0, 118, -14.0, 128, 14.0, 138, -14.0, 148, 14.0, 158, -14.0, 168, 14.0, 178, -14.0, 188, 14.0, 198, -14.0, 208, 14.0, 218, -14.0, 228, 14.0, 238)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room10"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room10/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room10"]
+visible = false
+points = PackedVector2Array(90, 570, 280, 610, 540, 440, 800, 590, 1030, 430, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room11" type="Node2D" parent="Rooms"]
+position = Vector2(12800, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room11"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room11/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room11"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room11/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room11"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room11"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room11"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room11"]
+
+
+[node name="Wind1" parent="Rooms/Room11/Winds" instance=ExtResource("wind")]
+position = Vector2(440, 420)
+wind_direction = Vector2(-1, 0)
+wind_acceleration = 400.0
+max_wind_speed = 200.0
+area_size = Vector2(200, 340)
+
+[node name="Direction" type="Label" parent="Rooms/Room11/Winds/Wind1"]
+offset_left = -92.0
+offset_top = -164.0
+text = "風 ←"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room11/Winds/Wind1"]
+points = PackedVector2Array(-100.0, -170.0, 100.0, -170.0, 100.0, 170.0, -100.0, 170.0, -100.0, -170.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Wind2" parent="Rooms/Room11/Winds" instance=ExtResource("wind")]
+position = Vector2(700, 450)
+wind_direction = Vector2(0, 1)
+wind_acceleration = 350.0
+max_wind_speed = 600.0
+area_size = Vector2(220, 380)
+
+[node name="Direction" type="Label" parent="Rooms/Room11/Winds/Wind2"]
+offset_left = -102.0
+offset_top = -184.0
+text = "風 ↓"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room11/Winds/Wind2"]
+points = PackedVector2Array(-110.0, -190.0, 110.0, -190.0, 110.0, 190.0, -110.0, 190.0, -110.0, -190.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Wind3" parent="Rooms/Room11/Winds" instance=ExtResource("wind")]
+position = Vector2(940, 420)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 600.0
+max_wind_speed = 280.0
+area_size = Vector2(180, 340)
+
+[node name="Direction" type="Label" parent="Rooms/Room11/Winds/Wind3"]
+offset_left = -82.0
+offset_top = -164.0
+text = "風 →"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room11/Winds/Wind3"]
+points = PackedVector2Array(-90.0, -170.0, 90.0, -170.0, 90.0, 170.0, -90.0, 170.0, -90.0, -170.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room11"]
+
+
+[node name="Bumper1" parent="Rooms/Room11/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(260, 610)
+minimum_bounce_speed = 1030.0
+maximum_bounce_speed = 1090.0
+
+[node name="Number" type="Label" parent="Rooms/Room11/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room11/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(460, 430)
+minimum_bounce_speed = 870.0
+maximum_bounce_speed = 930.0
+
+[node name="Number" type="Label" parent="Rooms/Room11/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room11/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(680, 590)
+minimum_bounce_speed = 1020.0
+maximum_bounce_speed = 1080.0
+
+[node name="Number" type="Label" parent="Rooms/Room11/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper4" parent="Rooms/Room11/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(870, 390)
+minimum_bounce_speed = 850.0
+maximum_bounce_speed = 910.0
+
+[node name="Number" type="Label" parent="Rooms/Room11/Bumpers/Bumper4"]
+offset_left = -7.0
+offset_top = -15.0
+text = "4"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper5" parent="Rooms/Room11/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(1040, 570)
+minimum_bounce_speed = 960.0
+maximum_bounce_speed = 1020.0
+
+[node name="Number" type="Label" parent="Rooms/Room11/Bumpers/Bumper5"]
+offset_left = -7.0
+offset_top = -15.0
+text = "5"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room11"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room11/Hazards"]
+position = Vector2(570, 80.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/Hazards/Thorns1"]
+shape = SubResource("Hazard11_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room11/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -80.0, 14.0, -80.0, 14.0, 80.0, -14.0, 80.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room11/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room11/Hazards"]
+position = Vector2(570, 530.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/Hazards/Thorns2"]
+shape = SubResource("Hazard11_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room11/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -230.0, 14.0, -230.0, 14.0, 230.0, -14.0, 230.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room11/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -222, 14.0, -212, -14.0, -202, 14.0, -192, -14.0, -182, 14.0, -172, -14.0, -162, 14.0, -152, -14.0, -142, 14.0, -132, -14.0, -122, 14.0, -112, -14.0, -102, 14.0, -92, -14.0, -82, 14.0, -72, -14.0, -62, 14.0, -52, -14.0, -42, 14.0, -32, -14.0, -22, 14.0, -12, -14.0, -2, 14.0, 8, -14.0, 18, 14.0, 28, -14.0, 38, 14.0, 48, -14.0, 58, 14.0, 68, -14.0, 78, 14.0, 88, -14.0, 98, 14.0, 108, -14.0, 118, 14.0, 128, -14.0, 138, 14.0, 148, -14.0, 158, 14.0, 168, -14.0, 178, 14.0, 188, -14.0, 198, 14.0, 208, -14.0, 218, 14.0, 228)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns3" type="Area2D" parent="Rooms/Room11/Hazards"]
+position = Vector2(950, 60.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/Hazards/Thorns3"]
+shape = SubResource("Hazard11_3")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room11/Hazards/Thorns3"]
+polygon = PackedVector2Array(-14.0, -60.0, 14.0, -60.0, 14.0, 60.0, -14.0, 60.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room11/Hazards/Thorns3"]
+points = PackedVector2Array(-14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns4" type="Area2D" parent="Rooms/Room11/Hazards"]
+position = Vector2(950, 507.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/Hazards/Thorns4"]
+shape = SubResource("Hazard11_4")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room11/Hazards/Thorns4"]
+polygon = PackedVector2Array(-14.0, -252.5, 14.0, -252.5, 14.0, 252.5, -14.0, 252.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room11/Hazards/Thorns4"]
+points = PackedVector2Array(-14.0, -244, 14.0, -234, -14.0, -224, 14.0, -214, -14.0, -204, 14.0, -194, -14.0, -184, 14.0, -174, -14.0, -164, 14.0, -154, -14.0, -144, 14.0, -134, -14.0, -124, 14.0, -114, -14.0, -104, 14.0, -94, -14.0, -84, 14.0, -74, -14.0, -64, 14.0, -54, -14.0, -44, 14.0, -34, -14.0, -24, 14.0, -14, -14.0, -4, 14.0, 6, -14.0, 16, 14.0, 26, -14.0, 36, 14.0, 46, -14.0, 56, 14.0, 66, -14.0, 76, 14.0, 86, -14.0, 96, 14.0, 106, -14.0, 116, 14.0, 126, -14.0, 136, 14.0, 146, -14.0, 156, 14.0, 166, -14.0, 176, 14.0, 186, -14.0, 196, 14.0, 206, -14.0, 216, 14.0, 226, -14.0, 236, 14.0, 246)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room11"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room11/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room11"]
+visible = false
+points = PackedVector2Array(90, 570, 260, 610, 460, 430, 680, 590, 870, 390, 1040, 570, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Room12" type="Node2D" parent="Rooms"]
+position = Vector2(14080, 0)
+
+[node name="Entrance" type="StaticBody2D" parent="Rooms/Room12"]
+position = Vector2(90, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room12/Entrance"]
+shape = SubResource("EntranceShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room12/Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="Exit" type="StaticBody2D" parent="Rooms/Room12"]
+position = Vector2(1210, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room12/Exit"]
+shape = SubResource("ExitShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room12/Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+color = Color(0.32, 0.25, 0.35, 1)
+
+[node name="EntranceLabel" type="Label" parent="Rooms/Room12"]
+offset_left = 24.0
+offset_top = 650.0
+text = "復帰地点：この部屋の入口"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="ExitLabel" type="Label" parent="Rooms/Room12"]
+offset_left = 1020.0
+offset_top = 650.0
+text = "番号順に反射して解錠"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Spawn" type="Marker2D" parent="Rooms/Room12"]
+position = Vector2(90, 570)
+
+[node name="Winds" type="Node2D" parent="Rooms/Room12"]
+
+
+[node name="Wind1" parent="Rooms/Room12/Winds" instance=ExtResource("wind")]
+position = Vector2(400, 430)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 650.0
+max_wind_speed = 280.0
+area_size = Vector2(180, 360)
+
+[node name="Direction" type="Label" parent="Rooms/Room12/Winds/Wind1"]
+offset_left = -82.0
+offset_top = -174.0
+text = "風 →"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room12/Winds/Wind1"]
+points = PackedVector2Array(-90.0, -180.0, 90.0, -180.0, 90.0, 180.0, -90.0, 180.0, -90.0, -180.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Wind2" parent="Rooms/Room12/Winds" instance=ExtResource("wind")]
+position = Vector2(600, 490)
+wind_direction = Vector2(0, 1)
+wind_acceleration = 400.0
+max_wind_speed = 650.0
+area_size = Vector2(180, 340)
+
+[node name="Direction" type="Label" parent="Rooms/Room12/Winds/Wind2"]
+offset_left = -82.0
+offset_top = -164.0
+text = "風 ↓"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room12/Winds/Wind2"]
+points = PackedVector2Array(-90.0, -170.0, 90.0, -170.0, 90.0, 170.0, -90.0, 170.0, -90.0, -170.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Wind3" parent="Rooms/Room12/Winds" instance=ExtResource("wind")]
+position = Vector2(820, 430)
+wind_direction = Vector2(-1, 0)
+wind_acceleration = 500.0
+max_wind_speed = 240.0
+area_size = Vector2(180, 360)
+
+[node name="Direction" type="Label" parent="Rooms/Room12/Winds/Wind3"]
+offset_left = -82.0
+offset_top = -174.0
+text = "風 ←"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room12/Winds/Wind3"]
+points = PackedVector2Array(-90.0, -180.0, 90.0, -180.0, 90.0, 180.0, -90.0, 180.0, -90.0, -180.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Wind4" parent="Rooms/Room12/Winds" instance=ExtResource("wind")]
+position = Vector2(1020, 450)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 600.0
+max_wind_speed = 260.0
+area_size = Vector2(160, 380)
+
+[node name="Direction" type="Label" parent="Rooms/Room12/Winds/Wind4"]
+offset_left = -72.0
+offset_top = -184.0
+text = "風 →"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Outline" type="Line2D" parent="Rooms/Room12/Winds/Wind4"]
+points = PackedVector2Array(-80.0, -190.0, 80.0, -190.0, 80.0, 190.0, -80.0, 190.0, -80.0, -190.0)
+width = 1.5
+default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Bumpers" type="Node2D" parent="Rooms/Room12"]
+
+
+[node name="Bumper1" parent="Rooms/Room12/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(250, 610)
+minimum_bounce_speed = 1040.0
+maximum_bounce_speed = 1100.0
+
+[node name="Number" type="Label" parent="Rooms/Room12/Bumpers/Bumper1"]
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Rooms/Room12/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(420, 430)
+minimum_bounce_speed = 870.0
+maximum_bounce_speed = 930.0
+
+[node name="Number" type="Label" parent="Rooms/Room12/Bumpers/Bumper2"]
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Rooms/Room12/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(600, 600)
+minimum_bounce_speed = 1020.0
+maximum_bounce_speed = 1080.0
+
+[node name="Number" type="Label" parent="Rooms/Room12/Bumpers/Bumper3"]
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper4" parent="Rooms/Room12/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(770, 410)
+minimum_bounce_speed = 850.0
+maximum_bounce_speed = 910.0
+
+[node name="Number" type="Label" parent="Rooms/Room12/Bumpers/Bumper4"]
+offset_left = -7.0
+offset_top = -15.0
+text = "4"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper5" parent="Rooms/Room12/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(930, 590)
+minimum_bounce_speed = 1010.0
+maximum_bounce_speed = 1070.0
+
+[node name="Number" type="Label" parent="Rooms/Room12/Bumpers/Bumper5"]
+offset_left = -7.0
+offset_top = -15.0
+text = "5"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper6" parent="Rooms/Room12/Bumpers" instance=ExtResource("bumper")]
+position = Vector2(1040, 390)
+minimum_bounce_speed = 820.0
+maximum_bounce_speed = 880.0
+
+[node name="Number" type="Label" parent="Rooms/Room12/Bumpers/Bumper6"]
+offset_left = -7.0
+offset_top = -15.0
+text = "6"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="Rooms/Room12"]
+
+
+[node name="Thorns1" type="Area2D" parent="Rooms/Room12/Hazards"]
+position = Vector2(510, 77.5)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room12/Hazards/Thorns1"]
+shape = SubResource("Hazard12_1")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room12/Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -77.5, 14.0, -77.5, 14.0, 77.5, -14.0, 77.5)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room12/Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -69, 14.0, -59, -14.0, -49, 14.0, -39, -14.0, -29, 14.0, -19, -14.0, -9, 14.0, 1, -14.0, 11, 14.0, 21, -14.0, 31, 14.0, 41, -14.0, 51, 14.0, 61, -14.0, 71, 14.0, 81)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Rooms/Room12/Hazards"]
+position = Vector2(510, 520.0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room12/Hazards/Thorns2"]
+shape = SubResource("Hazard12_2")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room12/Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -240.0, 14.0, -240.0, 14.0, 240.0, -14.0, 240.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Rooms/Room12/Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -232, 14.0, -222, -14.0, -212, 14.0, -202, -14.0, -192, 14.0, -182, -14.0, -172, 14.0, -162, -14.0, -152, 14.0, -142, -14.0, -132, 14.0, -122, -14.0, -112, 14.0, -102, -14.0, -92, 14.0, -82, -14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78, -14.0, 88, 14.0, 98, -14.0, 108, 14.0, 118, -14.0, 128, 14.0, 138, -14.0, 148, 14.0, 158, -14.0, 168, 14.0, 178, -14.0, 188, 14.0, 198, -14.0, 208, 14.0, 218, -14.0, 228, 14.0, 238)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room12"]
+position = Vector2(1125, 360)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room12/ExitLock"]
+shape = SubResource("LockShape")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room12/ExitLock"]
+polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
+color = Color(0.82, 0.62, 0.28, 0.8)
+
+[node name="Route" type="Line2D" parent="Rooms/Room12"]
+visible = false
+points = PackedVector2Array(90, 570, 250, 610, 420, 430, 600, 600, 770, 410, 930, 590, 1040, 390, 1210, 570)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Goal" parent="Rooms/Room12" instance=ExtResource("goal")]
+position = Vector2(1210, 600)
+mission_required = false
+
+[node name="Player" parent="." instance=ExtResource("player")]
+position = Vector2(90, 570)
+use_default_respawn_bounds = false
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Info" type="PanelContainer" parent="HUD"]
+offset_left = 24.0
+offset_top = 16.0
+offset_right = 920.0
+offset_bottom = 100.0
+mouse_filter = 2
+
+[node name="Rows" type="VBoxContainer" parent="HUD/Info"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="HUD/Info/Rows"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Status" type="Label" parent="HUD/Info/Rows"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+
+[node name="Stamina" type="ProgressBar" parent="HUD/Info/Rows"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+max_value = 3.0
+value = 3.0
+show_percentage = false
+tooltip_text = "壁スタミナ（着地で回復）"
+
+[node name="PauseButton" type="Button" parent="HUD"]
+offset_left = 1030.0
+offset_top = 20.0
+offset_right = 1256.0
+offset_bottom = 64.0
+focus_mode = 0
+text = "ポーズ [Esc]"
+
+[node name="Hint" type="Label" parent="HUD"]
+visible = false
+offset_left = 24.0
+offset_top = 110.0
+offset_right = 1230.0
+theme_override_font_sizes/font_size = 19
+
+[node name="Completion" type="Label" parent="HUD"]
+script = ExtResource("stage_clear")
+visible = false
+offset_left = 290.0
+offset_top = 280.0
+offset_right = 990.0
+text = "ステージ5クリア！\nEscでポーズ"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.5, 1, 0.75, 1)
+theme_override_colors/font_outline_color = Color(0.1, 0.05, 0.06, 1)
+theme_override_constants/outline_size = 6
+
+[node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
+
+[connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]

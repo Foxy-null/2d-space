@@ -23,7 +23,7 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ## ステージ選択
 
-STARTから、ステージ1〜4が左から順に並んだ選択画面へ進みます。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」を自由に選べます。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
+スタート画面のSTARTから、ステージ1〜5が左から順に並んだ選択画面へ進みます。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」「ステージ5：暴風バンパー峡谷」を自由に選べます。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
 
 クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。全プレイ画面でEsc／Back・Select、または「ポーズ [Esc]」からポーズメニューを開けます。背景を含むゲーム全体が止まり、再開・ヒント切り替え・チェックポイントからのやり直し・ステージ選択への帰還を選べます。ヒントのない画面では該当ボタンを表示しません。帰還時は進み具合が保存されない旨を確認します。再選択時は最初から始まり、進捗は保存しません。クリア後も、引き続き自由に練習できます。
 
@@ -33,7 +33,7 @@ STARTから、ステージ1〜4が左から順に並んだ選択画面へ進み�
 
 共通メニューの操作と停止範囲は [ポーズメニューの仕様](docs/pause-menu.md) を参照してください。
 
-![ステージ1〜4を横に並べた選択画面](docs/screenshots/stage-selection.png)
+![ステージ1〜5を横に並べた選択画面](docs/screenshots/stage-selection.png)
 
 ## ステージ2：星のぼりの塔
 
@@ -63,9 +63,36 @@ STARTから、ステージ1〜4が左から順に並んだ選択画面へ進み�
 
 ポーズメニューで操作のヒントを表示できます。配置・操作・テストは [第4ステージの仕様](docs/stage-4.md) を参照してください。
 
-全4ステージでクリア時に「ステージクリア！」と戻るボタンを表示します。Enter（テンキーも可）、ボタンのクリック、ゲームパッドAで確認なしにステージ選択へ戻れます。
+全5ステージでクリア時に「ステージクリア！」と戻るボタンを表示します。Enter（テンキーも可）、ボタンのクリック、ゲームパッドAで確認なしにステージ選択へ戻れます。
 
 ![共通クリア画面の表示例](docs/screenshots/stage-clear.png)
+
+## ステージ5：暴風バンパー峡谷
+
+ギャラリーの「未開発の惑星」を舞台に、バンパーの反射と風をつなぐ高難度の全12部屋です。Godot 4.7.2で `project.godot` をインポートしてF5を押し、STARTから「ステージ5：暴風バンパー峡谷」を選ぶと試遊できます。`scenes/stage_5.tscn` を開いてF6でも直接起動できます。
+
+各部屋のバンパーを番号順に反射すると出口の柵が開きます。第1〜11室は出口の足場に着地すると、その1回で次の部屋へ進みます。空中で画面右端を越えた場合も次へ進み、クリアした部屋をやり直す必要はありません。第12室は最後の到着台への着地でクリアです。浅くかするだけでは反射しません。反射でダッシュが回復し、ダッシュ中は風の影響を受けません。途中に休憩用の足場はなく、赤い帯に触れたり出口以外の画面外へ出たりすると、その部屋の入口へ戻って反射の進捗もリセットされます。第9室には壁キックに使える岩壁があります。通常の移動・ジャンプ・壁アクション・ダッシュの能力値は変更していません。
+
+| 部屋 | 課題 |
+| --- | --- |
+| 1：針穴の反射 | バンパー2個、追い風、細い隙間 |
+| 2：横風の狙撃 | 横風の中で高低差のある3個へ接触 |
+| 3：風の境目 | 追い風と向かい風の境目を越える |
+| 4：三連反射 | 高低差のある3個と2つの狭い通路 |
+| 5：逆風を裂く | 長い向かい風の中でダッシュを配分 |
+| 6：天井返し | 天井のバンパーへ下から当たり、下側のバンパーへつなぐ |
+| 7：吹き落とす風 | 下向きの風に抗って3個をつなぐ |
+| 8：折り返す航路 | ②から③は左へ戻り、④へ大きく飛び直す |
+| 9：壁からの一撃 | 岩壁と高いバンパー、後半の向かい風 |
+| 10：暴走する追い風 | 長い追い風の中で4個へ位置合わせ |
+| 11：嵐の五連鎖 | 横風・下向きの風・狭い通路と5連反射 |
+| 12：暴風の最終試練 | 4つの風域と6連反射から、小さな到着台へ |
+
+移動はA/D・方向キー、ジャンプはSpace / W、ダッシュはX＋方向、やり直しはR / Startです。Esc / Back・Selectの共通ポーズメニューでヒントと経路線を表示でき、帰還確認から選択画面へ戻れます。再選択すると1部屋目から始まります。配置は `scenes/stage_5.tscn`、進行は `scripts/stage_5.gd` で調整できます。
+
+`tests/stage_5_test.gd` は、通常の入力だけで全12部屋・43個の反射からゴールまで到達することを検証します。この到達確認ではテレポート、速度の代入、能力の補充、進捗の直接変更を使いません。順序違い・やり直し・障害物・画面外・ヒント・選択画面への復帰も別に確認します。
+
+`tests/stage_5_exit_test.gd` は第1〜11室の出口への着地と、ダッシュで空中から右端を越える場合を確認します。どちらも1回で次の部屋へ進み、二重に進まず、未達成の反射を飛ばせないことを検証します。
 
 ## チュートリアル
 
@@ -196,11 +223,11 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/wind_area.tscn` / `scripts/wind_area.gd`：風の登録・解除と表示
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
-- `scenes/start_screen.tscn` / `scripts/start_screen.gd`：通常起動するスタート画面、作品のロゴとステージ選択への入口
-- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：ステージ1〜4の開始と環境プレビュー、タイトルへ戻る操作
+- `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜5の開始と環境プレビュー
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全6区間、連続カメラ、復帰地点
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力反転を組み合わせた6部屋の本編ステージ
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全6部屋
+- `scenes/stage_5.tscn` / `scripts/stage_5.gd`：暴風バンパー峡谷の全12部屋
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
 
@@ -213,6 +240,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_exit_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/ascent_backdrop_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/environment_art_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
@@ -228,13 +257,15 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 それぞれ `BASE_SYSTEM_TEST_OK` / `PHASE1_MOVEMENT_TEST_OK` / `PHASE2_ENVIRONMENT_TEST_OK` と終了コード0で成功です。baseは入力・移動・壁・重力とデモ配置、Phase 1は両重力・左右両側の接地からのGrab／低い段差のマントル／ジャンプ優先と接地中のスタミナ、空中のマントル／スタミナ・Dash・色・ジャンプ連携・2種類のクリスタルの効果分離／再出現・Respawnを検証します。Phase 2はGate往復・実接触、4方向Spring、反射と速度範囲、追加ジャンプを付与しないことと未使用の権利の保持、同frame着地回復、Wind合成・能力相互作用・削除を検証します。
 
-`PAUSE_MENU_TEST_OK` は、6つのプレイ画面の開閉、ヒントの有無、確認・キャンセル、チェックポイントからの再開、背景・物理・タイマー・部屋移動の停止、クリア表示との入力競合を確認します。実行は `--script res://tests/pause_menu_test.gd` を指定します。
+`PAUSE_MENU_TEST_OK` は、7つのプレイ画面の開閉、ヒントの有無、確認・キャンセル、チェックポイントからの再開、背景・物理・タイマー・部屋移動の停止、クリア表示との入力競合を確認します。実行は `--script res://tests/pause_menu_test.gd` を指定します。
 
-`STAGE_SELECT_TEST_OK` は、選択画面からの起動、マウス・キーボード・ゲームパッドの入力、準備中のステージの無効化、クリア後の任意練習、選択画面へ戻る操作、再選択時の進捗初期化を確認します。
+`STAGE_SELECT_TEST_OK` は、全5ステージの選択画面からの起動、マウス・キーボード・ゲームパッドの入力、クリア後の任意練習、選択画面へ戻る操作、再選択時の進捗初期化を確認します。
 
 `STAGE_2_TEST_OK` は、実入力による全24段の登頂、復帰地点の更新、落下・やり直し、頂上の到着台、カメラ、ポーズメニュー、再入場を確認します。`ASCENT_BACKDROP_TEST_OK` は背景の高度連動、地表が視界から離れること、区間境界の連続性、降下と復帰時の景色、既存の地形表現を確認します。
 
 `STAGE_4_TEST_OK` は、実入力による全6部屋の通過、クリスタル・反転ゲートの連携、部屋移動、落下・やり直し、メニュー、再入場を確認します。
+
+`STAGE_5_TEST_OK` は、位置変更や能力の強制補充を使わずに全12部屋・43個の反射を実入力で攻略し、風・ダッシュ・最後の到着台を確認します。部屋移動、落下・Rによる復帰、共通ポーズとヒント、再選択時の初期化も検証します。
 
 `STAGE_3_TEST_OK` は、ダッシュなしの実入力で全6部屋を攻略し、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
 

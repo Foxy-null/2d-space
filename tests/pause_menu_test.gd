@@ -1,6 +1,6 @@
 extends SceneTree
 
-const SCENES := ["tutorial", "stage_2", "stage_3", "stage_4", "main", "environment_preview"]
+const SCENES := ["tutorial", "stage_2", "stage_3", "stage_4", "stage_5", "main", "environment_preview"]
 var failed := false
 var checks := 0
 
@@ -24,7 +24,7 @@ func _run() -> void:
 		_check(paused and pause.overlay.visible, scene + ": Esc pauses")
 		_check(root.gui_get_focus_owner() == pause.menu.get_node("Resume"), "Resume initially owns focus")
 		var hint_button: Button = pause.menu.get_node("Hints")
-		_check(hint_button.visible == (scene in ["stage_2", "stage_3", "stage_4"]), "Hide the whole hint button when no toggle is provided")
+		_check(hint_button.visible == (scene in ["stage_2", "stage_3", "stage_4", "stage_5"]), "Hide the whole hint button when no toggle is provided")
 		var before := player.position
 		var velocity := player.velocity
 		Input.action_press("move_right")
@@ -75,7 +75,7 @@ func _run() -> void:
 			stage._set_room(1, false)
 		elif scene == "stage_2":
 			stage._set_checkpoint(2)
-		elif scene == "stage_4":
+		elif scene in ["stage_4", "stage_5"]:
 			stage.room_index = 2
 			stage._set_checkpoint()
 		var checkpoint: Vector2 = player._spawn_position
@@ -136,11 +136,11 @@ func _check_world_pause() -> void:
 
 
 func _check_transitions() -> void:
-	for scene in ["tutorial", "stage_3", "stage_4"]:
+	for scene in ["tutorial", "stage_3", "stage_4", "stage_5"]:
 		change_scene_to_file("res://scenes/%s.tscn" % scene)
 		await _step(3)
 		var stage := current_scene
-		if scene == "stage_4":
+		if scene in ["stage_4", "stage_5"]:
 			stage._transition_to_next()
 		else:
 			stage._transition_to(1)
