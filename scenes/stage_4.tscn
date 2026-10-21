@@ -1,13 +1,11 @@
-[gd_scene load_steps=10 format=3]
-[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
+[gd_scene load_steps=8 format=3]
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
+
 [ext_resource type="Script" path="res://scripts/stage_4.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/starfield.gd" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/refill_crystal.tscn" id="4"]
-[ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="6"]
-[sub_resource type="RectangleShape2D" id="Platform"]
-size = Vector2(220, 40)
+[ext_resource type="Script" path="res://scripts/stage_4_room.gd" id="room"]
+[ext_resource type="Script" path="res://scripts/stage_clear.gd" id="stage_clear"]
 [sub_resource type="RectangleShape2D" id="Boundary"]
 size = Vector2(32, 1000)
 [node name="Stage4" type="Node2D"]
@@ -20,368 +18,30 @@ script = ExtResource("3")
 [node name="Rooms" type="Node2D" parent="."]
 [node name="Room1" type="Node2D" parent="Rooms"]
 position = Vector2(0, 0)
-[node name="Entrance" type="StaticBody2D" parent="Rooms/Room1"]
-position = Vector2(110, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Entrance"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Entrance"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Exit" type="StaticBody2D" parent="Rooms/Room1"]
-position = Vector2(1170, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Exit"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room1/Exit"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Label" type="Label" parent="Rooms/Room1"]
-offset_left = 26.0
-offset_top = 580.0
-text = "CHECKPOINT 01 / 06"
-theme_override_font_sizes/font_size = 17
-modulate = Color(0.4, 1, 0.75, 1)
-[node name="ExitLabel" type="Label" parent="Rooms/Room1"]
-offset_left = 1070.0
-offset_top = 580.0
-text = "次の部屋へ →"
-theme_override_font_sizes/font_size = 18
-[node name="Items" type="Node2D" parent="Rooms/Room1"]
-[node name="Crystal1" parent="Rooms/Room1/Items" instance=ExtResource("4")]
-position = Vector2(300, 430)
-[node name="Crystal2" parent="Rooms/Room1/Items" instance=ExtResource("4")]
-position = Vector2(440, 420)
-[node name="Crystal3" parent="Rooms/Room1/Items" instance=ExtResource("4")]
-position = Vector2(580, 390)
-[node name="Crystal4" parent="Rooms/Room1/Items" instance=ExtResource("4")]
-position = Vector2(720, 350)
-[node name="Crystal5" parent="Rooms/Room1/Items" instance=ExtResource("4")]
-position = Vector2(860, 370)
-[node name="Crystal6" parent="Rooms/Room1/Items" instance=ExtResource("4")]
-position = Vector2(1000, 430)
-[node name="Gate1" parent="Rooms/Room1/Items" instance=ExtResource("5")]
-position = Vector2(430, 420)
-scale = Vector2(0.7, 1.65)
-target_gravity = -1
-[node name="Gate2" parent="Rooms/Room1/Items" instance=ExtResource("5")]
-position = Vector2(850, 370)
-scale = Vector2(0.7, 1.65)
-target_gravity = 1
-[node name="Route" type="Line2D" parent="Rooms/Room1"]
-visible = false
-z_index = -1
-points = PackedVector2Array(200, 480, 300, 430, 440, 420, 580, 390, 720, 350, 860, 370, 1000, 430, 1100, 490)
-width = 2.0
-default_color = Color(0.4, 1, 0.75, 0.4)
+script = ExtResource("room")
+room_number = 0
 [node name="Room2" type="Node2D" parent="Rooms"]
 position = Vector2(1280, 0)
-[node name="Entrance" type="StaticBody2D" parent="Rooms/Room2"]
-position = Vector2(110, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Entrance"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Entrance"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Exit" type="StaticBody2D" parent="Rooms/Room2"]
-position = Vector2(1170, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/Exit"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room2/Exit"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Label" type="Label" parent="Rooms/Room2"]
-offset_left = 26.0
-offset_top = 580.0
-text = "CHECKPOINT 02 / 06"
-theme_override_font_sizes/font_size = 17
-modulate = Color(0.4, 1, 0.75, 1)
-[node name="ExitLabel" type="Label" parent="Rooms/Room2"]
-offset_left = 1070.0
-offset_top = 580.0
-text = "次の部屋へ →"
-theme_override_font_sizes/font_size = 18
-[node name="Items" type="Node2D" parent="Rooms/Room2"]
-[node name="Crystal1" parent="Rooms/Room2/Items" instance=ExtResource("4")]
-position = Vector2(300, 430)
-[node name="Crystal2" parent="Rooms/Room2/Items" instance=ExtResource("4")]
-position = Vector2(440, 380)
-[node name="Crystal3" parent="Rooms/Room2/Items" instance=ExtResource("4")]
-position = Vector2(580, 310)
-[node name="Crystal4" parent="Rooms/Room2/Items" instance=ExtResource("4")]
-position = Vector2(720, 280)
-[node name="Crystal5" parent="Rooms/Room2/Items" instance=ExtResource("4")]
-position = Vector2(860, 350)
-[node name="Crystal6" parent="Rooms/Room2/Items" instance=ExtResource("4")]
-position = Vector2(1000, 430)
-[node name="Gate1" parent="Rooms/Room2/Items" instance=ExtResource("5")]
-position = Vector2(430, 380)
-scale = Vector2(0.7, 1.65)
-target_gravity = -1
-[node name="Gate2" parent="Rooms/Room2/Items" instance=ExtResource("5")]
-position = Vector2(850, 350)
-scale = Vector2(0.7, 1.65)
-target_gravity = 1
-[node name="Route" type="Line2D" parent="Rooms/Room2"]
-visible = false
-z_index = -1
-points = PackedVector2Array(200, 480, 300, 430, 440, 380, 580, 310, 720, 280, 860, 350, 1000, 430, 1100, 490)
-width = 2.0
-default_color = Color(0.4, 1, 0.75, 0.4)
+script = ExtResource("room")
+room_number = 1
 [node name="Room3" type="Node2D" parent="Rooms"]
 position = Vector2(2560, 0)
-[node name="Entrance" type="StaticBody2D" parent="Rooms/Room3"]
-position = Vector2(110, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Entrance"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Entrance"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Exit" type="StaticBody2D" parent="Rooms/Room3"]
-position = Vector2(1170, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Exit"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room3/Exit"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Label" type="Label" parent="Rooms/Room3"]
-offset_left = 26.0
-offset_top = 580.0
-text = "CHECKPOINT 03 / 06"
-theme_override_font_sizes/font_size = 17
-modulate = Color(0.4, 1, 0.75, 1)
-[node name="ExitLabel" type="Label" parent="Rooms/Room3"]
-offset_left = 1070.0
-offset_top = 580.0
-text = "次の部屋へ →"
-theme_override_font_sizes/font_size = 18
-[node name="Items" type="Node2D" parent="Rooms/Room3"]
-[node name="Crystal1" parent="Rooms/Room3/Items" instance=ExtResource("4")]
-position = Vector2(300, 490)
-[node name="Crystal2" parent="Rooms/Room3/Items" instance=ExtResource("4")]
-position = Vector2(440, 530)
-[node name="Crystal3" parent="Rooms/Room3/Items" instance=ExtResource("4")]
-position = Vector2(580, 460)
-[node name="Crystal4" parent="Rooms/Room3/Items" instance=ExtResource("4")]
-position = Vector2(720, 360)
-[node name="Crystal5" parent="Rooms/Room3/Items" instance=ExtResource("4")]
-position = Vector2(860, 380)
-[node name="Crystal6" parent="Rooms/Room3/Items" instance=ExtResource("4")]
-position = Vector2(1000, 440)
-[node name="Gate1" parent="Rooms/Room3/Items" instance=ExtResource("5")]
-position = Vector2(430, 530)
-scale = Vector2(0.7, 1.65)
-target_gravity = -1
-[node name="Gate2" parent="Rooms/Room3/Items" instance=ExtResource("5")]
-position = Vector2(850, 380)
-scale = Vector2(0.7, 1.65)
-target_gravity = 1
-[node name="Route" type="Line2D" parent="Rooms/Room3"]
-visible = false
-z_index = -1
-points = PackedVector2Array(200, 480, 300, 490, 440, 530, 580, 460, 720, 360, 860, 380, 1000, 440, 1100, 490)
-width = 2.0
-default_color = Color(0.4, 1, 0.75, 0.4)
+script = ExtResource("room")
+room_number = 2
 [node name="Room4" type="Node2D" parent="Rooms"]
 position = Vector2(3840, 0)
-[node name="Entrance" type="StaticBody2D" parent="Rooms/Room4"]
-position = Vector2(110, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Entrance"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Entrance"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Exit" type="StaticBody2D" parent="Rooms/Room4"]
-position = Vector2(1170, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Exit"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room4/Exit"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Label" type="Label" parent="Rooms/Room4"]
-offset_left = 26.0
-offset_top = 580.0
-text = "CHECKPOINT 04 / 06"
-theme_override_font_sizes/font_size = 17
-modulate = Color(0.4, 1, 0.75, 1)
-[node name="ExitLabel" type="Label" parent="Rooms/Room4"]
-offset_left = 1070.0
-offset_top = 580.0
-text = "次の部屋へ →"
-theme_override_font_sizes/font_size = 18
-[node name="Items" type="Node2D" parent="Rooms/Room4"]
-[node name="Crystal1" parent="Rooms/Room4/Items" instance=ExtResource("4")]
-position = Vector2(300, 430)
-[node name="Crystal2" parent="Rooms/Room4/Items" instance=ExtResource("4")]
-position = Vector2(440, 350)
-[node name="Crystal3" parent="Rooms/Room4/Items" instance=ExtResource("4")]
-position = Vector2(580, 270)
-[node name="Crystal4" parent="Rooms/Room4/Items" instance=ExtResource("4")]
-position = Vector2(720, 270)
-[node name="Crystal5" parent="Rooms/Room4/Items" instance=ExtResource("4")]
-position = Vector2(860, 350)
-[node name="Crystal6" parent="Rooms/Room4/Items" instance=ExtResource("4")]
-position = Vector2(1000, 430)
-[node name="Gate1" parent="Rooms/Room4/Items" instance=ExtResource("5")]
-position = Vector2(430, 350)
-scale = Vector2(0.7, 1.65)
-target_gravity = -1
-[node name="Gate2" parent="Rooms/Room4/Items" instance=ExtResource("5")]
-position = Vector2(850, 350)
-scale = Vector2(0.7, 1.65)
-target_gravity = 1
-[node name="Route" type="Line2D" parent="Rooms/Room4"]
-visible = false
-z_index = -1
-points = PackedVector2Array(200, 480, 300, 430, 440, 350, 580, 270, 720, 270, 860, 350, 1000, 430, 1100, 490)
-width = 2.0
-default_color = Color(0.4, 1, 0.75, 0.4)
+script = ExtResource("room")
+room_number = 3
 [node name="Room5" type="Node2D" parent="Rooms"]
 position = Vector2(5120, 0)
-[node name="Entrance" type="StaticBody2D" parent="Rooms/Room5"]
-position = Vector2(110, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Entrance"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room5/Entrance"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Exit" type="StaticBody2D" parent="Rooms/Room5"]
-position = Vector2(1170, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Exit"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room5/Exit"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Label" type="Label" parent="Rooms/Room5"]
-offset_left = 26.0
-offset_top = 580.0
-text = "CHECKPOINT 05 / 06"
-theme_override_font_sizes/font_size = 17
-modulate = Color(0.4, 1, 0.75, 1)
-[node name="ExitLabel" type="Label" parent="Rooms/Room5"]
-offset_left = 1070.0
-offset_top = 580.0
-text = "次の部屋へ →"
-theme_override_font_sizes/font_size = 18
-[node name="Items" type="Node2D" parent="Rooms/Room5"]
-[node name="Crystal1" parent="Rooms/Room5/Items" instance=ExtResource("4")]
-position = Vector2(300, 430)
-[node name="Crystal2" parent="Rooms/Room5/Items" instance=ExtResource("4")]
-position = Vector2(440, 370)
-[node name="Crystal3" parent="Rooms/Room5/Items" instance=ExtResource("4")]
-position = Vector2(580, 420)
-[node name="Crystal4" parent="Rooms/Room5/Items" instance=ExtResource("4")]
-position = Vector2(720, 480)
-[node name="Crystal5" parent="Rooms/Room5/Items" instance=ExtResource("4")]
-position = Vector2(860, 400)
-[node name="Crystal6" parent="Rooms/Room5/Items" instance=ExtResource("4")]
-position = Vector2(1000, 500)
-[node name="Gate1" parent="Rooms/Room5/Items" instance=ExtResource("5")]
-position = Vector2(360, 430)
-scale = Vector2(0.7, 1.65)
-target_gravity = -1
-[node name="Gate2" parent="Rooms/Room5/Items" instance=ExtResource("5")]
-position = Vector2(580, 420)
-scale = Vector2(0.7, 1.65)
-target_gravity = 1
-[node name="Gate3" parent="Rooms/Room5/Items" instance=ExtResource("5")]
-position = Vector2(780, 480)
-scale = Vector2(0.7, 1.65)
-target_gravity = -1
-[node name="Gate4" parent="Rooms/Room5/Items" instance=ExtResource("5")]
-position = Vector2(960, 430)
-scale = Vector2(0.7, 1.65)
-target_gravity = 1
-[node name="Route" type="Line2D" parent="Rooms/Room5"]
-visible = false
-z_index = -1
-points = PackedVector2Array(200, 480, 300, 430, 440, 370, 580, 420, 720, 480, 860, 400, 1000, 500, 1100, 490)
-width = 2.0
-default_color = Color(0.4, 1, 0.75, 0.4)
+script = ExtResource("room")
+room_number = 4
 [node name="Room6" type="Node2D" parent="Rooms"]
 position = Vector2(6400, 0)
-[node name="Entrance" type="StaticBody2D" parent="Rooms/Room6"]
-position = Vector2(110, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/Entrance"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room6/Entrance"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Exit" type="StaticBody2D" parent="Rooms/Room6"]
-position = Vector2(1170, 560)
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/Exit"]
-shape = SubResource("Platform")
-[node name="Visual" type="Polygon2D" parent="Rooms/Room6/Exit"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110, -20, 110, -20, 110, 20, -110, 20)
-color = Color(0.12, 0.3, 0.4, 1)
-[node name="Label" type="Label" parent="Rooms/Room6"]
-offset_left = 26.0
-offset_top = 580.0
-text = "CHECKPOINT 06 / 06"
-theme_override_font_sizes/font_size = 17
-modulate = Color(0.4, 1, 0.75, 1)
-[node name="ExitLabel" type="Label" parent="Rooms/Room6"]
-offset_left = 1070.0
-offset_top = 580.0
-text = "到着台でゴール！"
-theme_override_font_sizes/font_size = 18
-[node name="Items" type="Node2D" parent="Rooms/Room6"]
-[node name="Crystal1" parent="Rooms/Room6/Items" instance=ExtResource("4")]
-position = Vector2(300, 470)
-[node name="Crystal2" parent="Rooms/Room6/Items" instance=ExtResource("4")]
-position = Vector2(440, 400)
-[node name="Crystal3" parent="Rooms/Room6/Items" instance=ExtResource("4")]
-position = Vector2(580, 310)
-[node name="Crystal4" parent="Rooms/Room6/Items" instance=ExtResource("4")]
-position = Vector2(720, 370)
-[node name="Crystal5" parent="Rooms/Room6/Items" instance=ExtResource("4")]
-position = Vector2(860, 450)
-[node name="Crystal6" parent="Rooms/Room6/Items" instance=ExtResource("4")]
-position = Vector2(1000, 410)
-[node name="Gate1" parent="Rooms/Room6/Items" instance=ExtResource("5")]
-position = Vector2(360, 470)
-scale = Vector2(0.7, 1.65)
-target_gravity = -1
-[node name="Gate2" parent="Rooms/Room6/Items" instance=ExtResource("5")]
-position = Vector2(580, 310)
-scale = Vector2(0.7, 1.65)
-target_gravity = 1
-[node name="Gate3" parent="Rooms/Room6/Items" instance=ExtResource("5")]
-position = Vector2(780, 370)
-scale = Vector2(0.7, 1.65)
-target_gravity = -1
-[node name="Gate4" parent="Rooms/Room6/Items" instance=ExtResource("5")]
-position = Vector2(960, 410)
-scale = Vector2(0.7, 1.65)
-target_gravity = 1
-[node name="Route" type="Line2D" parent="Rooms/Room6"]
-visible = false
-z_index = -1
-points = PackedVector2Array(200, 480, 300, 470, 440, 400, 580, 310, 720, 370, 860, 450, 1000, 410, 1100, 490)
-width = 2.0
-default_color = Color(0.4, 1, 0.75, 0.4)
-[node name="Goal" parent="Rooms/Room6" instance=ExtResource("6")]
-position = Vector2(1160, 540)
-[node name="LeftBoundary" type="StaticBody2D" parent="."]
-position = Vector2(-16, 360)
-[node name="Collision" type="CollisionShape2D" parent="LeftBoundary"]
-shape = SubResource("Boundary")
-[node name="RightBoundary" type="StaticBody2D" parent="."]
-position = Vector2(7696, 360)
-[node name="Collision" type="CollisionShape2D" parent="RightBoundary"]
-shape = SubResource("Boundary")
+script = ExtResource("room")
+room_number = 5
 [node name="Player" parent="." instance=ExtResource("2")]
-position = Vector2(110, 512)
+position = Vector2(110, 594)
 use_default_respawn_bounds = false
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(640, 360)
@@ -389,9 +49,9 @@ position = Vector2(640, 360)
 
 [node name="Info" type="PanelContainer" parent="HUD"]
 offset_left = 24.0
-offset_top = 16.0
+offset_top = 40.0
 offset_right = 920.0
-offset_bottom = 100.0
+offset_bottom = 124.0
 mouse_filter = 2
 
 [node name="Rows" type="VBoxContainer" parent="HUD/Info"]
@@ -414,65 +74,32 @@ value = 3.0
 show_percentage = false
 tooltip_text = "壁スタミナ（着地で回復）"
 
-[node name="HelpButton" type="Button" parent="HUD"]
+[node name="PauseButton" type="Button" parent="HUD"]
 offset_left = 1030.0
-offset_top = 20.0
+offset_top = 44.0
 offset_right = 1256.0
-offset_bottom = 64.0
+offset_bottom = 88.0
 focus_mode = 0
-text = "お助けメニュー [H / Y]"
+text = "ポーズ [Esc]"
 
 [node name="Hint" type="Label" parent="HUD"]
 visible = false
 offset_left = 24.0
-offset_top = 110.0
+offset_top = 155.0
 offset_right = 1230.0
 theme_override_font_sizes/font_size = 19
 
-[node name="Help" type="PanelContainer" parent="HUD"]
-visible = false
-offset_left = 390.0
-offset_top = 180.0
-offset_right = 890.0
-offset_bottom = 480.0
-
-[node name="Rows" type="VBoxContainer" parent="HUD/Help"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="Title" type="Label" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "星渡りの回廊"
-horizontal_alignment = 1
-theme_override_font_sizes/font_size = 28
-
-[node name="Controls" type="Label" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "移動：A/D・方向キー　ジャンプ：Space / W\n壁を掴む：Shift　登る：↑　ダッシュ：X ＋ 方向\nやり直し：R / Start　メニュー：H / Y・△\n部屋を進むと復帰地点を更新。上下の画面外でやり直し。"
-horizontal_alignment = 1
-
-[node name="Resume" type="Button" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "プレイを再開する"
-
-[node name="Hints" type="CheckButton" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "ヒントを表示する"
-
-[node name="Retry" type="Button" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "復帰地点からやり直す"
-
-[node name="Return" type="Button" parent="HUD/Help/Rows"]
-layout_mode = 2
-text = "ステージ選択へ戻る"
-
 [node name="Completion" type="Label" parent="HUD"]
+script = ExtResource("stage_clear")
 visible = false
 offset_left = 290.0
 offset_top = 150.0
 offset_right = 990.0
-text = "ステージ4クリア！ 星渡りの回廊 踏破！\nHでメニュー / Escでステージ選択へ"
+text = "ステージ4クリア！ 星渡りの回廊 踏破！\nEscでポーズ"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(0.5, 1, 0.75, 1)
+
+[node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
+
+[connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]

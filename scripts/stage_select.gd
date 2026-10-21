@@ -5,6 +5,16 @@ func _ready() -> void:
 	$Margin/Content/Stages/Stage1.grab_focus.call_deferred()
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause_game") and not event.is_echo():
+		get_viewport().set_input_as_handled()
+		_return_to_title()
+
+
+func _return_to_title() -> void:
+	get_tree().change_scene_to_file("res://scenes/start_screen.tscn")
+
+
 func _start_tutorial() -> void:
 	get_tree().change_scene_to_file("res://scenes/tutorial.tscn")
 

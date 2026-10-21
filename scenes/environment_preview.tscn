@@ -1,4 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
 [ext_resource type="Script" path="res://scripts/environment_preview.gd" id="1"]
 
@@ -37,7 +39,11 @@ size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
 text = "環境：1〜5 / L・R　背景：M / Y・△"
 
-[node name="Return" type="Button" parent="UI/Toolbar"]
+[node name="PauseButton" type="Button" parent="UI/Toolbar"]
 layout_mode = 2
 focus_mode = 0
-text = "ステージ選択へ戻る"
+text = "ポーズ [Esc]"
+
+[node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
+
+[connection signal="pressed" from="UI/Toolbar/PauseButton" to="PauseMenu" method="open"]

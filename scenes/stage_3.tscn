@@ -1,4 +1,8 @@
-[gd_scene load_steps=80 format=3]
+[gd_scene load_steps=82 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
+
+[ext_resource type="Script" path="res://scripts/stage_clear.gd" id="stage_clear"]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -2386,6 +2390,7 @@ theme_override_font_sizes/font_size = 16
 theme_override_font_sizes/font_size = 16
 
 [node name="Completion" type="Label" parent="HUD"]
+script = ExtResource("stage_clear")
 visible = false
 offset_left = 390.0
 offset_top = 565.0
@@ -2399,46 +2404,14 @@ text = "ステージ3クリア！\n左へ戻って、自由に練習できます
 horizontal_alignment = 1
 mouse_filter = 2
 
-[node name="HelpButton" type="Button" parent="HUD"]
+[node name="PauseButton" type="Button" parent="HUD"]
 offset_left = 24.0
 offset_top = 38.0
 offset_right = 292.0
 offset_bottom = 78.0
 focus_mode = 0
-toggle_mode = true
 theme_override_font_sizes/font_size = 16
-text = "お助けメニュー H / Y・△"
-
-[node name="HelpMenu" type="PanelContainer" parent="HUD"]
-visible = false
-offset_left = 24.0
-offset_top = 86.0
-offset_right = 326.0
-offset_bottom = 242.0
-
-[node name="Rows" type="VBoxContainer" parent="HUD/HelpMenu"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="ToggleHints" type="Button" parent="HUD/HelpMenu/Rows"]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-toggle_mode = true
-theme_override_font_sizes/font_size = 18
-text = "ヒントを表示する"
-
-[node name="ReturnToStageSelect" type="Button" parent="HUD/HelpMenu/Rows"]
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "ステージ選択へ戻る"
-
-[node name="CloseHint" type="Label" parent="HUD/HelpMenu/Rows"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "閉じる：H / Y・△ / Esc・Back"
-horizontal_alignment = 1
-mouse_filter = 2
+text = "ポーズ [Esc]"
 
 [node name="Status" type="PanelContainer" parent="HUD"]
 anchor_left = 1.0
@@ -2475,8 +2448,6 @@ theme_override_font_sizes/font_size = 16
 text = "ダッシュ：使用可能"
 mouse_filter = 2
 
-[connection signal="toggled" from="HUD/HelpButton" to="." method="set_help_menu_visible"]
+[node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
 
-[connection signal="pressed" from="HUD/HelpMenu/Rows/ReturnToStageSelect" to="." method="_return_to_stage_select"]
-
-[connection signal="toggled" from="HUD/HelpMenu/Rows/ToggleHints" to="." method="set_hints_visible"]
+[connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]
