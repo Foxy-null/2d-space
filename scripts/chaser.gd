@@ -1,7 +1,18 @@
 extends PlayerController
 ## Uses the player's physics and abilities, with room-local decisions instead of Input.
 
-@export var avatar_texture: Texture2D
+signal needle_attack(origin: Vector2, directions: Array[Vector2], variant: int)
+
+const ENEMY_GROUP_NAME := "UMA妖怪エイリアン"
+const ENEMY_NAME := "星間山荒・大赤斑"
+const SPRITE = preload("res://scripts/chaser_sprite.gd")
+var defeated := false
+var _needle_cooldown := 3.0
+var _needle_warning := -1.0
+var _needle_aim := Vector2.RIGHT
+var _needle_variant := 0
+var _needle_recovery := 0.0
+var _aim_line: Line2D
 var target: PlayerController
 var course: StageSixRoom
 var preferred_item := ""
@@ -25,36 +36,33 @@ func _ready() -> void:
 	remove_from_group("player")
 	$Camera2D.enabled = false
 	$Visuals/Body.hide()
-	var body := Polygon2D.new()
-	body.name = "Prototype"
-	body.polygon = PackedVector2Array([Vector2(-18, -26), Vector2(18, -26), Vector2(18, 15), Vector2(0, 26), Vector2(-18, 15)])
-	body.color = Color("59ebff")
-	visuals.add_child(body)
-	var visor := Polygon2D.new()
-	visor.polygon = PackedVector2Array([Vector2(-11, -13), Vector2(11, -13), Vector2(11, 2), Vector2(-11, 2)])
-	visor.color = Color("09142e")
-	visuals.add_child(visor)
-	var arms := Line2D.new()
-	arms.name = "Arms"
-	arms.width = 6.0
-	arms.default_color = Color("59ebff")
-	visuals.add_child(arms)
+	$Visuals/Body.set_process(false)
+	var sprite := AnimatedSprite2D.new()
+	sprite.name = "EnemySprite"
+	sprite.set_script(SPRITE)
+	sprite.set("actor", self)
+	visuals.add_child(sprite)
+	carry_offset.y = -72.0
+	_aim_line = Line2D.new()
+	_aim_line.width = 2.0
+	_aim_line.default_color = Color("ffc57999")
+	add_child(_aim_line)
 	var warning := Label.new()
 	warning.name = "ThrowWarning"
-	warning.position = Vector2(-48, -120)
+	warning.position = Vector2(-48, -140)
 	warning.text = "投げる！"
 	warning.add_theme_font_size_override("font_size", 20)
 	warning.add_theme_color_override("font_color", Color("ffdc78"))
 	warning.add_theme_color_override("font_outline_color", Color("15162c"))
 	warning.add_theme_constant_override("outline_size", 4)
 	add_child(warning)
-	if avatar_texture != null:
-		body.hide()
-		visor.hide()
-		var picture := Sprite2D.new()
-		picture.texture = avatar_texture
-		picture.scale = Vector2.ONE * 52.0 / avatar_texture.get_height()
-		visuals.add_child(picture)
+	var nameplate := Label.new()
+	nameplate.position = Vector2(-90, -112)
+	nameplate.text = ENEMY_NAME
+	nameplate.add_theme_font_size_override("font_size", 15)
+	nameplate.add_theme_color_override("font_outline_color", Color("15162c"))
+	nameplate.add_theme_constant_override("outline_size", 4)
+	add_child(nameplate)
 	object_released.connect(func(_object, thrown):
 		_pickup_left = 0.75
 		if thrown:
@@ -64,11 +72,11 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	throw_pose_left = maxf(0.0, throw_pose_left - delta)
-	var arms: Line2D = $Visuals/Arms
-	var raised := get_held_object() != null
-	arms.points = PackedVector2Array([Vector2(-20, -34 if raised else 5), Vector2(-15, -5), Vector2(15, -5), Vector2(30 if throw_pose_left > 0 else 20, -15 if throw_pose_left > 0 else (-34 if raised else 5))])
-	$Visuals/Prototype.color = Color("ff9d68") if stun_left > 0 else Color("59ebff")
-	$ThrowWarning.visible = _attack_left >= 0.0
+	$ThrowWarning.visible = _attack_left >= 0.0 or _needle_warning >= 0.0
+	$ThrowWarning.text = ("針：直線！" if _needle_variant == 0 else "針：三方向！") if _needle_warning >= 0.0 else "投げる！"
+	_aim_line.visible = _needle_warning >= 0.0
+	_aim_line.points = PackedVector2Array([-get_gravity_vector() * 34.0, -get_gravity_vector() * 34.0 + _needle_aim * 260.0])
+
 
 
 func _physics_process(delta: float) -> void:
@@ -89,7 +97,8 @@ func _physics_process(delta: float) -> void:
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)
 	_pickup_left = maxf(0.0, _pickup_left - delta)
 	_scan_left -= delta
-	if stun_left <= 0.0 and controls_enabled:
+	_update_needle_attack(delta)
+	if stun_left <= 0.0 and controls_enabled and _needle_warning < 0.0 and _needle_recovery <= 0.0:
 		_steer(delta)
 	super._physics_process(delta)
 	_previous = _commands.duplicate()
@@ -116,7 +125,7 @@ func _steer(delta: float) -> void:
 			var closest: Grabbable
 			var score := INF
 			for item in get_tree().get_nodes_in_group("grabbable"):
-				if not item is Grabbable or item.carrier != null or course.item_on_switch(item):
+				if not item is Grabbable or item.carrier != null or is_instance_valid(item.pinned_to) or course.item_on_switch(item):
 					continue
 				var distance := position.distance_squared_to(item.position)
 				if distance > pow(grab_range + 30.0, 2):
@@ -203,6 +212,10 @@ func _just_pressed(action: StringName) -> bool:
 
 func reset_pursuit(keep_path := false) -> void:
 	respawn(false)
+	defeated = false
+	_needle_warning = -1.0
+	_needle_cooldown = 3.0
+	_needle_recovery = 0.0
 	_attack_left = -1.0
 	_attack_cooldown = 1.8
 	_pickup_left = 0.0
@@ -214,3 +227,28 @@ func reset_pursuit(keep_path := false) -> void:
 	_scan_left = 0.0
 	_held_time = 0.0
 	_jump_clock = 0.0
+
+
+func _update_needle_attack(delta: float) -> void:
+	_needle_cooldown = maxf(0.0, _needle_cooldown - delta)
+	_needle_recovery = maxf(0.0, _needle_recovery - delta)
+	if stun_left > 0.0 or not controls_enabled or defeated:
+		_needle_warning = -1.0
+		_needle_cooldown = maxf(_needle_cooldown, 1.0)
+		return
+	if _needle_warning >= 0.0:
+		_needle_warning -= delta
+		if _needle_warning <= 0.0:
+			var directions: Array[Vector2] = [_needle_aim]
+			if _needle_variant == 1:
+				directions.assign([_needle_aim.rotated(-0.25), _needle_aim, _needle_aim.rotated(0.25)])
+			needle_attack.emit(global_position - get_gravity_vector() * 34.0, directions, _needle_variant)
+			_needle_variant = 1 - _needle_variant
+			_needle_warning = -1.0
+			_needle_cooldown = 3.0
+			_needle_recovery = 0.65
+		return
+	var distance := global_position.distance_to(target.global_position)
+	if _needle_cooldown <= 0.0 and get_held_object() == null and distance > 130.0 and distance < 700.0 and _can_see_target():
+		_needle_aim = (target.global_position - (global_position - get_gravity_vector() * 34.0)).normalized()
+		_needle_warning = 0.8 if _needle_variant == 0 else 1.0

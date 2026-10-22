@@ -34,6 +34,8 @@ func _input(event: InputEvent) -> void:
 
 
 func open() -> void:
+	if stage.has_method("set_help_visible") and stage.help_visible:
+		stage.set_help_visible(false)
 	overlay.show()
 	menu.show()
 	confirmation.hide()
@@ -60,7 +62,7 @@ func _update_hints_button() -> void:
 
 func retry() -> void:
 	resume()
-	stage.get_node("Player").respawn()
+	stage.find_child("Player", true, false).respawn()
 
 
 func confirm_return() -> void:

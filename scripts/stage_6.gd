@@ -6,8 +6,8 @@ const ROOM = preload("res://scripts/stage_6_room.gd")
 const BACKDROP = preload("res://scripts/stage_backdrop.gd")
 const CLEAR = preload("res://scripts/stage_clear.gd")
 const HELP = preload("res://scenes/stage_help.tscn")
+const NEEDLE = preload("res://scripts/chaser_needle.gd")
 
-@export var enemy_avatar: Texture2D
 @export_range(4, 12) var defeat_hits_required := 6
 @export var escape_seconds := 20.0
 var room_index := 0
@@ -62,11 +62,11 @@ func _ready() -> void:
 	player.get_node("Camera2D").enabled = false
 	enemy = PLAYER.instantiate()
 	enemy.set_script(CHASER)
-	enemy.set("avatar_texture", enemy_avatar)
 	enemy.name = "Chaser"
 	enemy.use_default_respawn_bounds = false
 	_world.add_child(enemy)
 	enemy.set("target", player)
+	enemy.needle_attack.connect(_spawn_needles)
 	player.add_collision_exception_with(enemy)
 	enemy.add_collision_exception_with(player)
 	player.respawned.connect(_on_player_respawned)
@@ -124,7 +124,7 @@ func _load_room(index: int) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if _loading or transitioning or help_visible or completed or _game_over_pending:
+	if get_tree().paused or _loading or transitioning or help_visible or completed or _game_over_pending:
 		return
 	_immunity_left = maxf(0.0, _immunity_left - delta)
 	_hit_grace = maxf(0.0, _hit_grace - delta)
@@ -134,6 +134,8 @@ func _physics_process(delta: float) -> void:
 		_chase_delay = maxf(0.0, _chase_delay - delta)
 		if _chase_delay <= 0.0:
 			enemy.set("active", true)
+	_update_needles(delta)
+	_check_projectiles()
 	if _out_of_course(player) or _touches_hazard(player, _previous_player):
 		_keep_enemy_on_respawn = true
 		player.respawn(false)
@@ -141,7 +143,6 @@ func _physics_process(delta: float) -> void:
 		return
 	if _out_of_course(enemy) or _touches_hazard(enemy, _previous_enemy):
 		enemy.call("reset_pursuit", true)
-	_check_projectiles()
 	if not _capture_pending and _immunity_left <= 0.0 and enemy.get("active") and enemy.stun_left <= 0.0 and enemy.get_held_object() == null and _actor_rect(enemy).grow(2).intersects(_actor_rect(player)):
 		_capture()
 	if _game_over_pending:
@@ -256,6 +257,14 @@ func _check_projectiles() -> void:
 		var previous_target := _previous_player if target == player else _previous_enemy
 		var half: Vector2 = (object.collider.shape as RectangleShape2D).size * 0.5
 		var extent := object.collider.global_transform.x.abs() * half.x + object.collider.global_transform.y.abs() * half.y + Vector2.ONE
+		var pinned := false
+		for needle in room.needles.get_children():
+			if needle.stuck and needle.is_dangerous() and _segment_hits_rect(entry.previous, object.position, Rect2(needle.tip_position() - extent, extent * 2.0)) and needle.pin_box(object, player):
+				pinned = true
+				break
+		if pinned:
+			_projectiles.remove_at(index)
+			continue
 		var target_rect := _actor_rect(target)
 		var rect := Rect2(target_rect.position - extent, target_rect.size + extent * 2.0)
 		var from: Vector2 = entry.previous + target.position - previous_target
@@ -298,6 +307,9 @@ func _out_of_course(actor: PlayerController) -> bool:
 
 func _touches_hazard(actor: PlayerController, previous: Vector2) -> bool:
 	var half := _actor_rect(actor).size * 0.5
+	for needle in room.needles.get_children():
+		if needle.stuck and needle.is_dangerous() and _segment_hits_rect(previous, actor.position, Rect2(needle.tip_position() - half - Vector2(3, 3), half * 2.0 + Vector2(6, 6))):
+			return true
 	var rectangles: Array = room.hazards.duplicate()
 	for entry in room.moving_hazards:
 		rectangles.append(entry.current)
@@ -314,6 +326,7 @@ func _complete(result: String) -> void:
 	ending = result
 	player.controls_enabled = false
 	enemy.controls_enabled = false
+	enemy.set("defeated", result == "決着成功")
 	_message.hide()
 	_completion.show()
 	_hint.text = "%s！　ステージ6をクリアしました" % result
@@ -335,7 +348,8 @@ func _update_hud() -> void:
 
 
 func _help_text() -> String:
-	var text: String = "追跡者の終域\n"
+	var text: String = "追跡者の終域\nUMA妖怪エイリアン　星間山荒・大赤斑\n"
+	text += "針の予告線が出たら横へかわします。長針の直線と短針の三方向を交互に使い、発射後には隙があります。\n刺さった針は先端だけが危険です。箱を投げて先端へ刺し込むと、その場に固定された安全な足場になります。ひびのある茶色い足場は長針で壊れます。\n\n"
 	if room_index == 11:
 		text += "二つの重量扉を開いた後、どれか一つでクリア。\n決着：怯んでいない敵に投擲を%d回当てる。怯み中の追撃は無効。\n封鎖：敵を檻へ入れ、自分は右外側へ出る。金の台へ箱を置く。\n逃走：敵と%d秒対峙し、檻の屋根の鍵を取って右上の到着台を押す。捕獲で時間を数え直す。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
 	text += "この部屋の進め方\n" + StageSixRoom.HINTS[room_index]
@@ -345,7 +359,7 @@ func _help_text() -> String:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_echo() or _game_over_pending:
+	if event.is_echo() or _game_over_pending or $PauseMenu.overlay.visible:
 		return
 	if event.is_action_pressed("toggle_stage_hints"):
 		set_help_visible(not help_visible)
@@ -415,6 +429,14 @@ func _build_hud() -> void:
 	help_button.focus_mode = Control.FOCUS_NONE
 	help_button.pressed.connect(func(): set_help_visible(not help_visible))
 	hud.add_child(help_button)
+	var pause_button := Button.new()
+	pause_button.name = "PauseButton"
+	pause_button.position = Vector2(1018, 76)
+	pause_button.size = Vector2(244, 36)
+	pause_button.text = "ポーズ [Esc]"
+	pause_button.focus_mode = Control.FOCUS_NONE
+	pause_button.pressed.connect($PauseMenu.open)
+	hud.add_child(pause_button)
 	var footer := _panel(Rect2(16, 650, 1248, 58))
 	footer.name = "Progress"
 	hud.add_child(footer)
@@ -429,6 +451,7 @@ func _build_hud() -> void:
 	hud.add_child(_message)
 	_completion = Label.new()
 	_completion.name = "Completion"
+	_completion.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_completion.set_script(CLEAR)
 	_completion.hide()
 	hud.add_child(_completion)
@@ -468,3 +491,30 @@ func _text(value: String, font_size: int) -> Label:
 	label.add_theme_color_override("font_outline_color", Color("102034"))
 	label.add_theme_constant_override("outline_size", 4)
 	return label
+
+
+func _spawn_needles(origin: Vector2, directions: Array[Vector2], variant: int) -> void:
+	for direction in directions:
+		# shortcut: preserve up to 96 needles per room; batch geometry for longer battles.
+		if room.needles.get_child_count() >= 96:
+			break
+		var needle := NEEDLE.new()
+		needle.position = origin
+		needle.course = room
+		needle.shooter = enemy
+		needle.variant = variant
+		needle.velocity = direction.normalized() * (720.0 if variant == 0 else 540.0)
+		room.needles.add_child(needle)
+
+
+func _update_needles(delta: float) -> void:
+	for needle in room.needles.get_children():
+		needle.advance(delta, player)
+		if not needle.flew:
+			continue
+		var from: Vector2 = needle.flight_start + player.position - _previous_player
+		if _segment_hits_rect(from, needle.flight_end, _actor_rect(player).grow(3.0)):
+			if _hit_grace <= 0.0:
+				player.apply_stun(0.3, (needle.flight_end - needle.flight_start).normalized() * 140.0, player.wall_stamina_max / 3.0)
+				_hit_grace = 0.4
+			needle.queue_free()

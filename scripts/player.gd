@@ -630,7 +630,7 @@ func _update_grab_input() -> void:
 
 
 func try_begin_grab(object: Grabbable) -> bool:
-	if get_held_object() != null or is_dashing() or not is_instance_valid(object) or is_instance_valid(object.carrier):
+	if get_held_object() != null or is_dashing() or not is_instance_valid(object) or is_instance_valid(object.carrier) or is_instance_valid(object.pinned_to):
 		return false
 	if _wall_grabbing and not _just_pressed("wall_grab"):
 		return false

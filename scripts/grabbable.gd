@@ -12,6 +12,7 @@ extends RigidBody2D
 var gravity_direction := 1
 
 var carrier: PlayerController
+var pinned_to: Node2D
 var _spawn_transform: Transform2D
 var _free_collision_layer: int
 var _free_collision_mask: int
@@ -69,6 +70,7 @@ func begin_carry(player: PlayerController) -> void:
 
 func end_carry(release_velocity: Vector2) -> void:
 	carrier = null
+	pinned_to = null
 	release_physics_frame = Engine.get_physics_frames()
 	collision_layer = _free_collision_layer
 	collision_mask = _free_collision_mask

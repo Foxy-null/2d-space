@@ -56,6 +56,8 @@ var arrival: ArrivalSwitch
 var exit_open := false
 var _elapsed := 0.0
 var _supply_left := 0.0
+var needles: Node2D
+var brittle_platforms: Array[StaticBody2D] = []
 
 
 func _ready() -> void:
@@ -64,6 +66,9 @@ func _ready() -> void:
 	var items := Node2D.new()
 	items.name = "Items"
 	add_child(items)
+	needles = Node2D.new()
+	needles.name = "Needles"
+	add_child(needles)
 	match number:
 		0:
 			_floor(0, 550, 820)
@@ -262,6 +267,16 @@ func _ready() -> void:
 			route.assign([Vector2(590, 790), Vector2(900, 640), Vector2(1160, 440), Vector2(1170, 300), Vector2(1380, 160), Vector2(1450, 300), Vector2(1660, 510)])
 		11:
 			_build_final()
+	if number in [0, 5, 9]:
+		var platform := _block(Rect2(size.x * 0.55, spawn.y - 260.0, 160, 22))
+		platform.set_meta("needle_breakable", true)
+		platform.modulate = Color("f1b17d")
+		brittle_platforms.append(platform)
+		var crack := Line2D.new()
+		crack.width = 3.0
+		crack.default_color = Color("592e35")
+		crack.points = PackedVector2Array([Vector2(-20, -11), Vector2(-5, -2), Vector2(-15, 5), Vector2(8, 11)])
+		platform.add_child(crack)
 	if number != 11:
 		for index in range(1, route.size(), 3):
 			_crystal(route[index] - Vector2(0, 40), 0)
@@ -368,7 +383,7 @@ func _restock() -> void:
 		var available := false
 		var matching: Array[Grabbable] = []
 		for item in $Items.get_children():
-			if item.get_meta("supply", -1) != supply.id:
+			if item.get_meta("supply", -1) != supply.id or is_instance_valid(item.pinned_to):
 				continue
 			matching.append(item)
 			if item.carrier == null and item.position.distance_to(supply.at) < 150.0:
@@ -382,12 +397,17 @@ func _restock() -> void:
 			matching.sort_custom(func(a, b): return a.position.distance_squared_to(supply.at) > b.position.distance_squared_to(supply.at))
 			for item in matching:
 				var on_switch := item_on_switch(item)
-				if item.carrier == null and not on_switch:
+				if item.carrier == null and not on_switch and not is_instance_valid(item.pinned_to):
 					item.reset_for_respawn()
 					break
 
 
 func reset_state() -> void:
+	for needle in needles.get_children():
+		needle.free()
+	for platform in brittle_platforms:
+		platform.collision_layer = 1
+		platform.show()
 	_elapsed = 0.0
 	exit_open = false
 	key_collected = false
@@ -418,6 +438,9 @@ func hazard_ahead(actor: PlayerController, direction: float) -> bool:
 	var tangent := actor.get_walk_axis()
 	var down := actor.get_gravity_vector()
 	var rectangles: Array = hazards.duplicate()
+	for needle in needles.get_children():
+		if needle.stuck and needle.is_dangerous():
+			rectangles.append(Rect2(needle.tip_position() - Vector2(4, 4), Vector2(8, 8)))
 	for entry in moving_hazards:
 		rectangles.append(entry.current)
 	for rect: Rect2 in rectangles:
@@ -465,6 +488,12 @@ func _floor(x: float, width: float, y: float) -> void:
 func _platforms(rectangles: Array) -> void:
 	for rect in rectangles:
 		_block(rect)
+
+
+func break_needle_platform(body: StaticBody2D) -> void:
+	if body in brittle_platforms:
+		body.collision_layer = 0
+		body.hide()
 
 
 func _supply(scene: PackedScene, at: Vector2) -> void:
