@@ -31,7 +31,7 @@ const STEPS := [
 	["air_dash", "dash_refill", "refilled_dash"], ["jump_crystal", "air_jump"],
 	["floor_spring", "wall_spring", "spring_dash"], ["pinball"],
 	["wind_walk", "wind_grab", "wind_dash"], ["up", "down"],
-	["light_grab", "light_drop", "heavy_move", "button_on", "button_off"],
+	["button_on"],
 	["throw", "throw_button"], ["creature_jump", "creature_landed", "second_creature_jump"],
 	["glide", "parachute_release", "fast_fall"],
 	["two_jumps", "combo_air", "combo_creature"],
@@ -48,7 +48,7 @@ const STEP_LABELS := {
 	"pinball": "丸いバンパーで跳ぼう", "wind_walk": "風の中を歩こう",
 	"wind_grab": "風の中で壁を掴もう", "wind_dash": "風の中でダッシュ",
 	"light_grab": "小さな箱を掴もう", "light_drop": "止まって箱を置こう",
-	"heavy_move": "重い箱を運ぼう", "button_on": "重い箱を置いてON",
+	"heavy_move": "重い箱を運ぼう", "button_on": "箱を置こう",
 	"button_off": "箱を持ち上げてOFF", "throw": "移動しながら投げよう",
 	"throw_button": "投げた箱でボタンON", "creature_jump": "生物の追加ジャンプ",
 	"creature_landed": "生物と着地して回復", "second_creature_jump": "回復後にもう一度跳ぶ",
@@ -209,6 +209,8 @@ func _update_lesson() -> void:
 	room.get_node("ExitBarrier/Visual").visible = not done
 	room.get_node("ExitHint").text = "任意のSuperdash →" if done and room_index == 15 else ("次の部屋へ →" if done else "到着台を押すと開く")
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
+	if room_index == 10:
+		room.get_node("ButtonLink").default_color = Color("86e7a4") if room.get_node("Button").is_pressed() else Color("56718d")
 	var count := 0
 	var next := "足跡の到着台に乗ろう"
 	var next_key := ""
@@ -303,6 +305,9 @@ func _on_button(pressed: bool, button: Area2D) -> void:
 
 
 func _observe_lesson(delta: float) -> void:
+	if room_index == 10 and seen.has("button_on") and not cleared.has(room_index) and not rooms.get_child(room_index).get_node("Button").is_pressed():
+		seen.erase("button_on")
+		_update_lesson()
 	if room_index == 4 and player.is_on_floor() and not seen.has("refilled_dash") and (seen.has("air_dash") or seen.has("dash_refill")):
 		seen.erase("air_dash")
 		seen.erase("dash_refill")

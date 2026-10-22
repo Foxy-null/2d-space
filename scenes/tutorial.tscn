@@ -1624,6 +1624,13 @@ position = Vector2(380, 606.5)
 position = Vector2(760, 640)
 
 
+[node name="ButtonLink" type="Line2D" parent="Rooms/Room11"]
+z_index = 1
+points = PackedVector2Array(760, 655, 760, 693, 1190, 693, 1190, 640)
+width = 4.0
+default_color = Color(0.337, 0.443, 0.553, 1)
+antialiased = true
+
 [node name="BoxHint" type="Label" parent="Rooms/Room11"]
 offset_left = 110
 offset_top = 410
@@ -1645,7 +1652,7 @@ offset_left = 680
 offset_top = 455
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "必要な重さ：2.0\n置いて少し離れる → ON\n持ち上げてOFF"
+text = "箱 ↓"
 mouse_filter = 2
 
 [node name="Room12" type="Node2D" parent="Rooms"]
