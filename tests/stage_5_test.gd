@@ -27,6 +27,7 @@ func _run() -> void:
 	_check(stage.get_meta("environment_theme") == 2, "Use the previously unused wild planet")
 	_check(player.move_speed == 360 and player.dash_speed == 900 and player.wall_actions_enabled, "Preserve the existing movement abilities")
 	_check(not paused and not stage.hints_visible, "Pause and route hints start hidden")
+	_check(stage.get_node("Rooms/Room1/EntryJumpPath").is_visible_in_tree() and stage.get_node("Rooms/Room1/EntryJumpHead").is_visible_in_tree() and not stage.get_node("Rooms/Room1/Route").visible, "The first jump cue is visible without detailed route hints")
 	for room in stage.rooms.get_children():
 		_check(room.get_node("Winds").get_child_count() > 0, "Every room uses real wind areas")
 		total_bumpers += room.get_node("Bumpers").get_child_count()
@@ -87,6 +88,7 @@ func _run() -> void:
 	_check(stage.next_bumper == 1, "Make actual reflection progress before retrying")
 	await _key(KEY_R)
 	_check(stage.next_bumper == 0 and _x() < 100 and player.is_dash_ready(), "R resets reflection progress and abilities")
+	_check(stage.get_node("Rooms/Room1/EntryJumpPath").is_visible_in_tree(), "Retry keeps the entry jump cue available")
 	for outside in [Vector2(400, -100), Vector2(400, 850), Vector2(1400, 550), Vector2(-100, 550)]:
 		player.position = outside
 		await _step(3)
@@ -101,6 +103,9 @@ func _run() -> void:
 	_check(paused and pause.overlay.visible and player.position == paused_position, "Pause freezes player motion")
 	pause.menu.get_node("Hints").pressed.emit()
 	_check(stage.hints_visible and stage.get_node("HUD/Hint").visible and stage.get_node("Rooms/Room12/Route").visible, "Hints reveal all room routes")
+	pause.menu.get_node("Hints").pressed.emit()
+	_check(not stage.hints_visible and not stage.get_node("Rooms/Room1/Route").visible and stage.get_node("Rooms/Room1/EntryJumpPath").is_visible_in_tree() and stage.get_node("Rooms/Room1/EntryJumpHead").is_visible_in_tree(), "Hiding detailed hints keeps the first upper-contact cue visible")
+	pause.menu.get_node("Hints").pressed.emit()
 	pause.menu.get_node("Retry").pressed.emit()
 	await _step(3)
 	_check(not paused and not pause.overlay.visible and player.controls_enabled and stage.hints_visible, "Retry resumes and preserves hints")
