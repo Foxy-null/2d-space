@@ -76,7 +76,7 @@ size = Vector2(212, 28)
 size = Vector2(360, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_3_Landing"]
-size = Vector2(150, 80)
+size = Vector2(460, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_3_DiagonalLanding"]
 size = Vector2(110, 28)
@@ -548,7 +548,7 @@ position = Vector2(2560, 0)
 position = Vector2(72, 614)
 
 [node name="Return" type="Marker2D" parent="Rooms/Room3"]
-position = Vector2(1208, 553)
+position = Vector2(72, 614)
 
 [node name="PracticeFloor" type="StaticBody2D" parent="Rooms/Room3"]
 position = Vector2(180, 680)
@@ -562,14 +562,15 @@ polygon = PackedVector2Array(-180, -40, 180, -40, 180, 40, -180, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Landing" type="StaticBody2D" parent="Rooms/Room3"]
-position = Vector2(795, 680)
+position = Vector2(920, 634)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/Landing"]
 shape = SubResource("Shape_3_Landing")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/Landing"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-75, -40, 75, -40, 75, 40, -75, 40)
+polygon = PackedVector2Array(-230, -14, 230, -14, 230, 14, -230, 14)
 color = Color(0.3, 0.45, 0.67, 1)
 
 [node name="DiagonalLanding" type="StaticBody2D" parent="Rooms/Room3"]
@@ -577,6 +578,7 @@ position = Vector2(1095, 514)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/DiagonalLanding"]
 shape = SubResource("Shape_3_DiagonalLanding")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room3/DiagonalLanding"]
 script = ExtResource("art_terrain")
@@ -603,7 +605,7 @@ text = "ここでダッシュを試そう"
 mouse_filter = 2
 
 [node name="DashHint" type="Label" parent="Rooms/Room3"]
-offset_left = 390.0
+offset_left = 315.0
 offset_top = 520.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
