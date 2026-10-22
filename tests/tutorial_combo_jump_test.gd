@@ -141,10 +141,21 @@ func _backtrack() -> void:
 		await _step()
 	_release()
 	_check(tutorial.room_index == 13 and player.controls_enabled, "The continuous lower floor leads left into Room14")
+	_grab(true)
 	_move(Vector2.RIGHT)
-	for frame in 180:
+	for frame in 80:
+		if tutorial.room_index != 13 or player.position.x - tutorial.rooms.get_child(13).position.x >= 220:
+			break
+		await _step()
+	await _jump()
+	for frame in 320:
 		if tutorial.room_index == 14 and not tutorial.transitioning:
 			break
+		Input.action_release("jump")
+		if player.is_on_floor() and player.is_on_wall():
+			Input.action_press("jump")
+		if tutorial.room_index == 13 and player.position.x - tutorial.rooms.get_child(13).position.x >= 1000:
+			_grab(false)
 		await _step()
 	_release()
 	_check(tutorial.room_index == 14 and player.is_on_floor(), "Room14 leads forward to the original Room15 entrance")
