@@ -113,6 +113,8 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 - 左端から前の部屋へ戻れます。習得した壁アクションとDashは、戻ったりやり直したりしても使用可能です。
 - 16部屋目の到着台を押すと本編の完了を表示します。その後も戻って練習したり、17部屋目でSuperdashを試したりできます。
 
+16部屋目は、傘を保持して右へ進むと、上昇気流から休める短い天井へ移り、反転中の滑空で穴を渡ってDownゲートから出口へ降りられます。通常の歩行・ジャンプ・初期ダッシュでは出口へ届きません。天井からの反転ジャンプと遅らせた斜め下ダッシュによる高度な別経路は残り、到着台の既存3条件は傘での体験を必要とします。
+
 部屋の足場・入口・説明文は `scenes/tutorial.tscn` の `Rooms/Room1` ～ `Room17`、切り替えと解禁は `scripts/tutorial.gd` で調整します。風・Spring・運搬などをまとめた既存デモは `scenes/main.tscn` に残しています。GodotでそのSceneを開き、F6で実行できます。
 
 ### 到着台
@@ -251,6 +253,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/p
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase3_grab_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_rooms_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_extension_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_final_glide_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/arrival_switch_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/character_sprites_test.gd
 ```

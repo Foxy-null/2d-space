@@ -1,4 +1,4 @@
-[gd_scene load_steps=105 format=3]
+[gd_scene load_steps=106 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -265,13 +265,16 @@ size = Vector2(200, 80)
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_16_Floor"]
-size = Vector2(1280, 80)
+size = Vector2(460, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_16_Ceiling"]
-size = Vector2(640, 40)
+size = Vector2(240, 40)
 
-[sub_resource type="RectangleShape2D" id="Shape_16_Obstacle"]
-size = Vector2(140, 240)
+[sub_resource type="RectangleShape2D" id="Shape_16_ExitFloor"]
+size = Vector2(180, 28)
+
+[sub_resource type="RectangleShape2D" id="Shape_16_GateDown"]
+size = Vector2(140, 560)
 
 [sub_resource type="RectangleShape2D" id="Shape_17_ExitBarrier"]
 size = Vector2(28, 720)
@@ -2174,7 +2177,7 @@ position = Vector2(72, 614)
 
 
 [node name="Return" type="Marker2D" parent="Rooms/Room16"]
-position = Vector2(1208, 553)
+position = Vector2(72, 614)
 
 
 [node name="PreviousHint" type="Label" parent="Rooms/Room16"]
@@ -2217,7 +2220,7 @@ text = "目標達成で出口が開く"
 mouse_filter = 2
 
 [node name="Floor" type="StaticBody2D" parent="Rooms/Room16"]
-position = Vector2(640.0, 680.0)
+position = Vector2(230.0, 680.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room16/Floor"]
@@ -2225,11 +2228,11 @@ shape = SubResource("Shape_16_Floor")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room16/Floor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 40.0)
+polygon = PackedVector2Array(-230.0, -40.0, 230.0, -40.0, 230.0, 40.0, -230.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Ceiling" type="StaticBody2D" parent="Rooms/Room16"]
-position = Vector2(770.0, 210.0)
+position = Vector2(320.0, 490.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room16/Ceiling"]
@@ -2237,19 +2240,20 @@ shape = SubResource("Shape_16_Ceiling")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room16/Ceiling"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-320.0, -20.0, 320.0, -20.0, 320.0, 20.0, -320.0, 20.0)
+polygon = PackedVector2Array(-120.0, -20.0, 120.0, -20.0, 120.0, 20.0, -120.0, 20.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
-[node name="Obstacle" type="StaticBody2D" parent="Rooms/Room16"]
-position = Vector2(770.0, 520.0)
+[node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room16"]
+position = Vector2(1190.0, 654.0)
 
 
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room16/Obstacle"]
-shape = SubResource("Shape_16_Obstacle")
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room16/ExitFloor"]
+shape = SubResource("Shape_16_ExitFloor")
+one_way_collision = true
 
-[node name="Visual" type="Polygon2D" parent="Rooms/Room16/Obstacle"]
+[node name="Visual" type="Polygon2D" parent="Rooms/Room16/ExitFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-70.0, -120.0, 70.0, -120.0, 70.0, 120.0, -70.0, 120.0)
+polygon = PackedVector2Array(-90.0, -14.0, 90.0, -14.0, 90.0, 14.0, -90.0, 14.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Parachute" parent="Rooms/Room16" instance=ExtResource("ext_parachute_creature")]
@@ -2257,20 +2261,22 @@ position = Vector2(170, 593.4)
 
 
 [node name="Wind" parent="Rooms/Room16" instance=ExtResource("ext_wind_area")]
-position = Vector2(380, 435)
-area_size = Vector2(300, 410)
+position = Vector2(300, 435)
+area_size = Vector2(320, 410)
 wind_direction = Vector2(0, -1)
 wind_acceleration = 4000.0
 max_wind_speed = 300.0
 
 [node name="GateUp" parent="Rooms/Room16" instance=ExtResource("5_gate")]
-position = Vector2(620, 430)
+position = Vector2(330, 470)
 
 
 [node name="GateDown" parent="Rooms/Room16" instance=ExtResource("5_gate")]
-position = Vector2(990, 320)
+position = Vector2(1130, 280)
 target_gravity = 1
 
+[node name="CollisionShape2D" parent="Rooms/Room16/GateDown" index="0"]
+shape = SubResource("Shape_16_GateDown")
 [node name="WindHint" type="Label" parent="Rooms/Room16"]
 offset_left = 265
 offset_top = 325
