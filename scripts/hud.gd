@@ -48,8 +48,8 @@ func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool,
 			$Status/Rows/Resources.text += "　空中ジャンプ：1"
 		return
 	if tutorial_mode:
-		$Margin/Panel/Rows/Resources.text = "ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復"
-		if _tutorial_index >= 5:
+		$Margin/Panel/Rows/Resources.text = ("ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復") if _tutorial_hints_visible else ("ダッシュ ●" if dash_ready else "ダッシュ ○")
+		if _tutorial_hints_visible and _tutorial_index >= 5:
 			var player := get_node(player_path) as PlayerController
 			$Margin/Panel/Rows/Resources.text += "　追加ジャンプ：%d" % player.get_available_extra_jump_count()
 		return
@@ -74,7 +74,7 @@ func show_tutorial_room(index: int, title: String, controls: String, wall_enable
 	$Margin/Panel/Rows/StaminaLabel.text = "壁スタミナ（着地で回復）"
 	$Margin/Panel/Rows/StaminaLabel.visible = hints_visible and wall_enabled and index in [1, 8]
 	$Margin/Panel/Rows/Stamina.visible = wall_enabled and index in [1, 8]
-	$Margin/Panel/Rows/Resources.visible = hints_visible and dash_available
+	$Margin/Panel/Rows/Resources.visible = dash_available
 	$Margin/Panel/Rows/Carry.visible = hints_visible and index >= 10
 	var player := get_node(player_path) as PlayerController
 	_on_resources_changed(player.get_wall_stamina(), player.wall_stamina_max, player.is_dash_ready(), player.is_air_jump_ready())

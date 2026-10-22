@@ -30,8 +30,9 @@ func _run() -> void:
 				_check(bounds.position.x >= 0 and bounds.end.x <= 1280 and bounds.end.y <= 720, "Local guide fits room %d: %s" % [index + 1, guide.name])
 				_check(not bounds.intersects(bubble_bounds), "Goal mission does not cover a local guide in room %d: %s" % [index + 1, guide.name])
 		_check(guide_count >= 3 and room.get_node("Goal/Bubble").visible, "Local guides and the goal mission stay visible in room %d" % (index + 1))
-		for name in ["Controls", "WallControls", "Objective", "Gravity", "Resources", "Carry", "StaminaLabel"]:
+		for name in ["Controls", "WallControls", "Objective", "Gravity", "Carry", "StaminaLabel"]:
 			_check(not rows.get_node(name).visible, "Default HUD avoids duplicate details: " + name)
+		_check(rows.get_node("Resources").visible == (index >= 2), "Dash lessons retain a compact non-color readiness cue")
 		_check(rows.get_node("Stamina").visible == (index in [1, 8]), "Wall lessons retain their stamina meter")
 		if OS.get_cmdline_user_args().has("--screenshots"):
 			await _capture("room_%02d" % (index + 1))
@@ -45,6 +46,10 @@ func _run() -> void:
 		if index == 0 and OS.get_cmdline_user_args().has("--screenshots"):
 			await _capture("room_01_details")
 		tutorial.set_hints_visible(false)
+	tutorial.hud._on_resources_changed(3.0, 3.0, false, false)
+	_check(rows.get_node("Resources").text == "ダッシュ ○", "Spent dash has an empty marker without depending on outfit color")
+	tutorial.hud._on_resources_changed(3.0, 3.0, true, false)
+	_check(rows.get_node("Resources").text == "ダッシュ ●", "Ready dash has a filled marker")
 	# Changing the display must preserve the room, checkpoint, and mission progress.
 	tutorial._set_room(6, true)
 	tutorial.player.respawn()

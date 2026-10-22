@@ -2037,7 +2037,7 @@ text = "長押し: Shift · ZL / ZR\n→ → →"
 mouse_filter = 2
 
 [node name="ReleaseHint" type="Label" parent="Rooms/Room14"]
-offset_left = 950.0
+offset_left = 1000.0
 offset_top = 475.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
