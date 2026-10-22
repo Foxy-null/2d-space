@@ -2008,8 +2008,8 @@ text = "傘を保持してゆっくり降下\n横移動して足場へ"
 mouse_filter = 2
 
 [node name="ReleaseHint" type="Label" parent="Rooms/Room14"]
-offset_left = 1000
-offset_top = 475
+offset_left = 1000.0
+offset_top = 475.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "下が安全な場所で手放して\n落下速度の違いを比べよう"
