@@ -8,7 +8,6 @@ signal activated
 
 const TRAVEL := 32.0
 const PRESS_TIME := 0.2
-const BUBBLE := Vector2(-125, -230)
 const INK := Color(0.055, 0.09, 0.17)
 const GOLD := Color(1, 0.8, 0.22)
 const CYAN := Color(0.35, 0.92, 1)
@@ -29,6 +28,7 @@ var _unlock_tween: Tween
 
 
 func _ready() -> void:
+	set_hints_visible(false)
 	if not mission_required:
 		locked = false
 		$Case/Collision.disabled = true
@@ -40,7 +40,7 @@ func _ready() -> void:
 
 func set_progress(remaining: int, total: int, step: String, objective: String, cleared: bool = false) -> void:
 	_step = step
-	$Bubble/Progress.text = "クリア！" if cleared else "のこり %d/%d" % [remaining, total]
+	$Bubble/Progress.text = "完了 ✓" if cleared else ("のこり %d/%d" % [remaining, total] if remaining > 0 else "乗ろう ↓")
 	$Bubble/Objective.text = "出口がひらいた！" if cleared else (objective if remaining > 0 else "押せるよ！\nスイッチに乗ろう")
 	var next_locked := remaining > 0 and not cleared
 	if next_locked != locked:
@@ -65,6 +65,18 @@ func set_progress(remaining: int, total: int, step: String, objective: String, c
 		cap.position.y = 0.0
 		$UnlockSound.stop()
 	queue_redraw()
+
+
+func set_hints_visible(value: bool) -> void:
+	$Bubble/Objective.visible = value
+	$Bubble/Progress.add_theme_font_size_override("font_size", 20 if value else 16)
+	$Bubble/Progress.position = Vector2(-130, -69) if value else Vector2(88, -13)
+	$Bubble/Progress.size = Vector2(260, 32) if value else Vector2(86, 30)
+	queue_redraw()
+
+
+func get_hint_rect() -> Rect2:
+	return Rect2(-150, -84, 300, 136) if $Bubble/Objective.visible else Rect2(20, -32, 160, 64)
 
 
 func _physics_process(delta: float) -> void:
@@ -137,12 +149,12 @@ func _draw() -> void:
 			_star(center, (1.0 - _unlock_fx) * 8, Color(GOLD, 1.0 - _unlock_fx))
 	if not mission_required or not $Bubble.visible:
 		return
-	draw_set_transform(BUBBLE)
+	draw_set_transform($Bubble.position)
 	var border := GOLD if locked else Color(0.4, 1, 0.7)
-	_box(Rect2(-150, -84, 300, 144), Color(0.07, 0.12, 0.23, 0.97), border, 16)
-	draw_colored_polygon(PackedVector2Array([Vector2(75, 59), Vector2(98, 59), Vector2(117, 89)]), border)
-	draw_colored_polygon(PackedVector2Array([Vector2(81, 58), Vector2(94, 58), Vector2(111, 80)]), Color(0.07, 0.12, 0.23))
-	draw_set_transform(BUBBLE + Vector2(-110, 5))
+	_box(get_hint_rect(), Color(0.07, 0.12, 0.23, 0.97), border, 12)
+	draw_set_transform($Bubble.position + Vector2(-110, 5))
+	if not $Bubble/Objective.visible:
+		draw_set_transform($Bubble.position + Vector2(54, 0), 0, Vector2.ONE * 0.7)
 	_draw_icon("complete" if _pressed else (_step if locked else "ready"))
 	draw_set_transform(Vector2.ZERO)
 

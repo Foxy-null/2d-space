@@ -140,6 +140,8 @@ func _set_room(index: int, from_right: bool) -> void:
 
 func set_hints_visible(value: bool) -> void:
 	hints_visible = value
+	for room in rooms.get_children():
+		room.get_node("Goal").set_hints_visible(value)
 	hud.show_tutorial_room(room_index, TITLES[room_index], CONTROLS[room_index], player.wall_actions_enabled, player.dash_enabled, MAIN_ROOM_COUNT, value)
 	_update_lesson()
 

@@ -21,7 +21,8 @@ func _run() -> void:
 		tutorial.player.respawn()
 		await _step(3)
 		var room: Node = tutorial.rooms.get_child(index)
-		var bubble_bounds := Rect2(room.get_node("Goal").position + room.get_node("Goal/Bubble").position + Vector2(-150, -84), Vector2(300, 144))
+		var goal: ArrivalSwitch = room.get_node("Goal")
+		var bubble_bounds := Rect2(goal.position + goal.get_node("Bubble").position + goal.get_hint_rect().position, goal.get_hint_rect().size)
 		var guide_count := 0
 		for guide in room.get_children():
 			if guide is Label and guide.visible:
@@ -51,14 +52,14 @@ func _run() -> void:
 	tutorial.hud._on_resources_changed(3.0, 3.0, true, false)
 	_check(rows.get_node("Resources").text == "ダッシュ ●", "Ready dash has a filled marker")
 	# Changing the display must preserve the room, checkpoint, and mission progress.
-	tutorial._set_room(6, true)
+	tutorial._set_room(11, true)
 	tutorial.player.respawn()
-	tutorial._mark("floor_spring")
+	tutorial._mark("throw")
 	var checkpoint: Vector2 = tutorial.player._spawn_position
 	tutorial.set_hints_visible(true)
-	_check(tutorial.room_index == 6 and tutorial.player._spawn_position == checkpoint and tutorial.seen.has("floor_spring"), "Toggling details preserves the right entrance and mission progress")
-	_check(tutorial.get_node("Rooms/Room7/Goal/Bubble/Objective").text == tutorial.STEP_LABELS["wall_spring"], "The next required action remains available at the goal")
-	tutorial._set_room(7, false)
+	_check(tutorial.room_index == 11 and tutorial.player._spawn_position == checkpoint and tutorial.seen.has("throw"), "Toggling details preserves the right entrance and mission progress")
+	_check(tutorial.get_node("Rooms/Room12/Goal/Bubble/Objective").text == tutorial.STEP_LABELS["throw_button"], "The next required action remains available at the goal")
+	tutorial._set_room(12, false)
 	_check(tutorial.hints_visible and rows.get_node("Controls").visible, "The next room retains the detail preference")
 	print("TUTORIAL_GUIDANCE_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	tutorial.queue_free()
