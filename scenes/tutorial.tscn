@@ -220,10 +220,10 @@ size = Vector2(360, 80)
 size = Vector2(760, 20)
 
 [sub_resource type="RectangleShape2D" id="Shape_13_FirstLanding"]
-size = Vector2(190, 28)
+size = Vector2(240, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_13_SecondLanding"]
-size = Vector2(220, 28)
+size = Vector2(340, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_13_Descent"]
 size = Vector2(120, 28)
@@ -1804,11 +1804,14 @@ text = "← 前の部屋"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room13" instance=ExtResource("14_arrival")]
-position = Vector2(930, 330)
+position = Vector2(930, 280)
+
+[node name="Bubble" parent="Rooms/Room13/Goal" index="4"]
+position = Vector2(-220, -190)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room13"]
-offset_left = 882
-offset_top = 221
+offset_left = 882.0
+offset_top = 171.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "到着台"
@@ -1847,7 +1850,7 @@ polygon = PackedVector2Array(-180.0, -40.0, 180.0, -40.0, 180.0, 40.0, -180.0, 4
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="RecoveryFloor" type="StaticBody2D" parent="Rooms/Room13"]
-position = Vector2(740.0, 710.0)
+position = Vector2(740.0, 650.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room13/RecoveryFloor"]
@@ -1859,27 +1862,29 @@ polygon = PackedVector2Array(-380.0, -10.0, 380.0, -10.0, 380.0, 10.0, -380.0, 1
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="FirstLanding" type="StaticBody2D" parent="Rooms/Room13"]
-position = Vector2(595.0, 479.0)
+position = Vector2(500.0, 474.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room13/FirstLanding"]
 shape = SubResource("Shape_13_FirstLanding")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room13/FirstLanding"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-95.0, -14.0, 95.0, -14.0, 95.0, 14.0, -95.0, 14.0)
+polygon = PackedVector2Array(-120.0, -14.0, 120.0, -14.0, 120.0, 14.0, -120.0, 14.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="SecondLanding" type="StaticBody2D" parent="Rooms/Room13"]
-position = Vector2(910.0, 344.0)
+position = Vector2(850.0, 294.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room13/SecondLanding"]
 shape = SubResource("Shape_13_SecondLanding")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room13/SecondLanding"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-110.0, -14.0, 110.0, -14.0, 110.0, 14.0, -110.0, 14.0)
+polygon = PackedVector2Array(-170.0, -14.0, 170.0, -14.0, 170.0, 14.0, -170.0, 14.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Descent" type="StaticBody2D" parent="Rooms/Room13"]
@@ -1907,7 +1912,7 @@ polygon = PackedVector2Array(-80.0, -40.0, 80.0, -40.0, 80.0, 40.0, -80.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Creature" parent="Rooms/Room13" instance=ExtResource("ext_jump_creature")]
-position = Vector2(170, 607.1)
+position = Vector2(150, 607.1)
 
 
 [node name="CreatureHint" type="Label" parent="Rooms/Room13"]

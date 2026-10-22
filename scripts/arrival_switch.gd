@@ -8,7 +8,6 @@ signal activated
 
 const TRAVEL := 32.0
 const PRESS_TIME := 0.2
-const BUBBLE := Vector2(-125, -230)
 const INK := Color(0.055, 0.09, 0.17)
 const GOLD := Color(1, 0.8, 0.22)
 const CYAN := Color(0.35, 0.92, 1)
@@ -137,12 +136,12 @@ func _draw() -> void:
 			_star(center, (1.0 - _unlock_fx) * 8, Color(GOLD, 1.0 - _unlock_fx))
 	if not mission_required or not $Bubble.visible:
 		return
-	draw_set_transform(BUBBLE)
+	draw_set_transform($Bubble.position)
 	var border := GOLD if locked else Color(0.4, 1, 0.7)
 	_box(Rect2(-150, -84, 300, 144), Color(0.07, 0.12, 0.23, 0.97), border, 16)
 	draw_colored_polygon(PackedVector2Array([Vector2(75, 59), Vector2(98, 59), Vector2(117, 89)]), border)
 	draw_colored_polygon(PackedVector2Array([Vector2(81, 58), Vector2(94, 58), Vector2(111, 80)]), Color(0.07, 0.12, 0.23))
-	draw_set_transform(BUBBLE + Vector2(-110, 5))
+	draw_set_transform($Bubble.position + Vector2(-110, 5))
 	_draw_icon("complete" if _pressed else (_step if locked else "ready"))
 	draw_set_transform(Vector2.ZERO)
 
