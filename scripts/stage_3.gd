@@ -9,16 +9,16 @@ const HINTS := [
 	"空中ジャンプで後半の穴を越す。",
 	"縦風を越え、移動ゲートを待つ。",
 	"短い足場のSpringで床へ戻る。",
-	"向かい風と横移動ゲートを越す。",
+	"向かい風と壁沿いの反転ゲートを越す。",
 ]
 
 const GUIDES := [
-	"床のSpringから右の壁へ入り、Shiftで掴んでから反対の壁へキックします。さらに蹴り返して赤い↑ゲートへ入り、天井側へ移ってください。\nゲートで反転したら体を支える面が変わります。次の壁を掴み直して、最後は到着台のある床側へ戻ります。",
+	"床のSpringから右の壁へ入り、Shiftで掴んでから反対の壁へキックします。さらに蹴り返して赤い↑ゲートへ入り、天井側へ移ってください。\n天井の小さな穴をジャンプで越え、横移動を緩めて先のSpringへ着地します。青い↓ゲートから到着台へ向かってください。床と天井の穴はクリア後も残ります。",
 	"天井の反発板から飛んだ先で壁を掴み、反対側の壁へキックして進みます。\n天井が床のとき、重力に逆らって壁を登る入力は↓です。出口側の壁では左へ蹴り返して青い↓ゲートを通り、足跡の到着台へ着地してください。",
 	"最初の壁を少し登り、左へ蹴って赤い↑ゲートへ入ります。天井側の紫を取り、穴を越える途中で追加ジャンプを使ってください。\n後半は追加ジャンプの高さを使って青い↓ゲートへ入り、出口側の壁に沿って床へ下ります。",
 	"床の壁から左へ蹴って↑ゲートへ入り、天井の壁からもう一度左へ蹴って↓へ戻ります。\n後半は縦風と天井の穴を越えます。動くゲートへ届かないときは壁を掴んで待ち、近づいてから蹴り返してください。スタミナが減ったら待つ前に着地して回復します。",
 	"壁を掴んで赤いゲートの接近を待ち、左キックで反転します。天井側では↓で壁を登り、次の壁へ蹴り返してください。\n最後は短い足場のSpringから右の↓ゲートへ飛びます。着地できる足場を確かめてから発射に入りましょう。",
-	"向かい風にはダッシュ、壁の切り返しにはShiftとSpaceを使います。Springから壁を掴み、蹴り返して青い↓ゲートへ戻ってください。\n小さな横移動ゲートは、壁を掴んで近づくのを待ってから左へキックします。最後の穴を越え、到着台を押すとクリアです。"
+	"向かい風にはダッシュ、壁の切り返しにはShiftとSpaceを使います。Springから壁を掴み、蹴り返して青い↓ゲートへ戻ってください。\n赤いゲートは壁の低い位置で待ち、下がってきたら左へキックして反転します。最後の穴を越えたら出口の壁を掴み、床の壁に沿って上下する青いゲートへ左キックで戻り、到着台を押してください。"
 ]
 
 var room_index := 0
@@ -86,7 +86,7 @@ func set_hints_visible(value: bool) -> void:
 		hint.visible = value
 	$HUD/HelpMenu/Rows/Hints.set_pressed_no_signal(value)
 	hud.show_stage_room(room_index, TITLES[room_index], HINTS[room_index] if value else "", rooms.get_child_count())
-	$HUD/Completion.text = "ステージ3クリア！\n左へ戻って、自由に練習できます" if value else "ステージ3クリア！"
+	$HUD/Completion.text = "ステージ3クリア！\nR / Startでこの部屋をもう一度遊べます" if value else "ステージ3クリア！"
 
 
 func _retry() -> void:
@@ -165,11 +165,6 @@ func _update_room() -> void:
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
-	var bridge := room.get_node_or_null("ReturnBridge")
-	if bridge != null:
-		bridge.visible = done
-		bridge.get_node("Collision").set_deferred("disabled", not done)
-		room.get_node("PitWarning").visible = not done
 	room.get_node("Goal").set_progress(0, 0, "", "", done)
 	room.get_node("ExitHint").text = ("クリア！　自由に練習できます" if room_index == 5 else "次の部屋へ →") if done else "到着台に乗ると出口が開く"
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
