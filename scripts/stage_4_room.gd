@@ -86,7 +86,8 @@ func _ready() -> void:
 	var delivery_icon := Sprite2D.new()
 	delivery_icon.name = "DeliveryIcon"
 	delivery_icon.texture = creature.get_node("Visuals/Body").sprite_frames.get_frame_texture("default", 0)
-	delivery_icon.position = Vector2(1220, exit_top - 65)
+	# Keep the final badge clear of the goal and a companion held on its cap.
+	delivery_icon.position = Vector2(1220, exit_top - (250 if room_number == 5 else 65))
 	delivery_icon.scale = Vector2.ONE * (42.0 / delivery_icon.texture.get_width())
 	add_child(delivery_icon)
 	var delivery_frame := Line2D.new()

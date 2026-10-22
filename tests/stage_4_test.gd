@@ -168,6 +168,20 @@ func verify_carry_gate() -> void:
 		check(not stage._carry_requirement_met(), "Every room requires its companion")
 		var room: Node2D = stage.rooms.get_child(section)
 		check(room.get_node("DeliveryFrame").closed and room.get_node("DeliveryIcon").texture == room.get_node("Items/JumpCreature/Visuals/Body").sprite_frames.get_frame_texture("default", 0), "Every exit shows a framed picture of its required companion")
+		var badge_bottom := 0.0
+		if section == 5:
+			var icon: Sprite2D = room.get_node("DeliveryIcon")
+			var frame: Line2D = room.get_node("DeliveryFrame")
+			var frame_bounds := Rect2(frame.position + frame.points[0], Vector2.ZERO)
+			for point in frame.points:
+				frame_bounds = frame_bounds.expand(frame.position + point)
+			frame_bounds = frame_bounds.grow(frame.width * 0.5)
+			badge_bottom = room.global_position.y + frame_bounds.end.y
+			var icon_bounds := Rect2(icon.position + icon.get_rect().position * icon.scale, icon.get_rect().size * icon.scale)
+			check(Rect2(0, 0, 1280, 720).encloses(frame_bounds) and frame_bounds.encloses(icon_bounds) and icon.is_visible_in_tree() and frame.is_visible_in_tree(), "The final companion picture and its frame fit fully inside the room")
+			var case_collision: CollisionShape2D = room.get_node("Goal/Case/Collision")
+			var case_top := case_collision.to_global(case_collision.shape.get_rect().position).y - room.global_position.y
+			check(frame_bounds.end.y + 24 < case_top, "The final badge leaves space above the case for the goal artwork and opening animation")
 		check(room.get_node("ExitLabel").text == "○ →" and room.get_node("CarryHint").visible, "An empty delivery marker and nearby grab keys explain the initial task")
 		if section < 5:
 			player.position = Vector2(section * 1280 + 1262, 474)
@@ -186,6 +200,13 @@ func verify_carry_gate() -> void:
 				break
 		release()
 		check(stage._carry_requirement_met(), "Holding the room's companion satisfies its gate")
+		if section == 5:
+			var carried: Grabbable = player.get_held_object()
+			var carried_top := carried.collider.to_global(carried.collider.shape.get_rect().position).y - player.global_position.y
+			var cap_collision: CollisionShape2D = room.get_node("Goal/Cap/Collision")
+			var cap_top := cap_collision.to_global(cap_collision.shape.get_rect().position).y
+			var player_half_height: float = player.get_node("CollisionShape2D").shape.size.y * 0.5
+			check(badge_bottom + 8 < cap_top - player_half_height + carried_top, "The final badge stays above the companion held while standing on the goal cap")
 		stage._update_hud()
 		check(room.get_node("ExitLabel").text == "✓ →" and not room.get_node("CarryHint").visible, "Holding the companion ticks the delivery marker and removes grab keys")
 		await step(3)
