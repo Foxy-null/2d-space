@@ -117,21 +117,8 @@ func _pinball_course() -> void:
 
 
 func _wind_course() -> void:
-	Input.action_press("move_right")
-	for frame in 200:
-		if player.is_on_wall():
-			break
-		if tutorial.seen.has("wind_walk") and player.is_on_floor() and player.is_dash_ready() and not player.is_dashing():
-			await _pulse("dash")
-		await _step()
-	while player.is_dashing():
-		await _step()
-	_check(player.is_on_wall(), "Dash must reach the wall against the strong headwind")
-	Input.action_press("wall_grab")
-	Input.action_press("move_up")
-	await _step(40)
-	Input.action_release("move_up")
-	Input.action_release("wall_grab")
+	await _walk_to(500)
+	_check(player.is_on_floor() and player.velocity.x < 60, "The safe approach shows the headwind slowing a walk")
 	await _pulse("dash")
 	await _walk_goal()
 

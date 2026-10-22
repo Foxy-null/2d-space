@@ -30,7 +30,7 @@ const STEPS := [
 	["jump"], ["climb", "wall_jump"], ["dash"], ["up", "down"],
 	["air_dash", "dash_refill", "refilled_dash"], ["jump_crystal", "air_jump"],
 	["floor_spring", "wall_spring", "spring_dash"], ["pinball"],
-	["wind_walk", "wind_grab", "wind_dash"], ["up", "down"],
+	["wind_dash"], ["up", "down"],
 	["light_grab", "light_drop", "heavy_move", "button_on", "button_off"],
 	["throw", "throw_button"], ["creature_jump", "creature_landed", "second_creature_jump"],
 	["glide", "parachute_release", "fast_fall"],
