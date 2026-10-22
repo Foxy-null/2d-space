@@ -253,10 +253,10 @@ size = Vector2(28, 720)
 size = Vector2(400, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_15_RecoveryFloor"]
-size = Vector2(680, 20)
+size = Vector2(680, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_15_HighLanding"]
-size = Vector2(230, 28)
+size = Vector2(650, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_15_ExitFloor"]
 size = Vector2(200, 80)
@@ -2107,7 +2107,7 @@ polygon = PackedVector2Array(-200.0, -40.0, 200.0, -40.0, 200.0, 40.0, -200.0, 4
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="RecoveryFloor" type="StaticBody2D" parent="Rooms/Room15"]
-position = Vector2(740.0, 710.0)
+position = Vector2(740.0, 680.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room15/RecoveryFloor"]
@@ -2115,19 +2115,20 @@ shape = SubResource("Shape_15_RecoveryFloor")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room15/RecoveryFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-340.0, -10.0, 340.0, -10.0, 340.0, 10.0, -340.0, 10.0)
+polygon = PackedVector2Array(-340.0, -40.0, 340.0, -40.0, 340.0, 40.0, -340.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="HighLanding" type="StaticBody2D" parent="Rooms/Room15"]
-position = Vector2(915.0, 364.0)
+position = Vector2(785.0, 364.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room15/HighLanding"]
 shape = SubResource("Shape_15_HighLanding")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room15/HighLanding"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-115.0, -14.0, 115.0, -14.0, 115.0, 14.0, -115.0, 14.0)
+polygon = PackedVector2Array(-325.0, -14.0, 325.0, -14.0, 325.0, 14.0, -325.0, 14.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room15"]
@@ -2151,8 +2152,8 @@ position = Vector2(275, 580)
 
 
 [node name="ComboHint" type="Label" parent="Rooms/Room15"]
-offset_left = 270
-offset_top = 300
+offset_left = 24
+offset_top = 250
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "生物を保持 ＋ 紫のばね靴\nジャンプ → 追加ジャンプ → 追加ジャンプ"
