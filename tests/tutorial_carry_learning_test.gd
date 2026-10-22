@@ -16,6 +16,11 @@ func _run() -> void:
 	root.add_child(tutorial)
 	player = tutorial.player
 	player.respawned.connect(func(): respawns += 1)
+	# Reaching this lesson normally requires opening the preceding room's exit.
+	tutorial.cleared[12] = true
+	tutorial.call("_set_room", 12, false)
+	player.respawn()
+	await _step(3)
 	await _enter()
 	_capture("entrance")
 	# Reachability is measured before the mission lock, so it cannot hide a bypass.
@@ -74,9 +79,36 @@ func _run() -> void:
 			break
 		await _step()
 	_check(tutorial.room_index == 14 and player.controls_enabled, "The completed landing leads safely into the next lesson")
+	await _test_backtrack()
 	_release()
 	print("TUTORIAL_CARRY_LEARNING_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
+
+
+func _test_backtrack() -> void:
+	_release()
+	Input.action_press("move_left")
+	for frame in 180:
+		if tutorial.room_index == 13 and not tutorial.transitioning:
+			break
+		await _step()
+	_release()
+	await _step(4)
+	_check(tutorial.room_index == 13 and player.controls_enabled and player.is_on_floor(), "Walking left from Room15 returns safely to Room14")
+	_check(_local().distance_to(Vector2(72, 274)) < 10, "Backtracking lands beside the entrance parachute instead of beyond the valley")
+	var before_reset := respawns
+	await _pulse("reset")
+	await _step(4)
+	_check(respawns == before_reset + 1 and _local().distance_to(Vector2(72, 274)) < 2, "Retry after backtracking keeps the safe entrance checkpoint")
+	_check(_room().get_node("Parachute").position.distance_to(Vector2(170, 253.4)) < 5 and tutorial.cleared.has(13), "Backtracking retry restores the parachute and preserves the cleared lesson")
+	Input.action_press("move_left")
+	for frame in 180:
+		if tutorial.room_index == 12 and not tutorial.transitioning:
+			break
+		await _step()
+	_release()
+	await _step(4)
+	_check(tutorial.room_index == 12 and player.controls_enabled and player.is_on_floor(), "Walking left after retry can continue to Room13")
 
 
 func _without_parachute(launch_at: float, jump_kind: String, direction: String, dash_frame: int) -> void:
