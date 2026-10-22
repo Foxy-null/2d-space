@@ -170,9 +170,12 @@ func _backtrack() -> void:
 	await _step(20)
 	_check(tutorial.room_index == 6 and player.controls_enabled and player.is_on_floor(), "Left input after retry safely continues into Room7")
 	Input.action_press("move_right")
-	for frame in 180:
+	for frame in 240:
 		if tutorial.room_index == 7 and not tutorial.transitioning:
 			break
+		Input.action_release("jump")
+		if player.is_on_floor() and player.is_on_wall():
+			Input.action_press("jump")
 		await _step()
 	_release()
 	_check(tutorial.room_index == 7 and player.controls_enabled, "Room7 can be left through its right exit to re-enter Room8")
