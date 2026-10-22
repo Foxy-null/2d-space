@@ -166,6 +166,9 @@ func verify_carry_gate() -> void:
 		player.respawn()
 		await step(5)
 		check(not stage._carry_requirement_met(), "Every room requires its companion")
+		var room: Node2D = stage.rooms.get_child(section)
+		check(room.get_node("DeliveryFrame").closed and room.get_node("DeliveryIcon").texture == room.get_node("Items/JumpCreature/Visuals/Body").sprite_frames.get_frame_texture("default", 0), "Every exit shows a framed picture of its required companion")
+		check(room.get_node("ExitLabel").text == "○ →" and room.get_node("CarryHint").visible, "An empty delivery marker and nearby grab keys explain the initial task")
 		if section < 5:
 			player.position = Vector2(section * 1280 + 1262, 474)
 			await step(10)
@@ -183,6 +186,10 @@ func verify_carry_gate() -> void:
 				break
 		release()
 		check(stage._carry_requirement_met(), "Holding the room's companion satisfies its gate")
+		stage._update_hud()
+		check(room.get_node("ExitLabel").text == "✓ →" and not room.get_node("CarryHint").visible, "Holding the companion ticks the delivery marker and removes grab keys")
+		await step(3)
+		check(not stage._carry_requirement_met() and room.get_node("ExitLabel").text == "○ →", "Dropping the companion restores the incomplete marker")
 	stage.room_index = 5
 	stage.completed = false
 	stage._set_checkpoint()
