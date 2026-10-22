@@ -85,13 +85,13 @@ size = Vector2(110, 28)
 size = Vector2(130, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_4_Floor"]
-size = Vector2(1280, 80)
+size = Vector2(320, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_4_CeilingRoute"]
 size = Vector2(1180, 40)
 
-[sub_resource type="RectangleShape2D" id="Shape_4_FloorObstacle"]
-size = Vector2(210, 270)
+[sub_resource type="RectangleShape2D" id="Shape_4_ExitFloor"]
+size = Vector2(180, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_4_CeilingStep"]
 size = Vector2(70, 60)
@@ -181,13 +181,13 @@ size = Vector2(28, 140)
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_10_Floor"]
-size = Vector2(1280, 80)
+size = Vector2(320, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_10_Ceiling"]
 size = Vector2(880, 40)
 
-[sub_resource type="RectangleShape2D" id="Shape_10_Obstacle"]
-size = Vector2(150, 250)
+[sub_resource type="RectangleShape2D" id="Shape_10_ExitFloor"]
+size = Vector2(180, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_11_ExitBarrier"]
 size = Vector2(28, 720)
@@ -655,14 +655,14 @@ position = Vector2(72, 614)
 position = Vector2(1208, 553)
 
 [node name="Floor" type="StaticBody2D" parent="Rooms/Room4"]
-position = Vector2(640, 680)
+position = Vector2(160, 680)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/Floor"]
 shape = SubResource("Shape_4_Floor")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/Floor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-640, -40, 640, -40, 640, 40, -640, 40)
+polygon = PackedVector2Array(-160, -40, 160, -40, 160, 40, -160, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="CeilingRoute" type="StaticBody2D" parent="Rooms/Room4"]
@@ -676,15 +676,15 @@ script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-590, -20, 590, -20, 590, 20, -590, 20)
 color = Color(0.12, 0.19, 0.34, 1)
 
-[node name="FloorObstacle" type="StaticBody2D" parent="Rooms/Room4"]
-position = Vector2(655, 505)
+[node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room4"]
+position = Vector2(1190, 680)
 
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/FloorObstacle"]
-shape = SubResource("Shape_4_FloorObstacle")
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/ExitFloor"]
+shape = SubResource("Shape_4_ExitFloor")
 
-[node name="Visual" type="Polygon2D" parent="Rooms/Room4/FloorObstacle"]
+[node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-105, -135, 105, -135, 105, 135, -105, 135)
+polygon = PackedVector2Array(-90, -40, 90, -40, 90, 40, -90, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="CeilingStep" type="StaticBody2D" parent="Rooms/Room4"]
@@ -1488,7 +1488,7 @@ text = "目標達成で出口が開く"
 mouse_filter = 2
 
 [node name="Floor" type="StaticBody2D" parent="Rooms/Room10"]
-position = Vector2(640.0, 680.0)
+position = Vector2(160.0, 680.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/Floor"]
@@ -1496,11 +1496,11 @@ shape = SubResource("Shape_10_Floor")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room10/Floor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 40.0)
+polygon = PackedVector2Array(-160.0, -40.0, 160.0, -40.0, 160.0, 40.0, -160.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Ceiling" type="StaticBody2D" parent="Rooms/Room10"]
-position = Vector2(640.0, 240.0)
+position = Vector2(640.0, 180.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/Ceiling"]
@@ -1511,16 +1511,16 @@ script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-440.0, -20.0, 440.0, -20.0, 440.0, 20.0, -440.0, 20.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
-[node name="Obstacle" type="StaticBody2D" parent="Rooms/Room10"]
-position = Vector2(735.0, 515.0)
+[node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room10"]
+position = Vector2(1190.0, 680.0)
 
 
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/Obstacle"]
-shape = SubResource("Shape_10_Obstacle")
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/ExitFloor"]
+shape = SubResource("Shape_10_ExitFloor")
 
-[node name="Visual" type="Polygon2D" parent="Rooms/Room10/Obstacle"]
+[node name="Visual" type="Polygon2D" parent="Rooms/Room10/ExitFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-75.0, -125.0, 75.0, -125.0, 75.0, 125.0, -75.0, 125.0)
+polygon = PackedVector2Array(-90.0, -40.0, 90.0, -40.0, 90.0, 40.0, -90.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="MovingGate" parent="Rooms/Room10" instance=ExtResource("5_gate")]
