@@ -162,6 +162,8 @@ func _check_completion_input() -> void:
 	var pause := stage.get_node("PauseMenu")
 	stage.get_node("HUD/Completion").show()
 	await _key(KEY_ESCAPE)
+	await _joy(JOY_BUTTON_Y)
+	_check(current_scene == stage and paused, "Completion does not intercept Y while paused")
 	await _key(KEY_DOWN)
 	await _key(KEY_ENTER)
 	_check(current_scene == stage and paused and stage.hints_visible, "Completion does not intercept Enter in pause")
