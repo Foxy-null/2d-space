@@ -386,7 +386,7 @@ offset_left = 80.0
 offset_top = 465.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "まずは左右に動いてみよう"
+text = "←  A / D  →"
 mouse_filter = 2
 
 [node name="JumpHint" type="Label" parent="Rooms/Room1"]
@@ -394,15 +394,15 @@ offset_left = 340.0
 offset_top = 494.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "Space / A・× でジャンプ"
+text = "↑  Space · A / ×"
 mouse_filter = 2
 
 [node name="RecoveryHint" type="Label" parent="Rooms/Room1"]
 offset_left = 715.0
 offset_top = 548.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 20
-text = "短い穴をジャンプ\n落ちても下の床から戻れる"
+theme_override_font_sizes/font_size = 28
+text = "↗"
 mouse_filter = 2
 
 [node name="ExitGlow" type="Polygon2D" parent="Rooms/Room1"]
@@ -506,7 +506,7 @@ offset_left = 282.0
 offset_top = 345.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "Shift / ZL・ZR ＋ ↑\n掴んだまま登る"
+text = "Shift · ZL / ZR\n＋ ↑"
 mouse_filter = 2
 
 [node name="RestHint" type="Label" parent="Rooms/Room2"]
@@ -514,7 +514,7 @@ offset_left = 421.0
 offset_top = 458.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "足場でスタミナ回復"
+text = "スタミナ ↻"
 mouse_filter = 2
 
 [node name="KickHint" type="Label" parent="Rooms/Room2"]
@@ -522,14 +522,14 @@ offset_left = 687.0
 offset_top = 185.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "下を通って、右の壁を少し登ろう\n壁キックで反対側へ Space / A・×"
+text = "↖  Space · A / ×  ↗"
 mouse_filter = 2
 
 [node name="PreviousHint" type="Label" parent="Rooms/Room2"]
 offset_left = 24.0
 offset_top = 663.0
 theme_override_colors/font_color = Color(0.62, 0.73, 0.88, 1)
-text = "← 前の部屋"
+text = "←"
 
 [node name="ExitGlow" type="Polygon2D" parent="Rooms/Room2"]
 polygon = PackedVector2Array(1254, 548, 1280, 548, 1280, 640, 1254, 640)
@@ -599,7 +599,7 @@ offset_left = 40.0
 offset_top = 458.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "ここでダッシュを試そう"
+text = "X · B / ○"
 mouse_filter = 2
 
 [node name="DashHint" type="Label" parent="Rooms/Room3"]
@@ -607,30 +607,30 @@ offset_left = 390.0
 offset_top = 520.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "ジャンプ → 右ダッシュ"
+text = "Space → X\nA / × → B / ○"
 mouse_filter = 2
 
 [node name="DiagonalHint" type="Label" parent="Rooms/Room3"]
-offset_left = 825.0
-offset_top = 310.0
+offset_left = 800.0
+offset_top = 280.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "ジャンプ → 右上ダッシュ"
+text = "↗  X · B / ○"
 mouse_filter = 2
 
 [node name="CrystalHint" type="Label" parent="Rooms/Room3"]
-offset_left = 893.0
-offset_top = 377.0
+offset_left = 890.0
+offset_top = 485.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 20
-text = "緑の速度マーク：ダッシュ回復"
+theme_override_font_sizes/font_size = 28
+text = "↻"
 mouse_filter = 2
 
 [node name="PreviousHint" type="Label" parent="Rooms/Room3"]
 offset_left = 24.0
 offset_top = 663.0
 theme_override_colors/font_color = Color(0.62, 0.73, 0.88, 1)
-text = "← 前の部屋"
+text = "←"
 
 [node name="ExitGlow" type="Polygon2D" parent="Rooms/Room3"]
 polygon = PackedVector2Array(1254, 548, 1280, 548, 1280, 640, 1254, 640)
@@ -705,8 +705,8 @@ color = Color(0.3, 0.45, 0.67, 1)
 offset_left = 153.0
 offset_top = 397.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 20
-text = "赤い ↑ を通ると\n天井へ落ちる"
+theme_override_font_sizes/font_size = 28
+text = "↑"
 mouse_filter = 2
 
 [node name="CeilingHint" type="Label" parent="Rooms/Room4"]
@@ -714,15 +714,15 @@ offset_left = 570.0
 offset_top = 290.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "天井も足場\nジャンプは下向き"
+text = "→ → →\nSpace · A / ×  ↓"
 mouse_filter = 2
 
 [node name="DownHint" type="Label" parent="Rooms/Room4"]
-offset_left = 904.0
-offset_top = 403.0
+offset_left = 875.0
+offset_top = 270.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 20
-text = "シアンの ↓ で\n床へ戻る"
+theme_override_font_sizes/font_size = 28
+text = "↓"
 mouse_filter = 2
 
 [node name="GoalHint" type="Label" parent="Rooms/Room4"]
@@ -737,7 +737,7 @@ mouse_filter = 2
 offset_left = 24.0
 offset_top = 663.0
 theme_override_colors/font_color = Color(0.62, 0.73, 0.88, 1)
-text = "← 前の部屋"
+text = "←"
 
 [node name="GateUp" parent="Rooms/Room4" instance=ExtResource("5_gate")]
 position = Vector2(280, 560)
@@ -877,8 +877,8 @@ position = Vector2(1208, 553)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room5" instance=ExtResource("14_arrival")]
@@ -957,7 +957,7 @@ offset_left = 210
 offset_top = 410
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "ジャンプ → ダッシュ"
+text = "Space → X\nA / × → B / ○"
 mouse_filter = 2
 
 [node name="RefillHint" type="Label" parent="Rooms/Room5"]
@@ -965,7 +965,7 @@ offset_left = 505
 offset_top = 335
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "緑で回復\n着地前にもう一度ダッシュ"
+text = "↻  → X · B / ○"
 mouse_filter = 2
 
 [node name="RecoveryHint" type="Label" parent="Rooms/Room5"]
@@ -973,7 +973,7 @@ offset_left = 405
 offset_top = 667
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "下の床から戻って試せます"
+text = "↻  R / Start"
 mouse_filter = 2
 
 [node name="Room6" type="Node2D" parent="Rooms"]
@@ -991,8 +991,8 @@ position = Vector2(1208, 614)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room6" instance=ExtResource("14_arrival")]
@@ -1095,15 +1095,15 @@ offset_left = 185
 offset_top = 375
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "紫を取る → ジャンプ\n空中でもう一度ジャンプ"
+text = "紫 ＋1\nSpace · A / ×  ↑ ↑"
 mouse_filter = 2
 
 [node name="RefillHint" type="Label" parent="Rooms/Room6"]
-offset_left = 795
-offset_top = 265
+offset_left = 395.0
+offset_top = 420.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "使った追加ジャンプは\n着地だけでは戻らない"
+text = "空中でもう一度 ↑"
 mouse_filter = 2
 
 [node name="Room7" type="Node2D" parent="Rooms"]
@@ -1121,8 +1121,8 @@ position = Vector2(1208, 553)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room7" instance=ExtResource("14_arrival")]
@@ -1201,19 +1201,19 @@ position = Vector2(580, 602)
 rotation = 1.5707963
 
 [node name="FloorHint" type="Label" parent="Rooms/Room7"]
-offset_left = 170
-offset_top = 350
+offset_left = 246.0
+offset_top = 540.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "床の矢印に触れると上へ発射"
+theme_override_font_sizes/font_size = 28
+text = "↑"
 mouse_filter = 2
 
 [node name="WallHint" type="Label" parent="Rooms/Room7"]
-offset_left = 660
-offset_top = 390
+offset_left = 630.0
+offset_top = 490.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "右側へ回り、左に進んで触れよう\n発射されたら右へダッシュ"
+text = "← 触れる\n→ X · B / ○"
 mouse_filter = 2
 
 [node name="Room8" type="Node2D" parent="Rooms"]
@@ -1231,8 +1231,8 @@ position = Vector2(1208, 614)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room8" instance=ExtResource("14_arrival")]
@@ -1319,19 +1319,19 @@ position = Vector2(650, 565)
 
 
 [node name="BounceHint" type="Label" parent="Rooms/Room8"]
-offset_left = 335
-offset_top = 330
+offset_left = 625.0
+offset_top = 450.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "上寄りに当たると上へ跳ねる\n右へ向きを整えて到着台へ"
+theme_override_font_sizes/font_size = 28
+text = "↗"
 mouse_filter = 2
 
 [node name="RecoveryHint" type="Label" parent="Rooms/Room8"]
 offset_left = 415
 offset_top = 668
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "下は安全な練習床"
+theme_override_font_sizes/font_size = 28
+text = "↻"
 mouse_filter = 2
 
 [node name="Room9" type="Node2D" parent="Rooms"]
@@ -1349,8 +1349,8 @@ position = Vector2(1208, 553)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room9" instance=ExtResource("14_arrival")]
@@ -1417,8 +1417,8 @@ wind_direction = Vector2(-1, 0)
 offset_left = 305
 offset_top = 335
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "向かい風の中を歩いてみよう"
+theme_override_font_sizes/font_size = 28
+text = "→ → →"
 mouse_filter = 2
 
 [node name="GrabHint" type="Label" parent="Rooms/Room9"]
@@ -1426,7 +1426,7 @@ offset_left = 610
 offset_top = 420
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "壁を掴むと風を受けない"
+text = "Shift · ZL / ZR"
 mouse_filter = 2
 
 [node name="DashHint" type="Label" parent="Rooms/Room9"]
@@ -1434,7 +1434,7 @@ offset_left = 795
 offset_top = 290
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "ジャンプ → ダッシュで抜けよう"
+text = "→ X · B / ○"
 mouse_filter = 2
 
 [node name="Room10" type="Node2D" parent="Rooms"]
@@ -1452,8 +1452,8 @@ position = Vector2(1208, 553)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room10" instance=ExtResource("14_arrival")]
@@ -1538,16 +1538,16 @@ target_gravity = 1
 offset_left = 145
 offset_top = 360
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "ここで往復を観察\n近づいて通過しよう"
+theme_override_font_sizes/font_size = 28
+text = "↑ → ↑"
 mouse_filter = 2
 
 [node name="CeilingHint" type="Label" parent="Rooms/Room10"]
 offset_left = 545
 offset_top = 295
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "天井を歩いて ↓ ゲートへ"
+theme_override_font_sizes/font_size = 28
+text = "→ → ↓"
 mouse_filter = 2
 
 [node name="Room11" type="Node2D" parent="Rooms"]
@@ -1565,8 +1565,8 @@ position = Vector2(1208, 553)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room11" instance=ExtResource("14_arrival")]
@@ -1625,27 +1625,27 @@ position = Vector2(760, 640)
 
 
 [node name="BoxHint" type="Label" parent="Rooms/Room11"]
-offset_left = 110
-offset_top = 410
+offset_left = 105.0
+offset_top = 510.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "小さな箱：2.0\n掴む → 止まる → 離す"
+text = "Shift · ZL / ZR\n長押し"
 mouse_filter = 2
 
 [node name="HeavyHint" type="Label" parent="Rooms/Room11"]
-offset_left = 390
-offset_top = 310
+offset_left = 345.0
+offset_top = 480.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "重い箱：8.0\n保持中は歩行・ジャンプが控えめ"
+text = "→ 運ぶ\n止まって離す"
 mouse_filter = 2
 
 [node name="ButtonHint" type="Label" parent="Rooms/Room11"]
-offset_left = 680
-offset_top = 455
+offset_left = 695.0
+offset_top = 535.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "必要な重さ：2.0\n置いて少し離れる → ON\n持ち上げてOFF"
+text = "置く ↓ ON\n持つ ↑ OFF"
 mouse_filter = 2
 
 [node name="Room12" type="Node2D" parent="Rooms"]
@@ -1663,8 +1663,8 @@ position = Vector2(1208, 553)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room12" instance=ExtResource("14_arrival")]
@@ -1761,27 +1761,27 @@ scale = Vector2(2.6, 1)
 scale = Vector2(2.6, 1)
 
 [node name="ThrowHint" type="Label" parent="Rooms/Room12"]
-offset_left = 285
-offset_top = 365
+offset_left = 230.0
+offset_top = 470.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "箱を掴んで右へ走る\nジャンプ中にGrabキーを離す"
+text = "Shift · ZL / ZR\n→ ＋ 離す"
 mouse_filter = 2
 
 [node name="DirectionHint" type="Label" parent="Rooms/Room12"]
-offset_left = 265
-offset_top = 470
+offset_left = 435.0
+offset_top = 455.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "投げる方向は、向きではなく移動方向"
+theme_override_font_sizes/font_size = 28
+text = "→ → →"
 mouse_filter = 2
 
 [node name="TargetHint" type="Label" parent="Rooms/Room12"]
-offset_left = 825
-offset_top = 425
+offset_left = 920.0
+offset_top = 555.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "仕切りの向こうへ投げて\nボタンに着地させよう"
+text = "↓ ON"
 mouse_filter = 2
 
 [node name="Room13" type="Node2D" parent="Rooms"]
@@ -1799,8 +1799,8 @@ position = Vector2(1208, 614)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room13" instance=ExtResource("14_arrival")]
@@ -1911,19 +1911,19 @@ position = Vector2(170, 607.1)
 
 
 [node name="CreatureHint" type="Label" parent="Rooms/Room13"]
-offset_left = 115
-offset_top = 350
+offset_left = 110.0
+offset_top = 500.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "掴んでジャンプ → 空中ジャンプ\n保持中は壁を登れません"
+text = "掴んだまま\nSpace · A / ×  ↑ ↑"
 mouse_filter = 2
 
 [node name="RefillHint" type="Label" parent="Rooms/Room13"]
-offset_left = 475
-offset_top = 525
+offset_left = 500.0
+offset_top = 505.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "保持したまま着地で回復\n次の足場でもう一度使おう"
+text = "着地で ↻\nもう一度 ↑ ↑"
 mouse_filter = 2
 
 [node name="Room14" type="Node2D" parent="Rooms"]
@@ -1941,8 +1941,8 @@ position = Vector2(1208, 553)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room14" instance=ExtResource("14_arrival")]
@@ -2029,19 +2029,19 @@ position = Vector2(170, 400)
 
 
 [node name="GlideHint" type="Label" parent="Rooms/Room14"]
-offset_left = 390
-offset_top = 285
+offset_left = 370.0
+offset_top = 285.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "傘を保持してゆっくり降下\n横移動して足場へ"
+text = "長押し: Shift · ZL / ZR\n→ → →"
 mouse_filter = 2
 
 [node name="ReleaseHint" type="Label" parent="Rooms/Room14"]
-offset_left = 580
-offset_top = 400
+offset_left = 950.0
+offset_top = 475.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "下が安全な場所で手放して\n落下速度の違いを比べよう"
+text = "離す ↓"
 mouse_filter = 2
 
 [node name="Room15" type="Node2D" parent="Rooms"]
@@ -2059,8 +2059,8 @@ position = Vector2(1208, 614)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room15" instance=ExtResource("14_arrival")]
@@ -2151,19 +2151,19 @@ position = Vector2(275, 580)
 
 
 [node name="ComboHint" type="Label" parent="Rooms/Room15"]
-offset_left = 270
-offset_top = 300
+offset_left = 120.0
+offset_top = 440.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "生物を保持 ＋ 紫のばね靴\nジャンプ → 追加ジャンプ → 追加ジャンプ"
+text = "掴む ＋ 紫\nShift · ZL / ZR"
 mouse_filter = 2
 
 [node name="CountHint" type="Label" parent="Rooms/Room15"]
-offset_left = 670
-offset_top = 490
+offset_left = 460.0
+offset_top = 420.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "白い山形が 2 → 1 → 0\n着地せず2回使って到着台へ"
+text = "↑ ↑\n空中で2回"
 mouse_filter = 2
 
 [node name="Room16" type="Node2D" parent="Rooms"]
@@ -2181,8 +2181,8 @@ position = Vector2(1208, 553)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room16" instance=ExtResource("14_arrival")]
@@ -2272,19 +2272,19 @@ position = Vector2(990, 320)
 target_gravity = 1
 
 [node name="WindHint" type="Label" parent="Rooms/Room16"]
-offset_left = 265
-offset_top = 325
+offset_left = 255.0
+offset_top = 345.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "傘を保持して上昇気流へ\n浮いたら右へ進もう"
+text = "長押し: Shift · ZL / ZR\n↑ ↑ ↑"
 mouse_filter = 2
 
 [node name="GravityHint" type="Label" parent="Rooms/Room16"]
 offset_left = 650
 offset_top = 285
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "↑ の後も落下はゆっくり\n天井を歩いて ↓ へ"
+theme_override_font_sizes/font_size = 28
+text = "↑ → ↓"
 mouse_filter = 2
 
 [node name="Room17" type="Node2D" parent="Rooms"]
@@ -2302,8 +2302,8 @@ position = Vector2(1208, 614)
 offset_left = 24
 offset_top = 663
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "← 前の部屋"
+theme_override_font_sizes/font_size = 28
+text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room17" instance=ExtResource("14_arrival")]
@@ -2390,7 +2390,7 @@ offset_left = 180
 offset_top = 340
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "まず平地で試そう\n水平ダッシュ → すぐSpace / A / ×"
+text = "X → Space\nB / ○ → A / ×"
 mouse_filter = 2
 
 [node name="LaunchHint" type="Label" parent="Rooms/Room17"]
@@ -2398,7 +2398,7 @@ offset_left = 480
 offset_top = 490
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "端の手前でダッシュ → ジャンプ\n速さを使って右の到着台へ"
+text = "→ → →\nダッシュ → すぐジャンプ"
 mouse_filter = 2
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
@@ -2439,7 +2439,7 @@ offset_bottom = 64.0
 grow_horizontal = 0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
-text = "ポーズ [Esc]"
+text = "ポーズ・ヒント [Esc]"
 
 [node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
 
