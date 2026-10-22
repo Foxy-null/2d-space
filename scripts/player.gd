@@ -464,10 +464,14 @@ func set_respawn_position(location: Vector2) -> void:
 func respawn() -> void:
 	for object in _separating_objects.duplicate():
 		_clear_object_separation(object)
+	var carried := get_held_object()
 	_held = null
 	_parachute_grace_left = 0.0
 	for object in get_tree().get_nodes_in_group("grabbable"):
 		object.reset_for_respawn()
+		if object == carried and not global_position.is_equal_approx(_spawn_position):
+			# The physics body can still be at the death site for this tick.
+			_ignore_overlapping_object(object, true)
 	carry_changed.emit("NONE")
 	_air_jump_ready = false
 	_motion_frame = -2
