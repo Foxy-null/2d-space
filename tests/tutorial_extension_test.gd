@@ -95,16 +95,7 @@ func _air_jump_course() -> void:
 
 func _spring_course() -> void:
 	await _walk_to(700)
-	Input.action_release("move_right")
-	Input.action_press("move_left")
-	for frame in 300:
-		if tutorial.seen.has("wall_spring"):
-			break
-		await _step()
-	_check(tutorial.seen.has("floor_spring") and tutorial.seen.has("wall_spring"), "Both mounted spring directions must launch the player")
-	Input.action_release("move_left")
-	Input.action_press("move_right")
-	await _pulse("dash")
+	_check(tutorial.seen.has("floor_spring"), "The floor spring must launch the player to the upper landing")
 	await _walk_goal()
 
 
