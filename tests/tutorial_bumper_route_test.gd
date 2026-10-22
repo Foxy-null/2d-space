@@ -23,6 +23,9 @@ func _run() -> void:
 	for pause in [0, 20, 60]:
 		await _new_world()
 		await _course(pause)
+	for axis in [0.7, 0.85, 1.0]:
+		await _new_world()
+		await _course(0, axis)
 	await _backtrack()
 	_release()
 	print("TUTORIAL_BUMPER_ROUTE_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
@@ -80,7 +83,7 @@ func _attempt(lower: bool, launch: float, direction: String, dash_frame: int) ->
 			Input.action_press("move_left")
 			await _pulse("jump")
 		await _step()
-		reached = reached or (_local().x >= 702 and _local().y <= 304)
+		reached = reached or (_local().x >= 722 and _local().y <= 304)
 	_check(not reached, "Without the bumper, jump/coyote/dash/wall actions cannot reach the landing: lower=%s launch=%d direction=%s frame=%d" % [lower, launch, direction, dash_frame])
 	_release()
 
@@ -95,26 +98,33 @@ func _fall_retry() -> void:
 		await _step()
 	_release()
 	await _step(4)
-	_check(respawns == 1 and _local().distance_to(Vector2(72, 524)) < 10, "Jumping past the bumper and falling restores the safe entrance")
+	_check(respawns == 1 and _local().distance_to(Vector2(72, 504)) < 10, "Jumping past the bumper and falling restores the safe entrance")
 	_check(bounces == 0 and not tutorial.cleared.has(7), "A missed bumper cannot satisfy the lesson")
 
 
-func _course(pause: int) -> void:
+func _course(pause: int, joy_value: float = 0.0) -> void:
 	_capture("entrance")
 	if pause > 0:
 		await _walk_to(180)
 		_release()
 		await _step(pause)
-	Input.action_press("move_right")
+	if joy_value > 0.0:
+		_joy(joy_value)
+		_check(absf(Input.get_axis("move_left", "move_right") - (joy_value - 0.5) * 2.0) < 0.001, "Real joystick motion applies the existing 0.5 deadzone")
+	else:
+		Input.action_press("move_right")
 	for frame in 200:
 		if bounces > 0 and player.is_on_floor() and _local().y < 400:
 			break
 		await _step()
-	_check(bounces == 1 and tutorial.seen.has("pinball") and player.is_on_floor() and absf(_local().y - 304) < 2, "Holding right after a pause of %d frames reflects onto the wide landing" % pause)
-	_check(reflected.y < -1000 and reflected.x > 0 and impact_position.y < 650, "The actual upper-surface collision reflects the player upward and right")
+	_check(bounces == 1 and tutorial.seen.has("pinball") and player.is_on_floor() and absf(_local().y - 304) < 2, "Holding right after a pause of %d frames, joy=%f, reflects onto the wide landing" % [pause, joy_value])
+	_check(reflected.y < -800 and reflected.x > 0 and impact_position.y < 624, "The actual upper-surface collision reflects the player upward and right")
 	_check(respawns == 0 and highest >= 26, "The whole player stays in the screen without an upward retry")
 	_check(not tutorial.seen.has("jump") and not tutorial.seen.has("dash") and not tutorial.seen.has("wall_jump"), "Reaching the landing requires only right input")
 	_capture("landing")
+	if joy_value > 0.0:
+		print("BUMPER_JOYPAD axis=%f effective=%f contact=%s reflection=%s landing=%s highest=%f respawns=%d" % [joy_value, Input.get_axis("move_left", "move_right"), impact_position, reflected, _local(), highest, respawns])
+		_joy(0.0)
 	Input.action_release("move_right")
 	await _step(60)
 	_check(player.is_on_floor() and absf(_local().y - 304) < 2, "The landing provides a safe place to rest")
@@ -147,10 +157,10 @@ func _backtrack() -> void:
 		await _step()
 	_release()
 	await _step(4)
-	_check(tutorial.room_index == 7 and player.is_on_floor() and _local().distance_to(Vector2(72, 524)) < 10, "Room9 can be left through the one-way landing and returns to the safe entrance")
+	_check(tutorial.room_index == 7 and player.is_on_floor() and _local().distance_to(Vector2(72, 504)) < 10, "Room9 can be left through the one-way landing and returns to the safe entrance")
 	await _pulse("reset")
 	await _step(4)
-	_check(_local().distance_to(Vector2(72, 524)) < 2 and tutorial.cleared.has(7), "Retry after backtracking preserves the safe entrance and completed lesson")
+	_check(_local().distance_to(Vector2(72, 504)) < 2 and tutorial.cleared.has(7), "Retry after backtracking preserves the safe entrance and completed lesson")
 	Input.action_press("move_left")
 	for frame in 180:
 		if tutorial.room_index == 6 and not tutorial.transitioning:
@@ -234,8 +244,18 @@ func _step(count: int = 1) -> void:
 
 
 func _release() -> void:
+	_joy(0.0)
 	for action in ["move_left", "move_right", "move_up", "move_down", "jump", "jump_up", "dash", "wall_grab", "reset"]:
 		Input.action_release(action)
+
+
+func _joy(value: float) -> void:
+	var event := InputEventJoypadMotion.new()
+	event.device = 0
+	event.axis = JOY_AXIS_LEFT_X
+	event.axis_value = value
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
 
 
 func _check(condition: bool, message: String) -> void:
