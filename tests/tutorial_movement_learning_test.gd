@@ -17,6 +17,7 @@ func _run() -> void:
 	await _step(5)
 	for index in [3, 9]:
 		await _gravity_route(index)
+		await _backtrack(index)
 		await _missing_down_gate(index)
 		await _gravity_bypasses(index)
 	_release()
@@ -55,6 +56,38 @@ func _gravity_route(index: int) -> void:
 	_check(player.is_dash_ready(), "The lesson does not require a dash")
 	await _step(2)
 	_check(_room().get_node("ExitBarrier/Collision").disabled, "The arrival switch opens the exit")
+
+
+func _backtrack(index: int) -> void:
+	_release()
+	# A real playthrough has already opened the preceding room's exit.
+	tutorial.cleared[index - 1] = true
+	tutorial.call("_set_room", index - 1, false)
+	player.respawn()
+	await _step(3)
+	tutorial.call("_set_room", index + 1, false)
+	player.respawn()
+	await _step(6)
+	Input.action_press("move_left")
+	for frame in 120:
+		if tutorial.room_index == index and not tutorial.transitioning:
+			break
+		await _step()
+	_release()
+	await _step(3)
+	_check(tutorial.room_index == index and _local().x < 200 and player.is_on_floor(), "Entering from the next room lands at the safe left entrance")
+	Input.action_press("reset")
+	await _step()
+	Input.action_release("reset")
+	await _step(3)
+	_check(_local().x < 200 and player.is_on_floor(), "Retry after backtracking keeps the safe checkpoint")
+	Input.action_press("move_left")
+	for frame in 120:
+		if tutorial.room_index == index - 1 and not tutorial.transitioning:
+			break
+		await _step()
+	_release()
+	_check(tutorial.room_index == index - 1 and player.controls_enabled, "Walking left continues back to the preceding room")
 
 
 func _missing_down_gate(index: int) -> void:

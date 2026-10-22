@@ -652,7 +652,7 @@ position = Vector2(3840, 0)
 position = Vector2(72, 614)
 
 [node name="Return" type="Marker2D" parent="Rooms/Room4"]
-position = Vector2(1208, 553)
+position = Vector2(72, 614)
 
 [node name="Floor" type="StaticBody2D" parent="Rooms/Room4"]
 position = Vector2(160, 680)
@@ -1445,7 +1445,7 @@ position = Vector2(72, 614)
 
 
 [node name="Return" type="Marker2D" parent="Rooms/Room10"]
-position = Vector2(1208, 553)
+position = Vector2(72, 614)
 
 
 [node name="PreviousHint" type="Label" parent="Rooms/Room10"]
