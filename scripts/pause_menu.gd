@@ -22,6 +22,9 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause_game"):
+		var settings = get_node_or_null("/root/InputSettings")
+		if settings != null and settings.panel.visible:
+			return
 		get_viewport().set_input_as_handled()
 		if event.is_echo():
 			return
