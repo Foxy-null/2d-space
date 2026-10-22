@@ -160,6 +160,9 @@ func _finish_course() -> void:
 
 
 func _backtrack() -> void:
+	await _pulse("reset")
+	await _step(4)
+	_check(tutorial.room_index == 6 and player.is_on_floor() and player.controls_enabled, "R in room 7 keeps its safe checkpoint before returning")
 	Input.action_press("move_left")
 	for frame in 180:
 		if tutorial.room_index == 5 and not tutorial.transitioning:
