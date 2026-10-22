@@ -1194,12 +1194,12 @@ polygon = PackedVector2Array(-60.0, -40.0, 60.0, -40.0, 60.0, 40.0, -60.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="FloorSpring" parent="Rooms/Room7" instance=ExtResource("ext_spring")]
-position = Vector2(260, 700)
+position = Vector2(420, 700)
 spring_speed = 1300.0
 
 [node name="FloorHint" type="Label" parent="Rooms/Room7"]
-offset_left = 170
-offset_top = 350
+offset_left = 406
+offset_top = 540
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "床の矢印に触れると上へ発射"

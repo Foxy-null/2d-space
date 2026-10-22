@@ -5,6 +5,7 @@ var player: PlayerController
 var failed := false
 var checks := 0
 var respawns := 0
+var spring_launches := 0
 var highest := INF
 
 
@@ -16,6 +17,10 @@ func _run() -> void:
 	await _new_world()
 	await _bypasses()
 	await _fall_retry()
+	for amount in [0.7, 0.85, 1.0]:
+		for pause in [0, 20, 60]:
+			await _new_world()
+			await _analog_landing(amount, pause)
 	for pause in [0, 20, 60]:
 		await _new_world()
 		await _course(pause)
@@ -26,6 +31,8 @@ func _run() -> void:
 
 
 func _bypasses() -> void:
+	# Disable only the trigger so every starting point can test the same solid route.
+	tutorial.get_node("Rooms/Room7/FloorSpring").collision_mask = 0
 	for lower in [false, true]:
 		for launch in ([350, 400, 480, 560] if lower else [72, 120, 160, 180]):
 			for direction in ["right", "up_right", "up"]:
@@ -33,6 +40,7 @@ func _bypasses() -> void:
 					await _attempt(lower, launch, direction, dash_frame)
 	for launch in [72, 400, 480]:
 		await _attempt(launch > 72, launch, "superdash", -1)
+	tutorial.get_node("Rooms/Room7/FloorSpring").collision_mask = 1
 
 
 func _attempt(lower: bool, launch: float, direction: String, dash_frame: int) -> void:
@@ -42,7 +50,7 @@ func _attempt(lower: bool, launch: float, direction: String, dash_frame: int) ->
 		await _pulse("jump")
 	await _walk_to(launch)
 	if lower:
-		_check(not tutorial.seen.has("floor_spring"), "The lower-floor bypass starts beyond the spring without using it")
+		_check(not tutorial.seen.has("floor_spring"), "The lower-floor bypass starts without using the spring")
 	if direction == "superdash":
 		await _pulse("dash")
 		await _step(4)
@@ -70,13 +78,14 @@ func _attempt(lower: bool, launch: float, direction: String, dash_frame: int) ->
 			await _pulse("jump")
 		await _step()
 		reached = reached or (_local().x >= 482 and _local().y <= 304)
-	_check(not reached or tutorial.seen.has("floor_spring"), "Jump/dash/wall actions cannot reach the upper landing without the spring: lower=%s launch=%d direction=%s frame=%d" % [lower, launch, direction, dash_frame])
+	_check(not reached and spring_launches == 0, "Jump/dash/wall actions cannot reach the upper landing without the spring: lower=%s launch=%d direction=%s frame=%d" % [lower, launch, direction, dash_frame])
 	_release()
 
 
 func _fall_retry() -> void:
 	await _enter()
-	await _walk_to(110)
+	_check(tutorial.get_node("Rooms/Room7/FloorSpring").collision_mask == 1, "The failed route keeps the real spring active")
+	await _walk_to(300)
 	await _pulse("jump")
 	Input.action_press("move_right")
 	for frame in 240:
@@ -86,7 +95,28 @@ func _fall_retry() -> void:
 	_release()
 	await _step(4)
 	_check(respawns == 1 and _local().distance_to(Vector2(72, 614)) < 10, "Missing the spring and falling restores the safe entrance")
-	_check(not tutorial.seen.has("floor_spring") and not tutorial.cleared.has(6), "A failed jump cannot satisfy the spring lesson")
+	_check(spring_launches == 0 and not tutorial.seen.has("floor_spring") and not tutorial.cleared.has(6), "A failed jump cannot satisfy the spring lesson")
+
+
+func _analog_landing(amount: float, pause: int) -> void:
+	_check(tutorial.get_node("Rooms/Room7/FloorSpring").collision_mask == 1, "The analog course uses the active spring in a new world")
+	if pause > 0:
+		await _walk_to(150)
+		_release()
+		await _step(pause)
+	_stick(amount)
+	await _step(2)
+	_check(is_equal_approx(Input.get_axis("move_left", "move_right"), (amount - 0.5) / 0.5), "The real stick event retains its partial strength after the deadzone")
+	for frame in 600:
+		if (spring_launches > 0 and player.is_on_floor() and _local().y < 400) or respawns > 0:
+			break
+		await _step()
+	_check(spring_launches == 1 and player.is_on_floor() and absf(_local().y - 304) < 2, "Stick %.2f after a pause of %df reaches the wide landing" % [amount, pause])
+	_check(respawns == 0 and highest >= 26, "Partial-stick spring flight stays on screen without retry")
+	_check(not tutorial.seen.has("jump") and not tutorial.seen.has("dash") and not tutorial.seen.has("wall_jump"), "The analog route requires only holding the stick right")
+	_stick(0)
+	await _step(60)
+	_check(player.is_on_floor() and absf(_local().y - 304) < 2, "Releasing the real stick leaves a safe rest on the landing")
 
 
 func _course(pause: int) -> void:
@@ -165,6 +195,7 @@ func _new_world() -> void:
 	root.add_child(tutorial)
 	player = tutorial.player
 	player.respawned.connect(func(): respawns += 1)
+	tutorial.get_node("Rooms/Room7/FloorSpring").launched.connect(func(_body: PlayerController): spring_launches += 1)
 	# Earlier rooms are already open when the player reaches this lesson.
 	tutorial.cleared[5] = true
 	tutorial.call("_set_room", 5, false)
@@ -179,6 +210,7 @@ func _enter() -> void:
 	player.respawn()
 	await _step(6)
 	respawns = 0
+	spring_launches = 0
 	highest = _local().y
 
 
@@ -199,6 +231,13 @@ func _pulse(action: String) -> void:
 	Input.action_press(action)
 	await _step()
 	Input.action_release(action)
+
+
+func _stick(amount: float) -> void:
+	var event := InputEventJoypadMotion.new()
+	event.axis = JOY_AXIS_LEFT_X
+	event.axis_value = amount
+	Input.parse_input_event(event)
 
 
 func _step(count: int = 1) -> void:
