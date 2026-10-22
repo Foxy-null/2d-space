@@ -1,0 +1,93 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/start_screen.gd" id="1_start"]
+[ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="2_background"]
+[ext_resource type="Texture2D" path="res://assets/ui/title-logo.png" id="3_logo"]
+[ext_resource type="Theme" path="res://assets/ui/menu-theme.tres" id="4_theme"]
+[ext_resource type="SpriteFrames" path="res://assets/characters/ninja-frames.tres" id="5_ninja"]
+
+[sub_resource type="StyleBoxFlat" id="Style_title_focus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.84, 0.38, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="StartScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("4_theme")
+script = ExtResource("1_start")
+
+[node name="Backdrop" type="Node2D" parent="."]
+script = ExtResource("2_background")
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Content" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Logo" type="TextureRect" parent="Center/Content"]
+custom_minimum_size = Vector2(700, 440)
+layout_mode = 2
+mouse_filter = 2
+accessibility_name = "忍者ぶっとびくん Galaxy"
+texture = ExtResource("3_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Start" type="Button" parent="Center/Content"]
+custom_minimum_size = Vector2(280, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 30
+theme_override_styles/focus = SubResource("Style_title_focus")
+text = "START"
+
+[node name="Controls" type="Label" parent="Center/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 0.96, 0.85, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.05, 0.12, 0.9)
+theme_override_constants/outline_size = 2
+text = "クリック / Enter・Space / A・× でスタート"
+horizontal_alignment = 1
+
+[node name="Mascot" type="Control" parent="."]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = 205.0
+offset_right = -220.0
+offset_bottom = 205.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Ninja" type="AnimatedSprite2D" parent="Mascot"]
+scale = Vector2(0.16, 0.16)
+sprite_frames = ExtResource("5_ninja")
+animation = &"idle"
+
+[node name="Effects" type="Node2D" parent="."]
+
+[connection signal="pressed" from="Center/Content/Start" to="." method="_start"]

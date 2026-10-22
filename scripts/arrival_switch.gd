@@ -135,7 +135,7 @@ func _draw() -> void:
 			var angle := i * TAU / 7.0
 			var center := Vector2(0, SEAT_Y - CASE_SIZE.y / 2) + Vector2.from_angle(angle) * (30 + 66 * _unlock_fx)
 			_star(center, (1.0 - _unlock_fx) * 8, Color(GOLD, 1.0 - _unlock_fx))
-	if not mission_required:
+	if not mission_required or not $Bubble.visible:
 		return
 	draw_set_transform(BUBBLE)
 	var border := GOLD if locked else Color(0.4, 1, 0.7)

@@ -49,7 +49,10 @@ func _run() -> void:
 	shoulder.button_index = JOY_BUTTON_Y
 	preview._unhandled_input(shoulder)
 	_check(preview.backdrop.motion_enabled, "Controller can resume background motion")
-	preview._return()
+	preview.get_node("PauseMenu").open()
+	preview.get_node("PauseMenu").confirm_return()
+	_check(current_scene == preview and paused, "Preview waits for return confirmation")
+	preview.get_node("PauseMenu").return_to_select()
 	await _step(3)
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Preview returns to stage selection")
 	current_scene._preview_environments()

@@ -1,4 +1,6 @@
-[gd_scene load_steps=104 format=3]
+[gd_scene load_steps=105 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
 [ext_resource type="Script" path="res://scripts/stage_clear.gd" id="stage_clear"]
 
@@ -2426,7 +2428,7 @@ text = "チュートリアル完了！\n左へ戻って、好きな操作を練�
 horizontal_alignment = 1
 mouse_filter = 2
 
-[node name="ReturnToStageSelect" type="Button" parent="HUD"]
+[node name="PauseButton" type="Button" parent="HUD"]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -2437,21 +2439,8 @@ offset_bottom = 64.0
 grow_horizontal = 0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
-text = "ステージ選択へ戻る"
+text = "ポーズ [Esc]"
 
-[node name="ReturnHint" type="Label" parent="HUD"]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -286.0
-offset_top = 72.0
-offset_right = -24.0
-offset_bottom = 96.0
-grow_horizontal = 0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 16
-text = "Esc / Back・Select でも戻れます"
-horizontal_alignment = 1
-mouse_filter = 2
+[node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
 
-[connection signal="pressed" from="HUD/ReturnToStageSelect" to="." method="_return_to_stage_select"]
+[connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]

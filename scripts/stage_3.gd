@@ -16,7 +16,6 @@ var room_index := 0
 var transitioning := false
 var completed := false
 var hints_visible := false
-var help_menu_visible := false
 var cleared: Dictionary = {}
 
 @onready var rooms: Node2D = $Rooms
@@ -40,45 +39,16 @@ func _ready() -> void:
 	set_hints_visible(false)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("toggle_stage_hints") and not event.is_echo():
-		get_viewport().set_input_as_handled()
-		set_help_menu_visible(not help_menu_visible)
-	elif event.is_action_pressed("return_to_stage_select") and not event.is_echo():
-		get_viewport().set_input_as_handled()
-		if help_menu_visible:
-			set_help_menu_visible(false)
-		else:
-			_return_to_stage_select()
-
-
-func set_help_menu_visible(value: bool) -> void:
-	help_menu_visible = value
-	$HUD/HelpMenu.visible = value
-	$HUD/HelpButton.set_pressed_no_signal(value)
-	player.controls_enabled = not value and not transitioning
-	if value:
-		$HUD/HelpMenu/Rows/ToggleHints.grab_focus()
-	else:
-		get_viewport().gui_release_focus()
-
-
 func set_hints_visible(value: bool) -> void:
 	hints_visible = value
 	for hint in get_tree().get_nodes_in_group("stage_3_hints"):
 		hint.visible = value
-	$HUD/HelpMenu/Rows/ToggleHints.set_pressed_no_signal(value)
-	$HUD/HelpMenu/Rows/ToggleHints.text = "ヒントを非表示にする" if value else "ヒントを表示する"
 	hud.show_stage_room(room_index, TITLES[room_index], HINTS[room_index] if value else "", rooms.get_child_count())
 	$HUD/Completion.text = "ステージ3クリア！\n左へ戻って、自由に練習できます" if value else "ステージ3クリア！"
 
 
-func _return_to_stage_select() -> void:
-	get_tree().change_scene_to_file("res://scenes/stage_select.tscn")
-
-
 func _physics_process(_delta: float) -> void:
-	if transitioning or help_menu_visible:
+	if transitioning:
 		return
 	var left := room_index * ROOM_SIZE.x
 	var collision: CollisionShape2D = player.get_node("CollisionShape2D")
@@ -109,7 +79,7 @@ func _transition_to(index: int) -> void:
 	tween.tween_property(camera, "position", _camera_position(), TRANSITION_TIME)
 	await tween.finished
 	transitioning = false
-	player.controls_enabled = not help_menu_visible
+	player.controls_enabled = true
 
 
 func _camera_position() -> Vector2:

@@ -2,8 +2,8 @@ extends CanvasLayer
 ## Independent of stage contents. Only gameplay actions are persisted.
 const SAVE_PATH := "user://input_settings.cfg"
 var save_path := SAVE_PATH
-const ACTIONS := ["move_left", "move_right", "move_up", "move_down", "jump", "jump_up", "dash", "wall_grab", "reset", "toggle_stage_hints", "return_to_stage_select"]
-const LABELS := ["左へ", "右へ", "上へ / 登る", "下へ / 降りる", "ジャンプ", "上入力ジャンプ", "ダッシュ", "つかむ / 持つ", "やり直し", "ヒント表示", "ステージ選択へ"]
+const ACTIONS := ["move_left", "move_right", "move_up", "move_down", "jump", "jump_up", "dash", "wall_grab", "reset", "pause_game"]
+const LABELS := ["左へ", "右へ", "上へ / 登る", "下へ / 降りる", "ジャンプ", "上入力ジャンプ", "ダッシュ", "つかむ / 持つ", "やり直し", "ポーズメニュー"]
 const PAD_NAMES := ["下ボタン (A / ×)", "右ボタン (B / ○)", "左ボタン (X / □)", "上ボタン (Y / △)", "Back / −", "Guide", "Start / +", "左スティック押込", "右スティック押込", "L / LB", "R / RB", "十字キー 上", "十字キー 下", "十字キー 左", "十字キー 右"]
 var defaults: Dictionary = {}
 var panel: PanelContainer
@@ -315,7 +315,9 @@ func load_settings() -> void:
 	if config.load(save_path) != OK:
 		return
 	for action in ACTIONS:
-		var events = config.get_value("bindings", action, null)
+		if not config.has_section_key("bindings", action):
+			continue
+		var events = config.get_value("bindings", action)
 		if not events is Array:
 			continue
 		var valid := true

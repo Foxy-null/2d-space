@@ -14,11 +14,22 @@ func _run() -> void:
 	await process_frame
 	var settings = root.get_node("InputSettings")
 	settings.save_path = "res://.godot/input_settings_test.cfg"
+	check(settings.ACTIONS.has("pause_game"), "Pause menu action is configurable")
+	check(not settings.ACTIONS.has("toggle_stage_hints"), "Legacy hint action is not exposed")
+	check(not settings.ACTIONS.has("return_to_stage_select"), "Legacy return action is not exposed")
 	# Use project defaults rather than a developer's personal saved configuration.
 	for action in settings.ACTIONS:
 		InputMap.action_erase_events(action)
 		for event in settings.defaults[action]:
 			InputMap.action_add_event(action, event)
+	var legacy_config := ConfigFile.new()
+	legacy_config.set_value("bindings", "move_left", settings.defaults["move_left"])
+	check(legacy_config.save(settings.save_path) == OK, "Legacy configuration fixture is saved")
+	var pause_defaults: Array = InputMap.action_get_events("pause_game").duplicate(true)
+	settings.load_settings()
+	check(InputMap.action_get_events("pause_game").size() == pause_defaults.size(), "Missing pause setting keeps its project default count")
+	for event in pause_defaults:
+		check(InputMap.action_has_event("pause_game", event), "Missing pause setting keeps its project default event")
 	var pad_before: Array = []
 	for event in InputMap.action_get_events("move_left"):
 		if not event is InputEventKey:
