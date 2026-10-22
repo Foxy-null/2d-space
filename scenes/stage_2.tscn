@@ -534,12 +534,6 @@ modulate = Color(0.8, 0.95, 0.6, 1)
 [node name="Goal" parent="." instance=ExtResource("8")]
 position = Vector2(360, -3680)
 
-[node name="SummitLabel" type="Label" parent="."]
-offset_left = 250.0
-offset_top = -3850.0
-text = "頂上！ 到着台に乗ろう"
-theme_override_font_sizes/font_size = 24
-
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(360, 612)
 use_default_respawn_bounds = false
