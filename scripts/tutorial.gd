@@ -294,6 +294,12 @@ func _on_release(object: Grabbable, thrown: bool) -> void:
 func _on_button(pressed: bool, button: Area2D) -> void:
 	if not _active(button):
 		return
+	if room_index == 11:
+		var room := rooms.get_child(room_index)
+		var open := pressed or cleared.has(room_index)
+		room.get_node("Divider/Collision").set_deferred("disabled", open)
+		room.get_node("Divider/Visual").visible = not open
+		room.get_node("ButtonWire").default_color = Color(0.4, 1, 0.7) if open else Color(1, 0.75, 0.3, 0.55)
 	if pressed:
 		_mark("button_on")
 		if is_instance_valid(_thrown_object) and button.overlaps_body(_thrown_object):

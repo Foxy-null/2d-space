@@ -110,7 +110,7 @@ func space_query(at: Vector2, player: PlayerController) -> PhysicsShapeQueryPara
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = collider.shape
 	query.transform = shape_transform_at(at)
-	query.collision_mask = 0xFFFFFFFF
+	query.collision_mask = _free_collision_mask
 	query.exclude = [get_rid(), player.get_rid()]
 	query.margin = 0.1
 	return query

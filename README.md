@@ -251,6 +251,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/p
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase3_grab_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_rooms_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_extension_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_throw_route_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/arrival_switch_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/character_sprites_test.gd
 ```
@@ -308,7 +309,7 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 
 赤茶色のPlateはArea内の、手放されているGrabbable重量を合算し、`required_weight = 2.0` 以上で緑へ変わって沈みます。軽い箱1個、重い箱1個、または重量0.5の生物4個でON、離れて不足するとOFFです。Bodyは重複加算しません。`include_player = false` が標準で、trueの場合のみPlayerの `weight = 1.0` も加算します。
 
-`pressed_changed(is_pressed: bool)` と `is_pressed()` を公開しています。Door等への接続はありません。Heavyを動きながら離して投げ、Plateへ着地させることでも操作できます。
+`pressed_changed(is_pressed: bool)` と `is_pressed()` を公開しています。チュートリアル12部屋目では、物体だけが通る柵へ接続しています。走ってHeavyを手放し、向こうの広いPlateへ届くと柵が開きます。運搬、押し運び、停止してDropする方法では届きません。未クリアならRで箱と柵が戻り、クリア後は柵を開いたままにして戻り道を保ちます。
 
 ### Carryの衝突と公開API
 

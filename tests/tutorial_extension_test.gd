@@ -161,8 +161,6 @@ func _carry_course() -> void:
 func _throw_course() -> void:
 	await _grab("Heavy")
 	await _walk_to(500)
-	await _pulse("jump")
-	await _step(12)
 	Input.action_release("wall_grab")
 	await _step(70)
 	_check(tutorial.seen.has("throw_button"), "A real thrown body must land on the target button")
