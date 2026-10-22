@@ -2,7 +2,6 @@ extends Control
 
 const NINJA := preload("res://assets/characters/ninja-frames.tres")
 const CREATURE := preload("res://assets/characters/jump-creature-rest.png")
-const UMBRELLA := preload("res://assets/characters/red-umbrella-active.png")
 
 
 func _ready() -> void:
@@ -66,10 +65,10 @@ func _draw_card(canvas: Control, index: int) -> void:
 			ninja_position = Vector2(-82, -45)
 		3:
 			ArtDraw.box(canvas, Rect2(-70, 43, 140, 12), ArtDraw.CREAM)
-			canvas.draw_texture_rect(CREATURE, Rect2(-34, -45, 36, 36 * CREATURE.get_height() / float(CREATURE.get_width())), false)
-			canvas.draw_texture_rect(UMBRELLA, Rect2(14, -48, 64, 64 * UMBRELLA.get_height() / float(UMBRELLA.get_width())), false)
+			canvas.draw_texture_rect(CREATURE, Rect2(-19, -45, 36, 36 * CREATURE.get_height() / float(CREATURE.get_width())), false)
+			ArtDraw.arrow(canvas, Vector2(47, 25), Vector2(47, -17), ArtDraw.MINT)
 			pose = &"carry_idle"
-			ninja_position = Vector2(-55, -22)
+			ninja_position = Vector2(-40, -22)
 		4:
 			for center in [Vector2(-46, 22), Vector2(44, -30)]:
 				ArtDraw.ellipse(canvas, center, Vector2(19, 19), ArtDraw.CORAL)

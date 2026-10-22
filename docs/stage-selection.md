@@ -48,7 +48,7 @@
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力。
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊。
 - `scenes/stage_5.tscn` / `scripts/stage_5.gd`：暴風バンパー峡谷。「未開発の惑星」を背景に、番号順のバンパー反射と風を使う12部屋。反射をすべてつなぐと部屋の出口が開く。第1〜11室は出口の足場への着地、または画面右端を越えた時点で次の部屋へ進む。落下や赤い障害物への接触で現在の部屋の入口へ戻る。
-- `tests/stage_select_test.gd`：起動、表示順、3種類の入力、全5ステージの選択、戻る操作、再入場時の初期化、画面内の配置、絵と見出しの重なり。描画ありで `-- --screenshots` を付けると、ステージ1と5の選択状態を撮影する。
+- `tests/stage_select_test.gd`：起動、表示順、3種類の入力、全5ステージの選択、戻る操作、再入場時の初期化。
 - `tests/stage_5_test.gd`：全12部屋の実入力攻略、最終到着台、復帰、ヒント、メニュー、再入場時の初期化。
 - `tests/stage_5_exit_test.gd`：第1〜11室の出口着地・空中ダッシュ退出で1回だけ次室へ進むことと、未達成時の退出禁止。
 
@@ -61,6 +61,6 @@
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
 ```
 
-`STAGE_SELECT_TEST_OK` と終了コード0を成功条件とする。環境プレビューは `tests/environment_art_test.gd`、各攻略コースは対応するステージテストで確認する。
+`STAGE_SELECT_TEST_OK` と終了コード0を成功条件とする。 画面内の配置と絵・見出しの重なりも確認する。描画ありで `-- --screenshots` を付けると、ステージ1と5の選択状態を撮影する。環境プレビューは `tests/environment_art_test.gd`、各攻略コースは対応するステージテストで確認する。
 
 共通クリア画面は `tests/stage_clear_test.gd`、共通ポーズは `tests/pause_menu_test.gd` で確認する。ステージ5の全12部屋は `tests/stage_5_test.gd`、各部屋を1回の攻略で退出できることは `tests/stage_5_exit_test.gd` で検証する。
