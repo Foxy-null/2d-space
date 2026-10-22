@@ -210,7 +210,7 @@ func _parachute_course() -> void:
 			break
 		await _step()
 	_check(tutorial.seen.has("glide"), "Held parachute must actually slow a fall")
-	await _walk_to(1000)
+	await _walk_to(975)
 	Input.action_release("wall_grab")
 	await _walk_goal()
 

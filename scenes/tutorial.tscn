@@ -235,10 +235,10 @@ size = Vector2(160, 80)
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_14_EntryFloor"]
-size = Vector2(240, 420)
+size = Vector2(240, 470)
 
 [sub_resource type="RectangleShape2D" id="Shape_14_ExitFloor"]
-size = Vector2(180, 28)
+size = Vector2(280, 20)
 
 [sub_resource type="RectangleShape2D" id="Shape_15_ExitBarrier"]
 size = Vector2(28, 720)
@@ -1924,11 +1924,11 @@ mouse_filter = 2
 position = Vector2(16640, 0)
 
 [node name="Spawn" type="Marker2D" parent="Rooms/Room14"]
-position = Vector2(72, 274)
+position = Vector2(72, 224)
 
 
 [node name="Return" type="Marker2D" parent="Rooms/Room14"]
-position = Vector2(72, 274)
+position = Vector2(72, 224)
 
 
 [node name="PreviousHint" type="Label" parent="Rooms/Room14"]
@@ -1940,11 +1940,11 @@ text = "← 前の部屋"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room14" instance=ExtResource("14_arrival")]
-position = Vector2(1190, 640)
+position = Vector2(1190, 700)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room14"]
 offset_left = 1142
-offset_top = 517
+offset_top = 577
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "到着台"
@@ -1971,7 +1971,7 @@ text = "目標達成で出口が開く"
 mouse_filter = 2
 
 [node name="EntryFloor" type="StaticBody2D" parent="Rooms/Room14"]
-position = Vector2(120.0, 510.0)
+position = Vector2(120.0, 485.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room14/EntryFloor"]
@@ -1979,11 +1979,11 @@ shape = SubResource("Shape_14_EntryFloor")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room14/EntryFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-120.0, -210.0, 120.0, -210.0, 120.0, 210.0, -120.0, 210.0)
+polygon = PackedVector2Array(-120.0, -235.0, 120.0, -235.0, 120.0, 235.0, -120.0, 235.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room14"]
-position = Vector2(1190.0, 654.0)
+position = Vector2(1140.0, 710.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room14/ExitFloor"]
@@ -1992,11 +1992,11 @@ one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room14/ExitFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-90.0, -14.0, 90.0, -14.0, 90.0, 14.0, -90.0, 14.0)
+polygon = PackedVector2Array(-140.0, -10.0, 140.0, -10.0, 140.0, 10.0, -140.0, 10.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Parachute" parent="Rooms/Room14" instance=ExtResource("ext_parachute_creature")]
-position = Vector2(170, 253.4)
+position = Vector2(170, 203.4)
 
 
 [node name="GlideHint" type="Label" parent="Rooms/Room14"]
@@ -2009,7 +2009,7 @@ mouse_filter = 2
 
 [node name="ReleaseHint" type="Label" parent="Rooms/Room14"]
 offset_left = 1000.0
-offset_top = 475.0
+offset_top = 550.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "下が安全な場所で手放して\n落下速度の違いを比べよう"
