@@ -10,6 +10,15 @@ const HINTS := [
 	"中央の足場から左上へ折り返す。その後は右の低い足場へ大きく渡ろう。",
 ]
 const ROOM_WIDTH := 1280.0
+const GUIDES := [
+	"最初に緑の相棒をShiftで持ってください。このステージは各部屋の相棒を運んだ状態で出口へ着地することが条件です。\n通常ジャンプの頂点付近で追加ジャンプを使い、段ごとに着地して相棒の力を戻します。落としたら拾い直してから出口へ向かってください。",
+	"相棒を持っている間は壁を掴んで登れませんが、壁キックはできます。左右の壁を交互に蹴り、上昇が弱まった所で相棒の追加ジャンプを使います。\n壁へ早く戻りすぎると高度を失うので、蹴った後は反対側へ渡る距離を取ってください。",
+	"低い天井へ頭をぶつけると上昇が止まります。屋根の下では低めのジャンプで横へ進み、屋根の端を抜けてから追加ジャンプを使ってください。\n相棒を離して壁を登っても、相棒なしでは部屋を進めません。保持したまま抜けられる高さを選びます。",
+	"前半は着地を挟んで登り、峠を越えたら小さな足場へ下りていきます。\n下りで追加ジャンプを急いで使うと足場を飛び越えます。横入力を弱めて着地位置を合わせ、相棒を保持した状態で右の出口へ入ってください。",
+	"小島の端まで横へ走ってから跳び、上昇が弱まるまで待って相棒の追加ジャンプを使います。\n距離が足りなければ、斜め上ダッシュをその後につないでください。島へ着地すると力が戻るので、空中で連続して次の島まで進もうとしない方が安定します。",
+	"中央の足場へ着地してから左上へ折り返し、その足場で力を回復します。そこから右の低い足場へ、追加ジャンプとダッシュで大きく渡ってください。\n最後の到着台も相棒の保持が条件です。鍵がかかったままなら、この部屋の緑の相棒を持っているか確認してください。"
+]
+
 var room_index := 0
 var transitioning := false
 var help_visible := false
@@ -28,10 +37,11 @@ func _ready() -> void:
 	$Rooms/Room6/Goal.activated.connect(_on_completed)
 	$Rooms/Room6/Goal.set_progress(1, 1, "", "緑の相棒を運ぼう", false)
 	$HUD/HelpButton.pressed.connect(func(): set_help_visible(not help_visible))
-	$HUD/Help/Rows/Resume.pressed.connect(func(): set_help_visible(false))
+	$HUD/Help/Rows/Actions/Resume.pressed.connect(func(): set_help_visible(false))
 	$HUD/Help/Rows/Hints.toggled.connect(_set_hints)
-	$HUD/Help/Rows/Retry.pressed.connect(_retry)
-	$HUD/Help/Rows/Return.pressed.connect(_return_to_select)
+	$HUD/Help/Rows/Actions/Retry.pressed.connect(_retry)
+	$HUD/Help/Rows/Actions/Return.pressed.connect(_return_to_select)
+	$HUD/Help.close_requested.connect(func(): set_help_visible(false))
 	_set_checkpoint()
 	player.respawn()
 	camera.make_current()
@@ -96,8 +106,10 @@ func set_help_visible(value: bool) -> void:
 	help_visible = value
 	$HUD/Help.visible = value
 	player.controls_enabled = not value and not transitioning
+	get_tree().paused = value
 	if value:
-		$HUD/Help/Rows/Resume.grab_focus()
+		$HUD/Help.show_hint("ステージ4　%02d / 06　%s" % [room_index + 1, TITLES[room_index]], GUIDES[room_index])
+		$HUD/Help/Rows/Actions/Resume.grab_focus()
 	else:
 		get_viewport().gui_release_focus()
 
@@ -139,3 +151,7 @@ func _update_hud() -> void:
 
 func _carry_requirement_met() -> bool:
 	return player.get_held_object() == rooms.get_child(room_index).get_node("Items/JumpCreature")
+
+
+func _exit_tree() -> void:
+	get_tree().paused = false

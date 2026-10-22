@@ -87,7 +87,7 @@ func _run() -> void:
 		await verify_collision()
 		await verify_ceiling()
 		await verify_carry_gate()
-		stage.get_node("HUD/Help/Rows/Return").pressed.emit()
+		stage.get_node("HUD/Help/Rows/Actions/Return").pressed.emit()
 		await step(3)
 		current_scene.get_node("Margin/Content/Stages/Stage4").pressed.emit()
 		await step(5)
@@ -111,7 +111,7 @@ func verify_retry_and_help() -> void:
 	check(player.position == before and hazard.position == spike_before, "Help freezes player and patrols")
 	stage.get_node("HUD/Help/Rows/Hints").button_pressed = true
 	check(stage.get_node("HUD/Hint").visible, "Text hints can be enabled")
-	stage.get_node("HUD/Help/Rows/Retry").pressed.emit()
+	stage.get_node("HUD/Help/Rows/Actions/Retry").pressed.emit()
 	await step(5)
 	check(player.controls_enabled and stage.hints_visible, "Retry preserves hints")
 	for y in [-100, 850]:

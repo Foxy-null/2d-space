@@ -54,7 +54,7 @@ func _run() -> void:
 	Input.parse_input_event(echo_event)
 	await _step()
 	_check(stage.help_menu_visible, "Holding H must not repeatedly toggle the help menu")
-	await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+	await _click(stage.get_node("HUD/HelpMenu/Rows/Hints"))
 	_check_hints(true)
 	await _click(stage.get_node("HUD/HelpButton"))
 	_check_help(false)
@@ -118,9 +118,9 @@ func _run() -> void:
 				_check_status(true)
 				await _click(stage.get_node("HUD/HelpButton"))
 				_check_help(true)
-				await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+				await _click(stage.get_node("HUD/HelpMenu/Rows/Hints"))
 				_check_hints(true)
-				await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+				await _click(stage.get_node("HUD/HelpMenu/Rows/Hints"))
 				_check_hints(false)
 				if OS.get_cmdline_user_args().has("--screenshots"):
 					RenderingServer.force_draw()
@@ -232,6 +232,8 @@ func _run() -> void:
 	await _key(KEY_H)
 	_check_help(true)
 	await _key(KEY_DOWN)
+	await _key(KEY_RIGHT)
+	await _key(KEY_RIGHT)
 	await _key(KEY_ENTER)
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Keyboard navigation selects the return button inside the help menu")
 	await _key(KEY_RIGHT)
@@ -246,7 +248,7 @@ func _run() -> void:
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await _screenshots()
 	await _click(stage.get_node("HUD/HelpButton"))
-	await _click(stage.get_node("HUD/HelpMenu/Rows/ReturnToStageSelect"))
+	await _click(stage.get_node("HUD/HelpMenu/Rows/Actions/Return"))
 	await _step(3)
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "The return button opens stage selection")
 	_release_inputs()
@@ -412,10 +414,13 @@ func _reach_goal() -> void:
 			_release_inputs()
 			await _key(KEY_H)
 			_check_help(true)
+			var cap_y: float = goal.cap.position.y
 			await _step(20)
-			_check(goal.is_pressed() and stage.cleared.has(0), "Opening help during the physical arrival press must not lose completion")
+			_check(not goal.is_pressed() and not stage.cleared.has(0) and goal.cap.position.y == cap_y, "Help pauses the physical arrival press")
 			await _key(KEY_H)
 			_check_help(false)
+			await _step(20)
+			_check(goal.is_pressed() and stage.cleared.has(0), "Resuming completes the same arrival press without losing progress")
 			break
 		Input.action_release("jump")
 		if _x() >= 1140:
@@ -488,13 +493,13 @@ func _check_hints(expected: bool) -> void:
 
 func _toggle_hints() -> void:
 	await _key(KEY_H)
-	await _click(stage.get_node("HUD/HelpMenu/Rows/ToggleHints"))
+	await _click(stage.get_node("HUD/HelpMenu/Rows/Hints"))
 	await _key(KEY_H)
 
 
 func _check_help(expected: bool) -> void:
 	_check(stage.help_menu_visible == expected and stage.get_node("HUD/HelpMenu").visible == expected, "The help menu follows its setting and starts closed")
-	_check(stage.get_node("HUD/HelpMenu/Rows/ReturnToStageSelect").is_visible_in_tree() == expected, "Return and hint controls stay inside the help menu")
+	_check(stage.get_node("HUD/HelpMenu/Rows/Actions/Return").is_visible_in_tree() == expected, "Return and hint controls stay inside the help menu")
 	_check(player.controls_enabled != expected, "Opening the menu suspends character input and closing restores it")
 	_check((root.gui_get_focus_owner() != null) == expected, "Only the open help menu owns keyboard and controller focus")
 
@@ -507,7 +512,7 @@ func _check_status(inverted: bool) -> void:
 	_check((stage.get_node("HUD/HelpButton").position.y > 360) == inverted, "The help trigger switches sides with the stamina gauge")
 	var menu_rect: Rect2 = stage.get_node("HUD/HelpMenu").get_global_rect()
 	var button_rect: Rect2 = stage.get_node("HUD/HelpButton").get_global_rect()
-	_check(menu_rect.end.y < button_rect.position.y if inverted else menu_rect.position.y > button_rect.end.y, "The menu opens above the lower HUD and below the upper HUD")
+	_check(menu_rect.end.y < button_rect.position.y if inverted else menu_rect.position.y > button_rect.end.y, "The centered help menu avoids the help trigger in either gravity")
 	_check(is_equal_approx(gauge.value, player.get_wall_stamina()) and is_equal_approx(gauge.max_value, player.wall_stamina_max), "The stamina gauge displays the actual remaining resource")
 	_check(not stage.get_node("HUD/Status/Rows/Resources").text.contains("秒") and not stage.get_node("HUD/Margin/Panel/Rows/Gravity").visible, "Stamina seconds and gravity text are absent")
 

@@ -63,6 +63,27 @@ const STEP_LABELS := {
 	"escape": "5秒間、赤い敵から逃げよう",
 }
 
+const HINTS := [
+	"段差の手前から右へ走り、Spaceで跳びます。穴の上でも移動を押し続け、向こうの床へ着地してください。\nこの部屋では「ジャンプ」を体験してから、右の足跡の到着台に乗ると出口が開きます。",
+	"壁へ向かってShiftを押し続け、↑で体が壁の上へ出るまで登ります。\n次は壁を掴んだ状態でSpaceを押し、反対の壁へ蹴り返してください。「登る」と「壁キック」の両方が目標です。スタミナが減ったら足場に着地して回復します。",
+	"空中で右または斜め上を入力しながらXを押します。方向を入れないと向いている側へ進むので、先に行きたい方向を決めましょう。\n空中では基本1回です。足場への着地で回復してから次の穴へ進みます。",
+	"赤い↑ゲートを通ったら、天井が床になります。天井へ着地して右へ進み、青い↓ゲートで通常の床へ戻してください。\n反転直後は一度着地し、落ちる向きとジャンプで離れる向きを確認すると安定します。",
+	"まず空中ダッシュを使い、空中の緑の速度マークを取って補充し、着地前にもう一度ダッシュしてください。\n「ダッシュを残したまま取る」だけでは練習が進みません。使う→取る→使うの順を確かめます。",
+	"紫のばね靴を取ると、着地する前にジャンプを1回追加できます。\n最初のジャンプの上昇が止まるころにもう一度Spaceを押すと、より高い場所へ届きます。取るだけでなく空中ジャンプも使ってから到着台へ進んでください。",
+	"床のばねは上へ、壁のばねは横へ発射します。矢印が向く側から板へ近づき、両方の発射を体験してください。\n発射でダッシュと壁スタミナも戻ります。その勢いが消える前に方向を入れてXを押すのが最後の目標です。",
+	"丸いバンパーには、進みたい向きと反対側から当たります。中心の真下なら上、左側なら左へ跳ね返されます。\n反射後は移動入力やダッシュで着地位置を調整してください。触れる位置を少し変えて、飛ぶ向きの違いを確かめましょう。",
+	"風の中を歩き、次に壁をShiftで掴んで止まり、最後に風の中でダッシュしてください。\n普通の移動は風に流されますが、壁掴みとダッシュ中は風を受けません。流されるときほど、この三つの違いを使って進みます。",
+	"ゲートの往復を見て、近づいてくるタイミングで通過します。赤い↑で天井、青い↓で床へ戻る両方が目標です。\n外してしまったら安全な床で待ち、ゲートが戻ってから跳び直してください。",
+	"Shiftを押し続けて軽い箱を持ち、止まってから離すとその場に置けます。重い箱では、持ったまま少し歩いて重さの違いも確かめます。\n箱を重量スイッチへ置いて扉を開け、箱を取り除いて扉が閉じるところまで体験してください。",
+	"箱を持って右へ走り、跳んでからShiftを離すと箱が移動方向へ飛びます。\n狙うのは離れた重量スイッチです。止まったまま離すと「置く」になるので、飛ばす瞬間まで横方向の速度を残してください。",
+	"緑の生物をShiftで持ち、普通のジャンプの後にもう一度Spaceを押します。これが相棒の追加ジャンプです。\n持ったまま着地すると相棒の力が戻るので、着地後にもう一度使ってください。持っている間は壁登りができません。",
+	"赤い和傘を持って穴の上へ出ると、落下がゆっくりになります。横へ動いて足場を選んでください。\n次に空中でShiftを離し、普通の速さで落ちる違いを体験します。手放した直後は短い猶予があるので、すぐ着地せず少し落ちて確かめましょう。",
+	"緑の相棒を持ったまま紫のばね靴を取ると、通常ジャンプの後に空中で2回跳べます。\n最初の上昇が弱まってから追加ジャンプ、次の上昇が弱まってから相棒のジャンプ、と間を空けてください。頭上の白い山形が残り回数です。",
+	"傘を持って上昇気流へ入り、浮き上がったら右へ進みます。足場の真下で頭が止まったら、その端の外へ横に出てから上へ回り込みます。\n反転した状態でも傘でゆっくり落ちることを体験し、最後は↓ゲートを通って床へ戻してください。",
+	"動き始めると赤い敵が追ってきます。床だけを往復せず、足場へ跳んで高さを変えながら5秒逃げてください。\n封印が解けても自動ではクリアしません。右の足跡の到着台を自分で押してください。捕まった場合は、この練習部屋をやり直します。",
+	"任意の練習です。平らな床で右へ水平ダッシュし、すぐSpaceでジャンプすると勢いを保って大きく飛べます。\n上方向を入れると斜めダッシュになるので、↑を離してから試してください。成功後は到着台へ着地します。"
+]
+
 var room_index := 0
 var furthest_room := 0
 var transitioning := false
@@ -77,6 +98,7 @@ var _released_parachute := false
 var _chase_elapsed := 0.0
 var _chase_started := false
 var _chase_seconds := -1
+var help_visible := false
 
 @onready var rooms: Node2D = $Rooms
 @onready var player: PlayerController = $Player
@@ -86,6 +108,12 @@ var _chase_seconds := -1
 
 
 func _ready() -> void:
+	$HUD/HelpButton.pressed.connect(func(): set_help_visible(not help_visible))
+	$HUD/Help.close_requested.connect(func(): set_help_visible(false))
+	$HUD/Help/Rows/Hints.hide()
+	$HUD/Help/Rows/Actions/Resume.pressed.connect(func(): set_help_visible(false))
+	$HUD/Help/Rows/Actions/Retry.pressed.connect(func(): set_help_visible(false); _retry())
+	$HUD/Help/Rows/Actions/Return.pressed.connect(_return_to_stage_select)
 	chaser.target = player
 	chaser.add_collision_exception_with(player)
 	player.get_node("Camera2D").enabled = false
@@ -121,9 +149,35 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("return_to_stage_select"):
+	if event.is_echo():
+		return
+	if event.is_action_pressed("toggle_stage_hints"):
+		get_viewport().set_input_as_handled()
+		set_help_visible(not help_visible)
+	elif event.is_action_pressed("return_to_stage_select"):
 		get_viewport().set_input_as_handled()
 		_return_to_stage_select()
+
+
+func set_help_visible(value: bool) -> void:
+	help_visible = value
+	$HUD/Help.visible = value
+	player.controls_enabled = not value and not transitioning
+	get_tree().paused = value
+	if value:
+		var remaining := PackedStringArray()
+		for step in STEPS[room_index]:
+			if not seen.has(step):
+				remaining.append(STEP_LABELS[step])
+		var objective := "体験済み。到着台に乗って次の部屋へ進めます。" if remaining.is_empty() else "まだ達成していない目標\n・" + "\n・".join(remaining)
+		$HUD/Help.show_hint("ステージ1　%02d / 18　%s" % [room_index + 1, TITLES[room_index]], HINTS[room_index] + "\n\n" + objective)
+		$HUD/Help/Rows/Actions/Resume.grab_focus()
+	else:
+		get_viewport().gui_release_focus()
+
+
+func _exit_tree() -> void:
+	get_tree().paused = false
 
 
 func _return_to_stage_select() -> void:

@@ -29,10 +29,6 @@ func _on_gravity_changed(is_inverted: bool) -> void:
 		$HelpButton.position.x = 24
 		if not is_inverted:
 			$HelpButton.position.y = 38
-		$HelpMenu.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT if is_inverted else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 134 if is_inverted else 24)
-		$HelpMenu.position.x = 24
-		if not is_inverted:
-			$HelpMenu.position.y = 86
 		return
 	if tutorial_mode:
 		$Margin/Panel/Rows/Gravity.text = "重力：天井へ ↑" if is_inverted else "重力：床へ ↓"

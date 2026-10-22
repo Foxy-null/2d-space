@@ -5,6 +5,7 @@ const CHASER = preload("res://scripts/chaser.gd")
 const ROOM = preload("res://scripts/stage_6_room.gd")
 const BACKDROP = preload("res://scripts/stage_backdrop.gd")
 const CLEAR = preload("res://scripts/stage_clear.gd")
+const HELP = preload("res://scenes/stage_help.tscn")
 
 @export var enemy_avatar: Texture2D
 @export_range(4, 12) var defeat_hits_required := 6
@@ -20,7 +21,6 @@ var room: StageSixRoom
 var camera: Camera2D
 var _world: Node2D
 var _backdrop: StageBackdrop
-var _title: Label
 var _status: Label
 var _stamina: ProgressBar
 var _hint: Label
@@ -40,6 +40,7 @@ var _previous_enemy := Vector2.ZERO
 var _player_arrived := false
 var defeat_hits := 0
 var escape_elapsed := 0.0
+var _keep_enemy_on_respawn := false
 
 
 func _ready() -> void:
@@ -134,7 +135,9 @@ func _physics_process(delta: float) -> void:
 		if _chase_delay <= 0.0:
 			enemy.set("active", true)
 	if _out_of_course(player) or _touches_hazard(player, _previous_player):
-		player.respawn()
+		_keep_enemy_on_respawn = true
+		player.respawn(false)
+		_keep_enemy_on_respawn = false
 		return
 	if _out_of_course(enemy) or _touches_hazard(enemy, _previous_enemy):
 		enemy.call("reset_pursuit", true)
@@ -167,15 +170,16 @@ func _on_player_respawned() -> void:
 	_generation += 1
 	_capture_pending = false
 	_hit_grace = 0.0
-	_projectiles.clear()
 	_message.hide()
-	room.reset_state()
-	enemy.call("reset_pursuit")
-	enemy.set("active", false)
-	_chase_delay = -1.0 if room.prepared else room.chase_delay
 	_player_arrived = false
-	defeat_hits = 0
-	escape_elapsed = 0.0
+	if not _keep_enemy_on_respawn:
+		_projectiles.clear()
+		room.reset_state()
+		enemy.call("reset_pursuit")
+		enemy.set("active", false)
+		_chase_delay = -1.0 if room.prepared else room.chase_delay
+		defeat_hits = 0
+		escape_elapsed = 0.0
 	_immunity_left = 0.6
 	_previous_player = player.position
 	_previous_enemy = enemy.position
@@ -320,16 +324,24 @@ func _update_camera() -> void:
 
 
 func _update_hud() -> void:
-	_title.text = "ステージ6　追跡者の終域　｜　%02d / 12　%s" % [room_index + 1, StageSixRoom.TITLES[room_index]]
 	var chance := roundi(capture_probability(player.get_wall_stamina(), player.wall_stamina_max) * 100)
 	var direction: String = {1: "↓", -1: "↑", 2: "→", -2: "←"}[player.gravity_direction]
-	_status.text = "重力 %s　 捕獲時の失敗率 %3d%%　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [direction, chance, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), "追跡中" if enemy.get("active") else ("追跡まで %.1f秒" % _chase_delay if _chase_delay >= 0 else "準備区間：入口から進むと追跡開始")]
+	_status.text = "部屋 %02d/12　重力 %s　 捕獲時の失敗率 %3d%%　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [room_index + 1, direction, chance, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), "追跡中" if enemy.get("active") else ("追跡まで %.1f秒" % _chase_delay if _chase_delay >= 0 else "準備中")]
 	_stamina.max_value = player.wall_stamina_max
 	_stamina.value = player.get_wall_stamina()
-	if not completed:
-		_hint.text = StageSixRoom.HINTS[room_index]
-		if room_index == 11:
-			_hint.text += "\n決着 %d/%d（怯み中は無効）　逃走封印 あと%d秒 / 鍵 %s" % [defeat_hits, defeat_hits_required, ceili(maxf(0.0, escape_seconds - escape_elapsed)), "取得済" if room.key_collected else "未取得"]
+	$HUD/Progress.visible = completed or room_index == 11
+	if not completed and room_index == 11:
+		_hint.text = "決着 %d / %d　　逃走封印 あと%d秒　　鍵 %s" % [defeat_hits, defeat_hits_required, ceili(maxf(0.0, escape_seconds - escape_elapsed)), "取得済" if room.key_collected else "未取得"]
+
+
+func _help_text() -> String:
+	var text: String = "追跡者の終域\n"
+	if room_index == 11:
+		text += "二つの重量扉を開いた後、どれか一つでクリア。\n決着：怯んでいない敵に投擲を%d回当てる。怯み中の追撃は無効。\n封鎖：敵を檻へ入れ、自分は右外側へ出る。金の台へ箱を置く。\n逃走：敵と%d秒対峙し、檻の屋根の鍵を取って右上の到着台を押す。捕獲で時間を数え直す。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
+	text += "この部屋の進め方\n" + StageSixRoom.HINTS[room_index]
+	text += "\n\n追跡・投擲\n金の輪が物体の供給場所です。敵へ投げる箱と、扉を開くために置く箱を使い分けてください。敵の投擲前には予告が出ます。当たるとスタミナが3分の1減り、短く怯みます。こちらの投擲は敵を2秒止められます。\n敵は物を持っている間はプレイヤーを掴めません。捕獲時の失敗率はスタミナ満タン0%、半分50%、空100%。失敗するとステージ選択へ戻ります。"
+	text += "\n\n復帰と操作\n落下・トゲでは自分だけ入口へ戻ります。敵、箱、開いた扉、最後の目標の進捗は継続します。部屋全体を初期化したいときだけR / Startか下のやり直しを使ってください。\n横重力では↑↓で壁に沿って歩きます。Space / A・×で重力に逆らって跳び、箱を手放せばShiftで壁を登れます。"
+	return text
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -351,9 +363,12 @@ func set_help_visible(value: bool) -> void:
 		return
 	help_visible = value
 	_help.visible = value
+	player.controls_enabled = not value
+	enemy.controls_enabled = not value
 	get_tree().paused = value
 	if value:
-		_help.get_node("Rows/Resume").grab_focus()
+		_help.call("show_hint", "ステージ6　%02d / 12　%s" % [room_index + 1, StageSixRoom.TITLES[room_index]], _help_text())
+		_help.get_node("Rows/Actions/Resume").grab_focus()
 	else:
 		get_viewport().gui_release_focus()
 
@@ -372,12 +387,10 @@ func _build_hud() -> void:
 	hud.name = "HUD"
 	hud.layer = 10
 	add_child(hud)
-	var info := _panel(Rect2(16, 12, 1020, 112))
+	var info := _panel(Rect2(16, 12, 990, 80))
 	hud.add_child(info)
 	var rows := VBoxContainer.new()
 	info.add_child(rows)
-	_title = _text("", 24)
-	rows.add_child(_title)
 	_status = _text("", 18)
 	rows.add_child(_status)
 	_stamina = ProgressBar.new()
@@ -394,13 +407,16 @@ func _build_hud() -> void:
 	gauge.add_child(_stamina)
 	rows.add_child(gauge)
 	var help_button := Button.new()
-	help_button.position = Vector2(1050, 16)
-	help_button.size = Vector2(212, 48)
-	help_button.text = "操作・やり直し [H]"
+	help_button.position = Vector2(1018, 16)
+	help_button.size = Vector2(244, 48)
+	help_button.add_theme_font_size_override("font_size", 16)
+	help_button.text = "お助けメニュー H / Y・△"
+	help_button.name = "HelpButton"
 	help_button.focus_mode = Control.FOCUS_NONE
 	help_button.pressed.connect(func(): set_help_visible(not help_visible))
 	hud.add_child(help_button)
-	var footer := _panel(Rect2(16, 604, 1248, 104))
+	var footer := _panel(Rect2(16, 650, 1248, 58))
+	footer.name = "Progress"
 	hud.add_child(footer)
 	_hint = _text("", 19)
 	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -416,29 +432,15 @@ func _build_hud() -> void:
 	_completion.set_script(CLEAR)
 	_completion.hide()
 	hud.add_child(_completion)
-	_help = _panel(Rect2(280, 140, 720, 460))
+	_help = HELP.instantiate()
 	_help.name = "Help"
-	_help.hide()
 	hud.add_child(_help)
-	var menu := VBoxContainer.new()
-	menu.name = "Rows"
-	menu.add_theme_constant_override("separation", 18)
-	_help.add_child(menu)
-	menu.add_child(_text("ステージ6　操作とルール", 30))
-	menu.add_child(_text("移動 WASD / 方向キー / スティック\nジャンプ Space / A　 ダッシュ X / B\n持つ Shift / ZL・ZR　動きながら離すと投げる\n横重力の歩行は↑↓。捕獲失敗でステージ選択へ。\n落下・トゲ・R / Startは現在の部屋をやり直す。", 20))
-	for label in ["続ける", "この部屋をやり直す", "ステージ選択へ戻る"]:
-		var button := Button.new()
-		button.custom_minimum_size.y = 48
-		button.text = label
-		menu.add_child(button)
-		match label:
-			"続ける":
-				button.name = "Resume"
-				button.pressed.connect(func(): set_help_visible(false))
-			"この部屋をやり直す":
-				button.pressed.connect(func(): set_help_visible(false); player.respawn())
-			_:
-				button.pressed.connect(_return_to_select)
+	_help.close_requested.connect(func(): set_help_visible(false))
+	_help.get_node("Rows/Hints").hide()
+	_help.get_node("Rows/Actions/Resume").pressed.connect(func(): set_help_visible(false))
+	_help.get_node("Rows/Actions/Retry").text = "部屋全体をやり直す"
+	_help.get_node("Rows/Actions/Retry").pressed.connect(func(): set_help_visible(false); player.respawn())
+	_help.get_node("Rows/Actions/Return").pressed.connect(_return_to_select)
 
 
 func _panel(rect: Rect2) -> PanelContainer:

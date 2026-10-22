@@ -12,6 +12,15 @@ const HINTS := [
 	"向かい風と横移動ゲートを越す。",
 ]
 
+const GUIDES := [
+	"床のSpringから右の壁へ入り、Shiftで掴んでから反対の壁へキックします。さらに蹴り返して赤い↑ゲートへ入り、天井側へ移ってください。\nゲートで反転したら体を支える面が変わります。次の壁を掴み直して、最後は到着台のある床側へ戻ります。",
+	"天井の反発板から飛んだ先で壁を掴み、反対側の壁へキックして進みます。\n天井が床のとき、重力に逆らって壁を登る入力は↓です。出口側の壁では左へ蹴り返して青い↓ゲートを通り、足跡の到着台へ着地してください。",
+	"最初の壁を少し登り、左へ蹴って赤い↑ゲートへ入ります。天井側の紫を取り、穴を越える途中で追加ジャンプを使ってください。\n後半は追加ジャンプの高さを使って青い↓ゲートへ入り、出口側の壁に沿って床へ下ります。",
+	"床の壁から左へ蹴って↑ゲートへ入り、天井の壁からもう一度左へ蹴って↓へ戻ります。\n後半は縦風と天井の穴を越えます。動くゲートへ届かないときは壁を掴んで待ち、近づいてから蹴り返してください。スタミナが減ったら待つ前に着地して回復します。",
+	"壁を掴んで赤いゲートの接近を待ち、左キックで反転します。天井側では↓で壁を登り、次の壁へ蹴り返してください。\n最後は短い足場のSpringから右の↓ゲートへ飛びます。着地できる足場を確かめてから発射に入りましょう。",
+	"向かい風にはダッシュ、壁の切り返しにはShiftとSpaceを使います。Springから壁を掴み、蹴り返して青い↓ゲートへ戻ってください。\n小さな横移動ゲートは、壁を掴んで近づくのを待ってから左へキックします。最後の穴を越え、到着台を押すとクリアです。"
+]
+
 var room_index := 0
 var transitioning := false
 var completed := false
@@ -34,6 +43,12 @@ func _ready() -> void:
 				hint.add_theme_color_override("font_outline_color", ArtDraw.INK)
 				hint.add_theme_constant_override("outline_size", 2)
 		room.get_node("Goal").activated.connect(_on_arrival.bind(room.get_index()))
+	$HUD/HelpButton.toggled.connect(set_help_menu_visible)
+	$HUD/HelpMenu.close_requested.connect(func(): set_help_menu_visible(false))
+	$HUD/HelpMenu/Rows/Actions/Resume.pressed.connect(func(): set_help_menu_visible(false))
+	$HUD/HelpMenu/Rows/Actions/Retry.pressed.connect(_retry)
+	$HUD/HelpMenu/Rows/Actions/Return.pressed.connect(_return_to_stage_select)
+	$HUD/HelpMenu/Rows/Hints.toggled.connect(set_hints_visible)
 	_set_room(0, false)
 	player.respawn()
 	camera.make_current()
@@ -57,8 +72,10 @@ func set_help_menu_visible(value: bool) -> void:
 	$HUD/HelpMenu.visible = value
 	$HUD/HelpButton.set_pressed_no_signal(value)
 	player.controls_enabled = not value and not transitioning
+	get_tree().paused = value
 	if value:
-		$HUD/HelpMenu/Rows/ToggleHints.grab_focus()
+		$HUD/HelpMenu.show_hint("ステージ3　%02d / 06　%s" % [room_index + 1, TITLES[room_index]], GUIDES[room_index])
+		$HUD/HelpMenu/Rows/Hints.grab_focus()
 	else:
 		get_viewport().gui_release_focus()
 
@@ -67,10 +84,18 @@ func set_hints_visible(value: bool) -> void:
 	hints_visible = value
 	for hint in get_tree().get_nodes_in_group("stage_3_hints"):
 		hint.visible = value
-	$HUD/HelpMenu/Rows/ToggleHints.set_pressed_no_signal(value)
-	$HUD/HelpMenu/Rows/ToggleHints.text = "ヒントを非表示にする" if value else "ヒントを表示する"
+	$HUD/HelpMenu/Rows/Hints.set_pressed_no_signal(value)
 	hud.show_stage_room(room_index, TITLES[room_index], HINTS[room_index] if value else "", rooms.get_child_count())
 	$HUD/Completion.text = "ステージ3クリア！\n左へ戻って、自由に練習できます" if value else "ステージ3クリア！"
+
+
+func _retry() -> void:
+	set_help_menu_visible(false)
+	player.respawn()
+
+
+func _exit_tree() -> void:
+	get_tree().paused = false
 
 
 func _return_to_stage_select() -> void:

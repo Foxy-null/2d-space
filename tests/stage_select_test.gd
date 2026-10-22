@@ -76,8 +76,9 @@ func _run() -> void:
 	tutorial = current_scene
 	_check(tutorial.room_index == 0 and tutorial.cleared.is_empty() and not tutorial.completed, "Re-entering a stage must reset progress")
 	_check(not tutorial.player.wall_actions_enabled and not tutorial.player.dash_enabled, "Re-entering must reset learned abilities")
-	_check(tutorial.get_node("HUD/ReturnToStageSelect").focus_mode == Control.FOCUS_NONE, "Jump/accept must not activate the mouse return button")
-	await _click(tutorial.get_node("HUD/ReturnToStageSelect"))
+	_check(tutorial.get_node("HUD/HelpButton").focus_mode == Control.FOCUS_NONE, "Jump/accept must not activate the mouse help button")
+	await _click(tutorial.get_node("HUD/HelpButton"))
+	await _click(tutorial.get_node("HUD/Help/Rows/Actions/Return"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "The mouse return button must open stage selection")
 	menu = current_scene
 	var stick := InputEventJoypadMotion.new()
@@ -99,7 +100,7 @@ func _run() -> void:
 	await _click(current_scene.get_node("Margin/Content/Stages/Stage3"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_3.tscn", "Mouse starts stage 3")
 	await _click(current_scene.get_node("HUD/HelpButton"))
-	await _click(current_scene.get_node("HUD/HelpMenu/Rows/ReturnToStageSelect"))
+	await _click(current_scene.get_node("HUD/HelpMenu/Rows/Actions/Return"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Stage 3 mouse return opens selection")
 	menu = current_scene
 	await _joy_button(JOY_BUTTON_DPAD_RIGHT)
@@ -113,7 +114,7 @@ func _run() -> void:
 	await _click(current_scene.get_node("Margin/Content/Stages/Stage2"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_2.tscn", "A mouse click must start stage 2")
 	await _click(current_scene.get_node("HUD/HelpButton"))
-	await _click(current_scene.get_node("HUD/Help/Rows/Return"))
+	await _click(current_scene.get_node("HUD/Help/Rows/Actions/Return"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "The stage 2 mouse return button must open stage selection")
 	await _click(current_scene.get_node("Margin/Content/Stages/Stage4"))
 	_check(current_scene.scene_file_path == "res://scenes/stage_4.tscn", "Mouse starts stage 4")

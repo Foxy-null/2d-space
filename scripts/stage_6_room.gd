@@ -17,18 +17,18 @@ const ARRIVAL = preload("res://scenes/arrival_switch.tscn")
 
 const TITLES := ["追跡者との投げ合い", "奪い合う開門スイッチ", "重荷を先へ送れ", "暴風の傘渡り", "逆さまの逃走路", "反発と空中ダッシュ", "横向きの重力迷宮", "重力を渡る縦の塔", "相棒と越える断崖", "二つの重量扉", "封鎖装置の予行", "追跡者との最終決着"]
 const HINTS := [
-	"Shiftで持ち、動きながら離すと投げる。敵を怯ませて道を作ろう。捕獲時の危険はスタミナで変わる。",
-	"箱をスイッチに置くと扉が開く。敵も箱を使うので、予備の箱と投げるタイミングを使おう。",
-	"重い箱は歩くと遅い。先へ投げてから追いかけ、重い箱が必要なスイッチへ運ぼう。",
-	"赤い傘を持って上昇気流へ。風の中でも敵は傘を使う。傘の供給台へ戻って取り直せる。",
-	"赤いゲートで天井へ、青で床へ。壁を掴み続けると、捕獲の危険が高まる。",
-	"ばね・反発板から空中ダッシュへ。緑でダッシュ回復、紫で追加ジャンプを得られる。",
-	"横重力では↑↓で壁沿いに歩き、Space / Aで壁から跳ぶ。投げた箱もその重力を引き継ぐ。",
-	"左右の壁を床にしながら上へ。進路のゲートを通り、重力を切り替えて次の壁へ渡ろう。",
-	"緑の相棒と紫のクリスタルは別の追加ジャンプ。着地で相棒の力が戻る。敵の投擲にも注意。",
-	"二つの扉には別々の重りが必要。敵へ投げる箱とスイッチへ置く箱を使い分けよう。",
-	"金のスイッチと縞の扉が対応する。箱を置き、閉じる側を確かめてから総合コースへ。",
-	"共通の重量扉を突破。決着：敵への有効打／封鎖：檻へ誘導し金の重り台／逃走：対峙して封印を解き、檻の上の鍵を取って右上へ。",
+	"先の足場へ渡る前に、金の輪から軽い箱を取れます。敵へ投げて2秒止め、その間に次の足場へ移ってください。\n動きながらShiftを離すと投擲、止まって離すと置く操作です。投げた後は緑の速度マークでダッシュを戻し、紫の追加ジャンプを上昇が弱まるころに使います。",
+	"手前の軽い箱をShiftで持ち、開門スイッチの上で止まってから離してください。箱が台に残ると縞の扉が開きます。\n敵が近づいたら、開門用の箱は台に残し、別の箱を投げて怯ませます。扉の先は高い足場、床ばね、丸いバンパーを使うとトゲを避けて進めます。入口で準備してから進めば、追跡開始まで猶予があります。",
+	"この扉には重い箱が必要です。軽い箱では重量が足りません。手前の重い箱を段差の先へ投げて追い、奥の重量スイッチまで運んで置いてください。\n持っている間は移動が遅く、壁も登れません。段差で詰まったら安全な足場で箱を先へ送り、自分は空身で追うと安定します。箱を敵への攻撃に使った場合も、金の輪で補充できます。",
+	"赤い和傘を持って最初の上昇気流へ入ります。足場の真下で上昇が止まったら、横へ出て端を抜け、上へ回り込んでください。\n途中の足場で着地してから、横風に乗って次の上昇気流へ渡ります。後半の動くトゲには突っ込まず、上下する位置を見て外側を回ります。傘を失った場合は途中の金の輪でも取り直せます。",
+	"最初の↑ゲートで天井を床にします。天井の障害物を避け、壁を掴むときは↓入力で重力に逆らって登ってください。\n途中は障害物の下へ離れ、緑で補充したダッシュをつなぎます。最後の↓ゲートを通って通常の床へ戻り、右の足跡の到着台へ着地します。荷物があると壁を掴めないので、必要なら置いて進みましょう。",
+	"床のばねで上昇し、空中の緑を取ってダッシュを補充します。丸いバンパーへ入る角度で飛び出す方向を調整し、次の足場へ向かってください。\n紫を取ったら、落ち始める前に追加ジャンプで高さを戻します。ダッシュ・追加ジャンプを全部同時に使わず、一つずつ上昇の終わりにつなぐと最後の床まで届きます。",
+	"最初の→ゲートを通ると右の壁が床になります。↑で一枚目の壁の上端を越え、次の壁では↓で下端を回り込んでから通常重力へ戻ってください。\n後半は床ばねと空中回復で高い壁の上を越え、←ゲートへ入ります。左向き重力で壁に付いた横ばねへ戻り、右へ跳び返した勢いにダッシュと追加ジャンプを足して、最後の↓ゲートと出口へ進みます。",
+	"下側の→ゲートを通り、まず右壁へ渡ります。右壁に着いたら↑で登り、←ゲートで反対の壁へ移ってください。\n左壁でも↑へ進み、次の→ゲートから右壁へ渡ってさらに登ります。塔の中央のトゲには近づかず、緑と紫を取るときだけ壁から跳び出すと安定します。頂上の↓ゲートを通った後は、右の到着台へ着地してください。",
+	"緑の相棒を持ち、最初の足場へ通常ジャンプと相棒の追加ジャンプで渡ります。相棒の力は保持したままの着地で回復します。\n紫による追加ジャンプは相棒とは別です。上昇の終わりに一つずつ使い、緑のダッシュ回復もつないでください。動くトゲが近い足場では、一度着地して動きを見てから次へ跳びます。",
+	"手前の扉は軽い箱、奥の扉は重い箱をそれぞれのスイッチへ置いて開きます。一つの箱を先へ持ち去ると開門条件を失うので、台に置いた箱は残してください。\n追ってきた敵には予備の箱を投げ、高い足場へ逃げて運搬する時間を作れます。二つ目の扉の先は床ばねで上がり、緑と紫をつないで動くトゲの上を渡ります。",
+	"金の重量スイッチは「開門」ではなく「封鎖」です。箱を載せると対応する縞の扉が閉まるので、進路と敵の位置を確かめて使ってください。箱を外せば開け直せます。\n先へ進むときは傘を持って斜めの上昇気流へ入り、足場の横から上へ回り込みます。↑ゲートで天井側へ移り、最後の↓ゲートから出口へ着地してください。",
+	"最初の二つの扉は、手前を軽い箱、奥を重い箱で開きます。台に置いた箱を残して階段を登ると、檻がある最後の区画です。\n決着を狙うなら予備の箱を使って攻撃をかわしながら投げ返します。封鎖なら敵を檻へ入れてから右外側の金の台へ箱を置きます。逃走なら緑の相棒と回復を使って檻の屋根の鍵を取り、右側の足場と→ゲートから高い出口へ向かってください。"
 ]
 
 var number := 0
@@ -137,7 +137,6 @@ func _ready() -> void:
 			exit_position = Vector2(2740, 620)
 			preferred_item = "PARACHUTE"
 			route.assign([Vector2(690, 1510), Vector2(820, 1340), Vector2(820, 1090), Vector2(1210, 1050), Vector2(1450, 970), Vector2(1610, 820), Vector2(1610, 640), Vector2(1950, 590), Vector2(2140, 480), Vector2(2440, 470), Vector2(2670, 590)])
-			_label(Vector2(880, 1270), "傘で足場の横へ → 上昇して回り込む", Color("a2ffd0"))
 		4:
 			_floor(0, 430, 820)
 			_floor(1450, 470, 740)
@@ -180,7 +179,6 @@ func _ready() -> void:
 			_gate(Vector2(2580, 290), 1)
 			_crystal(Vector2(2410, 290), 0)
 			_crystal(Vector2(2060, 120), 1)
-			_label(Vector2(2080, 540), "← 重力を切替 → 壁ばねから跳び返す", Color("a2ffd0"))
 			_crystal(Vector2(2060, 280), 0)
 			_crystal(Vector2(2420, 280), 1)
 			_hazard(Rect2(2250, 630, 100, 330))
@@ -195,8 +193,6 @@ func _ready() -> void:
 			_hazard(Rect2(1010, 630, 70, 190))
 			exit_position = Vector2(2740, 500)
 			route.assign([Vector2(470, 670), Vector2(944, 400), Vector2(944, 220), Vector2(1294, 250), Vector2(1294, 490), Vector2(1440, 440), Vector2(1640, 470), Vector2(1810, 470), Vector2(2030, 300), Vector2(2060, 100), Vector2(2270, 100), Vector2(2270, 290), Vector2(2152, 290), Vector2(2410, 290), Vector2(2580, 290), Vector2(2690, 390)])
-			_label(Vector2(1015, 240), "↑ 上端を越える", Color("a2ffd0"))
-			_label(Vector2(1130, 440), "↓ 下端を越える", Color("a2ffd0"))
 		7:
 			size = Vector2(1280, 2160)
 			spawn = Vector2(180, 1974)
@@ -217,7 +213,6 @@ func _ready() -> void:
 			_hazard(Rect2(610, 870, 70, 200))
 			exit_position = Vector2(1190, 390)
 			route.assign([Vector2(420, 1970), Vector2(470, 1830), Vector2(1074, 1880), Vector2(1074, 1280), Vector2(170, 1330), Vector2(170, 890), Vector2(1074, 800), Vector2(1074, 300), Vector2(1160, 320), Vector2(1170, 360)])
-			_label(Vector2(550, 1850), "→ 下側を渡って右壁へ", Color("a2ffd0"))
 		8:
 			_floor(0, 380, 820)
 			_floor(1500, 420, 620)
@@ -254,7 +249,6 @@ func _ready() -> void:
 			_floor(1450, 470, 540)
 			_supply(LIGHT, Vector2(260, 780))
 			_weight_door(Vector2(510, 820), Rect2(750, 330, 36, 490), 2.0, true)
-			_label(Vector2(340, 690), "金の重り台 → 縞の扉が閉じる", Color("ffdc78"))
 			_platforms([Rect2(860, 670, 130, 30), Rect2(1160, 470, 120, 30)])
 			_supply(UMBRELLA, Vector2(590, 780))
 			_wind(Rect2(780, 260, 650, 580), Vector2(-0.35, -1), 2500, 480)
@@ -285,11 +279,10 @@ func _ready() -> void:
 	arrival.mission_required = number == 11
 	arrival.position = exit_position
 	add_child(arrival)
+	arrival.get_node("Bubble").hide()
 	arrival.activated.connect(func(): exit_open = true)
 	if number == 11:
 		update_escape(false)
-	_label(exit_position + Vector2(-100, -220), "逃走出口" if number == 11 else "出口の到着台", Color("a2ffd0"))
-	_label(spawn + Vector2(10, 55), "物体の供給台 / Shiftで持つ", Color("ffdc78"))
 
 
 func _build_final() -> void:
@@ -334,9 +327,6 @@ func _build_final() -> void:
 	escape_key.position = Vector2(3100, 800)
 	add_child(escape_key)
 	escape_key.collected.connect(func(): key_collected = true)
-	_label(Vector2(2920, 740), "逃走の鍵 ↑ 檻の屋根へ", Color("ffdc78"))
-	_label(Vector2(2940, 1160), "封鎖：敵を檻へ → 金の重り台", Color("ffdc78"))
-	_label(Vector2(2540, 1470), "決着：怯んでいない敵に投擲を当てる", Color("ffdc78"))
 	exit_position = Vector2(3750, 480)
 	route.assign([Vector2(1120, 1450), Vector2(1970, 1450), Vector2(2340, 1360), Vector2(2540, 1270), Vector2(2740, 1180), Vector2(2910, 1090), Vector2(2900, 800), Vector2(3100, 824), Vector2(3430, 910), Vector2(3580, 750), Vector2(3590, 660), Vector2(3624, 380), Vector2(3720, 330), Vector2(3750, 350)])
 
@@ -481,7 +471,6 @@ func _supply(scene: PackedScene, at: Vector2) -> void:
 	var id := supplies.size()
 	supplies.append({"id": id, "scene": scene, "at": at})
 	_spawn_item(scene, at, id)
-	_label(at + Vector2(-45, 65), "供給", Color("ffdc78"))
 
 
 func _spawn_item(scene: PackedScene, at: Vector2, id: int) -> void:
@@ -505,7 +494,6 @@ func _weight_door(at: Vector2, rect: Rect2, weight: float, closes := false) -> v
 	var body := _block(rect)
 	doors.append({"button": button, "body": body, "closes": closes})
 	_set_door(body, not closes)
-	_label(at + Vector2(-65, -75), "封鎖" if closes else ("重い箱" if weight > 2 else "開門"), Color("ffdc78"))
 
 
 func _set_door(body: StaticBody2D, closed: bool) -> void:
@@ -559,18 +547,9 @@ func _hazard(rect: Rect2, travel := Vector2.ZERO, period := 4.0) -> void:
 		moving_hazards.append({"rect": rect, "current": rect, "travel": travel, "period": period})
 
 
-func _label(at: Vector2, value: String, tint: Color) -> void:
-	var label := Label.new()
-	label.position = at
-	label.text = value
-	label.add_theme_font_size_override("font_size", 18)
-	label.add_theme_color_override("font_color", tint)
-	label.add_theme_color_override("font_outline_color", Color("15162c"))
-	label.add_theme_constant_override("outline_size", 5)
-	add_child(label)
-
-
 func _draw() -> void:
+	for supply in supplies:
+		ArtDraw.ellipse(self, supply.at + Vector2(0, 34), Vector2(36, 7), Color("ffdc78"), 2)
 	for entry in moving_hazards:
 		_draw_hazard(entry.current)
 	for rect in hazards:
