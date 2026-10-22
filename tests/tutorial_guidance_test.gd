@@ -21,7 +21,7 @@ func _run() -> void:
 		tutorial.player.respawn()
 		await _step(3)
 		var room: Node = tutorial.rooms.get_child(index)
-		var bubble_bounds := Rect2(room.get_node("Goal").position + ArrivalSwitch.BUBBLE + Vector2(-150, -84), Vector2(300, 144))
+		var bubble_bounds := Rect2(room.get_node("Goal").position + room.get_node("Goal/Bubble").position + Vector2(-150, -84), Vector2(300, 144))
 		var guide_count := 0
 		for guide in room.get_children():
 			if guide is Label and guide.visible:
