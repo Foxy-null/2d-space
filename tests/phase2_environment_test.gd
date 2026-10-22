@@ -108,6 +108,7 @@ func _test_gates() -> void:
 	gate.set_physics_process(false)
 	gate._physics_process(2.0)
 	_vector(gate.position, Vector2(100, 350), "default gate stationary")
+	player.global_position = gate.global_position
 	gate.body_entered.emit(player)
 	_check(player.gravity_direction == -1, "static up gate")
 	_check(gate.get_node("Glow").color.r > gate.get_node("Glow").color.b, "up red")
@@ -141,6 +142,7 @@ func _test_gates() -> void:
 		_vector(gate.position, Vector2(100, 350), "wait A")
 	gate.free()
 	# A moving Area must trigger against a motionless CharacterBody.
+	player.position = Vector2(400, 350)
 	gate = load("res://scenes/gravity_gate.tscn").instantiate()
 	gate.position = Vector2(280, 350)
 	gate.move_offset = Vector2(120, 0)

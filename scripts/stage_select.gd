@@ -37,3 +37,7 @@ func _start_stage_four() -> void:
 
 func _start_stage_five() -> void:
 	get_tree().change_scene_to_file("res://scenes/stage_5.tscn")
+
+
+func _start_stage_six() -> void:
+	get_tree().change_scene_to_file("res://scenes/stage_6.tscn")

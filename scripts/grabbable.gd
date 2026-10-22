@@ -8,6 +8,8 @@ extends RigidBody2D
 @export var acceleration_multiplier := 1.0
 @export var jump_multiplier := 1.0
 @export var visual_width := 63.0
+@export var directional_gravity_enabled := false
+var gravity_direction := 1
 
 var carrier: PlayerController
 var _spawn_transform: Transform2D
@@ -46,13 +48,13 @@ func _update_visuals() -> void:
 		size = sprite.sprite_frames.get_frame_texture(sprite.animation, sprite.frame).get_size() * sprite.scale
 	var visual_scale := visual_width / size.x
 	var held := is_instance_valid(carrier)
-	var gravity := carrier.gravity_direction if held else 1
+	var gravity := carrier.gravity_direction if held else gravity_direction
+	var down := Vector2.DOWN if not directional_gravity_enabled else gravity_vector()
 	visuals.scale = Vector2.ONE * visual_scale
-	visuals.rotation = PI if gravity < 0 else 0.0
+	visuals.rotation = Vector2.DOWN.angle_to(down) if directional_gravity_enabled else (PI if gravity < 0 else 0.0)
 	# Align the artwork's bottom with its full-size collider in either gravity.
 	var support: float = (collider.shape as RectangleShape2D).size.y * 0.5
-	visuals.position.y = (support - size.y * visual_scale * 0.5) * gravity
-	visuals.position.x = 0.0
+	visuals.position = down * (support - size.y * visual_scale * 0.5) if directional_gravity_enabled else Vector2(0, (support - size.y * visual_scale * 0.5) * gravity)
 
 
 func begin_carry(player: PlayerController) -> void:
@@ -78,6 +80,7 @@ func end_carry(release_velocity: Vector2) -> void:
 
 
 func reset_for_respawn() -> void:
+	set_gravity_direction(1)
 	end_carry(Vector2.ZERO)
 	global_transform = _spawn_transform
 	PhysicsServer2D.body_set_state(get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, global_transform)
@@ -119,3 +122,21 @@ func space_query(at: Vector2, player: PlayerController) -> PhysicsShapeQueryPara
 func is_position_clear(at: Vector2, player: PlayerController) -> bool:
 	# Release may overlap the player; its separation routine handles that pair.
 	return get_world_2d().direct_space_state.intersect_shape(space_query(at, player), 1).is_empty()
+
+
+func gravity_vector() -> Vector2:
+	return {1: Vector2.DOWN, -1: Vector2.UP, 2: Vector2.RIGHT, -2: Vector2.LEFT}[gravity_direction]
+
+
+func set_gravity_direction(direction: int) -> void:
+	if not directional_gravity_enabled or direction not in [-2, -1, 1, 2]:
+		return
+	gravity_direction = direction
+	gravity_scale = 1.0 if direction == 1 else 0.0
+	collider.rotation = PI / 2.0 if abs(direction) == 2 else 0.0
+	sleeping = false
+
+
+func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
+	if directional_gravity_enabled and gravity_direction != 1:
+		state.linear_velocity += gravity_vector() * float(ProjectSettings.get_setting("physics/2d/default_gravity")) * state.step

@@ -9,7 +9,7 @@ var _initial_position := Vector2.ZERO
 var _toward_b := true
 var _endpoint_wait_left := 0.0
 
-@export_enum("Down:1", "Up:-1") var target_gravity := -1:
+@export_enum("Down:1", "Up:-1", "Right:2", "Left:-2") var target_gravity := -1:
 	set(value):
 		target_gravity = value
 		if is_node_ready():
@@ -39,7 +39,7 @@ func _physics_process(delta: float) -> void:
 
 func _update_visuals() -> void:
 	var tint := Color(1.0, 0.3, 0.35) if target_gravity < 0 else Color(0.55, 0.98, 1.0)
-	$Arrow.text = "↓" if target_gravity > 0 else "↑"
+	$Arrow.text = {1: "↓", -1: "↑", 2: "→", -2: "←"}.get(target_gravity, "↓")
 	$Arrow.add_theme_color_override("font_color", tint)
 	$Glow.color = Color(tint, 0.22)
 	$Glow.hide()
@@ -75,5 +75,8 @@ func reset_for_respawn() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
+	# A queued overlap from before a respawn must not change the entrance gravity.
+	if body is Node2D and global_position.distance_to(body.global_position) > ($CollisionShape2D.shape as RectangleShape2D).size.length() + 80.0:
+		return
 	if body.has_method("set_gravity_direction"):
 		body.set_gravity_direction(target_gravity)

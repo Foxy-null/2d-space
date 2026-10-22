@@ -56,7 +56,7 @@ text = "ステージ選択"
 
 [node name="Description" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "チュートリアルで練習して、星のぼり・壁キック・暴風の峡谷に挑戦しよう。"
+text = "チュートリアルで練習して、星のぼり・暴風の峡谷・追跡者に挑戦しよう。"
 
 [node name="Stages" type="HBoxContainer" parent="Margin/Content"]
 layout_mode = 2
@@ -69,7 +69,7 @@ focus_neighbor_top = NodePath("../../../../ReturnTitle")
 focus_neighbor_right = NodePath("../Stage2")
 focus_neighbor_left = NodePath("../Stage1")
 focus_neighbor_bottom = NodePath("../../Preview")
-custom_minimum_size = Vector2(200, 232)
+custom_minimum_size = Vector2(172, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -80,7 +80,7 @@ focus_neighbor_top = NodePath("../../../../ReturnTitle")
 focus_neighbor_right = NodePath("../Stage3")
 focus_neighbor_left = NodePath("../Stage1")
 focus_neighbor_bottom = NodePath("../../Preview")
-custom_minimum_size = Vector2(200, 232)
+custom_minimum_size = Vector2(172, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -88,7 +88,7 @@ text = "ステージ 2\n\n星のぼりの塔\n\nプレイする"
 
 [node name="Stage3" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(200, 232)
+custom_minimum_size = Vector2(172, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -99,7 +99,7 @@ text = "ステージ 3\n\n壁キックと重力\n\nプレイする"
 
 [node name="Stage4" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(200, 232)
+custom_minimum_size = Vector2(172, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -110,14 +110,25 @@ text = "ステージ 4\n\n星渡りの回廊\n\nプレイする"
 
 [node name="Stage5" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(200, 232)
+custom_minimum_size = Vector2(172, 232)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage4")
-focus_neighbor_right = NodePath("../Stage5")
+focus_neighbor_right = NodePath("../Stage6")
 focus_neighbor_bottom = NodePath("../../Preview")
 text = "ステージ 5\n\n暴風バンパー峡谷\n\nプレイする"
+
+[node name="Stage6" type="Button" parent="Margin/Content/Stages"]
+focus_neighbor_top = NodePath("../../../../ReturnTitle")
+custom_minimum_size = Vector2(172, 232)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_neighbor_left = NodePath("../Stage5")
+focus_neighbor_right = NodePath("../Stage6")
+focus_neighbor_bottom = NodePath("../../Preview")
+text = "ステージ 6\n\n追跡者の終域\n\nプレイする"
 
 [node name="Preview" type="Button" parent="Margin/Content"]
 custom_minimum_size = Vector2(0, 42)
@@ -128,7 +139,7 @@ text = "5つの環境を見る — 背景とギミックのプレビュー"
 
 [node name="Availability" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "ステージ1〜5は、クリア状況に関係なく自由に選べます。"
+text = "ステージ1〜6は、クリア状況に関係なく自由に選べます。"
 
 [node name="Controls" type="Label" parent="Margin/Content"]
 layout_mode = 2
@@ -163,3 +174,5 @@ text = "タイトルに戻る"
 [connection signal="pressed" from="Margin/Content/Stages/Stage4" to="." method="_start_stage_four"]
 
 [connection signal="pressed" from="Margin/Content/Stages/Stage5" to="." method="_start_stage_five"]
+
+[connection signal="pressed" from="Margin/Content/Stages/Stage6" to="." method="_start_stage_six"]

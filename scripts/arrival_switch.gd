@@ -20,6 +20,7 @@ const CAP_SEAT_Y := SEAT_Y + 12.0
 
 var locked := true
 var pressing := false
+var activator: PlayerController
 var _pressed := false
 var _step := "jump"
 var _unlock_fx := 1.0
@@ -78,6 +79,7 @@ func _physics_process(delta: float) -> void:
 				var contact: KinematicCollision2D = body.get_slide_collision(index)
 				if contact.get_collider() == cap and contact.get_normal().dot(Vector2.UP) > 0.8:
 					pressing = true
+					activator = body
 	if pressing:
 		cap.position.y = move_toward(cap.position.y, TRAVEL, TRAVEL / PRESS_TIME * delta)
 		queue_redraw()
@@ -90,6 +92,14 @@ func _physics_process(delta: float) -> void:
 
 func is_pressed() -> bool:
 	return _pressed
+
+
+func reset_for_respawn() -> void:
+	_pressed = false
+	pressing = false
+	activator = null
+	cap.position.y = 0.0
+	queue_redraw()
 
 
 func _process(_delta: float) -> void:
@@ -181,6 +191,9 @@ func _draw_icon(step: String) -> void:
 			ArtDraw.ellipse(self, Vector2(0, 12), Vector2(24, 9), ArtDraw.GOLD)
 			ArtDraw.footprints(self, Vector2(0, 12), 0.5)
 			_arrow(Vector2(0, -27), Vector2(0, 3), GOLD)
+		"escape":
+			draw_arc(Vector2.ZERO, 23, 0, TAU, 40, GOLD, 4, true)
+			draw_polyline(PackedVector2Array([Vector2(0, -15), Vector2.ZERO, Vector2(12, 7)]), Color.WHITE, 4, true)
 		"button_on", "button_off", "throw_button":
 			_box(Rect2(-23, 9, 46, 12), Color("92919a"), INK, 4)
 			ArtDraw.cube_mark(self, Vector2(0, -10), 1.1)
