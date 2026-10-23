@@ -35,7 +35,7 @@ const STEPS := [
 	["throw", "throw_button"], [],
 	[],
 	[],
-	["wind_lift", "inverted_glide", "down"], ["superdash"],
+	[], ["superdash"],
 ]
 const STEP_LABELS := {
 	"jump": "段差と穴を越えよう", "climb": "壁を掴んで登ろう",
@@ -117,11 +117,15 @@ func _physics_process(delta: float) -> void:
 	if transitioning:
 		return
 	_observe_lesson(delta)
-	var left := room_index * ROOM_SIZE.x
+	var room := rooms.get_child(room_index) as Node2D
+	var left := room.position.x
+	var width := float(room.get_meta("room_width", ROOM_SIZE.x))
+	if width > ROOM_SIZE.x:
+		camera.position = _camera_position()
 	var collision_shape := player.get_node("CollisionShape2D") as CollisionShape2D
 	# A taller neighboring floor can stop the player's center before the boundary.
 	var right := collision_shape.to_global(collision_shape.shape.get_rect().end).x + player.safe_margin
-	if right >= left + ROOM_SIZE.x and room_index < rooms.get_child_count() - 1 and cleared.has(room_index):
+	if right >= left + width and room_index < rooms.get_child_count() - 1 and cleared.has(room_index):
 		_transition_to(room_index + 1)
 	elif player.global_position.x < left and room_index > 0:
 		_transition_to(room_index - 1)
@@ -167,7 +171,10 @@ func _retry() -> void:
 
 
 func _camera_position() -> Vector2:
-	return Vector2(room_index * ROOM_SIZE.x, 0) + ROOM_SIZE * 0.5
+	var room := rooms.get_child(room_index) as Node2D
+	var width := float(room.get_meta("room_width", ROOM_SIZE.x))
+	var center := clampf(player.position.x - room.position.x, ROOM_SIZE.x * 0.5, width - ROOM_SIZE.x * 0.5)
+	return room.position + Vector2(center, ROOM_SIZE.y * 0.5)
 
 
 func _on_respawned() -> void:
