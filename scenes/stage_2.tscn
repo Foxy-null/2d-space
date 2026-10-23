@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -22,13 +22,7 @@ size = Vector2(1040, 70)
 size = Vector2(240, 60)
 
 [sub_resource type="RectangleShape2D" id="Shape_S1L1"]
-size = Vector2(100, 190)
-
-[sub_resource type="RectangleShape2D" id="Shape_S1L2"]
-size = Vector2(100, 190)
-
-[sub_resource type="RectangleShape2D" id="Shape_S1L3"]
-size = Vector2(100, 190)
+size = Vector2(260, 490)
 
 [sub_resource type="RectangleShape2D" id="Shape_S1L4"]
 size = Vector2(240, 190)
@@ -109,30 +103,12 @@ polygon = PackedVector2Array(-120, -30, 120, -30, 120, 30, -120, 30)
 color = Color(0.10, 0.29, 0.32, 1)
 
 [node name="S1L1" type="StaticBody2D" parent="Terrain"]
-position = Vector2(620, 555)
+position = Vector2(620, 455)
 [node name="Collision" type="CollisionShape2D" parent="Terrain/S1L1"]
 shape = SubResource("Shape_S1L1")
 [node name="Body" type="Polygon2D" parent="Terrain/S1L1"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-50, -95, 50, -95, 50, 95, -50, 95)
-color = Color(0.10, 0.16, 0.29, 1)
-
-[node name="S1L2" type="StaticBody2D" parent="Terrain"]
-position = Vector2(360, 375)
-[node name="Collision" type="CollisionShape2D" parent="Terrain/S1L2"]
-shape = SubResource("Shape_S1L2")
-[node name="Body" type="Polygon2D" parent="Terrain/S1L2"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-50, -95, 50, -95, 50, 95, -50, 95)
-color = Color(0.10, 0.16, 0.29, 1)
-
-[node name="S1L3" type="StaticBody2D" parent="Terrain"]
-position = Vector2(620, 195)
-[node name="Collision" type="CollisionShape2D" parent="Terrain/S1L3"]
-shape = SubResource("Shape_S1L3")
-[node name="Body" type="Polygon2D" parent="Terrain/S1L3"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-50, -95, 50, -95, 50, 95, -50, 95)
+polygon = PackedVector2Array(-130, -245, 130, -245, 130, 245, -130, 245)
 color = Color(0.10, 0.16, 0.29, 1)
 
 [node name="S1L4" type="StaticBody2D" parent="Terrain"]

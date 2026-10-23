@@ -29,7 +29,7 @@ const CONTROLS := [
 const STEPS := [
 	["jump"], ["climb", "wall_jump"], [], [],
 	[], [],
-	["floor_spring"], [],
+	[], [],
 	[], [],
 	["button_on"],
 	["throw", "throw_button"], [],
