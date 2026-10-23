@@ -21,19 +21,19 @@ const CONTROLS := [
 	"Shift・ZL / ZRを保持して掴む　止まって離すと置く",
 	"動きながらGrabキーを離すと、自分の移動方向へ投げる",
 	"Shiftで相棒を保持　追加ジャンプ＋上ダッシュ　着地で回復",
-	"赤い和傘を保持してゆっくり落下　離すと通常の落下へ",
+	"赤い和傘を保持して滑空　空中の水平ダッシュも使える　離すと通常の落下へ",
 	"相棒で空中の紫のばね靴へ　追加ジャンプをつなぎ上ダッシュで渡る",
 	"傘を保持して上昇気流へ　反転しても落下がゆっくりになる",
 	"地上で水平ダッシュ → すぐジャンプ　Space・A / ×を使おう",
 ]
 const STEPS := [
-	["jump"], ["climb", "wall_jump"], [], ["up", "down"],
+	["jump"], ["climb", "wall_jump"], [], [],
 	[], [],
 	[], [],
-	[], ["up", "down"],
+	[], [],
 	["button_on"],
 	["throw", "throw_button"], [],
-	["glide", "parachute_release", "fast_fall"],
+	[],
 	[],
 	["wind_lift", "inverted_glide", "down"], ["superdash"],
 ]

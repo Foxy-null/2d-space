@@ -211,7 +211,7 @@ func _parachute_course() -> void:
 			break
 		await _step()
 	_check(tutorial.seen.has("glide"), "Held parachute must actually slow a fall")
-	await _walk_to(975)
+	await _walk_to(1080)
 	Input.action_release("wall_grab")
 	await _walk_goal()
 
@@ -304,12 +304,13 @@ func _enter(index: int) -> void:
 func _test_retry() -> void:
 	await _enter(9)
 	var gate := _room().get_node("MovingGate")
+	var initial_x: float = gate._initial_position.x
 	await _step(35)
-	_check(gate.position.x > 340, "Moving gate advances")
+	_check(gate.position.x > initial_x, "Moving gate advances")
 	Input.action_press("reset")
 	await _step()
 	Input.action_release("reset")
-	_check(absf(gate.position.x - 340) < 4, "Retry restores moving gate phase")
+	_check(absf(gate.position.x - initial_x) < 4, "Retry restores moving gate phase")
 	await _enter(12)
 	await _grab("Creature")
 	_release()
