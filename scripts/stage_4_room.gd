@@ -4,6 +4,7 @@ extends Node2D
 const TERRAIN = preload("res://scripts/terrain_art.gd")
 const SPIKE = preload("res://scenes/spike_block.tscn")
 const CREATURE = preload("res://scenes/jump_creature.tscn")
+const WIND = preload("res://scenes/wind_area.tscn")
 const GOAL = preload("res://scenes/arrival_switch.tscn")
 
 @export_range(0, 5) var room_number := 0
@@ -37,7 +38,15 @@ func _ready() -> void:
 		3: # Ridge followed by descending landings.
 			walls = [Rect2(310, 510, 110, 32), Rect2(530, 370, 110, 32), Rect2(750, 450, 90, 32), Rect2(980, 550, 100, 32)]
 		4: # Long jumps over wide gaps.
-			walls = [Rect2(350, 550, 90, 40), Rect2(670, 500, 90, 40), Rect2(970, 550, 90, 40)]
+			walls = [Rect2(850, 480, 230, 40)]
+			var wind := WIND.instantiate()
+			wind.name = "HighTailwind"
+			wind.position = Vector2(500, 120)
+			wind.area_size = Vector2(300, 40)
+			wind.wind_direction = Vector2.RIGHT
+			wind.wind_acceleration = 2000.0
+			wind.max_wind_speed = 650.0
+			add_child(wind)
 		5: # Right, back left, then a long jump to the right.
 			walls = [Rect2(300, 510, 120, 32), Rect2(560, 390, 120, 32), Rect2(340, 270, 130, 32), Rect2(790, 360, 130, 32), Rect2(1040, 450, 90, 32)]
 	for rect in walls:
@@ -75,7 +84,7 @@ func _ready() -> void:
 			_spike(Vector2(450, 300), Vector2(0, 230), 4.2, 0.5)
 			_spike(Vector2(1120, 330), Vector2(0, 240), 4.0, 0.15)
 		4:
-			_spike(Vector2(500, 360), Vector2(0, 250), 3.7, 0.0)
+			_spike(Vector2(500, 100), Vector2(0, 510), 3.7, 0.9)
 			_spike(Vector2(830, 350), Vector2(0, 260), 3.9, 0.3)
 			_spike(Vector2(280, 390), Vector2(0, 210), 4.3, 0.5)
 			_spike(Vector2(1120, 350), Vector2(0, 220), 4.1, 0.15)
@@ -84,6 +93,16 @@ func _ready() -> void:
 			_spike(Vector2(960, 250), Vector2(0, 290), 3.8, 0.0)
 			_spike(Vector2(250, 200), Vector2(0, 400), 4.3, 0.5)
 			_spike(Vector2(710, 180), Vector2(0, 300), 4.5, 0.4)
+	if room_number == 4:
+		var edge := SPIKE.instantiate()
+		edge.name = "LeftEdgeSpikes"
+		edge.position = Vector2(36, 350)
+		edge.rotation = -PI / 2
+		edge.travel = Vector2.ZERO
+		edge.ceiling_strip = true
+		edge.strip_half_width = 250.0
+		edge.room_number = room_number
+		$Hazards.add_child(edge)
 	var creature := CREATURE.instantiate()
 	creature.name = "JumpCreature"
 	creature.position = Vector2(175, entrance_top - 40)
