@@ -180,7 +180,7 @@ func _creature_course() -> void:
 			break
 		await _step()
 	_check(tutorial.seen.has("creature_landed"), "Real landing restores held Creature")
-	await _walk_to(650)
+	await _walk_to(580)
 	await _pulse("jump")
 	await _step(16)
 	await _pulse("jump")
@@ -312,7 +312,7 @@ func _test_retry() -> void:
 	_check(player.get_held_object() == null and _local().x < 100, "Falling restores the current entrance and drops held state")
 	var creature: Grabbable = _room().get_node("Creature")
 	var rest_y := 640.0 - (creature.collider.shape as RectangleShape2D).size.y * 0.5
-	_check(creature.position.distance_to(Vector2(170, rest_y)) < 5, "Falling restores full-size creature above the floor")
+	_check(creature.position.distance_to(Vector2(150, rest_y)) < 5, "Falling restores full-size creature above the floor")
 
 
 func _screenshots() -> void:
