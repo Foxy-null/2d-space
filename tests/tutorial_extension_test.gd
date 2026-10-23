@@ -142,6 +142,15 @@ func _carry_course() -> void:
 	await _grab("Heavy")
 	await _step(5)
 	_check(tutorial.seen.has("button_off"), "Picking up the box turns the real button off")
+	_check(not _room().get_node("Button").is_pressed() and _room().get_node("Goal").locked, "Removing the box relocks the arrival switch")
+	await _walk_to(745)
+	Input.action_release("move_right")
+	await _step(12)
+	Input.action_release("wall_grab")
+	Input.action_press("move_left")
+	await _step(18)
+	Input.action_release("move_left")
+	await _step(45)
 	await _walk_goal()
 
 
@@ -167,7 +176,7 @@ func _creature_course() -> void:
 			break
 		await _step()
 	_check(tutorial.seen.has("creature_landed"), "Real landing restores held Creature")
-	await _walk_to(650)
+	await _walk_to(580)
 	await _pulse("jump")
 	await _step(16)
 	await _pulse("jump")
@@ -189,12 +198,15 @@ func _test_creature_exit() -> void:
 
 func _parachute_course() -> void:
 	await _grab("Parachute")
+	await _walk_to(220)
+	await _pulse("jump")
 	Input.action_press("move_right")
 	for frame in 130:
 		if tutorial.seen.has("glide"):
 			break
 		await _step()
 	_check(tutorial.seen.has("glide"), "Held parachute must actually slow a fall")
+	await _walk_to(975)
 	Input.action_release("wall_grab")
 	await _walk_goal()
 
@@ -296,7 +308,7 @@ func _test_retry() -> void:
 	_check(player.get_held_object() == null and _local().x < 100, "Falling restores the current entrance and drops held state")
 	var creature: Grabbable = _room().get_node("Creature")
 	var rest_y := 640.0 - (creature.collider.shape as RectangleShape2D).size.y * 0.5
-	_check(creature.position.distance_to(Vector2(170, rest_y)) < 5, "Falling restores full-size creature above the floor")
+	_check(creature.position.distance_to(Vector2(150, rest_y)) < 5, "Falling restores full-size creature above the floor")
 
 
 func _screenshots() -> void:

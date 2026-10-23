@@ -28,6 +28,7 @@ var next_bumper := 0
 @onready var player: PlayerController = $Player
 @onready var camera: Camera2D = $Camera2D
 @onready var rooms: Node2D = $Rooms
+@onready var target_marker: Line2D = $TargetMarker
 
 
 func _ready() -> void:
@@ -116,9 +117,13 @@ func _update_route() -> void:
 	var unlocked := next_bumper == _bumpers().get_child_count()
 	room.get_node("ExitLock/Collision").set_deferred("disabled", unlocked)
 	room.get_node("ExitLock").visible = not unlocked
-	room.get_node("ExitLabel").text = ("旗の台へ →" if room_index == TITLES.size() - 1 else "着地して次の部屋へ →") if unlocked else "番号順に反射して解錠"
+	room.get_node("ExitLabel").text = "→" if unlocked else "%d / %d" % [next_bumper, _bumpers().get_child_count()]
+	target_marker.position = room.get_node("Exit").global_position + Vector2(0, -55) if unlocked else _bumpers().get_child(next_bumper).global_position
+	target_marker.visible = not completed
 	for index in _bumpers().get_child_count():
-		_bumpers().get_child(index).modulate = Color(0.55, 0.7, 0.65) if index < next_bumper else Color.WHITE
+		var bumper := _bumpers().get_child(index)
+		bumper.modulate = Color(0.55, 0.7, 0.65) if index < next_bumper else Color.WHITE
+		bumper.get_node("Number").text = "✓" if index < next_bumper else str(index + 1)
 
 
 func _on_hazard(body: Node2D) -> void:
@@ -137,12 +142,13 @@ func _on_completed() -> void:
 	if next_bumper != _bumpers().get_child_count():
 		return
 	completed = true
+	target_marker.hide()
 	$HUD/Completion.show()
 	$Rooms/Room12/Goal.set_progress(0, 0, "", "", true)
 
 
 func _update_hud() -> void:
-	$HUD/Info/Rows/Title.text = "ステージ5　暴風バンパー峡谷　｜　%02d / 12　%s" % [room_index + 1, TITLES[room_index]]
-	$HUD/Info/Rows/Status.text = "反射：%d / %d　　ダッシュ：%s　　復帰地点：部屋%d" % [next_bumper, _bumpers().get_child_count(), "使用可" if player.is_dash_ready() else "回復待ち", room_index + 1]
+	$HUD/Info/Rows/Title.text = "暴風バンパー峡谷　%02d / 12　%s" % [room_index + 1, TITLES[room_index]]
+	$HUD/Info/Rows/Status.text = "反射 %d / %d　　ダッシュ %s" % [next_bumper, _bumpers().get_child_count(), "●" if player.is_dash_ready() else "○"]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
 	$HUD/Hint.text = HINTS[room_index]
