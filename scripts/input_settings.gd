@@ -24,7 +24,7 @@ func _ready() -> void:
 	load_settings()
 	launcher = Button.new()
 	launcher.text = "操作設定  [F10]"
-	launcher.position = Vector2(1050, 20)
+	launcher.position = Vector2(764, 48)
 	launcher.size = Vector2(200, 40)
 	launcher.pressed.connect(open_settings)
 	add_child(launcher)
