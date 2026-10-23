@@ -146,6 +146,7 @@ func _check_transitions() -> void:
 			stage._transition_to_next()
 		else:
 			stage._transition_to(1)
+		var destination := Vector2(1920, stage._camera_position().y if scene == "stage_4" else 360)
 		var pause := stage.get_node("PauseMenu")
 		pause.open()
 		var camera_before: Vector2 = stage.camera.position
@@ -154,7 +155,7 @@ func _check_transitions() -> void:
 		await _click(pause.menu.get_node("Retry"))
 		await _step(30)
 		_check(not paused and not stage.transitioning and stage.player.controls_enabled, "Retry during transition finishes at the new room")
-		_check(stage.camera.position == Vector2(1920, 360), "The resumed camera reaches the checkpoint's room")
+		_check(stage.camera.position == destination, scene + ": the resumed camera reaches the checkpoint's room")
 
 
 func _check_completion_input() -> void:

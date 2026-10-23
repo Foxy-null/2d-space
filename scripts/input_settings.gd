@@ -86,7 +86,7 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 		if waiting_action != "":
-			if event.keycode == KEY_F10:
+			if event.keycode in [KEY_F10, KEY_F11] or event.physical_keycode == KEY_F11:
 				return
 			var key := InputEventKey.new()
 			key.physical_keycode = event.physical_keycode if event.physical_keycode != 0 else event.keycode
@@ -127,7 +127,7 @@ func _refresh() -> void:
 	body.add_child(tabs)
 	var first := _button("キーボード・マウス", tabs, func(): keyboard = true; _refresh())
 	_button("コントローラー", tabs, func(): keyboard = false; _refresh())
-	_label("Esc: 入力待ちをキャンセル / 閉じる   F10: 設定を開く・閉じる（予約キー）", body)
+	_label("Esc: キャンセル / 閉じる　F10: 操作設定　F11: 全画面切替（予約キー）", body)
 	status = _label("割り当て欄を選び、キーまたはマウスボタンを押してください。" if keyboard else "ボタンごとに操作を選択。左スティック・トリガーは初期操作のまま使えます。", body)
 	if waiting_action != "":
 		status.text = "入力待ち：%s — キーまたはマウスボタンを押してください / Escでキャンセル" % LABELS[ACTIONS.find(waiting_action)]
@@ -247,6 +247,8 @@ func keyboard_events(action: String) -> Array[InputEvent]:
 	return keys
 
 func set_keyboard_binding(action: String, slot: int, event: InputEvent) -> void:
+	if event is InputEventKey and (event.keycode == KEY_F11 or event.physical_keycode == KEY_F11):
+		return
 	var keys := keyboard_events(action)
 	if slot < keys.size():
 		InputMap.action_erase_event(action, keys[slot])
@@ -326,5 +328,13 @@ func load_settings() -> void:
 				valid = false
 		if valid:
 			InputMap.action_erase_events(action)
+			var removed_fullscreen_key := false
 			for event in events:
+				if event is InputEventKey and (event.keycode == KEY_F11 or event.physical_keycode == KEY_F11):
+					removed_fullscreen_key = true
+					continue
 				InputMap.action_add_event(action, event)
+			if removed_fullscreen_key and keyboard_events(action).is_empty():
+				for event in defaults[action]:
+					if event is InputEventKey:
+						InputMap.action_add_event(action, event)

@@ -372,14 +372,6 @@ theme_override_font_sizes/font_size = 20
 text = "↑  Space · A / ×"
 mouse_filter = 2
 
-[node name="RecoveryHint" type="Label" parent="Rooms/Room1"]
-offset_left = 715.0
-offset_top = 548.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 28
-text = "↗"
-mouse_filter = 2
-
 [node name="ExitGlow" type="Polygon2D" parent="Rooms/Room1"]
 polygon = PackedVector2Array(1254, 548, 1280, 548, 1280, 640, 1254, 640)
 color = Color(0.35, 0.92, 1, 0.08)
@@ -693,6 +685,7 @@ position = Vector2(1190, 640)
 
 [node name="Goal" parent="Rooms/Room1" instance=ExtResource("14_arrival")]
 position = Vector2(1190, 640)
+mission_required = false
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room1"]
 offset_left = 1142
