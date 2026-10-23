@@ -28,12 +28,16 @@ func _release() -> void:
 
 
 func _check_signage() -> void:
+	# 旗の地形確認では、移動できるプレイヤーや生物を障害物として数えない。
+	var excluded: Array[RID] = [player.get_rid()]
+	for object in get_nodes_in_group("grabbable"):
+		excluded.append(object.get_rid())
 	for index in stage.checkpoints.get_child_count():
 		var point: Node2D = stage.checkpoints.get_child(index)
 		var mark := "↺ " if index == stage.checkpoint_index else ("✓ " if index < stage.checkpoint_index else "")
 		_check(point.get_node("Label").text == mark + "%02d" % (index + 1), "Checkpoint marks distinguish unseen, current, and reached platforms")
 		_check(point.get_node("Sign").visible and point.get_node("Sign").get_signal_connection_list("draw").size() == 1, "Every checkpoint keeps its static flag visible")
-		var ray := PhysicsRayQueryParameters2D.create(point.position + Vector2(-110, -36), point.position + Vector2(-50, -36), 1)
+		var ray := PhysicsRayQueryParameters2D.create(point.position + Vector2(-110, -36), point.position + Vector2(-50, -36), 1, excluded)
 		_check(root.world_2d.direct_space_state.intersect_ray(ray).is_empty(), "Checkpoint flag does not obstruct the route")
 	var panel: Control = stage.get_node("HUD/Info")
 	_check(panel.get_global_rect().end.x <= 600, "The HUD leaves the right half of the view clear")
@@ -65,6 +69,11 @@ func _run() -> void:
 		if section == 2:
 			await _dash_course()
 			_check(stage.checkpoint_index == 3, "The dash chain reaches checkpoint 04")
+			_check_signage()
+			continue
+		if section == 3:
+			await _extra_jump_course()
+			_check(stage.checkpoint_index == 4, "The extra-jump route reaches checkpoint 05")
 			_check_signage()
 			continue
 		var xs: Array = [620, 360, 620, 900] if section % 2 == 0 else [640, 900, 640, 360]
@@ -263,3 +272,63 @@ func _dash_launch() -> void:
 		if player.position.x >= 740:
 			break
 		await _step()
+
+
+func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
+	var started := Engine.get_physics_frames()
+	for leg in 2:
+		_release()
+		await _step(12)
+		var launch_x := 950.0 if leg == 0 else 650.0
+		for frame in 90:
+			var dx := launch_x - player.position.x
+			if absf(dx) < 10:
+				break
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			Input.action_press("move_right" if dx > 0 else "move_left")
+			await _step()
+		_release()
+		await _step(12)
+		Input.action_press("move_left")
+		Input.action_press("jump")
+		await _step()
+		Input.action_release("jump")
+		var stop_x := 835.0 if leg == 0 else 550.0
+		for frame in jump_delay:
+			if player.position.x <= stop_x:
+				Input.action_release("move_left")
+			await _step()
+		var crystal := stage.get_node("Items/Item%d" % (5 + leg))
+		_check(not crystal.visible and player.is_air_jump_ready(), "The first jump collects the visible boot")
+		Input.action_press("jump")
+		await _step()
+		Input.action_release("jump")
+		for frame in dash_delay:
+			if player.position.x <= stop_x:
+				Input.action_release("move_left")
+			await _step()
+		_release()
+		Input.action_press("move_up")
+		Input.action_press("dash")
+		await _step()
+		Input.action_release("dash")
+		var target := Vector2(650, -1986) if leg == 0 else Vector2(350, -2266)
+		for frame in 150:
+			if not player.is_dashing():
+				var dx := target.x - player.position.x
+				Input.action_release("move_left")
+				Input.action_release("move_right")
+				if absf(dx) > 10:
+					Input.action_press("move_right" if dx > 0 else "move_left")
+			await _step()
+			if player.is_on_floor() and absf(player.position.y - target.y) < 2:
+				break
+		_release()
+		_check(player.is_on_floor() and absf(player.position.y - target.y) < 2, "Extra jump plus dash reaches the broad landing")
+		await _step(30)
+		_check(player.is_on_floor(), "The broad landing permits a pause")
+	_check(stage.checkpoint_index == 4, "The extra-jump route reaches checkpoint 05")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The extra-jump section stays below 30 seconds")
+	print("TOWER_EXTRA_JUMP_SECONDS %.2f delays=%d/%d respawns=%d" % [seconds, jump_delay, dash_delay, respawns])
