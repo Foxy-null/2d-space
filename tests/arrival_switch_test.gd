@@ -35,7 +35,8 @@ func _run() -> void:
 			_check(goal.locked and not goal.is_pressed(), "Locked case cannot activate in room %d" % (index + 1))
 			_check(player.is_on_floor() and absf(player.global_position.y - goal.global_position.y + 147.741) < 1, "Case supports the player in room %d" % (index + 1))
 			_check(not _room().get_node("ExitBarrier/Collision").disabled, "Locked exit remains solid")
-	await _enter(0)
+	# Keep the rim probe separate from the already-pressed terrain-led arrivals.
+	await _enter(1)
 	_complete_steps()
 	player.global_position = _goal().global_position + Vector2(-80, -90)
 	player.velocity = Vector2.ZERO
