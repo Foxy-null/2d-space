@@ -22,8 +22,8 @@ func _ready() -> void:
 	_block("Entrance", Rect2(36, 620, 184, 40))
 	# Each route has its own silhouette and movement problem.
 	match room_number:
-		0: # Rising stairs.
-			walls = [Rect2(320, 530, 130, 32), Rect2(570, 420, 130, 32), Rect2(820, 330, 140, 32), Rect2(1030, 440, 100, 32)]
+		0: # Jumping from the companion before grabbing it also cannot reach this landing.
+			walls = [Rect2(370, 200, 450, 24), Rect2(960, 360, 120, 32)]
 		1: # Wall-kick shaft and high-to-low transfers.
 			walls = [Rect2(270, 300, 40, 420), Rect2(550, 430, 100, 32), Rect2(800, 310, 40, 390), Rect2(1040, 440, 80, 32)]
 		2: # Covered low crossing.
@@ -36,11 +36,12 @@ func _ready() -> void:
 		5: # Right, back left, then a long jump to the right.
 			walls = [Rect2(300, 510, 120, 32), Rect2(560, 390, 120, 32), Rect2(340, 270, 130, 32), Rect2(790, 360, 130, 32), Rect2(1040, 450, 90, 32)]
 	for rect in walls:
-		_block("Platform%d" % get_child_count(), rect)
+		_block("Platform%d" % get_child_count(), rect, room_number == 0)
 	exit_top = 500.0
 	_block("Exit", Rect2(1160, exit_top, 120, 40))
 	_block("ExitBarrier", Rect2(1280, 100, 24, 620))
-	_label("Checkpoint", Vector2(45, 667), "↺ %02d / 06" % (room_number + 1), Color("81f6c2"), 16)
+	if room_number != 0:
+		_label("Checkpoint", Vector2(45, 667), "↺ %02d / 06" % (room_number + 1), Color("81f6c2"), 16)
 	_label("ExitLabel", Vector2(1180, exit_top + 48), "○ →", Color.WHITE, 22)
 	var ceiling := SPIKE.instantiate()
 	ceiling.name = "CeilingSpikes"
@@ -51,8 +52,8 @@ func _ready() -> void:
 	$Hazards.add_child(ceiling)
 	match room_number:
 		0:
-			_spike(Vector2(500, 350), Vector2(0, 220), 3.8, 0.0)
-			_spike(Vector2(750, 210), Vector2(0, 250), 4.2, 0.55)
+			_spike(Vector2(300, 450), Vector2(0, 140), 3.8, 0.15)
+			_spike(Vector2(900, 210), Vector2(0, 250), 4.2, 0.55)
 		1:
 			_spike(Vector2(150, 320), Vector2(0, 190), 3.6, 0.4)
 			_spike(Vector2(700, 230), Vector2(0, 260), 3.8, 0.0)
@@ -106,7 +107,7 @@ func _ready() -> void:
 		goal.get_node("Bubble").hide()
 
 
-func _block(label: String, rect: Rect2) -> void:
+func _block(label: String, rect: Rect2, one_way := false) -> void:
 	var body := StaticBody2D.new()
 	body.name = label
 	body.position = rect.get_center()
@@ -115,6 +116,7 @@ func _block(label: String, rect: Rect2) -> void:
 	var shape := RectangleShape2D.new()
 	shape.size = rect.size
 	collider.shape = shape
+	collider.one_way_collision = one_way
 	body.add_child(collider)
 	var art := Polygon2D.new()
 	art.name = "Visual"

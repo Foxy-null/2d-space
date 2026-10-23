@@ -65,7 +65,7 @@ func _run() -> void:
 			break
 		print("STAGE_4_ROOM_%d_OK delay=%d actions=%s" % [section + 1, used_delay, actions])
 		check(not actions.has("climb"), "Carry route never climbs a wall")
-		check(not actions.has("dash"), "Can pass without dash")
+		check(actions.has("dash") if section == 0 else not actions.has("dash"), "Only the first high landing combines dash with the companion")
 		check(actions.get("creature_jump", 0) > 0, "Use the carried creature's additional jump")
 		var room: Node2D = stage.rooms.get_child(section)
 		for hazard in room.get_node("Hazards").get_children():
