@@ -74,9 +74,6 @@ func _prepare_goal() -> void:
 		player.global_position = creature.global_position
 		Input.action_press("wall_grab")
 		_check(player.try_begin_grab(creature), "The delivery fixture carries the actual companion")
-	elif scene_name == "stage_5":
-		stage.next_bumper = stage._bumpers().get_child_count()
-		stage._update_route()
 	await _step(2)
 
 
