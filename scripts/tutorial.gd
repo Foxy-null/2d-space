@@ -13,7 +13,7 @@ const CONTROLS := [
 	"ダッシュ：X・B / ○ ＋ 方向入力　空中では1回、着地で回復",
 	"↑ ゲート：天井へ　↓ ゲート：床へ　左右の操作は同じ",
 	"緑の速度マークでダッシュ回復　空中で回復してもう一度ダッシュ",
-	"紫のばね靴で追加ジャンプ1回　ジャンプ：Space・A / ×",
+	"追加ジャンプ：Space・A / ×　上ダッシュ：↑ + X・B / ○",
 	"ばねの板に触れると発射　ダッシュと壁スタミナも回復",
 	"丸いバンパーは当たる位置で反射方向が変わる",
 	"風は歩行・空中に作用　ダッシュ中・壁を掴んでいる間は無効",
@@ -28,7 +28,7 @@ const CONTROLS := [
 ]
 const STEPS := [
 	["jump"], ["climb", "wall_jump"], ["dash"], ["up", "down"],
-	["air_dash", "dash_refill", "refilled_dash"], ["jump_crystal", "air_jump"],
+	["air_dash", "dash_refill", "refilled_dash"], [],
 	["floor_spring"], ["pinball"],
 	["wind_dash"], ["up", "down"],
 	["button_on"],
@@ -79,6 +79,7 @@ var _released_parachute := false
 
 
 func _ready() -> void:
+	add_to_group("tutorial")
 	player.get_node("Camera2D").enabled = false
 	player.respawned.connect(_on_respawned)
 	player.movement_action.connect(_on_action)
@@ -94,7 +95,8 @@ func _ready() -> void:
 		var index := room.get_index()
 		goal.activated.connect(_on_arrival.bind(index))
 		room.get_node("ExitHint").z_index = 1
-		goal.set_progress(STEPS[index].size(), STEPS[index].size(), STEPS[index][0], STEP_LABELS[STEPS[index][0]])
+		var first_step: String = "" if STEPS[index].is_empty() else STEPS[index][0]
+		goal.set_progress(STEPS[index].size(), STEPS[index].size(), first_step, STEP_LABELS.get(first_step, "足跡の到着台に乗ろう"))
 		for hint in ["ArrivalHint", "GoalHint", "NextHint"]:
 			if room.has_node(hint):
 				room.get_node(hint).hide()
@@ -230,7 +232,8 @@ func _update_lesson() -> void:
 			next_key = key
 			next = STEP_LABELS[key]
 	room.get_node("Goal").set_progress(STEPS[room_index].size() - count, STEPS[room_index].size(), next_key, next, done)
-	hud.show_lesson_progress("体験済み ✓　自由に練習できます" if done else "目標 %d/%d：%s" % [count, STEPS[room_index].size(), next], done)
+	var progress := next if STEPS[room_index].is_empty() else "目標 %d/%d：%s" % [count, STEPS[room_index].size(), next]
+	hud.show_lesson_progress("体験済み ✓　自由に練習できます" if done else progress, done)
 	$HUD/Completion.visible = completed and room_index >= 15
 	$HUD/Completion.text = "チュートリアル完了！" if room_index == 15 else "自由に練習できます"
 	if room_index == 16:

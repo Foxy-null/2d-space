@@ -83,6 +83,7 @@ func _draw_checkpoint(canvas: Node2D, index: int) -> void:
 
 
 func _on_respawned() -> void:
+	$Goal.reset_for_respawn()
 	for crystal in $Items.get_children():
 		if crystal.has_method("reset_for_respawn") and not crystal is Grabbable:
 			crystal.reset_for_respawn()

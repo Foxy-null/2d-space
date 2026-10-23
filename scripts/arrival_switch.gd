@@ -68,6 +68,14 @@ func set_progress(remaining: int, total: int, step: String, objective: String, c
 	queue_redraw()
 
 
+func reset_for_respawn() -> void:
+	if _pressed:
+		return
+	pressing = false
+	cap.position.y = 0.0
+	queue_redraw()
+
+
 func set_hints_visible(value: bool) -> void:
 	$Bubble/Objective.visible = value
 	$Bubble/Progress.add_theme_font_size_override("font_size", 20 if value else 16)
@@ -81,16 +89,19 @@ func get_hint_rect() -> Rect2:
 
 
 func _physics_process(delta: float) -> void:
+	# AnimatableBody may still apply a movement queued before the retry.
+	if not pressing and not _pressed:
+		cap.position.y = 0.0
 	if locked or _pressed:
 		return
 	if not pressing:
 		for body in get_overlapping_bodies():
 			if not body is PlayerController or not body.controls_enabled or body.gravity_direction != 1 or not body.is_on_floor():
 				continue
-			for index in body.get_slide_collision_count():
-				var contact: KinematicCollision2D = body.get_slide_collision(index)
-				if contact.get_collider() == cap and contact.get_normal().dot(Vector2.UP) > 0.8:
-					pressing = true
+			# Cached slide contacts can still point to this cap after a respawn.
+			var contact := KinematicCollision2D.new()
+			if body.test_move(body.global_transform, Vector2.DOWN, contact) and contact.get_collider() == cap and contact.get_normal().dot(Vector2.UP) > 0.8:
+				pressing = true
 	if pressing:
 		cap.position.y = move_toward(cap.position.y, TRAVEL, TRAVEL / PRESS_TIME * delta)
 		queue_redraw()

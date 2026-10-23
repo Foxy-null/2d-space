@@ -1,4 +1,4 @@
-[gd_scene load_steps=100 format=3]
+[gd_scene load_steps=101 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -32,6 +32,8 @@
 [ext_resource type="PackedScene" path="res://scenes/pressure_button.tscn" id="ext_pressure_button"]
 
 [ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="14_arrival"]
+
+[ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="ext_spike"]
 
 [sub_resource type="RectangleShape2D" id="Shape_1_EntryFloor"]
 size = Vector2(750, 80)
@@ -130,7 +132,7 @@ size = Vector2(28, 720)
 size = Vector2(1280, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_6_HighLanding"]
-size = Vector2(550, 28)
+size = Vector2(450, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_7_ExitBarrier"]
 size = Vector2(28, 720)
@@ -1011,7 +1013,8 @@ text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room6" instance=ExtResource("14_arrival")]
-position = Vector2(930, 470)
+position = Vector2(850, 240)
+mission_required = false
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room6"]
 offset_left = 882
@@ -1054,7 +1057,7 @@ polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 4
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="HighLanding" type="StaticBody2D" parent="Rooms/Room6"]
-position = Vector2(805.0, 484.0)
+position = Vector2(695, 254)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/HighLanding"]
@@ -1063,28 +1066,21 @@ one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room6/HighLanding"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-275.0, -14.0, 275.0, -14.0, 275.0, 14.0, -275.0, 14.0)
+polygon = PackedVector2Array(-225, -14, 225, -14, 225, 14, -225, 14)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="JumpCrystal" parent="Rooms/Room6" instance=ExtResource("ext_jump_crystal")]
-position = Vector2(420, 580)
+position = Vector2(420, 604)
 
 
-[node name="JumpHint" type="Label" parent="Rooms/Room6"]
-offset_left = 330
-offset_top = 330
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "紫 ＋1\nSpace · A / ×  ↑ ↑"
-mouse_filter = 2
-
-[node name="RefillHint" type="Label" parent="Rooms/Room6"]
-offset_left = 295
-offset_top = 500
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "空中でもう一度 ↑"
-mouse_filter = 2
+[node name="WallSpikes" parent="Rooms/Room6" instance=ExtResource("ext_spike")]
+position = Vector2(1266, 280)
+rotation = 1.57079633
+travel = Vector2(0, 0)
+room_number = 5
+ceiling_strip = true
+strip_half_width = 280.0
+stage_group = &"tutorial"
 
 [node name="Room7" type="Node2D" parent="Rooms"]
 position = Vector2(7680, 0)

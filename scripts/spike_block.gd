@@ -10,6 +10,8 @@ signal player_hit
 @export var room_number := 0
 @export var half_size := 20.0
 @export var ceiling_strip := false
+@export var strip_half_width := 640.0
+@export var stage_group := &"stage_four"
 
 var elapsed := 0.0
 var origin := Vector2.ZERO
@@ -41,7 +43,7 @@ func _progress() -> float:
 
 
 func _physics_process(delta: float) -> void:
-	var stage := get_tree().get_first_node_in_group("stage_four")
+	var stage := get_tree().get_first_node_in_group(stage_group)
 	if stage == null or stage.room_index != room_number or stage.transitioning:
 		tracking = false
 		return
@@ -54,7 +56,9 @@ func _physics_process(delta: float) -> void:
 	position = origin + travel * _progress()
 	queue_redraw()
 	var player_shape := player.get_node("CollisionShape2D") as CollisionShape2D
-	var extent := (player_shape.shape as RectangleShape2D).size * 0.5 + hit_extent()
+	var local_extent := hit_extent()
+	var hazard_extent := global_transform.x.abs() * local_extent.x + global_transform.y.abs() * local_extent.y
+	var extent := (player_shape.shape as RectangleShape2D).size * 0.5 + hazard_extent
 	var end := player.global_position - global_position
 	var start := end
 	if tracking and previous_player.distance_to(player.global_position) < 200.0:
@@ -87,7 +91,7 @@ static func segment_hits_box(start: Vector2, end: Vector2, extent: Vector2) -> b
 func _hit(player: PlayerController) -> void:
 	if not pending_hit or not is_instance_valid(player):
 		return
-	var stage := get_tree().get_first_node_in_group("stage_four")
+	var stage := get_tree().get_first_node_in_group(stage_group)
 	if stage != null and stage.room_index == room_number and player.controls_enabled and not stage.transitioning:
 		player_hit.emit()
 		player.respawn()
@@ -95,13 +99,13 @@ func _hit(player: PlayerController) -> void:
 
 
 func hit_extent() -> Vector2:
-	return Vector2(640, 16) if ceiling_strip else Vector2.ONE * half_size
+	return Vector2(strip_half_width, 16) if ceiling_strip else Vector2.ONE * half_size
 
 
 func _draw() -> void:
 	if ceiling_strip:
-		draw_rect(Rect2(-640, -16, 1280, 16), Color("333b50"))
-		for x in range(-640, 640, 20):
+		draw_rect(Rect2(-strip_half_width, -16, strip_half_width * 2, 16), Color("333b50"))
+		for x in range(-int(strip_half_width), int(strip_half_width), 20):
 			var points := PackedVector2Array([Vector2(x, 0), Vector2(x + 10, 16), Vector2(x + 20, 0)])
 			draw_colored_polygon(points, Color("ff5361"))
 			draw_polyline(points, Color("6c263c"), 1.5, true)
