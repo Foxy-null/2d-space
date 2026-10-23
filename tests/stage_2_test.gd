@@ -27,6 +27,20 @@ func _release() -> void:
 		Input.action_release(action)
 
 
+func _check_signage() -> void:
+	for index in stage.checkpoints.get_child_count():
+		var point: Node2D = stage.checkpoints.get_child(index)
+		var mark := "↺ " if index == stage.checkpoint_index else ("✓ " if index < stage.checkpoint_index else "")
+		_check(point.get_node("Label").text == mark + "%02d" % (index + 1), "Checkpoint marks distinguish unseen, current, and reached platforms")
+		_check(point.get_node("Sign").visible and point.get_node("Sign").get_signal_connection_list("draw").size() == 1, "Every checkpoint keeps its static flag visible")
+		var ray := PhysicsRayQueryParameters2D.create(point.position + Vector2(-110, -36), point.position + Vector2(-50, -36), 1)
+		_check(root.world_2d.direct_space_state.intersect_ray(ray).is_empty(), "Checkpoint flag does not obstruct the route")
+	var panel: Control = stage.get_node("HUD/Info")
+	_check(panel.get_global_rect().end.x <= 600, "The HUD leaves the right half of the view clear")
+	var status: String = stage.get_node("HUD/Info/Rows/Status").text
+	_check(status.contains("高度") and status.contains("ダッシュ") and status.contains("追加ジャンプ"), "Movement resources and altitude stay visible")
+
+
 func _run() -> void:
 	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(3)
@@ -40,6 +54,7 @@ func _run() -> void:
 	_check(player.wall_actions_enabled and player.dash_enabled, "All movement abilities available")
 	await _step(20)
 	_check(player.is_on_floor(), "Spawn is on a safe platform")
+	_check_signage()
 	# テレポートなしで全区間を、ジャンプ・壁掴み・登りで通過する。
 	# アイテムを使い損ねても休憩足場経由で復帰できることも確認する。
 	for section in 6:
@@ -80,6 +95,7 @@ func _run() -> void:
 				await _step(40)
 			if ledge == 3 and section < 5:
 				_check(stage.checkpoint_index == section + 1, "Landing updates the checkpoint")
+				_check_signage()
 		print("区間 %d 登頂確認 / 復帰 %d" % [section + 1, respawns])
 	_check(respawns == 0, "The entire fallback route is traversable without respawning")
 	await _step(90)
@@ -116,6 +132,7 @@ func _run() -> void:
 	stage.get_node("PauseMenu").retry()
 	await _step(3)
 	_check(stage.hints_visible, "Retry preserves hint setting")
+	_check_signage()
 	stage.get_node("PauseMenu").open()
 	stage.get_node("PauseMenu").confirm_return()
 	stage.get_node("PauseMenu").return_to_select()
