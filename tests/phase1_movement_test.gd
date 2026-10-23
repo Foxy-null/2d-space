@@ -29,6 +29,7 @@ func _run() -> void:
 	await _test_jumps()
 	await _test_crystal()
 	await _test_crystal_retry()
+	await _test_crystal_fast_contact()
 	await _test_edge_cases()
 	_test_respawn()
 	print("PHASE1_MOVEMENT_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
@@ -451,6 +452,33 @@ func _test_crystal_retry() -> void:
 		player.respawned.disconnect(restore)
 		crystal.free()
 		player.set_respawn_position(original_spawn)
+
+
+func _test_crystal_fast_contact() -> void:
+	for scene in ["refill_crystal", "jump_crystal"]:
+		for gravity in [1, -1]:
+			var contacts := 0
+			for side in [50.0, 52.0, 53.0]:
+				for distance in [82.0, 86.0, 90.0, 94.0, 98.0]:
+					await _reset(Vector2(400, 350), gravity)
+					var crystal: Area2D = load("res://scenes/" + scene + ".tscn").instantiate()
+					crystal.position = player.position + Vector2(1, 1).normalized() * distance + Vector2(1, -1).normalized() * side
+					world.add_child(crystal)
+					var missed: Array[bool] = []
+					crystal.body_entered.connect(func(body):
+						if body == player:
+							missed.append(crystal.visible))
+					Input.action_press("move_right")
+					Input.action_press("move_down")
+					Input.action_press("dash")
+					await _step()
+					Input.action_release("dash")
+					await _step(14)
+					if not missed.is_empty():
+						contacts += missed.size()
+						_check(not missed.has(true) and not crystal.visible, "%s collects short diagonal-dash contacts g=%d side=%s distance=%s" % [scene, gravity, side, distance])
+					crystal.free()
+			_check(contacts > 0, scene + " short-contact fixture includes actual physics enter signals g=%d" % gravity)
 
 
 func _test_edge_cases() -> void:
