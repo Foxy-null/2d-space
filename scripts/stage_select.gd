@@ -36,7 +36,17 @@ func _ready() -> void:
 		title.text = lines[1]
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		content.add_child(title)
-	$Margin/Content/Stages/Stage1.grab_focus.call_deferred()
+	var first_stage: Button = $Margin/Content/Stages/Stage1
+	var launcher: Button = InputSettings.launcher
+	$ReturnTitle.focus_neighbor_left = $ReturnTitle.get_path_to(launcher)
+	launcher.focus_neighbor_right = launcher.get_path_to($ReturnTitle)
+	launcher.focus_neighbor_top = launcher.get_path_to($Margin/Content/Preview)
+	launcher.focus_neighbor_bottom = launcher.get_path_to(first_stage)
+	$ReturnTitle.focus_next = $ReturnTitle.get_path_to(launcher)
+	launcher.focus_previous = launcher.get_path_to($ReturnTitle)
+	launcher.focus_next = launcher.get_path_to(first_stage)
+	first_stage.focus_previous = first_stage.get_path_to(launcher)
+	first_stage.grab_focus.call_deferred()
 
 
 func _draw_card(canvas: Control, index: int) -> void:
