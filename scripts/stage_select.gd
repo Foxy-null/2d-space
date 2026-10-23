@@ -38,6 +38,10 @@ func _ready() -> void:
 		content.add_child(title)
 	var first_stage: Button = $Margin/Content/Stages/Stage1
 	var launcher: Button = InputSettings.launcher
+	DisplaySettings.bind_button($Fullscreen)
+	$Fullscreen.focus_neighbor_right = $Fullscreen.get_path_to(launcher)
+	$Fullscreen.focus_previous = $Fullscreen.get_path_to(launcher)
+	launcher.focus_neighbor_left = launcher.get_path_to($Fullscreen) if not $Fullscreen.disabled else NodePath(".")
 	$ReturnTitle.focus_neighbor_left = $ReturnTitle.get_path_to(launcher)
 	launcher.focus_neighbor_right = launcher.get_path_to($ReturnTitle)
 	launcher.focus_neighbor_top = launcher.get_path_to($Margin/Content/Preview)
@@ -46,6 +50,9 @@ func _ready() -> void:
 	launcher.focus_previous = launcher.get_path_to($ReturnTitle)
 	launcher.focus_next = launcher.get_path_to(first_stage)
 	first_stage.focus_previous = first_stage.get_path_to(launcher)
+	if not $Fullscreen.disabled:
+		launcher.focus_next = launcher.get_path_to($Fullscreen)
+		first_stage.focus_previous = first_stage.get_path_to($Fullscreen)
 	first_stage.grab_focus.call_deferred()
 
 
