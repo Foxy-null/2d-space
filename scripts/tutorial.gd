@@ -27,7 +27,7 @@ const CONTROLS := [
 	"地上で水平ダッシュ → すぐジャンプ　Space・A / ×を使おう",
 ]
 const STEPS := [
-	["jump"], ["climb", "wall_jump"], [], [],
+	[], ["climb", "wall_jump"], [], [],
 	[], [],
 	[], [],
 	[], [],
