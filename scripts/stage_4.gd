@@ -6,7 +6,7 @@ const HINTS := [
 	"相棒を持つと壁登りはできない。左右の壁を交互に蹴って峡谷を登ろう。",
 	"低い屋根の下を渡る。頭をぶつけると高さを失うので、追加ジャンプは慌てずに。",
 	"最初は登り、峠からは下り。飛びすぎないよう空中で向きを調整しよう。",
-	"小島の間は広い。横へ走って跳び、落ち始める前に相棒のジャンプを使おう。",
+	"相棒の追加ジャンプと上ダッシュで高い横風へ。風を抜けたら島で休もう。",
 	"中央の足場から左上へ折り返す。その後は右の低い足場へ大きく渡ろう。",
 ]
 const ROOM_WIDTH := 1280.0
@@ -93,7 +93,7 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
-	$HUD/Info.position = Vector2(580, 620) if room_index == 1 else Vector2(24, 620 if room_index == 0 else 40)
+	$HUD/Info.position = Vector2(580, 620) if room_index in [1, 4] else Vector2(24, 620 if room_index == 0 else 40)
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / 06　%s" % [room_index + 1, TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()

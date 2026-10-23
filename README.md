@@ -61,7 +61,7 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ## ステージ4：星渡りの回廊
 
-全6面で緑の相棒を持ったまま出口へ運ぶステージです。運搬中は壁登りができないため、壁キックと追加ジャンプを使います。第1室は入口から420px上の広い片面足場へ、相棒の追加ジャンプとダッシュを組み合わせて上がります。第2室は相棒を保持し、縦に続く峡谷を壁キックで上がって広い足場で休みます。この部屋だけカメラが縦に追従します。低い天井・峠の下り・離れ小島・折り返しの第3〜6室は、ダッシュなしでも攻略できます。画面上端には危険が見える天井トゲを配置しています。部屋移動で復帰地点を更新し、落下・トゲへの接触・R / Startで現在の部屋から再開します。
+全6面で緑の相棒を持ったまま出口へ運ぶステージです。運搬中は壁登りができないため、壁キックと追加ジャンプを使います。第1室は入口から420px上の広い片面足場へ、相棒の追加ジャンプとダッシュを組み合わせて上がります。第2室は相棒を保持し、縦に続く峡谷を壁キックで上がって広い足場で休みます。この部屋だけカメラが縦に追従します。第5室は相棒の追加ジャンプと上ダッシュで高い横風へ入り、630px先の幅230pxの島で休めます。低い天井・峠の下り・折り返しの第3・4・6室は、ダッシュなしでも攻略できます。画面上端には危険が見える天井トゲを配置しています。部屋移動で復帰地点を更新し、落下・トゲへの接触・R / Startで現在の部屋から再開します。
 
 ポーズメニューで操作のヒントを表示できます。配置・操作・テストは [第4ステージの仕様](docs/stage-4.md) を参照してください。
 
@@ -276,6 +276,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/gravity_room_two_terrain_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/corridor_companion_route_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/corridor_islands_route_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_exit_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_entry_route_test.gd
