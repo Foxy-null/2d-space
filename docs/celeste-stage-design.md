@@ -75,7 +75,7 @@ PRレビューでは攻略経路、復帰状態、文字による誘導の必要
 
 ## 運用の確認状況
 
-- GitHub：`Foxy-null/2d-space`。既定ブランチは`main`。読み取り調査では管理権限とPRのマージ許可を確認した。実際の書き込みはまだ行っていない。
+- GitHub：`Foxy-null/2d-space`。既定ブランチは`main`。読み取り調査では管理権限とPRのマージ許可を確認した。調査時点では書き込み前だった。
 - Weekly：2026-10-23 12:59:58 UTCに7日枠の残量86%を取得。`account/rateLimits/read`の10080分窓を選ぶ。改善ループ開始時に取り直す。
 - fast：この環境の設定は`service_tier = "fast"`。設定ファイルの既定値を`default`へ変える方法はあるが、現在実行中のスレッドに反映する経路は未確認。終了時に実際の適用状態も確認する必要がある。
 - テスト：Godot 4.7.2、headless、固定60fpsの実入力テストが既存。`/tmp/codex-stage-select-tools/Godot_v4.7.2-stable_linux.arm64 --version`で4.7.2の実行を確認した。
