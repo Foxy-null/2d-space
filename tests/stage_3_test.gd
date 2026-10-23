@@ -212,6 +212,7 @@ func _run() -> void:
 	_check(stage.completed and stage.cleared.size() == 6 and not stage.get_node("HUD/Completion").visible, "Backtracking preserves cleared rooms without a completion overlay")
 	await _retry()
 	_check(player.position.x > 4 * 1280 + 1200, "Retry after backtracking keeps the right entrance")
+	_check_hints(false)
 	var gate: Area2D = stage.rooms.get_child(4).get_node("UpGate")
 	await _step(30)
 	_check(gate.position != gate.get("_initial_position"), "Moving gates actually travel")
@@ -487,10 +488,11 @@ func _key(code: Key) -> void:
 
 
 func _check_hints(expected: bool) -> void:
-	var consistent := true
-	for hint in get_nodes_in_group("stage_3_hints"):
-		consistent = consistent and hint.visible == expected
-	_check(stage.hints_visible == expected and consistent and not get_nodes_in_group("stage_3_hints").is_empty(), "All explanations and path arrows follow the hint setting")
+	var hints := get_nodes_in_group("stage_3_hints")
+	var labels := hints.filter(func(hint): return hint is Label)
+	var routes := hints.filter(func(hint): return hint is Line2D)
+	_check(stage.hints_visible == expected and not labels.is_empty() and labels.all(func(hint): return hint.visible == expected), "All explanation labels follow the hint setting")
+	_check(not routes.is_empty() and routes.all(func(hint): return hint.visible), "All existing route lines and arrowheads stay visible with either hint setting")
 	_check(stage.get_node("HUD/Margin/Panel/Rows/Title").text.contains(stage.HINTS[stage.room_index]) == expected, "HUD explanations follow the hint setting")
 	_check(stage.rooms.get_child(1).get_node("UpGate/Arrow").visible and stage.get_node("HUD/Status").visible, "Mechanism directions and player resources stay visible")
 
