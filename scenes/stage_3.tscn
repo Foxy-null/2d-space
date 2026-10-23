@@ -848,6 +848,15 @@ position = Vector2(72, 614)
 [node name="Return" type="Marker2D" parent="Rooms/Room3"]
 position = Vector2(1232, 614)
 
+[node name="FloorSpikes" parent="Rooms/Room3" instance=ExtResource("spikes")]
+position = Vector2(645, 680)
+rotation = 3.14159265
+travel = Vector2(0, 0)
+room_number = 2
+ceiling_strip = true
+strip_half_width = 295.0
+stage_group = &"stage_three"
+
 [node name="EntryFloor" type="StaticBody2D" parent="Rooms/Room3"]
 position = Vector2(175, 680)
 
@@ -881,15 +890,6 @@ points = PackedVector2Array(-170, -40, 170, -40)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
-
-[node name="FloorSpikes" parent="Rooms/Room3" instance=ExtResource("spikes")]
-position = Vector2(645, 680)
-rotation = 3.14159265
-travel = Vector2(0, 0)
-room_number = 2
-ceiling_strip = true
-strip_half_width = 295.0
-stage_group = &"stage_three"
 
 [node name="ReturnBridge" type="StaticBody2D" parent="Rooms/Room3"]
 visible = false
