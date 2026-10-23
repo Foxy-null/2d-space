@@ -288,9 +288,23 @@ color = Color(0.82, 0.62, 0.28, 0.8)
 
 [node name="Route" type="Line2D" parent="Rooms/Room1"]
 visible = false
-points = PackedVector2Array(90, 570, 300, 600, 820, 560, 1210, 570)
+points = PackedVector2Array(300, 600, 820, 560, 1210, 570)
 width = 2.0
 default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="EntryJumpPath" type="Line2D" parent="Rooms/Room1"]
+z_index = -1
+points = PackedVector2Array(144, 570, 166, 520, 197, 480, 230, 464, 265, 480, 289, 518, 300, 548)
+width = 3.0
+default_color = Color(1, 0.85, 0.4, 0.9)
+antialiased = true
+
+[node name="EntryJumpHead" type="Line2D" parent="Rooms/Room1"]
+z_index = -1
+points = PackedVector2Array(290, 541, 300, 548, 302, 536)
+width = 3.0
+default_color = Color(1, 0.85, 0.4, 0.9)
 antialiased = true
 
 [node name="Room2" type="Node2D" parent="Rooms"]
