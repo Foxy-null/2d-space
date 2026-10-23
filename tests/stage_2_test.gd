@@ -55,9 +55,13 @@ func _run() -> void:
 	await _step(20)
 	_check(player.is_on_floor(), "Spawn is on a safe platform")
 	_check_signage()
-	# テレポートなしで全区間を、ジャンプ・壁掴み・登りで通過する。
-	# アイテムを使い損ねても休憩足場経由で復帰できることも確認する。
+	# テレポートなしで全区間を通過し、バネ区間だけは配置されたバネを使う。
 	for section in 6:
+		if section == 1:
+			await _spring_course()
+			_check(stage.checkpoint_index == 2, "The spring route reaches the next checkpoint")
+			_check_signage()
+			continue
 		var xs: Array = [620, 360, 620, 900] if section % 2 == 0 else [640, 900, 640, 360]
 		for ledge in 4:
 			var target := Vector2(xs[ledge], 640 - section * 720 - (ledge + 1) * 180)
@@ -97,7 +101,7 @@ func _run() -> void:
 				_check(stage.checkpoint_index == section + 1, "Landing updates the checkpoint")
 				_check_signage()
 		print("区間 %d 登頂確認 / 復帰 %d" % [section + 1, respawns])
-	_check(respawns == 0, "The entire fallback route is traversable without respawning")
+	_check(respawns == 0, "The entire tower is traversable without respawning")
 	await _step(90)
 	_check(stage.completed, "Summit arrival switch completes the stage")
 	_check(stage.camera.position.y < -3000, "Camera follows the ascent continuously")
@@ -145,3 +149,51 @@ func _run() -> void:
 	OS.delay_msec(100)
 	print("STAGE_2_TEST_%s" % ("FAILED" if failed else "OK"))
 	quit(1 if failed else 0)
+
+
+func _spring_course() -> void:
+	var started := Engine.get_physics_frames()
+	Input.action_press("move_right")
+	for frame in 90:
+		await _step()
+		if player.velocity.y < -1000:
+			break
+	_check(player.velocity.y < -1000, "Walking onto the entrance spring starts the high leap")
+	_release()
+	# The broad inner landing gives the first launch a generous steering target.
+	for frame in 150:
+		var dx := 640.0 - player.position.x
+		Input.action_release("move_left")
+		Input.action_release("move_right")
+		if absf(dx) > 10:
+			Input.action_press("move_right" if dx > 0 else "move_left")
+		await _step()
+		if player.is_on_floor() and absf(player.position.y + 556) < 2:
+			break
+	_release()
+	_check(player.is_on_floor() and absf(player.position.y + 556) < 2, "The high spring reaches a safe inner rest")
+	await _step(30)
+	_check(player.is_on_floor(), "The inner rest permits a pause without relaunching")
+	Input.action_press("move_left")
+	for frame in 90:
+		await _step()
+		if player.velocity.y < -800:
+			break
+	_check(player.velocity.y < -800, "The second spring starts the smaller transfer")
+	_release()
+	for frame in 180:
+		var dx := 400.0 - player.position.x
+		Input.action_release("move_left")
+		Input.action_release("move_right")
+		if absf(dx) > 10:
+			Input.action_press("move_right" if dx > 0 else "move_left")
+		Input.action_press("wall_grab")
+		Input.action_press("move_up")
+		await _step()
+		if stage.checkpoint_index == 2:
+			break
+	_release()
+	_check(stage.checkpoint_index == 2, "Spring steering reaches checkpoint 03 without a history lock")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The spring retry section stays below 30 seconds")
+	print("TOWER_SPRING_ROUTE_SECONDS %.2f respawns=%d position=%s" % [seconds, respawns, player.position])
