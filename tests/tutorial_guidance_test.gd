@@ -14,7 +14,7 @@ const REQUIRED_CUES := [
 	{},
 	{"ComboHint": "Shift", "CountHint": "2回"},
 	{"WindHint": "Shift", "GravityHint": "↓"},
-	{"PracticeHint": "Space", "LaunchHint": "ジャンプ"},
+	{"PracticeHint": "Space"},
 ]
 
 var failed := false
