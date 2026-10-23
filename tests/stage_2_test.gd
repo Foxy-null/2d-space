@@ -61,6 +61,11 @@ func _run() -> void:
 	_check_signage()
 	# テレポートなしで全区間を通過し、各区間で既習ギミックをつなぐ。
 	for section in 6:
+		if section == 0:
+			await _wall_course()
+			_check(stage.checkpoint_index == 1, "The wall route reaches checkpoint 02")
+			_check_signage()
+			continue
 		if section == 1:
 			await _spring_course()
 			_check(stage.checkpoint_index == 2, "The spring route reaches the next checkpoint")
@@ -84,45 +89,6 @@ func _run() -> void:
 		if section == 5:
 			await _finale_course()
 			continue
-		var xs: Array = [620, 360, 620, 900] if section % 2 == 0 else [640, 900, 640, 360]
-		for ledge in 4:
-			var target := Vector2(xs[ledge], 640 - section * 720 - (ledge + 1) * 180)
-			var reached := false
-			var release_frames := 0
-			for frame in 300:
-				Input.action_release("jump")
-				var dx := target.x - player.position.x
-				Input.action_release("move_left")
-				Input.action_release("move_right")
-				if absf(dx) > 12.0:
-					Input.action_press("move_right" if dx > 0 else "move_left")
-				if player.get_held_object() != null:
-					release_frames = 30
-				if release_frames > 0:
-					Input.action_release("wall_grab")
-					release_frames -= 1
-				else:
-					Input.action_press("wall_grab")
-				Input.action_press("move_up")
-				if player.is_on_floor() and player.position.y > target.y - 20:
-					Input.action_press("jump")
-				await _step()
-				if absf(player.position.x - target.x) < 48 and player.position.y < target.y - 24:
-					reached = true
-					break
-			_check(reached, "Reach section %d ledge %d via real movement; position %s" % [section + 1, ledge + 1, player.position])
-			if not reached:
-				_release()
-				quit(1)
-				return
-			_release()
-			# バネのある足場以外は着地を待つ。
-			if section not in [1, 5] or ledge not in [0, 2]:
-				await _step(40)
-			if ledge == 3 and section < 5:
-				_check(stage.checkpoint_index == section + 1, "Landing updates the checkpoint")
-				_check_signage()
-		print("区間 %d 登頂確認 / 復帰 %d" % [section + 1, respawns])
 	_check(respawns == 0, "The entire tower is traversable without respawning")
 	await _step(90)
 	_check(stage.completed, "Summit arrival switch completes the stage")
@@ -174,6 +140,56 @@ func _run() -> void:
 	OS.delay_msec(100)
 	print("STAGE_2_TEST_%s" % ("FAILED" if failed else "OK"))
 	quit(1 if failed else 0)
+
+
+func _wall_course(grab_delay: int = 0, dash_delay: int = 20) -> void:
+	var started := Engine.get_physics_frames()
+	_release()
+	Input.action_press("move_right")
+	for frame in 90:
+		await _step()
+		if player.is_on_wall(): break
+	_check(player.is_on_floor() and player.is_on_wall(), "The first wall can be reached safely by walking on the entrance")
+	await _step(grab_delay)
+	Input.action_press("move_up")
+	Input.action_press("wall_grab")
+	var climbed := false
+	for frame in 240:
+		await _step()
+		climbed = climbed or (player.is_wall_grabbing() and player.velocity.y < -100)
+		if player.is_on_floor() and absf(player.position.y - 184) < 2: break
+	_check(climbed and player.is_on_floor() and absf(player.position.y - 184) < 2, "A real wall climb reaches the broad first rest")
+	_release()
+	await _step(12)
+	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "The broad rest refills dash and wall stamina")
+	Input.action_press("move_right")
+	for frame in 60:
+		if player.position.x >= 680: break
+		await _step()
+	_release()
+	await _step(12)
+	Input.action_press("jump")
+	await _step()
+	Input.action_release("jump")
+	await _step(dash_delay)
+	Input.action_press("move_up")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	for frame in 180:
+		if not player.is_dashing():
+			Input.action_release("move_up")
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			if absf(player.position.x - 880) > 10:
+				Input.action_press("move_right" if player.position.x < 880 else "move_left")
+		await _step()
+		if stage.checkpoint_index == 1 and player.is_on_floor(): break
+	_release()
+	_check(stage.checkpoint_index == 1 and player.is_on_floor(), "The first rest leads to safe checkpoint 02")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The opening wall section stays below thirty seconds")
+	print("TOWER_WALL_SECONDS %.2f delays=%d/%d respawns=%d" % [seconds, grab_delay, dash_delay, respawns])
 
 
 func _spring_course() -> void:
