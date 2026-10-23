@@ -117,13 +117,13 @@ size = Vector2(28, 720)
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_5_EntryFloor"]
-size = Vector2(340, 80)
+size = Vector2(240, 28)
 
-[sub_resource type="RectangleShape2D" id="Shape_5_RecoveryFloor"]
-size = Vector2(510, 20)
+[sub_resource type="RectangleShape2D" id="Shape_5_ReturnBridge"]
+size = Vector2(680, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_5_Landing"]
-size = Vector2(540, 80)
+size = Vector2(360, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_6_ExitBarrier"]
 size = Vector2(28, 720)
@@ -888,6 +888,7 @@ mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room5" instance=ExtResource("14_arrival")]
 position = Vector2(1190, 640)
+mission_required = false
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room5"]
 offset_left = 1142
@@ -918,68 +919,48 @@ text = "目標達成で出口が開く"
 mouse_filter = 2
 
 [node name="EntryFloor" type="StaticBody2D" parent="Rooms/Room5"]
-position = Vector2(170.0, 680.0)
+position = Vector2(120, 654)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/EntryFloor"]
 shape = SubResource("Shape_5_EntryFloor")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/EntryFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-170.0, -40.0, 170.0, -40.0, 170.0, 40.0, -170.0, 40.0)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="RecoveryFloor" type="StaticBody2D" parent="Rooms/Room5"]
-position = Vector2(595.0, 710.0)
-
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/RecoveryFloor"]
-shape = SubResource("Shape_5_RecoveryFloor")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room5/RecoveryFloor"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-255.0, -10.0, 255.0, -10.0, 255.0, 10.0, -255.0, 10.0)
+polygon = PackedVector2Array(-120, -14, 120, -14, 120, 14, -120, 14)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Landing" type="StaticBody2D" parent="Rooms/Room5"]
-position = Vector2(1010.0, 680.0)
+position = Vector2(1100, 654)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Landing"]
 shape = SubResource("Shape_5_Landing")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/Landing"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-270.0, -40.0, 270.0, -40.0, 270.0, 40.0, -270.0, 40.0)
+polygon = PackedVector2Array(-180, -14, 180, -14, 180, 14, -180, 14)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="ReturnBridge" type="StaticBody2D" parent="Rooms/Room5"]
+visible = false
+position = Vector2(580, 654)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/ReturnBridge"]
+shape = SubResource("Shape_5_ReturnBridge")
+disabled = true
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room5/ReturnBridge"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-340, -14, 340, -14, 340, 14, -340, 14)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="DashCrystal" parent="Rooms/Room5" instance=ExtResource("6_crystal")]
-position = Vector2(510, 510)
+position = Vector2(590, 400)
 
-
-[node name="JumpHint" type="Label" parent="Rooms/Room5"]
-offset_left = 210
-offset_top = 410
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "Space → X\nA / × → B / ○"
-mouse_filter = 2
-
-[node name="RefillHint" type="Label" parent="Rooms/Room5"]
-offset_left = 465
-offset_top = 335
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "↻  → X · B / ○"
-mouse_filter = 2
-
-[node name="RecoveryHint" type="Label" parent="Rooms/Room5"]
-offset_left = 405
-offset_top = 617
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "↻  R / Start"
-mouse_filter = 2
 
 [node name="Room6" type="Node2D" parent="Rooms"]
 position = Vector2(6400, 0)

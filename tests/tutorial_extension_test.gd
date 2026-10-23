@@ -20,11 +20,14 @@ func _run() -> void:
 	for index in range(4, 17):
 		await _enter(index)
 		var goal: Area2D = _room().get_node("Goal")
-		player.global_position = goal.global_position + Vector2(0, -10)
-		player.velocity = Vector2.ZERO
-		await _step(8)
-		_check(not tutorial.cleared.has(index), "Arriving without using the gimmick must not clear the room")
-		_check(not _room().get_node("ExitBarrier/Collision").disabled, "Unlearned room must have a physical exit barrier")
+		if tutorial.STEPS[index].is_empty():
+			_check(not goal.locked and not tutorial.cleared.has(index), "Terrain lessons begin with an unlocked, unfinished arrival")
+		else:
+			player.global_position = goal.global_position + Vector2(0, -10)
+			player.velocity = Vector2.ZERO
+			await _step(8)
+			_check(not tutorial.cleared.has(index), "Arriving without completing the mission must not clear the room")
+		_check(not _room().get_node("ExitBarrier/Collision").disabled, "An unfinished room must have a physical exit barrier")
 		await _enter(index)
 		match index:
 			4: await _refill_course()
@@ -61,28 +64,35 @@ func _run() -> void:
 
 
 func _refill_course() -> void:
-	await _walk_to(280)
-	await _pulse("jump")
-	await _step(16)
+	await _refill_first_dash()
+	Input.action_press("move_up")
 	await _pulse("dash")
-	await _step(10)
-	_check(tutorial.seen.has("dash_refill"), "Crystal must refill a genuinely spent air dash")
-	await _pulse("dash")
+	Input.action_release("move_up")
 	await _walk_goal()
+
+
+func _refill_first_dash() -> void:
+	await _walk_to(230)
+	await _pulse("jump")
+	await _step(24)
+	Input.action_press("move_up")
+	await _pulse("dash")
+	Input.action_release("move_up")
+	for frame in 90:
+		if tutorial.seen.has("dash_refill"):
+			break
+		await _step()
+	_check(tutorial.seen.has("dash_refill") and not player.is_on_floor(), "The crystal restores a genuinely spent air dash before landing")
+	await _step(4)
 
 
 func _test_airborne_sequence() -> void:
 	await _enter(4)
-	await _walk_to(280)
-	await _pulse("jump")
-	await _step(16)
-	await _pulse("dash")
-	await _step(10)
-	_check(tutorial.seen.has("dash_refill"), "A spent dash can be refilled in flight")
+	await _refill_first_dash()
 	_release()
-	await _step(80)
-	_check(player.is_on_floor() and not tutorial.seen.has("dash_refill"), "Landing before the second dash invalidates the airborne sequence")
-	_check(not tutorial.cleared.has(4), "Incomplete airborne sequence leaves the exit locked")
+	await _step(120)
+	_check(player.is_on_floor() and _local().distance_to(Vector2(72, 614)) < 2 and not tutorial.seen.has("dash_refill"), "Not reusing the refill falls back to the safe entrance")
+	_check(not tutorial.cleared.has(4) and not _room().get_node("ExitBarrier/Collision").disabled and _room().get_node("ReturnBridge/Collision").disabled, "The incomplete flight leaves the exit and return bridge closed")
 
 
 func _air_jump_course() -> void:

@@ -36,6 +36,10 @@ func _draw() -> void:
 func _on_body_entered(body: Node) -> void:
 	if not _available or not body is PlayerController:
 		return
+	# A queued enter event may still describe the position before a retry.
+	var body_shape: CollisionShape2D = body.get_node("CollisionShape2D")
+	if not $CollisionShape2D.shape.collide($CollisionShape2D.global_transform, body_shape.shape, body_shape.global_transform):
+		return
 	# Logical guard is immediate; physics-server changes must be deferred in callbacks.
 	_available = false
 	$CollisionShape2D.set_deferred("disabled", true)
