@@ -492,7 +492,7 @@ func _check_hints(expected: bool) -> void:
 	var labels := hints.filter(func(hint): return hint is Label)
 	var routes := hints.filter(func(hint): return hint is Line2D)
 	_check(stage.hints_visible == expected and not labels.is_empty() and labels.all(func(hint): return hint.visible == expected), "All explanation labels follow the hint setting")
-	_check(not routes.is_empty() and routes.all(func(hint): return hint.visible), "All existing route lines and arrowheads stay visible with either hint setting")
+	_check(not routes.is_empty() and routes.all(func(hint): return hint.visible == expected), "Route lines and arrowheads follow the optional hint setting")
 	_check(stage.get_node("HUD/Margin/Panel/Rows/Title").text.contains(stage.HINTS[stage.room_index]) == expected, "HUD explanations follow the hint setting")
 	_check(stage.rooms.get_child(1).get_node("UpGate/Arrow").visible and stage.get_node("HUD/Status").visible, "Mechanism directions and player resources stay visible")
 
