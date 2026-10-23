@@ -190,10 +190,10 @@ size = Vector2(28, 720)
 size = Vector2(1280, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_12_Divider"]
-size = Vector2(28, 40)
+size = Vector2(28, 720)
 
-[sub_resource type="RectangleShape2D" id="Shape_12_TrayLeft"]
-size = Vector2(20, 40)
+[sub_resource type="RectangleShape2D" id="Shape_12_Button"]
+size = Vector2(440, 12)
 
 [sub_resource type="RectangleShape2D" id="Shape_12_TrayRight"]
 size = Vector2(20, 40)
@@ -1691,28 +1691,22 @@ polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 4
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Divider" type="StaticBody2D" parent="Rooms/Room12"]
-position = Vector2(574.0, 620.0)
+position = Vector2(560.0, 360.0)
+collision_layer = 2
+collision_mask = 0
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room12/Divider"]
 shape = SubResource("Shape_12_Divider")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room12/Divider"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-14.0, -20.0, 14.0, -20.0, 14.0, 20.0, -14.0, 20.0)
-color = Color(0.12, 0.19, 0.34, 1)
+polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+color = Color(1, 0.75, 0.3, 0.2)
 
-[node name="TrayLeft" type="StaticBody2D" parent="Rooms/Room12"]
-position = Vector2(815.0, 620.0)
-
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room12/TrayLeft"]
-shape = SubResource("Shape_12_TrayLeft")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room12/TrayLeft"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-10.0, -20.0, 10.0, -20.0, 10.0, 20.0, -10.0, 20.0)
-color = Color(0.12, 0.19, 0.34, 1)
+[node name="Outline" type="Line2D" parent="Rooms/Room12/Divider/Visual"]
+points = PackedVector2Array(-14, -360, -14, 360, 14, 360, 14, -360)
+width = 3.0
+default_color = Color(1, 0.75, 0.3, 0.9)
 
 [node name="TrayRight" type="StaticBody2D" parent="Rooms/Room12"]
 position = Vector2(1105.0, 620.0)
@@ -1731,14 +1725,16 @@ position = Vector2(230, 606.5)
 
 
 [node name="Button" parent="Rooms/Room12" instance=ExtResource("ext_pressure_button")]
-position = Vector2(960, 640)
+position = Vector2(870, 640)
 
 
 [node name="CollisionShape2D" parent="Rooms/Room12/Button" index="0"]
-scale = Vector2(2.6, 1)
+shape = SubResource("Shape_12_Button")
 
-[node name="Plate" parent="Rooms/Room12/Button" index="1"]
-scale = Vector2(2.6, 1)
+[node name="ButtonWire" type="Line2D" parent="Rooms/Room12"]
+points = PackedVector2Array(870, 628, 870, 460, 560, 460)
+width = 3.0
+default_color = Color(1, 0.75, 0.3, 0.55)
 
 [node name="ThrowHint" type="Label" parent="Rooms/Room12"]
 offset_left = 230.0
@@ -2368,6 +2364,8 @@ text = "→ → →\nダッシュ → すぐジャンプ"
 mouse_filter = 2
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
+; Layer 2 blocks the player at the throw gate while released objects pass.
+collision_mask = 3
 position = Vector2(72, 614)
 wall_actions_enabled = false
 dash_enabled = false
