@@ -45,7 +45,7 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ## ステージ3：壁キックと重力
 
-壁キックと重力反転を使う6部屋の本編ステージです。1部屋目はSpringから壁キック・重力反転・天井のSpringへ、2部屋目は天井側の反発板から壁への掴み替えへつなぎます。3〜6部屋目は後半にも天井の穴があり、空中ジャンプのクリスタル、縦風と移動ゲート、短い足場のSpring、向かい風と横移動ゲートを、それぞれ違う経路で使います。ダッシュと壁登りは最初から使え、全6部屋をダッシュなしでも攻略できます。
+壁キックと重力反転を使う6部屋の本編ステージです。1部屋目はSpringから張り出しを交互の壁キックで越え、重力反転・天井のSpringへ、2部屋目は天井側の反発板から壁への掴み替えへつなぎます。3〜6部屋目は後半にも天井の穴があり、空中ジャンプのクリスタル、縦風と移動ゲート、短い足場のSpring、向かい風と横移動ゲートを、それぞれ違う経路で使います。ダッシュと壁登りは最初から使え、全6部屋をダッシュなしでも攻略できます。
 
 各部屋は1280×720の固定カメラで、到着台を押すと出口が開きます。3〜6部屋目には床の落とし穴もあり、クリア後は床の穴を埋める足場が現れます。穴の縁はオレンジ色で示します。落下やR / Startでその部屋の入口へ戻り、重力・ダッシュ・スタミナと移動ゲートをリセットします。開いた出口は、そのプレイ中は開いたままです。6部屋目のクリア後も前の部屋へ戻って練習できます。
 
@@ -258,6 +258,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_select_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/gravity_wall_jump_route_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/corridor_companion_route_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_test.gd

@@ -35,9 +35,7 @@ func _try_wall_top(jump_first: bool, direction: Vector2, delay: int) -> void:
 	await _step(3)
 	flips.clear()
 	var before := respawns
-	_drive("move_right", true)
-	await _until(func(): return player.is_on_floor() and _x() > 640 and player.position.y < 400, 500,
-		"Reach the elevated takeoff through actual wall climbing")
+	await _room_one_wall_course(true)
 	_drive("move_right")
 	if jump_first:
 		await _jump()
