@@ -4,8 +4,8 @@ const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
 const MAIN_ROOM_COUNT := 16
 const TITLES := ["移動・ジャンプ", "よじ登り・壁キック", "ダッシュ", "重力切り替え",
-	"ダッシュの補充", "追加ジャンプ", "Spring", "PinballSpring", "風", "動く重力ゲート",
-	"掴む・運ぶ・置く", "投げる", "Jump Creature", "Parachute Creature",
+	"ダッシュの補充", "追加ジャンプ", "ばねで跳ぶ", "はね返り", "風", "動く重力ゲート",
+	"掴む・運ぶ・置く", "投げる", "相棒ジャンプ", "傘で滑空",
 	"追加ジャンプの連携", "滑空・風・重力の連携", "Superdash（任意）"]
 const CONTROLS := [
 	"移動：A / D・← / →　ジャンプ：Space / W・A / ×",
@@ -216,6 +216,7 @@ func _update_lesson() -> void:
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
 	room.get_node("ExitHint").text = "任意の練習 →" if done and room_index == 15 else ("→" if done else "到着台で開く")
+	room.get_node("ExitHint").visible = done or hints_visible
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
 	var count := 0
 	var next := "足跡の到着台に乗ろう"
