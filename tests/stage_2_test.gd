@@ -76,6 +76,11 @@ func _run() -> void:
 			_check(stage.checkpoint_index == 4, "The extra-jump route reaches checkpoint 05")
 			_check_signage()
 			continue
+		if section == 4:
+			await _companion_course()
+			_check(stage.checkpoint_index == 5, "The companion route reaches checkpoint 06")
+			_check_signage()
+			continue
 		var xs: Array = [620, 360, 620, 900] if section % 2 == 0 else [640, 900, 640, 360]
 		for ledge in 4:
 			var target := Vector2(xs[ledge], 640 - section * 720 - (ledge + 1) * 180)
@@ -279,7 +284,7 @@ func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
 	for leg in 2:
 		_release()
 		await _step(12)
-		var launch_x := 950.0 if leg == 0 else 650.0
+		var launch_x := 950.0 if leg == 0 else 970.0
 		for frame in 90:
 			var dx := launch_x - player.position.x
 			if absf(dx) < 10:
@@ -288,16 +293,16 @@ func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
 			Input.action_release("move_right")
 			Input.action_press("move_right" if dx > 0 else "move_left")
 			await _step()
-		_release()
-		await _step(12)
-		Input.action_press("move_left")
+		if leg == 0:
+			_release()
+			await _step(12)
+		Input.action_press("move_left" if leg == 1 else "move_right")
 		Input.action_press("jump")
 		await _step()
 		Input.action_release("jump")
-		var stop_x := 835.0 if leg == 0 else 550.0
 		for frame in jump_delay:
-			if player.position.x <= stop_x:
-				Input.action_release("move_left")
+			if leg == 0:
+				Input.action_release("move_right")
 			await _step()
 		var crystal := stage.get_node("Items/Item%d" % (5 + leg))
 		_check(not crystal.visible and player.is_air_jump_ready(), "The first jump collects the visible boot")
@@ -305,15 +310,16 @@ func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
 		await _step()
 		Input.action_release("jump")
 		for frame in dash_delay:
-			if player.position.x <= stop_x:
-				Input.action_release("move_left")
+			if leg == 0:
+				Input.action_release("move_right")
 			await _step()
-		_release()
+		if leg == 0:
+			_release()
 		Input.action_press("move_up")
 		Input.action_press("dash")
 		await _step()
 		Input.action_release("dash")
-		var target := Vector2(650, -1986) if leg == 0 else Vector2(350, -2266)
+		var target := Vector2(1100, -1986) if leg == 0 else Vector2(350, -2266)
 		for frame in 150:
 			if not player.is_dashing():
 				var dx := target.x - player.position.x
@@ -332,3 +338,60 @@ func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
 	var seconds := (Engine.get_physics_frames() - started) / 60.0
 	_check(seconds <= 30, "The extra-jump section stays below 30 seconds")
 	print("TOWER_EXTRA_JUMP_SECONDS %.2f delays=%d/%d respawns=%d" % [seconds, jump_delay, dash_delay, respawns])
+
+
+func _companion_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
+	var started := Engine.get_physics_frames()
+	var companion: Grabbable = stage.get_node("Items/Item20")
+	Input.action_press("wall_grab")
+	Input.action_press("move_right")
+	for frame in 90:
+		await _step()
+		if player.get_held_object() == companion:
+			break
+	_check(player.get_held_object() == companion, "The safe entrance allows grabbing the companion")
+	for leg in 2:
+		var launch_x := 450.0 if leg == 0 else 740.0
+		for frame in 90:
+			var dx := launch_x - player.position.x
+			if absf(dx) < 10:
+				break
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			Input.action_press("move_right" if dx > 0 else "move_left")
+			await _step()
+		_release()
+		Input.action_press("wall_grab")
+		await _step(12)
+		Input.action_press("jump")
+		await _step()
+		Input.action_release("jump")
+		await _step(jump_delay)
+		Input.action_press("jump")
+		await _step()
+		Input.action_release("jump")
+		await _step(dash_delay)
+		Input.action_press("move_up")
+		Input.action_press("dash")
+		await _step()
+		Input.action_release("dash")
+		var target := Vector2(600, -2696) if leg == 0 else Vector2(860, -2986)
+		for frame in 150:
+			if not player.is_dashing():
+				var dx := target.x - player.position.x
+				Input.action_release("move_left")
+				Input.action_release("move_right")
+				if absf(dx) > 10:
+					Input.action_press("move_right" if dx > 0 else "move_left")
+			await _step()
+			if player.is_on_floor() and absf(player.position.y - target.y) < 2:
+				break
+		_release()
+		Input.action_press("wall_grab")
+		_check(player.is_on_floor() and absf(player.position.y - target.y) < 2, "Carried extra jump plus dash reaches the one-way landing")
+		await _step(30)
+		_check(player.get_held_object() == companion and companion.extra_jump_count() == 1, "Landing keeps the companion and refills its jump")
+	_check(stage.checkpoint_index == 5, "The carried route reaches checkpoint 06")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The companion section stays below 30 seconds")
+	print("TOWER_COMPANION_SECONDS %.2f delays=%d/%d respawns=%d" % [seconds, jump_delay, dash_delay, respawns])
