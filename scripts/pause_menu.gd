@@ -8,8 +8,9 @@ extends CanvasLayer
 
 func _ready() -> void:
 	menu.get_node("Hints").visible = stage.has_method("set_hints_visible")
+	DisplaySettings.bind_button(menu.get_node("Fullscreen"))
 	for container in [menu, confirmation]:
-		var buttons: Array = container.get_children().filter(func(child): return child is Button and child.visible)
+		var buttons: Array = container.get_children().filter(func(child): return child is Button and child.visible and not child.disabled)
 		for index in buttons.size():
 			var button: Button = buttons[index]
 			button.focus_neighbor_top = button.get_path_to(buttons[index - 1])

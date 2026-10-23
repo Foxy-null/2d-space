@@ -22,6 +22,7 @@ func _run() -> void:
 	var existing: Array = current_scene.get_node("Margin/Content/Stages").get_children()
 	existing.append(current_scene.get_node("ReturnTitle"))
 	existing.append(current_scene.get_node("Margin/Content/Preview"))
+	existing.append(current_scene.get_node("Fullscreen"))
 	for button in existing:
 		_check(not bounds.intersects(button.get_global_rect()), "Settings does not cover " + button.name)
 	await _capture("selection-layout")
@@ -58,8 +59,13 @@ func _run() -> void:
 	_check(_focus() == current_scene.get_node("ReturnTitle"), "Shift+Tab returns from settings to title return")
 	await _key(KEY_TAB)
 	await _key(KEY_TAB)
+	if not current_scene.get_node("Fullscreen").disabled:
+		_check(_focus() == current_scene.get_node("Fullscreen"), "Tab reaches the fullscreen button")
+		await _key(KEY_TAB)
 	_check(_focus() == current_scene.get_node("Margin/Content/Stages/Stage1"), "Tab leaves settings for the existing stage list")
 	await _key(KEY_TAB, true)
+	if not current_scene.get_node("Fullscreen").disabled:
+		await _key(KEY_TAB, true)
 	_check(_focus() == launcher, "Shift+Tab reaches settings from the first stage")
 	if _focus() == launcher:
 		await _key(KEY_ENTER)
@@ -120,7 +126,8 @@ func _check_pad_graph() -> void:
 			edges[source][str(button)] = target
 			if not reached.has(target):
 				queue.append(path + [button])
-	_check(reached.has(str(settings.launcher.get_path())) and reached.size() == 8, "The complete D-pad graph includes settings and all seven existing entries")
+	var expected := 8 if current_scene.get_node("Fullscreen").disabled else 9
+	_check(reached.has(str(settings.launcher.get_path())) and reached.size() == expected, "The complete D-pad graph includes every enabled menu entry")
 	print("INPUT_SETTINGS_PAD_GRAPH ", JSON.stringify(edges))
 
 

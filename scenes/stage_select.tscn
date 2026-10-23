@@ -132,6 +132,21 @@ theme_override_colors/font_color = Color(0.6, 0.73, 0.88, 1)
 theme_override_font_sizes/font_size = 18
 text = "← → 選択　Enter / A・× 決定　クリックで開始"
 
+[node name="Fullscreen" type="Button" parent="."]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -792.0
+offset_top = 48.0
+offset_right = -532.0
+offset_bottom = 122.0
+grow_horizontal = 0
+focus_neighbor_left = NodePath(".")
+focus_neighbor_top = NodePath("../Margin/Content/Preview")
+focus_neighbor_bottom = NodePath("../Margin/Content/Stages/Stage1")
+focus_next = NodePath("../Margin/Content/Stages/Stage1")
+text = "全画面 [F11]"
+
 [node name="ReturnTitle" type="Button" parent="."]
 layout_mode = 1
 anchors_preset = 1
