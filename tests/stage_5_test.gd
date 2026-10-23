@@ -6,6 +6,7 @@ var failed := false
 var checks := 0
 var respawns := 0
 var total_bumpers := 0
+var visited_bumpers: Dictionary = {}
 var ceiling_reflected_down := false
 var wind_frames := 0
 var dash_count := 0
@@ -31,6 +32,8 @@ func _run() -> void:
 	for room in stage.rooms.get_children():
 		_check(room.get_node("Winds").get_child_count() > 0, "Every room uses real wind areas")
 		total_bumpers += room.get_node("Bumpers").get_child_count()
+		for bumper in room.get_node("Bumpers").get_children():
+			bumper.launched.connect(func(_body): visited_bumpers[bumper.get_instance_id()] = true)
 	stage.get_node("Rooms/Room6/Bumpers/Bumper2").launched.connect(func(body): ceiling_reflected_down = body.velocity.y > 0)
 	player.respawned.connect(func(): respawns += 1)
 	player.movement_action.connect(func(action):
@@ -41,6 +44,7 @@ func _run() -> void:
 		_check(stage.room_index == index, "Traverse rooms in order")
 		_check_route_feedback()
 		await _screenshot(index + 1)
+		var started := Engine.get_physics_frames()
 		var before := respawns
 		var target_count: int = stage._bumpers().get_child_count()
 		var last_bumper: int = stage.next_bumper
@@ -65,8 +69,8 @@ func _run() -> void:
 			_check(stage.camera.position == Vector2((index + 1) * 1280 + 640, 360), "Camera settles on the new room")
 		else:
 			_check(stage.completed and stage.next_bumper == target_count, "All final-room bumpers precede completion")
-		print("STAGE_5_ROOM_%02d_OK" % (index + 1))
-	_check(total_bumpers == 43 and respawns == 11, "All 43 reflections are reachable without a death")
+		print("STAGE_5_ROOM_%02d_OK (%.2fs)" % [index + 1, (Engine.get_physics_frames() - started) / 60.0])
+	_check(total_bumpers == 43 and visited_bumpers.size() == 43 and respawns == 11, "All 43 reflections are reachable without a death")
 	_check(not stage.target_marker.visible, "Completion hides the target marker")
 	_check(ceiling_reflected_down, "Room 6 reflects off the underside of the ceiling bumper")
 	_check(wind_frames > 100 and dash_count > 12, "Traversal uses real wind and chained dashes")
@@ -134,13 +138,13 @@ func _check_route_feedback() -> void:
 	var room: Node2D = stage.rooms.get_child(stage.room_index)
 	var unlocked: bool = stage.next_bumper == bumpers.get_child_count()
 	var target: Vector2 = room.get_node("Exit").global_position + Vector2(0, -55) if unlocked else bumpers.get_child(stage.next_bumper).global_position
-	_check(stage.target_marker.global_position == target and stage.target_marker.visible == (not stage.completed and (stage.hints_visible or room.has_node("ExitLock"))), "The route target is optional in the first room and persistent where sequence locks remain")
+	_check(stage.target_marker.global_position == target and stage.target_marker.visible == (not stage.completed and stage.hints_visible), "The route target follows optional hints in every room")
 	_check(stage.target_marker.closed or stage.target_marker.points[0] == stage.target_marker.points[-1], "The target has a complete outline, not only a color change")
 	for index in bumpers.get_child_count():
 		var number: Label = bumpers.get_child(index).get_node("Number")
 		_check(number.text == ("✓" if index < stage.next_bumper else str(index + 1)), "Only actual completed reflections receive check marks")
-		_check(number.visible == (stage.hints_visible or room.has_node("ExitLock")), "First-room numbers follow the optional hints")
-	_check(room.get_node("ExitLabel").text == ("→" if not room.has_node("ExitLock") or unlocked else "%d / %d" % [stage.next_bumper, bumpers.get_child_count()]), "Exit progress matches the route lock")
+		_check(number.visible == stage.hints_visible, "Bumper numbers follow optional hints in every room")
+	_check(room.get_node("ExitLabel").text == "→" and room.get_node("ExitLabel").visible == stage.hints_visible, "The optional exit arrow has no reflection-history counter")
 
 
 func _steer() -> void:

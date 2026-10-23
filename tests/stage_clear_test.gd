@@ -35,7 +35,6 @@ func _run() -> void:
 			stage._on_completed()
 		elif number == 5:
 			stage.room_index = 11
-			stage.next_bumper = stage._bumpers().get_child_count()
 			stage._on_completed()
 		else:
 			stage.room_index = stage.rooms.get_child_count() - 1
