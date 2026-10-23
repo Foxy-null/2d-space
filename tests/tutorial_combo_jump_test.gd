@@ -13,6 +13,7 @@ var respawns := 0
 var frames := 0
 var carry_top := INF
 var boot_only_collected := 0
+var stepped_boot_collected := 0
 
 
 func _initialize() -> void:
@@ -167,6 +168,16 @@ func _step_alternatives() -> void:
 			for direction in DIRECTIONS.slice(0, 3):
 				for boot_delay in [12, 24, 36]:
 					await _enter()
+					await _grab_creature()
+					await _walk_to(430, 1.0)
+					_move(Vector2.ZERO)
+					await _step(20)
+					_grab(false)
+					await _step(2)
+					_move(Vector2.LEFT)
+					await _step(25)
+					_move(Vector2.ZERO)
+					await _step(30)
 					await _jump()
 					var creature: Grabbable = room.get_node("Creature")
 					var stood := false
@@ -190,9 +201,11 @@ func _step_alternatives() -> void:
 					await _step(boot_delay)
 					# Spend the boot only when acquired; preserve the unused creature.
 					if player.is_air_jump_ready():
+						stepped_boot_collected += 1
 						await _jump()
 					_check(not await _alternative_landing() and not tutorial.seen.has("creature_jump"), "The companion step plus boot/dash cannot replace its actual extra jump")
 
+	_check(stepped_boot_collected > 0, "Step-assisted alternatives really collect and spend the personal boot while preserving the creature jump")
 
 func _wall_alternatives() -> void:
 	for delay in [0, 12, 24]:

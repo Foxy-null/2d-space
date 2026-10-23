@@ -1861,12 +1861,12 @@ polygon = PackedVector2Array(-20, -285, 20, -285, 20, 285, -20, 285)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="WallSpikes" parent="Rooms/Room15" instance=ExtResource("ext_spike")]
-position = Vector2(1080, 440)
+position = Vector2(1080, 435.5)
 rotation = 1.57079633
 travel = Vector2(0, 0)
 room_number = 14
 ceiling_strip = true
-strip_half_width = 280.0
+strip_half_width = 284.5
 stage_group = &"tutorial"
 
 [node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room15"]
