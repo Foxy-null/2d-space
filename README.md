@@ -162,6 +162,10 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 第6室の実入力・再試行・部屋往復は、`godot --headless --fixed-fps 60 --path . --script res://tests/tutorial_extra_jump_route_test.gd` で確認できます。 到着台の押し込み途中のR、再到達での押下、完了後のRは、`res://tests/arrival_retry_test.gd`でチュートリアル・ステージ2〜5を確認できます。
 
+第13室は、緑の相棒を保持し、追加ジャンプと上向きDashで420px上の幅450pxの片面足場へ上がる練習です。着地すると相棒の追加ジャンプが回復し、その場で落ち着いて休めます。下は連続した安全な床で、失敗時は保持した相棒と跳び直せます。到着台は最初から押せる状態です。相棒を踏み台にしてからGrabと通常ジャンプを同時入力する迂回も高さで防ぎます。
+
+`res://tests/tutorial_companion_route_test.gd`は、相棒の保持・追加ジャンプ・着地回復と再試行、8方向Dash・壁技・相棒の踏み台による迂回失敗、再取得と部屋往復を実入力で確認します。
+
 ![更新した背景・地形・ギミックのプレビュー](docs/screenshots/art-review/final-lava.png)
 
 ## 既存のギミックデモ配置（main.tscn）

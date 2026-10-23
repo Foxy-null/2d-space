@@ -1,4 +1,4 @@
-[gd_scene load_steps=101 format=3]
+[gd_scene load_steps=97 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -204,22 +204,10 @@ size = Vector2(20, 40)
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_13_EntryFloor"]
-size = Vector2(360, 80)
-
-[sub_resource type="RectangleShape2D" id="Shape_13_RecoveryFloor"]
-size = Vector2(760, 20)
+size = Vector2(1280, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_13_FirstLanding"]
-size = Vector2(240, 28)
-
-[sub_resource type="RectangleShape2D" id="Shape_13_SecondLanding"]
-size = Vector2(340, 28)
-
-[sub_resource type="RectangleShape2D" id="Shape_13_Descent"]
-size = Vector2(120, 28)
-
-[sub_resource type="RectangleShape2D" id="Shape_13_ExitFloor"]
-size = Vector2(160, 80)
+size = Vector2(450, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_14_ExitBarrier"]
 size = Vector2(28, 720)
@@ -1776,10 +1764,8 @@ text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room13" instance=ExtResource("14_arrival")]
-position = Vector2(930, 280)
-
-[node name="Bubble" parent="Rooms/Room13/Goal" index="4"]
-position = Vector2(-220, -190)
+position = Vector2(850, 220)
+mission_required = false
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room13"]
 offset_left = 882.0
@@ -1810,7 +1796,7 @@ text = "目標達成で出口が開く"
 mouse_filter = 2
 
 [node name="EntryFloor" type="StaticBody2D" parent="Rooms/Room13"]
-position = Vector2(180.0, 680.0)
+position = Vector2(640, 680)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room13/EntryFloor"]
@@ -1818,23 +1804,11 @@ shape = SubResource("Shape_13_EntryFloor")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room13/EntryFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-180.0, -40.0, 180.0, -40.0, 180.0, 40.0, -180.0, 40.0)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="RecoveryFloor" type="StaticBody2D" parent="Rooms/Room13"]
-position = Vector2(740.0, 650.0)
-
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room13/RecoveryFloor"]
-shape = SubResource("Shape_13_RecoveryFloor")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room13/RecoveryFloor"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-380.0, -10.0, 380.0, -10.0, 380.0, 10.0, -380.0, 10.0)
+polygon = PackedVector2Array(-640, -40, 640, -40, 640, 40, -640, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="FirstLanding" type="StaticBody2D" parent="Rooms/Room13"]
-position = Vector2(500.0, 474.0)
+position = Vector2(695, 234)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room13/FirstLanding"]
@@ -1843,65 +1817,21 @@ one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room13/FirstLanding"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-120.0, -14.0, 120.0, -14.0, 120.0, 14.0, -120.0, 14.0)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="SecondLanding" type="StaticBody2D" parent="Rooms/Room13"]
-position = Vector2(850.0, 294.0)
-
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room13/SecondLanding"]
-shape = SubResource("Shape_13_SecondLanding")
-one_way_collision = true
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room13/SecondLanding"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-170.0, -14.0, 170.0, -14.0, 170.0, 14.0, -170.0, 14.0)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="Descent" type="StaticBody2D" parent="Rooms/Room13"]
-position = Vector2(1120.0, 514.0)
-
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room13/Descent"]
-shape = SubResource("Shape_13_Descent")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room13/Descent"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-60.0, -14.0, 60.0, -14.0, 60.0, 14.0, -60.0, 14.0)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room13"]
-position = Vector2(1200.0, 680.0)
-
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room13/ExitFloor"]
-shape = SubResource("Shape_13_ExitFloor")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room13/ExitFloor"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-80.0, -40.0, 80.0, -40.0, 80.0, 40.0, -80.0, 40.0)
+polygon = PackedVector2Array(-225, -14, 225, -14, 225, 14, -225, 14)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Creature" parent="Rooms/Room13" instance=ExtResource("ext_jump_creature")]
 position = Vector2(150, 607.1)
 
 
-[node name="CreatureHint" type="Label" parent="Rooms/Room13"]
-offset_left = 110.0
-offset_top = 500.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "掴んだまま\nSpace · A / ×  ↑ ↑"
-mouse_filter = 2
-
-[node name="RefillHint" type="Label" parent="Rooms/Room13"]
-offset_left = 500.0
-offset_top = 505.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "着地で ↻\nもう一度 ↑ ↑"
-mouse_filter = 2
+[node name="WallSpikes" parent="Rooms/Room13" instance=ExtResource("ext_spike")]
+position = Vector2(1266, 280)
+rotation = 1.57079633
+travel = Vector2(0, 0)
+room_number = 12
+ceiling_strip = true
+strip_half_width = 280.0
+stage_group = &"tutorial"
 
 [node name="Room14" type="Node2D" parent="Rooms"]
 position = Vector2(16640, 0)

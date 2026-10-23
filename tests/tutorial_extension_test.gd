@@ -160,19 +160,21 @@ func _throw_course() -> void:
 
 func _creature_course() -> void:
 	await _grab("Creature")
-	await _walk_to(320)
+	await _walk_to(410)
 	await _pulse("jump")
-	await _step(16)
+	await _step(20)
 	await _pulse("jump")
+	await _step(20)
+	Input.action_release("move_right")
+	Input.action_press("move_up")
+	await _pulse("dash")
+	Input.action_release("move_up")
+	Input.action_press("move_right")
 	for frame in 90:
 		if tutorial.seen.has("creature_landed"):
 			break
 		await _step()
 	_check(tutorial.seen.has("creature_landed"), "Real landing restores held Creature")
-	await _walk_to(580)
-	await _pulse("jump")
-	await _step(16)
-	await _pulse("jump")
 	await _walk_goal()
 
 
