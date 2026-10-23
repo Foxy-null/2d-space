@@ -28,6 +28,8 @@ func _run() -> void:
 	await _test_walls()
 	await _test_jumps()
 	await _test_crystal()
+	await _test_crystal_retry()
+	await _test_crystal_fast_contact()
 	await _test_edge_cases()
 	_test_respawn()
 	print("PHASE1_MOVEMENT_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
@@ -422,6 +424,61 @@ func _test_respawn() -> void:
 	player.position.y = 1000
 	player._physics_process(STEP)
 	_check(player.position == player._spawn_position and player.velocity == Vector2.ZERO, "out-of-bounds respawn")
+
+
+func _test_crystal_retry() -> void:
+	var original_spawn: Vector2 = player.get("_spawn_position")
+	for scene in ["refill_crystal", "jump_crystal"]:
+		await _reset(Vector2(400, 350))
+		player.set_respawn_position(Vector2(100, 674))
+		var crystal: Area2D = load("res://scenes/" + scene + ".tscn").instantiate()
+		crystal.position = player.position
+		world.add_child(crystal)
+		var restore := Callable(crystal, "reset_for_respawn")
+		player.respawned.connect(restore)
+		await _step(2)
+		_check(not crystal.visible, scene + " is consumed by physical contact immediately before retry")
+		var key := InputEventKey.new()
+		key.keycode = KEY_R
+		key.physical_keycode = KEY_R
+		key.pressed = true
+		Input.parse_input_event(key)
+		await _step()
+		key.pressed = false
+		Input.parse_input_event(key)
+		await _step(3)
+		_check(player.position.distance_to(Vector2(100, 674)) < 2 and player.is_dash_ready() and not player.is_air_jump_ready(), scene + " actual R returns to the entrance without remote pickup effects")
+		_check(crystal.visible and crystal.monitoring and not crystal.get_node("CollisionShape2D").disabled, scene + " rejects the queued pre-retry enter and stays available")
+		player.respawned.disconnect(restore)
+		crystal.free()
+		player.set_respawn_position(original_spawn)
+
+
+func _test_crystal_fast_contact() -> void:
+	for scene in ["refill_crystal", "jump_crystal"]:
+		for gravity in [1, -1]:
+			var contacts := 0
+			for side in [50.0, 52.0, 53.0]:
+				for distance in [82.0, 86.0, 90.0, 94.0, 98.0]:
+					await _reset(Vector2(400, 350), gravity)
+					var crystal: Area2D = load("res://scenes/" + scene + ".tscn").instantiate()
+					crystal.position = player.position + Vector2(1, 1).normalized() * distance + Vector2(1, -1).normalized() * side
+					world.add_child(crystal)
+					var missed: Array[bool] = []
+					crystal.body_entered.connect(func(body):
+						if body == player:
+							missed.append(crystal.visible))
+					Input.action_press("move_right")
+					Input.action_press("move_down")
+					Input.action_press("dash")
+					await _step()
+					Input.action_release("dash")
+					await _step(14)
+					if not missed.is_empty():
+						contacts += missed.size()
+						_check(not missed.has(true) and not crystal.visible, "%s collects short diagonal-dash contacts g=%d side=%s distance=%s" % [scene, gravity, side, distance])
+					crystal.free()
+			_check(contacts > 0, scene + " short-contact fixture includes actual physics enter signals g=%d" % gravity)
 
 
 func _test_edge_cases() -> void:

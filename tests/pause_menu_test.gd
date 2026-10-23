@@ -107,7 +107,9 @@ func _check_world_pause() -> void:
 	var gate: Node2D = stage.get_node("MovingGate")
 	var box: RigidBody2D = stage.get_node("LightBox")
 	var background := stage.get_node("Background/Starfield")
-	crystal._on_body_entered(stage.get_node("Player"))
+	stage.get_node("Player").global_position = crystal.global_position
+	stage.get_node("Player").velocity = Vector2.ZERO
+	await _step(5)
 	box.linear_velocity = Vector2(90, -150)
 	await _step()
 	pause.open()
