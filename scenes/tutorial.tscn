@@ -172,10 +172,10 @@ size = Vector2(180, 80)
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_9_Floor"]
-size = Vector2(1280, 80)
+size = Vector2(520, 80)
 
-[sub_resource type="RectangleShape2D" id="Shape_9_GrabWall"]
-size = Vector2(28, 140)
+[sub_resource type="RectangleShape2D" id="Shape_9_Landing"]
+size = Vector2(550, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_10_ExitBarrier"]
 size = Vector2(28, 720)
@@ -1364,7 +1364,7 @@ position = Vector2(72, 614)
 
 
 [node name="Return" type="Marker2D" parent="Rooms/Room9"]
-position = Vector2(1208, 553)
+position = Vector2(72, 614)
 
 
 [node name="PreviousHint" type="Label" parent="Rooms/Room9"]
@@ -1376,7 +1376,7 @@ text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room9" instance=ExtResource("14_arrival")]
-position = Vector2(1190, 640)
+position = Vector2(1190, 700)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room9"]
 offset_left = 1142
@@ -1407,7 +1407,7 @@ text = "目標達成で出口が開く"
 mouse_filter = 2
 
 [node name="Floor" type="StaticBody2D" parent="Rooms/Room9"]
-position = Vector2(640.0, 680.0)
+position = Vector2(260.0, 680.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/Floor"]
@@ -1415,24 +1415,24 @@ shape = SubResource("Shape_9_Floor")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room9/Floor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 40.0)
+polygon = PackedVector2Array(-260.0, -40.0, 260.0, -40.0, 260.0, 40.0, -260.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
-[node name="GrabWall" type="StaticBody2D" parent="Rooms/Room9"]
-position = Vector2(704.0, 570.0)
+[node name="Landing" type="StaticBody2D" parent="Rooms/Room9"]
+position = Vector2(1005.0, 740.0)
 
 
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/GrabWall"]
-shape = SubResource("Shape_9_GrabWall")
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/Landing"]
+shape = SubResource("Shape_9_Landing")
 
-[node name="Visual" type="Polygon2D" parent="Rooms/Room9/GrabWall"]
+[node name="Visual" type="Polygon2D" parent="Rooms/Room9/Landing"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-14.0, -70.0, 14.0, -70.0, 14.0, 70.0, -14.0, 70.0)
+polygon = PackedVector2Array(-275.0, -40.0, 275.0, -40.0, 275.0, 40.0, -275.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Wind" parent="Rooms/Room9" instance=ExtResource("ext_wind_area")]
-position = Vector2(650, 520)
-area_size = Vector2(600, 240)
+position = Vector2(575, 480)
+area_size = Vector2(450, 480)
 wind_direction = Vector2(-1, 0)
 
 [node name="WalkHint" type="Label" parent="Rooms/Room9"]
@@ -1444,6 +1444,7 @@ text = "→ → →"
 mouse_filter = 2
 
 [node name="GrabHint" type="Label" parent="Rooms/Room9"]
+visible = false
 offset_left = 610
 offset_top = 420
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
@@ -1452,8 +1453,8 @@ text = "Shift · ZL / ZR"
 mouse_filter = 2
 
 [node name="DashHint" type="Label" parent="Rooms/Room9"]
-offset_left = 795
-offset_top = 290
+offset_left = 440
+offset_top = 555
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "→ X · B / ○"
