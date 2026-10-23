@@ -15,176 +15,266 @@ func _initialize() -> void:
 
 func _run() -> void:
 	await _new_world()
+	_check(tutorial.STEPS[6].is_empty() and not _room().get_node("Goal").locked, "The spring room is unlocked without action-history requirements")
+	_check(not _room().has_node("FloorHint") and not _room().has_node("WallHint"), "The angled plate and gap replace the old explanatory hints")
 	await _bypasses()
 	await _fall_retry()
-	for amount in [0.7, 0.85, 1.0]:
+	await _flight_retry()
+	for amount in [0.7, 0.725, 0.75, 0.775, 0.8, 0.825, 0.85, 0.875, 0.9, 0.925, 0.95, 0.975, 1.0]:
 		for pause in [0, 20, 60]:
-			await _new_world()
 			await _analog_landing(amount, pause)
-	for pause in [0, 20, 60]:
+	await _rest()
+	for amount in [0.7, 0.85, 1.0]:
 		await _new_world()
-		await _course(pause)
+		await _course(amount)
 	await _backtrack()
 	_release()
+	tutorial.free()
 	print("TUTORIAL_SPRING_ROUTE_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
 
 
 func _bypasses() -> void:
-	# Disable only the trigger so every starting point can test the same solid route.
-	tutorial.get_node("Rooms/Room7/FloorSpring").collision_mask = 0
+	_room().get_node("FloorSpring").collision_mask = 0
 	for lower in [false, true]:
-		for launch in ([350, 400, 480, 560] if lower else [72, 120, 160, 180]):
-			for direction in ["right", "up_right", "up"]:
-				for dash_frame in [-1, 0, 12, 24, 36, 48, 60]:
-					await _attempt(lower, launch, direction, dash_frame)
-	for launch in [72, 400, 480]:
-		await _attempt(launch > 72, launch, "superdash", -1)
-	tutorial.get_node("Rooms/Room7/FloorSpring").collision_mask = 1
+		for coyote in [0, 9]:
+			for direction in [Vector2.RIGHT, Vector2(1, -1), Vector2.UP, Vector2(-1, -1), Vector2.LEFT, Vector2(-1, 1), Vector2.DOWN, Vector2(1, 1)]:
+				for delay in [0, 12, 24, 39, 40, 48]:
+					await _prepare(lower, 350 if lower else 250)
+					await _step(coyote)
+					await _pulse("jump")
+					await _step(delay)
+					_drive(direction)
+					await _pulse("dash")
+					_drive(Vector2.RIGHT)
+					_check(not await _reaches_exit() and spring_launches == 0, "Jump/coyote and eight-way dash cannot replace the spring: lower=%s coyote=%d wait=%d direction=%s" % [lower, coyote, delay, direction])
+		for launch in ([230, 250, 280] if lower else [72, 150, 210]):
+			for jump_wait in [0, 4, 8, 12]:
+				for air_wait in [0, 16, 32]:
+					await _prepare(lower, launch)
+					await _pulse("dash")
+					await _step(jump_wait)
+					await _pulse("jump")
+					await _step(air_wait)
+					_drive(Vector2(1, -1))
+					await _pulse("dash")
+					_drive(Vector2.RIGHT)
+					_check(not await _reaches_exit() and spring_launches == 0, "Ground refill, Superdash and an airborne dash cannot cross: lower=%s launch=%d waits=%d/%d" % [lower, launch, jump_wait, air_wait])
+		await _prepare(lower, 330 if lower else 230)
+		Input.action_press("wall_grab")
+		var reached := false
+		for frame in 240:
+			Input.action_release("jump")
+			if frame % 12 == 0:
+				Input.action_press("jump")
+			_drive(Vector2(1, -1))
+			reached = reached or _on_exit() or tutorial.cleared.has(6)
+			await _step()
+		_check(not reached and spring_launches == 0, "Repeated jumps and wall climbing/kicks cannot cross the one-way gap")
+	_room().get_node("FloorSpring").collision_mask = 1
 
 
-func _attempt(lower: bool, launch: float, direction: String, dash_frame: int) -> void:
+func _prepare(lower: bool, launch: float) -> void:
 	await _enter()
 	if lower:
-		await _walk_to(110)
-		await _pulse("jump")
-	await _walk_to(launch)
-	if lower:
-		_check(not tutorial.seen.has("floor_spring"), "The lower-floor bypass starts without using the spring")
-	if direction == "superdash":
-		await _pulse("dash")
-		await _step(4)
-	await _pulse("jump")
-	var reached := false
-	for frame in 240:
-		if tutorial.seen.has("floor_spring") or respawns > 0:
-			break
-		if frame == dash_frame:
-			Input.action_release("move_up")
-			if direction != "right":
-				Input.action_press("move_up")
-			if direction == "up":
-				Input.action_release("move_right")
-			await _pulse("dash")
-			Input.action_press("move_right")
-			Input.action_release("move_up")
-		if _local().x > 480:
-			Input.action_press("wall_grab")
-			Input.action_press("move_up")
-		# Try climbing the exit wall and jumping back onto the landing.
-		if player.is_wall_grabbing() and _local().x > 1200 and _local().y < 360:
-			Input.action_release("move_right")
-			Input.action_press("move_left")
-			await _pulse("jump")
+		_stick(0.7)
+		for frame in 300:
+			if _floor_is("Floor"):
+				break
+			await _step()
+		_stick(0)
+		await _step(3)
+		_check(_floor_is("Floor"), "The lower bypass reaches the actual small spring pedestal without launch")
+		_drive(Vector2.LEFT if _local().x > launch else Vector2.RIGHT)
+		for frame in 90:
+			if absf(_local().x - launch) < 4:
+				break
+			await _step()
+		_drive(Vector2.RIGHT)
+	else:
+		await _walk_to(launch)
+	_check(player.is_on_floor() and player.is_dash_ready(), "The bypass begins on a real floor with a ready dash")
+
+
+func _reaches_exit() -> bool:
+	for frame in 180:
+		if _on_exit() or tutorial.cleared.has(6):
+			return true
+		if respawns > 0 or tutorial.room_index != 6:
+			return false
 		await _step()
-		reached = reached or (_local().x >= 482 and _local().y <= 304)
-	_check(not reached and spring_launches == 0, "Jump/dash/wall actions cannot reach the upper landing without the spring: lower=%s launch=%d direction=%s frame=%d" % [lower, launch, direction, dash_frame])
-	_release()
+	return false
+
+
+func _floor_is(name: String) -> bool:
+	if player.is_on_floor():
+		for index in player.get_slide_collision_count():
+			if player.get_slide_collision(index).get_collider() == _room().get_node(name):
+				return true
+	return false
+
+
+func _on_exit() -> bool:
+	return _floor_is("SpringLanding") or (player.is_on_floor() and _local().x > 1100 and _local().y < 574)
 
 
 func _fall_retry() -> void:
 	await _enter()
-	_check(tutorial.get_node("Rooms/Room7/FloorSpring").collision_mask == 1, "The failed route keeps the real spring active")
-	await _walk_to(300)
+	await _walk_to(230)
 	await _pulse("jump")
-	Input.action_press("move_right")
-	for frame in 240:
+	for frame in 180:
 		if respawns > 0:
 			break
 		await _step()
 	_release()
 	await _step(4)
-	_check(respawns == 1 and _local().distance_to(Vector2(72, 614)) < 10, "Missing the spring and falling restores the safe entrance")
-	_check(spring_launches == 0 and not tutorial.seen.has("floor_spring") and not tutorial.cleared.has(6), "A failed jump cannot satisfy the spring lesson")
+	_check(respawns == 1 and _local().distance_to(_room().get_node("Spawn").position) < 10, "Jumping over the spring and falling restores the safe entrance")
+	_check(spring_launches == 0 and tutorial.seen.is_empty() and not tutorial.cleared.has(6), "Missing the launch never opens the exit")
+
+
+func _flight_retry() -> void:
+	await _enter()
+	_drive(Vector2.RIGHT)
+	for frame in 180:
+		if spring_launches > 0:
+			break
+		await _step()
+	_check(spring_launches == 1 and not player.is_on_floor(), "The real angled spring starts the retry flight")
+	_release()
+	await _reset_key()
+	await _step(4)
+	_check(_local().distance_to(_room().get_node("Spawn").position) < 2 and player.is_dash_ready() and tutorial.seen.is_empty(), "Actual R during launch restores the entrance and resources")
+	_check(not tutorial.cleared.has(6) and not _room().get_node("ExitBarrier/Collision").disabled, "Retry cancels unfinished arrival and keeps the exit closed")
 
 
 func _analog_landing(amount: float, pause: int) -> void:
-	_check(tutorial.get_node("Rooms/Room7/FloorSpring").collision_mask == 1, "The analog course uses the active spring in a new world")
+	await _enter()
 	if pause > 0:
 		await _walk_to(150)
 		_release()
 		await _step(pause)
 	_stick(amount)
 	await _step(2)
-	_check(is_equal_approx(Input.get_axis("move_left", "move_right"), (amount - 0.5) / 0.5), "The real stick event retains its partial strength after the deadzone")
-	for frame in 600:
-		if (spring_launches > 0 and player.is_on_floor() and _local().y < 400) or respawns > 0:
+	_check(is_equal_approx(Input.get_axis("move_left", "move_right"), (amount - 0.5) / 0.5), "The real stick retains its partial strength after the configured deadzone")
+	for frame in 450:
+		if _on_exit() or respawns > 0:
 			break
 		await _step()
-	_check(spring_launches == 1 and player.is_on_floor() and absf(_local().y - 304) < 2, "Stick %.2f after a pause of %df reaches the wide landing" % [amount, pause])
-	_check(respawns == 0 and highest >= 26, "Partial-stick spring flight stays on screen without retry")
-	_check(not tutorial.seen.has("jump") and not tutorial.seen.has("dash") and not tutorial.seen.has("wall_jump"), "The analog route requires only holding the stick right")
-	_stick(0)
-	await _step(60)
-	_check(player.is_on_floor() and absf(_local().y - 304) < 2, "Releasing the real stick leaves a safe rest on the landing")
+	_check(spring_launches == 1 and respawns == 0 and _on_exit(), "Stick %.3f after a %df pause reaches a safe exit surface" % [amount, pause])
+	_check(highest >= 26 and not tutorial.seen.has("jump") and not tutorial.seen.has("dash") and not tutorial.seen.has("wall_jump"), "The visible flight needs only right input, without jump, dash or wall actions")
+	_check(not tutorial.cleared.has(6), "The first landing does not invent action history or skip the real arrival press")
+	_release()
 
 
-func _course(pause: int) -> void:
+func _rest() -> void:
+	await _analog_landing(0.7, 0)
+	await _step(90)
+	_check(_floor_is("SpringLanding") and not tutorial.cleared.has(6), "Releasing a partial stick leaves the player at rest on the broad landing")
+
+
+func _course(amount: float) -> void:
+	await _enter()
 	_capture("entrance")
-	if pause > 0:
-		await _walk_to(150)
-		_release()
-		await _step(pause)
-	Input.action_press("move_right")
-	for frame in 200:
-		if tutorial.seen.has("floor_spring") and player.is_on_floor() and _local().y < 400:
+	var start := Engine.get_physics_frames()
+	if amount == 1.0:
+		_drive(Vector2.RIGHT)
+	else:
+		_stick(amount)
+	for frame in 450:
+		if spring_launches > 0:
 			break
 		await _step()
-	_check(tutorial.seen.has("floor_spring") and player.is_on_floor() and absf(_local().y - 304) < 2, "Holding right after a pause of %d frames reaches the wide landing" % pause)
-	_check(respawns == 0 and highest >= 26, "The spring flight stays inside the screen without an upward retry")
-	_check(not tutorial.seen.has("jump") and not tutorial.seen.has("dash") and not tutorial.seen.has("wall_jump"), "Reaching the landing requires only right input")
+	await _step(6)
+	_capture("launched")
+	for frame in 240:
+		if _on_exit() or respawns > 0:
+			break
+		await _step()
+	_check(spring_launches == 1 and respawns == 0 and _on_exit(), "The real route uses the single required angled spring")
 	_capture("landing")
-	Input.action_release("move_right")
-	await _step(60)
-	_check(player.is_on_floor() and absf(_local().y - 304) < 2, "The wide landing provides a safe rest")
-	Input.action_press("move_right")
-	for frame in 180:
+	_release()
+	for frame in 240:
 		if tutorial.cleared.has(6):
 			break
+		_drive(Vector2.ZERO if _local().x >= _room().get_node("Goal").position.x - 55 else Vector2.RIGHT)
 		Input.action_release("jump")
-		if _local().x >= 900:
-			Input.action_release("move_right")
 		if player.is_on_floor() and player.is_on_wall():
 			Input.action_press("jump")
 		await _step()
-	_check(tutorial.cleared.has(6) and respawns == 0, "The real arrival switch completes the spring-only lesson")
-	_check(not tutorial.seen.has("wall_spring") and not tutorial.seen.has("spring_dash"), "A wall spring and a dash are not extra completion requirements")
+	_release()
+	_check(tutorial.cleared.has(6) and _room().get_node("Goal").is_pressed() and respawns == 0, "Actual arrival opens the exit after the spring crossing")
+	print("ROOM7_ROUTE_SECONDS input=%.2f %.2f" % [amount, (Engine.get_physics_frames() - start) / 60.0])
 	_capture("cleared")
-	Input.action_press("move_right")
+	_drive(Vector2.RIGHT)
 	for frame in 180:
 		if tutorial.room_index == 7 and not tutorial.transitioning:
 			break
+		_drive(Vector2.RIGHT)
 		await _step()
 	_release()
-	_check(tutorial.room_index == 7 and player.controls_enabled, "The landing leads into Room8")
+	_check(tutorial.room_index == 7 and player.controls_enabled and player.is_dash_ready(), "The cleared exit leads to Room8 with resources reset")
 
 
 func _backtrack() -> void:
-	Input.action_press("move_left")
+	_drive(Vector2.LEFT)
 	for frame in 180:
 		if tutorial.room_index == 6 and not tutorial.transitioning:
 			break
+		_drive(Vector2.LEFT)
 		await _step()
 	_release()
 	await _step(4)
-	_check(tutorial.room_index == 6 and player.is_on_floor() and _local().distance_to(Vector2(72, 614)) < 10, "Returning from Room8 uses the safe left entrance")
-	await _pulse("reset")
+	_check(tutorial.room_index == 6 and player.is_on_floor() and _local().distance_to(_room().get_node("Return").position) < 2, "Returning from Room8 preserves the safe left-entry checkpoint")
+	await _reset_key()
 	await _step(4)
-	_check(_local().distance_to(Vector2(72, 614)) < 2 and tutorial.cleared.has(6), "Retry after backtracking preserves the entrance and cleared lesson")
-	Input.action_press("move_left")
+	_check(tutorial.cleared.has(6) and _local().distance_to(_room().get_node("Return").position) < 2, "R after backtracking preserves the entrance and completed arrival")
+	_drive(Vector2.LEFT)
 	for frame in 180:
 		if tutorial.room_index == 5 and not tutorial.transitioning:
 			break
+		_drive(Vector2.LEFT)
 		await _step()
 	_release()
-	_check(tutorial.room_index == 5 and player.controls_enabled, "Left input after retry continues into Room6")
-	Input.action_press("move_right")
-	for frame in 180:
+	_check(tutorial.room_index == 5 and player.controls_enabled and player.is_on_floor(), "Left input continues safely into Room6")
+	for frame in 240:
+		if player.is_air_jump_ready():
+			break
+		_drive(Vector2.LEFT)
+		await _step()
+	_check(player.is_air_jump_ready(), "The adjacent room's real boot is acquired before testing reentry")
+	_drive(Vector2.RIGHT)
+	for frame in 300:
 		if tutorial.room_index == 6 and not tutorial.transitioning:
 			break
+		_drive(Vector2.RIGHT)
 		await _step()
 	_release()
-	_check(tutorial.room_index == 6 and player.controls_enabled, "Room6 can be re-entered from its right exit into Room7")
+	_check(tutorial.room_index == 6 and player.controls_enabled and player.is_on_floor() and not player.is_air_jump_ready(), "Returning from Room6 resets the real boot rather than carrying a spring bypass")
+
+
+func _room() -> Node:
+	return tutorial.get_node("Rooms/Room7")
+
+
+func _drive(direction: Vector2) -> void:
+	for action in ["move_left", "move_right", "move_up", "move_down"]:
+		Input.action_release(action)
+	if direction.x != 0:
+		Input.action_press("move_right" if direction.x > 0 else "move_left")
+	if direction.y != 0:
+		Input.action_press("move_down" if direction.y > 0 else "move_up")
+
+
+func _reset_key() -> void:
+	var key := InputEventKey.new()
+	key.keycode = KEY_R
+	key.physical_keycode = KEY_R
+	key.pressed = true
+	Input.parse_input_event(key)
+	await _step()
+	key.pressed = false
+	Input.parse_input_event(key)
+	await _step(2)
 
 
 func _new_world() -> void:
@@ -249,6 +339,7 @@ func _step(count: int = 1) -> void:
 
 
 func _release() -> void:
+	_stick(0)
 	for action in ["move_left", "move_right", "move_up", "move_down", "jump", "jump_up", "dash", "wall_grab", "reset"]:
 		Input.action_release(action)
 
@@ -263,4 +354,5 @@ func _check(condition: bool, message: String) -> void:
 func _capture(name: String) -> void:
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		RenderingServer.force_draw()
-		root.get_texture().get_image().save_png("/tmp/tutorial-spring-%s.png" % name)
+		DirAccess.make_dir_recursive_absolute("res://docs/screenshots/tutorial-spring")
+		root.get_texture().get_image().save_png("res://docs/screenshots/tutorial-spring/%s.png" % name)

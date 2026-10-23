@@ -111,7 +111,7 @@ func _air_jump_course() -> void:
 
 func _spring_course() -> void:
 	await _walk_to(700)
-	_check(tutorial.seen.has("floor_spring"), "The floor spring must launch the player to the upper landing")
+	_check(tutorial.seen.has("floor_spring"), "The angled spring launches the player across the gap")
 	await _walk_goal()
 
 
