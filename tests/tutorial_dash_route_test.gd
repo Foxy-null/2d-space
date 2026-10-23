@@ -112,6 +112,8 @@ func _cross_gap(launch: float, delay: int) -> void:
 
 
 func _finish_course() -> void:
+	tutorial.seen.clear()
+	tutorial._update_lesson()
 	_move(1)
 	for frame in 300:
 		if tutorial.cleared.has(2):
@@ -123,6 +125,7 @@ func _finish_course() -> void:
 			_button("jump", true)
 		await _step()
 	_check(tutorial.cleared.has(2) and respawns == 0, "The resting landing leads to the actual arrival switch")
+	_check(not tutorial.seen.has("dash") and tutorial.cleared.has(2), "Physical arrival opens the exit without a dash history record")
 	_capture("cleared")
 	_move(1)
 	for frame in 180:
