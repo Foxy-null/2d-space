@@ -2420,13 +2420,10 @@ theme_override_font_sizes/font_size = 16
 text = "ポーズ [Esc]"
 
 [node name="Status" type="PanelContainer" parent="HUD"]
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -394.0
-offset_top = 24.0
-offset_right = -24.0
-offset_bottom = 108.0
-grow_horizontal = 0
+offset_left = 24.0
+offset_top = 90.0
+offset_right = 354.0
+offset_bottom = 174.0
 mouse_filter = 2
 
 [node name="Rows" type="VBoxContainer" parent="HUD/Status"]
