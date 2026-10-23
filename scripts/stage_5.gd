@@ -92,6 +92,7 @@ func _transition_to_next() -> void:
 
 
 func _on_respawned() -> void:
+	$Rooms/Room12/Goal.reset_for_respawn()
 	if not completed:
 		next_bumper = 0
 	_update_route()

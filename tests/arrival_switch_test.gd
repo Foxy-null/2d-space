@@ -15,7 +15,7 @@ func _run() -> void:
 	root.add_child(tutorial)
 	player = tutorial.player
 	await _step(5)
-	# Every room, including the four elevated goals, has a physical locked lid.
+	# Mission rooms have a physical lid; terrain-led room 6 starts ready.
 	for index in 17:
 		await _enter(index)
 		var goal := _goal()
@@ -27,9 +27,14 @@ func _run() -> void:
 		player.velocity = Vector2.ZERO
 		player.set("_contacts_valid", false)
 		await _step(30)
-		_check(goal.locked and not goal.is_pressed(), "Locked case cannot activate in room %d" % (index + 1))
-		_check(player.is_on_floor() and absf(player.global_position.y - goal.global_position.y + 147.741) < 1, "Case supports the player in room %d" % (index + 1))
-		_check(not _room().get_node("ExitBarrier/Collision").disabled, "Locked exit remains solid")
+		if index == 5:
+			_check(not goal.locked and goal.is_pressed() and tutorial.cleared.has(5), "Terrain-led room 6 activates on a real landing without action history")
+			_check(player.is_on_floor() and absf(goal.cap.position.y - 32) < 0.1, "Terrain-led arrival supports the player after its full press")
+			_check(_room().get_node("ExitBarrier/Collision").disabled, "Terrain-led arrival opens the real exit")
+		else:
+			_check(goal.locked and not goal.is_pressed(), "Locked case cannot activate in room %d" % (index + 1))
+			_check(player.is_on_floor() and absf(player.global_position.y - goal.global_position.y + 147.741) < 1, "Case supports the player in room %d" % (index + 1))
+			_check(not _room().get_node("ExitBarrier/Collision").disabled, "Locked exit remains solid")
 	await _enter(0)
 	_complete_steps()
 	player.global_position = _goal().global_position + Vector2(-80, -90)
@@ -147,7 +152,7 @@ func _screenshots() -> void:
 	DirAccess.make_dir_recursive_absolute("res://docs/screenshots/arrival")
 	for index in [0, 5, 7, 12, 14, 16]:
 		await _enter(index)
-		await _capture("room_%d_locked" % (index + 1))
+		await _capture("room_%d_%s" % [index + 1, "ready" if index == 5 else "locked"])
 	tutorial.cleared.erase(8)
 	await _enter(8)
 	# A fresh room is used because a pressed latch deliberately never rises.
