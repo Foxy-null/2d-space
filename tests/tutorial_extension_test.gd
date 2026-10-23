@@ -155,6 +155,15 @@ func _carry_course() -> void:
 	await _grab("Heavy")
 	await _step(5)
 	_check(tutorial.seen.has("button_off"), "Picking up the box turns the real button off")
+	_check(not _room().get_node("Button").is_pressed() and _room().get_node("Goal").locked, "Removing the box relocks the arrival switch")
+	await _walk_to(745)
+	Input.action_release("move_right")
+	await _step(12)
+	Input.action_release("wall_grab")
+	Input.action_press("move_left")
+	await _step(18)
+	Input.action_release("move_left")
+	await _step(45)
 	await _walk_goal()
 
 

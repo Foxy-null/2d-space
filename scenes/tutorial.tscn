@@ -1646,6 +1646,13 @@ position = Vector2(380, 606.5)
 position = Vector2(760, 640)
 
 
+[node name="ButtonLink" type="Line2D" parent="Rooms/Room11"]
+z_index = 1
+points = PackedVector2Array(760, 655, 760, 693, 1190, 693, 1190, 640)
+width = 4.0
+default_color = Color(0.337, 0.443, 0.553, 1)
+antialiased = true
+
 [node name="BoxHint" type="Label" parent="Rooms/Room11"]
 offset_left = 105.0
 offset_top = 510.0
