@@ -299,12 +299,13 @@ func _enter(index: int) -> void:
 func _test_retry() -> void:
 	await _enter(9)
 	var gate := _room().get_node("MovingGate")
+	var initial_x: float = gate._initial_position.x
 	await _step(35)
-	_check(gate.position.x > 340, "Moving gate advances")
+	_check(gate.position.x > initial_x, "Moving gate advances")
 	Input.action_press("reset")
 	await _step()
 	Input.action_release("reset")
-	_check(absf(gate.position.x - 340) < 4, "Retry restores moving gate phase")
+	_check(absf(gate.position.x - initial_x) < 4, "Retry restores moving gate phase")
 	await _enter(12)
 	await _grab("Creature")
 	_release()
