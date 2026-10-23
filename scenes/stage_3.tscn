@@ -1,4 +1,4 @@
-[gd_scene load_steps=82 format=3]
+[gd_scene load_steps=83 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -219,6 +219,9 @@ size = Vector2(50, 40)
 [sub_resource type="RectangleShape2D" id="Shape_ExitSpringPlatform"]
 size = Vector2(140, 28)
 
+[sub_resource type="RectangleShape2D" id="Shape_Room1UpGate"]
+size = Vector2(64, 800)
+
 [sub_resource type="RectangleShape2D" id="Shape_SpringCeiling_Room1"]
 size = Vector2(160, 40)
 
@@ -396,8 +399,11 @@ position = Vector2(490, 640)
 spring_speed = 900.0
 
 [node name="UpGate" parent="Rooms/Room1" instance=ExtResource("5_gate")]
-position = Vector2(860, 430)
+position = Vector2(860, 320)
 target_gravity = -1
+
+[node name="CollisionShape2D" parent="Rooms/Room1/UpGate" index="0"]
+shape = SubResource("Shape_Room1UpGate")
 
 [node name="SpringCeiling" type="StaticBody2D" parent="Rooms/Room1"]
 position = Vector2(1040, 60)
