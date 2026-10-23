@@ -41,7 +41,27 @@ func traverse(section: int) -> bool:
 		if player.is_wall_grabbing():
 			return false
 		cooldown = maxi(0, cooldown - 1)
-		if section == 1 and waypoint == 0:
+		if section == 0 and waypoint == 0:
+			var first: Rect2 = room.walls[0]
+			if player.is_on_floor() and x > first.position.x and absf(player.position.y + 26 - first.position.y) < 5:
+				waypoint = 1
+			elif player.is_on_floor():
+				steer_to(190 - x)
+				if x > 180:
+					Input.action_press("jump")
+					cooldown = 10
+			else:
+				steer_to(450 - x)
+				if cooldown == 0 and player.velocity.y > -40:
+					if player.get_available_extra_jump_count() > 0:
+						Input.action_press("jump")
+						cooldown = 10
+					elif player.is_dash_ready():
+						Input.action_release("move_right")
+						Input.action_release("move_left")
+						Input.action_press("move_up")
+						Input.action_press("dash")
+		elif section == 1 and waypoint == 0:
 			if player.position.y < room.walls[0].position.y - 55 and x > 220:
 				landing_first = true
 			if landing_first and player.is_on_floor() and x > 250:
