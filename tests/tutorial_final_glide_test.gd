@@ -15,13 +15,26 @@ func _initialize() -> void:
 
 func _run() -> void:
 	await _new_world()
-	await _basic_shortcuts()
-	await _advanced_alternative()
-	await _safe_retries()
-	for input in [Vector2(1, 0), Vector2(0.85, 0), Vector2(0.85, -0.35), Vector2(0.85, 0.65)]:
-		await _new_world()
-		pad = input.x < 1
-		await _course(input)
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		await _inverted_rest()
+		_capture("rest")
+		_release()
+		await _reset_key()
+		await _step(5)
+		_capture("retry")
+		respawns = 0
+		await _course(Vector2.RIGHT)
+	else:
+		await _boundary_resources()
+		await _safe_retries()
+		await _gate_ablations()
+		await _gate_choices()
+		for input in [Vector2(1, 0), Vector2(0.85, 0), Vector2(0.85, -0.35), Vector2(0.85, 0.65), Vector2(0.7, 0)]:
+			await _new_world()
+			pad = input.x < 1
+			await _course(input)
+	# Let queued zero-axis events settle before switching to digital backtracking.
+	await _step(2)
 	await _backtrack()
 	_release()
 	print("TUTORIAL_FINAL_GLIDE_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
@@ -30,44 +43,39 @@ func _run() -> void:
 	quit(1 if failed else 0)
 
 
-func _basic_shortcuts() -> void:
-	for launch in [350, 440, 475]:
-		for direction in [Vector2.ZERO, Vector2.RIGHT, Vector2(1, -1), Vector2.UP, Vector2(1, 1), Vector2.DOWN, Vector2.LEFT, Vector2(-1, -1), Vector2(-1, 1)]:
-			await _enter()
-			await _park_parachute()
-			await _walk_to(launch)
-			await _pulse("jump")
-			if not direction.is_zero_approx():
-				_move(direction)
-				await _pulse("dash")
-				_move(Vector2.RIGHT)
-			var reached := false
-			for frame in 220:
-				await _step()
-				reached = reached or _at_exit()
-				if respawns > 0 or tutorial.room_index != 15:
-					break
-			_check(not reached and not tutorial.cleared.has(15), "A normal jump/initial eight-way dash cannot land at the exit from x%d: %s" % [launch, direction])
-
-
-func _advanced_alternative() -> void:
-	await _enter()
-	await _park_parachute()
-	await _inverted_rest()
-	await _walk_to(475)
+func _boundary_resources() -> void:
+	# Complete the preceding terrain lesson through real movement and both air jumps.
+	var previous := tutorial.get_node("Rooms/Room15") as Node2D
+	tutorial.call("_set_room", 14, false)
+	player.respawn()
+	await _step(6)
+	respawns = 0
+	_grab(true)
+	_move(Vector2.RIGHT)
+	for frame in 200:
+		if player.position.x - previous.position.x >= 380:
+			break
+		await _step()
+	_check(player.get_held_object() == previous.get_node("Creature"), "The real Room15 route carries its companion")
 	await _pulse("jump")
-	await _step(36)
-	_move(Vector2(1, 1))
+	await _step(20)
+	await _pulse("jump")
+	await _step(20)
+	_check(player.is_air_jump_ready(), "The preceding route physically acquires the airborne boots")
+	await _pulse("jump")
+	await _step(20)
+	_move(Vector2.UP)
 	await _pulse("dash")
 	_move(Vector2.RIGHT)
-	var reached := false
-	for frame in 240:
+	for frame in 360:
 		await _step()
-		reached = reached or _at_exit()
-		if respawns > 0 or reached:
+		if tutorial.room_index == 15:
+			_release()
 			break
-	_check(reached and player.get_held_object() == null, "Inverted jump plus a delayed down-right dash remains a valid advanced alternative")
-	_check(not tutorial.cleared.has(15) and not tutorial.seen.has("wind_lift") and not tutorial.seen.has("inverted_glide"), "The advanced alternative does not replace the three existing parachute lesson conditions")
+	await _step(25)
+	_check(tutorial.room_index == 15 and not tutorial.transitioning and tutorial.cleared.has(14), "The preceding lesson reaches Room16 through its real boundary")
+	_check(player.get_held_object() == null and not player.is_air_jump_ready() and tutorial.seen.is_empty(), "Boundary respawn removes carried resources before the final lesson")
+	_check(respawns == 1 and _local().distance_to(Vector2(72, 614)) < 4, "The boundary performs one safe entrance respawn")
 
 
 func _safe_retries() -> void:
@@ -79,33 +87,79 @@ func _safe_retries() -> void:
 			break
 		await _step()
 	_release()
-	_check(respawns > 0 and _local().x < 100 and player.gravity_direction == 1, "Walking into the gap retries safely at the entrance")
+	_check(respawns == 1 and _local().x < 100 and player.gravity_direction == 1, "Walking into the gap retries once at the entrance")
 	await _enter()
-	await _park_parachute()
 	await _inverted_rest()
-	_move(Vector2.RIGHT)
-	for frame in 240:
-		if respawns > 0:
-			break
-		await _step()
+	await _step(180)
+	_check(player.gravity_direction < 0 and player.is_on_floor() and player.get_held_object() == room.get_node("Parachute") and respawns == 0, "The inverted ceiling allows an unhurried three-second rest")
+	_capture("rest")
 	_release()
-	_check(respawns > 0 and _local().x < 100 and player.gravity_direction == 1, "Leaving the ceiling without a parachute retries after crossing the upper screen edge")
+	await _reset_key()
+	await _step(5)
+	_check(_local().distance_to(Vector2(72, 614)) < 4 and player.gravity_direction == 1 and player.is_dash_ready() and player.get_held_object() == null, "Actual R from the ceiling restores entrance, gravity, dash, and held state")
+	_check(room.get_node("Parachute").position.distance_to(Vector2(170, 593.4)) < 4 and tutorial.seen.is_empty(), "Retry restores the parachute and clears lesson telemetry")
+	_check(is_equal_approx(tutorial.camera.position.x, room.position.x + 640), "Retry immediately restores the entrance camera clamp")
+	_capture("retry")
+	await _enter()
+	await _inverted_rest()
+	await _step(180)
+	_move(Vector2.RIGHT)
+	for frame in 400:
+		await _step()
+		if tutorial.cleared.has(15) or respawns > 0:
+			break
+	_check(tutorial.cleared.has(15) and respawns == 0, "Resume from the three-second ceiling rest and land on the real arrival")
+	# Reset while still overlapping the real UpGate: stale contact must not reapply Up remotely.
 	await _enter()
 	_grab(true)
 	_move(Vector2.RIGHT)
-	for frame in 120:
-		if player.gravity_direction < 0 and player.is_on_floor():
-			break
+	for frame in 400:
 		await _step()
-	_move(Vector2.ZERO)
-	await _step(120)
-	_check(player.gravity_direction < 0 and player.is_on_floor() and player.get_held_object() == room.get_node("Parachute") and respawns == 0, "The inverted ceiling allows an unhurried rest while holding the parachute")
-	_grab(false)
-	await _step()
+		if tutorial.seen.has("up"):
+			break
+	_check(tutorial.seen.has("up"), "The immediate-R fixture physically enters UpGate")
+	_release()
 	await _reset_key()
-	await _step(5)
-	_check(_local().distance_to(Vector2(72, 614)) < 2 and player.gravity_direction == 1 and player.is_dash_ready() and player.get_held_object() == null, "R from the ceiling restores the safe entrance, down gravity, dash, and held state")
-	_check(room.get_node("Parachute").position.distance_to(Vector2(170, 593.4)) < 4 and tutorial.seen.is_empty(), "Retry restores the parachute and clears the unfinished lesson")
+	await _step(12)
+	_check(player.gravity_direction == 1 and tutorial.seen.is_empty() and _local().distance_to(Vector2(72, 614)) < 4, "Immediate real R does not apply a distant stale gate contact")
+
+
+func _gate_ablations() -> void:
+	for name in ["GateUp", "GateDown"]:
+		tutorial.cleared.erase(15)
+		await _enter()
+		room.get_node(name).monitoring = false
+		_grab(true)
+		_move(Vector2.RIGHT)
+		var reached := false
+		for frame in 900:
+			await _step()
+			reached = reached or _at_exit()
+			if respawns > 0 or tutorial.cleared.has(15):
+				break
+		_release()
+		_check(not reached and not tutorial.cleared.has(15) and respawns == 1, "The continuous held route needs the real %s contact" % name)
+		room.get_node(name).monitoring = true
+
+
+func _gate_choices() -> void:
+	for launch in [1040, 1080, 1100]:
+		for direction in [Vector2.ZERO, Vector2.RIGHT, Vector2(1, -1), Vector2.UP, Vector2(1, 1), Vector2.DOWN, Vector2.LEFT, Vector2(-1, -1), Vector2(-1, 1)]:
+			tutorial.cleared.erase(15)
+			await _enter()
+			_grab(true)
+			await _walk_to(launch)
+			if not direction.is_zero_approx():
+				_move(direction)
+				await _pulse("dash")
+			_move(Vector2.RIGHT)
+			var reached := false
+			for frame in 900:
+				await _step()
+				reached = reached or _at_exit()
+				if reached or respawns > 0 or tutorial.cleared.has(15):
+					break
+			_check(not reached or (tutorial.seen.has("up") and tutorial.seen.has("down")), "Eight-way dash attempts near UpGate cannot land without both real gravity contacts")
 
 
 func _course(input: Vector2) -> void:
@@ -115,24 +169,35 @@ func _course(input: Vector2) -> void:
 	await _step(3)
 	_check(player.get_held_object() == room.get_node("Parachute"), "Holding Grab acquires the entrance parachute")
 	if pad:
-		_check(is_equal_approx(Input.get_axis("move_left", "move_right"), 0.7), "Raw pad x0.85 passes through the configured deadzone as x0.7")
+		_check(is_equal_approx(Input.get_axis("move_left", "move_right"), (input.x - 0.5) / 0.5), "Weak stick input passes through the configured deadzone")
 	var highest := 720.0
 	var resting := false
-	for frame in 700:
+	var captured := false
+	var elapsed := 3
+	var crossed_old_edge := false
+	for frame in 1200:
 		await _step()
+		elapsed += 1
 		highest = minf(highest, _local().y)
 		if player.gravity_direction < 0 and player.is_on_floor() and not resting:
 			resting = true
 			_capture("rest")
-		if tutorial.seen.has("inverted_glide") and _local().x > 700 and _local().x < 710:
+		if _local().x > 1280 and not crossed_old_edge:
+			crossed_old_edge = true
+			_check(tutorial.room_index == 15 and not tutorial.transitioning, "Crossing x1280 remains inside the widened lesson")
+		if tutorial.seen.has("inverted_glide") and _local().x > 1280 and not captured:
+			captured = true
 			_capture("glide")
 		if tutorial.cleared.has(15) or respawns > 0:
 			break
 	_move(Vector2.ZERO)
-	_check(resting and highest >= 26 and respawns == 0, "The easy route rests under the ceiling and keeps the player within the screen")
+	_check(resting and highest >= 26 and respawns == 0, "The held route rests under the ceiling and stays in screen height")
 	_check(tutorial.cleared.has(15) and room.get_node("Goal").is_pressed() and player.is_on_floor(), "Holding Grab and right presses the real arrival switch")
-	_check(tutorial.seen.has("wind_lift") and tutorial.seen.has("inverted_glide") and tutorial.seen.has("down"), "The route physically performs lift, inverted glide, and down gravity")
-	_check(not tutorial.seen.has("jump") and not tutorial.seen.has("dash"), "The normal route needs no jump or dash timing")
+	_check(tutorial.seen.has("wind_lift") and tutorial.seen.has("up") and tutorial.seen.has("inverted_glide") and tutorial.seen.has("down"), "The route physically uses lift, both gates, and inverted glide")
+	_check(not tutorial.seen.has("jump") and not tutorial.seen.has("dash") and elapsed <= 1800, "The normal route needs no jump/dash timing and finishes within thirty seconds")
+	_check(is_equal_approx(tutorial.camera.position.x, room.position.x + 960), "The camera reaches its far clamp with the exit visible")
+	_check(tutorial.completed and tutorial.get_node("HUD/Completion").visible, "Physical arrival completes the sixteen main lessons")
+	print("FINAL_GLIDE_ROUTE input=%s seconds=%.2f" % [input, elapsed / 60.0])
 	_capture("cleared")
 	_move(Vector2(input.x, 0))
 	for frame in 180:
@@ -140,10 +205,12 @@ func _course(input: Vector2) -> void:
 			break
 		await _step()
 	_release()
-	_check(tutorial.room_index == 16 and player.controls_enabled and player.is_on_floor(), "The landing leads forward into Room17")
+	_check(tutorial.room_index == 16 and player.controls_enabled and player.is_on_floor(), "The expanded boundary leads into Room17")
+	_check(tutorial.get_node("Rooms/Room17").position.x == room.position.x + 1600, "Room17 begins at the actual widened boundary")
 
 
 func _backtrack() -> void:
+	var before := respawns
 	_move(Vector2.LEFT)
 	for frame in 180:
 		if tutorial.room_index == 15 and not tutorial.transitioning:
@@ -152,23 +219,27 @@ func _backtrack() -> void:
 	_release()
 	await _step(4)
 	_check(tutorial.room_index == 15 and player.is_on_floor() and _local().distance_to(Vector2(72, 614)) < 10, "Returning from Room17 uses the safe left entrance")
+	_check(respawns == before + 1 and is_equal_approx(tutorial.camera.position.x, room.position.x + 640), "Backtracking performs one transition and restores the entrance camera")
+	_release()
 	await _reset_key()
 	await _step(5)
-	_check(_local().distance_to(Vector2(72, 614)) < 2 and tutorial.cleared.has(15), "R after backtracking preserves the safe checkpoint and cleared lesson")
+	_check(_local().distance_to(Vector2(72, 614)) < 4 and tutorial.cleared.has(15), "R after backtracking preserves the checkpoint and completed lesson")
 	_move(Vector2.LEFT)
 	for frame in 180:
 		if tutorial.room_index == 14 and not tutorial.transitioning:
 			break
 		await _step()
 	_release()
-	_check(tutorial.room_index == 14 and player.controls_enabled, "Left input after retry continues into Room15")
+	await _step(2)
+	_check(tutorial.room_index == 14 and player.controls_enabled and player.is_on_floor(), "Left input reaches Room15's high return landing")
+	before = respawns
 	_move(Vector2.RIGHT)
 	for frame in 180:
 		if tutorial.room_index == 15 and not tutorial.transitioning:
 			break
 		await _step()
 	_release()
-	_check(tutorial.room_index == 15 and player.is_on_floor(), "Room15 can be left to re-enter the final glide lesson")
+	_check(tutorial.room_index == 15 and player.is_on_floor() and respawns == before + 1, "Room15 re-enters the expanded lesson without an extra fall")
 
 
 func _new_world() -> void:
@@ -211,13 +282,14 @@ func _park_parachute() -> void:
 
 
 func _inverted_rest() -> void:
-	await _walk_to(320)
-	await _pulse("jump")
-	for frame in 80:
-		if player.gravity_direction < 0 and player.is_on_floor():
-			break
+	_grab(true)
+	_move(Vector2.RIGHT)
+	for frame in 400:
 		await _step()
-	_check(player.gravity_direction < 0 and player.is_on_floor(), "The advanced attempt reaches the real inverted ceiling")
+		if player.gravity_direction < 0 and player.is_on_floor():
+			_move(Vector2.ZERO)
+			return
+	_check(false, "Holding the actual parachute reaches the inverted ceiling through wind and UpGate")
 
 
 func _walk_to(x: float) -> void:
@@ -230,7 +302,7 @@ func _walk_to(x: float) -> void:
 
 
 func _at_exit() -> bool:
-	return _local().x >= 1082 and _local().x <= 1260 and _local().y >= 400 and _local().y <= 640 and player.gravity_direction == 1 and player.is_on_floor()
+	return _local().x >= 1402 and _local().x <= 1580 and _local().y >= 400 and _local().y <= 640 and player.gravity_direction == 1 and player.is_on_floor()
 
 
 func _local() -> Vector2:

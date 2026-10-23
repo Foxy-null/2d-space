@@ -50,7 +50,7 @@ func _run() -> void:
 					continue
 				var bounds := goal.get_hint_rect()
 				var room_bounds := Rect2(goal.position + goal.get_node("Bubble").position + bounds.position, bounds.size)
-				_check(Rect2(0, 0, 1280, 720).encloses(room_bounds), "Cue stays in the room")
+				_check(Rect2(0, 0, float(room.get_meta("room_width", 1280)), 720).encloses(room_bounds), "Cue stays in the room")
 				_check(bounds.size == (Vector2(300, 136) if details else Vector2(160, 64)), "Only optional details use the larger frame")
 				_check(goal.get_node("Bubble/Progress").visible and goal.get_node("Bubble/Progress").text == expected, "Each state retains a short non-color cue")
 				_check(goal.get_node("Bubble/Objective").visible == details and goal.get_node("Bubble/Objective").text == objective, "Existing hints reveal the preserved objective")

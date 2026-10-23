@@ -13,7 +13,7 @@ const REQUIRED_CUES := [
 	{},
 	{},
 	{},
-	{"WindHint": "Shift", "GravityHint": "↓"},
+	{},
 	{"PracticeHint": "Space"},
 ]
 
@@ -43,7 +43,7 @@ func _run() -> void:
 		for guide in room.get_children():
 			if guide is Label and guide.visible:
 				var bounds: Rect2 = guide.get_rect()
-				_check(bounds.position.x >= 0 and bounds.end.x <= 1280 and bounds.end.y <= 720, "Local guide fits room %d: %s" % [index + 1, guide.name])
+				_check(bounds.position.x >= 0 and bounds.end.x <= float(room.get_meta("room_width", 1280)) and bounds.end.y <= 720, "Local guide fits room %d: %s" % [index + 1, guide.name])
 				_check(not bounds.intersects(bubble_bounds), "Goal mission does not cover a local guide in room %d: %s" % [index + 1, guide.name])
 		for name in REQUIRED_CUES[index]:
 			var cue: Label = room.get_node(name)
