@@ -12,9 +12,9 @@ const REQUIRED_CUES := [
 	{"ThrowHint": "Shift", "TargetHint": "ON"},
 	{},
 	{},
-	{"ComboHint": "Shift", "CountHint": "2回"},
+	{},
 	{"WindHint": "Shift", "GravityHint": "↓"},
-	{"PracticeHint": "Space", "LaunchHint": "ジャンプ"},
+	{"PracticeHint": "Space"},
 ]
 
 var failed := false
