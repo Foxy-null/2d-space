@@ -145,13 +145,13 @@ size = Vector2(200, 80)
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_7_Floor"]
-size = Vector2(1280, 80)
+size = Vector2(500, 20)
 
 [sub_resource type="RectangleShape2D" id="Shape_7_SpringLanding"]
-size = Vector2(210, 28)
+size = Vector2(780, 28)
 
-[sub_resource type="RectangleShape2D" id="Shape_7_Wall"]
-size = Vector2(28, 80)
+[sub_resource type="RectangleShape2D" id="Shape_7_EntryFloor"]
+size = Vector2(120, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_8_ExitBarrier"]
 size = Vector2(28, 720)
@@ -1136,7 +1136,7 @@ position = Vector2(72, 614)
 
 
 [node name="Return" type="Marker2D" parent="Rooms/Room7"]
-position = Vector2(1208, 553)
+position = Vector2(72, 614)
 
 
 [node name="PreviousHint" type="Label" parent="Rooms/Room7"]
@@ -1148,11 +1148,11 @@ text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room7" instance=ExtResource("14_arrival")]
-position = Vector2(1190, 640)
+position = Vector2(950, 330)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room7"]
-offset_left = 1142
-offset_top = 517
+offset_left = 902.0
+offset_top = 221.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "到着台"
@@ -1179,7 +1179,7 @@ text = "目標達成で出口が開く"
 mouse_filter = 2
 
 [node name="Floor" type="StaticBody2D" parent="Rooms/Room7"]
-position = Vector2(640.0, 680.0)
+position = Vector2(250.0, 710.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/Floor"]
@@ -1187,52 +1187,50 @@ shape = SubResource("Shape_7_Floor")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room7/Floor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-640.0, -40.0, 640.0, -40.0, 640.0, 40.0, -640.0, 40.0)
+polygon = PackedVector2Array(-250.0, -10.0, 250.0, -10.0, 250.0, 10.0, -250.0, 10.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="SpringLanding" type="StaticBody2D" parent="Rooms/Room7"]
-position = Vector2(485.0, 464.0)
+position = Vector2(890.0, 344.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/SpringLanding"]
 shape = SubResource("Shape_7_SpringLanding")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room7/SpringLanding"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-105.0, -14.0, 105.0, -14.0, 105.0, 14.0, -105.0, 14.0)
+polygon = PackedVector2Array(-390.0, -14.0, 390.0, -14.0, 390.0, 14.0, -390.0, 14.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
-[node name="Wall" type="StaticBody2D" parent="Rooms/Room7"]
-position = Vector2(566.0, 600.0)
+[node name="EntryFloor" type="StaticBody2D" parent="Rooms/Room7"]
+position = Vector2(60.0, 680.0)
 
 
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/Wall"]
-shape = SubResource("Shape_7_Wall")
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/EntryFloor"]
+shape = SubResource("Shape_7_EntryFloor")
 
-[node name="Visual" type="Polygon2D" parent="Rooms/Room7/Wall"]
+[node name="Visual" type="Polygon2D" parent="Rooms/Room7/EntryFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-14.0, -40.0, 14.0, -40.0, 14.0, 40.0, -14.0, 40.0)
+polygon = PackedVector2Array(-60.0, -40.0, 60.0, -40.0, 60.0, 40.0, -60.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="FloorSpring" parent="Rooms/Room7" instance=ExtResource("ext_spring")]
-position = Vector2(260, 640)
-
-
-[node name="WallSpring" parent="Rooms/Room7" instance=ExtResource("ext_spring")]
-position = Vector2(580, 602)
-rotation = 1.5707963
+position = Vector2(420, 700)
+spring_speed = 1300.0
 
 [node name="FloorHint" type="Label" parent="Rooms/Room7"]
-offset_left = 246.0
-offset_top = 540.0
+offset_left = 406
+offset_top = 540
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 28
 text = "↑"
 mouse_filter = 2
 
 [node name="WallHint" type="Label" parent="Rooms/Room7"]
-offset_left = 630.0
-offset_top = 490.0
+visible = false
+offset_left = 660
+offset_top = 390
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "← 触れる\n→ X · B / ○"

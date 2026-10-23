@@ -29,7 +29,7 @@ const CONTROLS := [
 const STEPS := [
 	["jump"], ["climb", "wall_jump"], ["dash"], ["up", "down"],
 	["air_dash", "dash_refill", "refilled_dash"], ["jump_crystal", "air_jump"],
-	["floor_spring", "wall_spring", "spring_dash"], ["pinball"],
+	["floor_spring"], ["pinball"],
 	["wind_dash"], ["up", "down"],
 	["button_on"],
 	["throw", "throw_button"], ["creature_jump", "creature_landed", "second_creature_jump"],
