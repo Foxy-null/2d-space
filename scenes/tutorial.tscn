@@ -1938,7 +1938,9 @@ position = Vector2(770, 540)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room16/Ceiling"]
+rotation = 3.1415927
 shape = SubResource("Shape_16_Ceiling")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room16/Ceiling"]
 script = ExtResource("art_terrain")

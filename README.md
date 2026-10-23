@@ -128,7 +128,7 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 `tests/tutorial_combo_jump_test.gd` は、相棒から空中の靴への受け渡し、二つの追加ジャンプとダッシュの入力時機、弱めのスティック、片方だけの攻略・踏み台・Superdash・壁・隣室への持ち越し・落下・実Rを確認します。
 
-16部屋目は、傘を保持して上昇気流を渡り、Upゲートから天井で休み、反転した滑空でDownゲートと幅180pxの到着場へ進みます。弱いスティックでもジャンプ・Dashの時機合わせなしで渡れます。入口端へ置いた傘の踏み台や風なしのDashではUpゲートへ届かず、屋根上のトゲで足場を経由する迂回も防ぎます。到着台は履歴条件を持たず、傘を離す・投げる操作も制限しません。[配置と検証](docs/tutorial-final-glide.md)、`tests/tutorial_final_glide_test.gd`、`tests/tutorial_final_glide_bypass_test.gd`で、休憩・弱い入力・実R・部屋の往復と典型的な代替入力を確認します。
+16部屋目は、傘を保持して上昇気流を渡り、Upゲートから天井で休み、反転した滑空でDownゲートと幅180pxの到着場へ進みます。弱いスティックでもジャンプ・Dashの時機合わせなしで渡れます。入口端へ置いた傘の踏み台や風なしのDashではUpゲートへ届かず、屋根上のトゲと、自由な傘を上面で支えない片面天井で、屋根を経由する補充も防ぎます。到着台は履歴条件を持たず、傘を離す・投げる操作も制限しません。[配置と検証](docs/tutorial-final-glide.md)、`tests/tutorial_final_glide_test.gd`、`tests/tutorial_final_glide_bypass_test.gd`で、休憩・弱い入力・実R・部屋の往復と典型的な代替入力を確認します。
 
 部屋の足場・入口・説明文は `scenes/tutorial.tscn` の `Rooms/Room1` ～ `Room17`、切り替えと解禁は `scripts/tutorial.gd` で調整します。風・Spring・運搬などをまとめた既存デモは `scenes/main.tscn` に残しています。GodotでそのSceneを開き、F6で実行できます。
 
