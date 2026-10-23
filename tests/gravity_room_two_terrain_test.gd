@@ -7,7 +7,9 @@ var bumper_hits := 0
 
 
 func _run() -> void:
-	if OS.get_cmdline_user_args().has("--screenshots"):
+	if OS.get_cmdline_user_args().has("--refill-bypass-only"):
+		await _refill_return_bypasses()
+	elif OS.get_cmdline_user_args().has("--screenshots"):
 		await _fresh()
 		await _capture("entrance")
 		await _room_two_wall_course()
@@ -163,6 +165,10 @@ func _negative_routes() -> void:
 				_check(actions.get("wall_jump", 0) == 0, "Negative traversal keeps wall actions enabled without pressing a wall kick")
 				_check(not stage.cleared.has(1), "A single Dash and climbing cannot replace the inverted wall transfers (setup%d delay%d %s)" % [setup, delay, direction])
 				negative_trials += 1
+	await _refill_return_bypasses()
+	if failed:
+		return
+	await _deep_wall_descent()
 	for delay in [0, 3, 6]:
 		await _fresh()
 		Input.action_press("move_right")
@@ -176,6 +182,72 @@ func _negative_routes() -> void:
 		_check(actions.get("wall_jump", 0) == 0 and not stage.cleared.has(1), "An actual ground Superdash does not replace the inverted course")
 		negative_trials += 1
 	_check(superdash_trials > 0, "The bypass fixtures include real Superdash actions")
+
+
+func _refill_return_bypasses() -> void:
+	for start_y in [315, 330, 340]:
+		for delay in [0, 8, 12]:
+			await _fresh()
+			await _cross_ceiling_pit(460, 560)
+			_drive("move_right", true, true)
+			await _until(func(): return player.is_wall_grabbing() and player.position.y >= start_y, 100, "Prepare the reviewed no-kick return Dash from the actual right wall")
+			if failed:
+				return
+			await _dash(Vector2(-1, 1))
+			await _step(delay)
+			_drive("move_right")
+			var left_rest := false
+			for frame in 220:
+				if respawns > 0:
+					break
+				if player.is_on_floor() and _x() > 506 and _x() < 580 and player.position.y > 400:
+					left_rest = true
+					_release_inputs()
+					await _step(8)
+					await _jump()
+					await _step(10)
+					await _dash(Vector2.DOWN)
+					await _step(10)
+					_drive("move_right")
+					await _wait(func(): return player.is_on_floor() and _x() > 635, 200)
+					if respawns == 0:
+						await _finish_without_wall_kick()
+					break
+				await _step()
+			_check(not left_rest, "The reviewed Dash return cannot refill on a left underside (%d/%d)" % [start_y, delay])
+			_check(not stage.cleared.has(1), "The reviewed refill/Jump/Down-Dash route cannot reach the arrival without a kick (%d/%d)" % [start_y, delay])
+			_check(actions.get("wall_jump", 0) == 0 and actions.get("dash", 0) > 0, "The regression performs actual Dash inputs without disabling or using wall kicks")
+			negative_trials += 1
+			if failed:
+				return
+
+
+func _deep_wall_descent() -> void:
+	await _fresh()
+	await _cross_ceiling_pit(460, 560)
+	_drive("move_right", true, true)
+	await _step(150)
+	_check(respawns == 0 and player.is_wall_grabbing() and player.position.y < 350, "The retained left projection interrupts deep climbing before a Down-Dash can round the wall tip")
+	_check(actions.get("wall_jump", 0) == 0 and not stage.cleared.has(1), "The deep-descent attempt uses real Grab input without bypassing the room")
+
+
+func _finish_without_wall_kick() -> void:
+	_drive("move_right")
+	await _wait(func(): return _x() >= 999, 120)
+	await _jump()
+	_drive("move_right", true, true)
+	await _wait(func(): return player.position.y >= 480, 180)
+	await _dash(Vector2(-1, -1))
+	await _step(8)
+	_drive("move_right")
+	for frame in 250:
+		if respawns > 0 or stage.cleared.has(1):
+			break
+		Input.action_release("jump")
+		if player.is_on_floor() and player.is_on_wall():
+			Input.action_press("jump")
+		await _step()
+	_release_inputs()
 
 
 func _observe(frames: int) -> void:
