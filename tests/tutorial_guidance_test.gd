@@ -12,7 +12,7 @@ const REQUIRED_CUES := [
 	{"ThrowHint": "Shift", "TargetHint": "ON"},
 	{},
 	{"GlideHint": "Shift", "ReleaseHint": "離す"},
-	{"ComboHint": "Shift", "CountHint": "2回"},
+	{},
 	{"WindHint": "Shift", "GravityHint": "↓"},
 	{"PracticeHint": "Space", "LaunchHint": "ジャンプ"},
 ]
