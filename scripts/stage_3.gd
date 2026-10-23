@@ -42,7 +42,7 @@ func _ready() -> void:
 func set_hints_visible(value: bool) -> void:
 	hints_visible = value
 	for hint in get_tree().get_nodes_in_group("stage_3_hints"):
-		hint.visible = value or hint is Line2D
+		hint.visible = value
 	hud.show_stage_room(room_index, TITLES[room_index], HINTS[room_index] if value else "", rooms.get_child_count())
 	$HUD/Completion.text = "ステージ3クリア！\n左へ戻って、自由に練習できます" if value else "ステージ3クリア！"
 
