@@ -6,7 +6,7 @@ const REQUIRED_CUES := [
 	{},
 	{"UpHint": "↑", "CeilingHint": "Space", "DownHint": "↓"},
 	{},
-	{}, {"FloorHint": "↑"}, {},
+	{}, {}, {},
 	{}, {"WaitHint": "↑", "CeilingHint": "↓"},
 	{"BoxHint": "Shift", "ButtonHint": "↓"},
 	{"ThrowHint": "Shift", "TargetHint": "ON"},
