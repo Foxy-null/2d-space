@@ -128,6 +128,13 @@ layer = -10
 [node name="Stars" type="Node2D" parent="Background"]
 script = ExtResource("background")
 
+[node name="TargetMarker" type="Line2D" parent="."]
+z_index = 5
+points = PackedVector2Array(0, -46, 46, 0, 0, 46, -46, 0, 0, -46)
+width = 4.0
+default_color = Color(1, 0.9, 0.55, 1)
+antialiased = true
+
 [node name="Rooms" type="Node2D" parent="."]
 
 
@@ -159,7 +166,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room1"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -168,7 +175,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room1"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -328,7 +335,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room2"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -337,7 +344,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room2"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -497,7 +504,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room3"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -506,7 +513,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room3"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -721,7 +728,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room4"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -730,7 +737,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room4"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -924,7 +931,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room5"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -933,7 +940,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room5"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1093,7 +1100,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room6"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1102,7 +1109,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room6"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1276,7 +1283,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room7"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1285,7 +1292,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room7"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1445,7 +1452,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room8"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1454,7 +1461,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room8"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1628,7 +1635,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room9"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1637,7 +1644,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room9"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1808,7 +1815,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room10"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1817,7 +1824,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room10"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1991,7 +1998,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room11"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -2000,7 +2007,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room11"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -2264,7 +2271,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 [node name="EntranceLabel" type="Label" parent="Rooms/Room12"]
 offset_left = 24.0
 offset_top = 650.0
-text = "復帰地点：この部屋の入口"
+text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -2273,7 +2280,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room12"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "番号順に反射して解錠"
+text = "0 / 0"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -2526,7 +2533,7 @@ position = Vector2(640, 360)
 [node name="Info" type="PanelContainer" parent="HUD"]
 offset_left = 24.0
 offset_top = 16.0
-offset_right = 920.0
+offset_right = 700.0
 offset_bottom = 100.0
 mouse_filter = 2
 

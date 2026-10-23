@@ -8,7 +8,6 @@ signal activated
 
 const TRAVEL := 32.0
 const PRESS_TIME := 0.2
-const BUBBLE := Vector2(-125, -230)
 const INK := Color(0.055, 0.09, 0.17)
 const GOLD := Color(1, 0.8, 0.22)
 const CYAN := Color(0.35, 0.92, 1)
@@ -24,11 +23,13 @@ var _pressed := false
 var _step := "jump"
 var _unlock_fx := 1.0
 var _unlock_tween: Tween
+var _hint_occluded := false
 
 @onready var cap: AnimatableBody2D = $Cap
 
 
 func _ready() -> void:
+	set_hints_visible(false)
 	if not mission_required:
 		locked = false
 		$Case/Collision.disabled = true
@@ -40,7 +41,7 @@ func _ready() -> void:
 
 func set_progress(remaining: int, total: int, step: String, objective: String, cleared: bool = false) -> void:
 	_step = step
-	$Bubble/Progress.text = "クリア！" if cleared else "のこり %d/%d" % [remaining, total]
+	$Bubble/Progress.text = "完了 ✓" if cleared else ("のこり %d/%d" % [remaining, total] if remaining > 0 else "乗ろう ↓")
 	$Bubble/Objective.text = "出口がひらいた！" if cleared else (objective if remaining > 0 else "押せるよ！\nスイッチに乗ろう")
 	var next_locked := remaining > 0 and not cleared
 	if next_locked != locked:
@@ -65,6 +66,18 @@ func set_progress(remaining: int, total: int, step: String, objective: String, c
 		cap.position.y = 0.0
 		$UnlockSound.stop()
 	queue_redraw()
+
+
+func set_hints_visible(value: bool) -> void:
+	$Bubble/Objective.visible = value
+	$Bubble/Progress.add_theme_font_size_override("font_size", 20 if value else 16)
+	$Bubble/Progress.position = Vector2(-130, -69) if value else Vector2(88, -13)
+	$Bubble/Progress.size = Vector2(260, 32) if value else Vector2(86, 30)
+	queue_redraw()
+
+
+func get_hint_rect() -> Rect2:
+	return Rect2(-150, -84, 300, 136) if $Bubble/Objective.visible else Rect2(20, -32, 160, 64)
 
 
 func _physics_process(delta: float) -> void:
@@ -93,8 +106,33 @@ func is_pressed() -> bool:
 
 
 func _process(_delta: float) -> void:
+	var occluded: bool = mission_required and $Bubble.visible and _hint_covers_player()
+	if occluded != _hint_occluded:
+		_hint_occluded = occluded
+		$Bubble.modulate.a = 0.0 if occluded else 1.0
+		queue_redraw()
 	if not locked and _unlock_fx < 1.0:
 		queue_redraw()
+
+
+func _hint_covers_player() -> bool:
+	var bounds: Rect2 = $Bubble.global_transform * get_hint_rect()
+	for player in get_tree().get_nodes_in_group("player"):
+		if _artwork_overlaps(player, bounds):
+			return true
+		var held: Grabbable = player.get_held_object()
+		if held != null and _artwork_overlaps(held, bounds):
+			return true
+	return false
+
+
+func _artwork_overlaps(body: Node2D, bounds: Rect2) -> bool:
+	var sprite := body.get_node("Visuals/Body")
+	if sprite is AnimatedSprite2D:
+		var size: Vector2 = sprite.sprite_frames.get_frame_texture(sprite.animation, sprite.frame).get_size()
+		return bounds.intersects(sprite.global_transform * Rect2(-size * 0.5, size))
+	var collider: CollisionShape2D = body.get_node("CollisionShape2D")
+	return bounds.intersects(collider.global_transform * collider.shape.get_rect())
 
 
 func _draw() -> void:
@@ -135,14 +173,14 @@ func _draw() -> void:
 			var angle := i * TAU / 7.0
 			var center := Vector2(0, SEAT_Y - CASE_SIZE.y / 2) + Vector2.from_angle(angle) * (30 + 66 * _unlock_fx)
 			_star(center, (1.0 - _unlock_fx) * 8, Color(GOLD, 1.0 - _unlock_fx))
-	if not mission_required or not $Bubble.visible:
+	if not mission_required or not $Bubble.visible or _hint_occluded:
 		return
-	draw_set_transform(BUBBLE)
+	draw_set_transform($Bubble.position)
 	var border := GOLD if locked else Color(0.4, 1, 0.7)
-	_box(Rect2(-150, -84, 300, 144), Color(0.07, 0.12, 0.23, 0.97), border, 16)
-	draw_colored_polygon(PackedVector2Array([Vector2(75, 59), Vector2(98, 59), Vector2(117, 89)]), border)
-	draw_colored_polygon(PackedVector2Array([Vector2(81, 58), Vector2(94, 58), Vector2(111, 80)]), Color(0.07, 0.12, 0.23))
-	draw_set_transform(BUBBLE + Vector2(-110, 5))
+	_box(get_hint_rect(), Color(0.07, 0.12, 0.23, 0.97), border, 12)
+	draw_set_transform($Bubble.position + Vector2(-110, 5))
+	if not $Bubble/Objective.visible:
+		draw_set_transform($Bubble.position + Vector2(54, 0), 0, Vector2.ONE * 0.7)
 	_draw_icon("complete" if _pressed else (_step if locked else "ready"))
 	draw_set_transform(Vector2.ZERO)
 

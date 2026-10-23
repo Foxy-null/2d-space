@@ -86,11 +86,18 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
-	$HUD/Info/Rows/Title.text = "ステージ4　星渡りの回廊　｜　%02d / 06　%s" % [room_index + 1, TITLES[room_index]]
-	$HUD/Info/Rows/Status.text = "相棒の運搬が必須　 ダッシュ：%s　 追加ジャンプ：%d　 復帰：部屋%d" % ["使用可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), room_index + 1]
+	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / 06　%s" % [room_index + 1, TITLES[room_index]]
+	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
 	$HUD/Hint.text = HINTS[room_index]
-	rooms.get_child(room_index).get_node("ExitLabel").text = "ゴール" if completed else ("相棒と進む →" if _carry_requirement_met() else "緑の相棒が必要")
+	var room := rooms.get_child(room_index)
+	var carrying := _carry_requirement_met()
+	room.get_node("ExitLabel").text = "✓" if completed else ("✓ →" if carrying else "○ →")
+	room.get_node("DeliveryIcon").modulate = Color.WHITE if carrying or completed else Color(1, 1, 1, 0.45)
+	var creature: Grabbable = room.get_node("Items/JumpCreature")
+	var prompt: Label = room.get_node("CarryHint")
+	prompt.visible = not completed and not carrying and player.global_position.distance_to(creature.global_position) < 140.0
+	prompt.position = creature.position + Vector2(-65, -85)
 	if room_index == 5 and not completed:
 		var goal: ArrivalSwitch = $Rooms/Room6/Goal
 		var should_lock := not _carry_requirement_met()

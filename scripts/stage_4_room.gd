@@ -40,8 +40,8 @@ func _ready() -> void:
 	exit_top = 500.0
 	_block("Exit", Rect2(1160, exit_top, 120, 40))
 	_block("ExitBarrier", Rect2(1280, 100, 24, 620))
-	_label("Checkpoint", Vector2(45, 667), "CHECKPOINT %02d / 06" % (room_number + 1), Color("81f6c2"), 16)
-	_label("ExitLabel", Vector2(1100, exit_top + 48), "相棒と進む →", Color.WHITE, 16)
+	_label("Checkpoint", Vector2(45, 667), "↺ %02d / 06" % (room_number + 1), Color("81f6c2"), 16)
+	_label("ExitLabel", Vector2(1180, exit_top + 48), "○ →", Color.WHITE, 22)
 	var ceiling := SPIKE.instantiate()
 	ceiling.name = "CeilingSpikes"
 	ceiling.position = Vector2(640, 16)
@@ -82,7 +82,22 @@ func _ready() -> void:
 	creature.name = "JumpCreature"
 	creature.position = Vector2(175, 580)
 	items.add_child(creature)
-	_label("CarryHint", Vector2(45, 130), "相棒を持って出口へ / Shift長押し / 壁登り不可・壁キックと空中ジャンプ＋1", Color("a7f5ac"), 18)
+	_label("CarryHint", Vector2(110, 495), "Shift / ZL・ZR", Color("a7f5ac"), 18)
+	var delivery_icon := Sprite2D.new()
+	delivery_icon.name = "DeliveryIcon"
+	delivery_icon.texture = creature.get_node("Visuals/Body").sprite_frames.get_frame_texture("default", 0)
+	# Keep the final badge clear of the goal and a companion held on its cap.
+	delivery_icon.position = Vector2(1220, exit_top - (250 if room_number == 5 else 65))
+	delivery_icon.scale = Vector2.ONE * (42.0 / delivery_icon.texture.get_width())
+	add_child(delivery_icon)
+	var delivery_frame := Line2D.new()
+	delivery_frame.name = "DeliveryFrame"
+	delivery_frame.position = delivery_icon.position
+	delivery_frame.points = PackedVector2Array([Vector2(-32, -30), Vector2(32, -30), Vector2(32, 30), Vector2(-32, 30)])
+	delivery_frame.closed = true
+	delivery_frame.width = 3.0
+	delivery_frame.default_color = Color("a7f5ac")
+	add_child(delivery_frame)
 	if room_number == 5:
 		var goal := GOAL.instantiate()
 		goal.name = "Goal"
