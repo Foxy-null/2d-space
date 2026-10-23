@@ -133,8 +133,21 @@ func _run() -> void:
 	tutorial.call("_transition_to", 16)
 	await _step(40)
 	_check(tutorial.room_index == 16 and tutorial.player.controls_enabled, "Optional room 17 must still be playable")
+	await _joy_button(JOY_BUTTON_A)
+	_check(current_scene == tutorial and tutorial.player.velocity.y < 0, "A/× actually jumps in optional practice after completion")
+	await _step(50)
+	var direction := InputEventJoypadButton.new()
+	direction.button_index = JOY_BUTTON_DPAD_RIGHT
+	direction.pressed = true
+	Input.parse_input_event(direction)
+	await _step()
 	await _joy_button(JOY_BUTTON_B)
 	_check(current_scene == tutorial, "The dash button must not return to stage selection")
+	await _joy_button(JOY_BUTTON_A)
+	direction = direction.duplicate()
+	direction.pressed = false
+	Input.parse_input_event(direction)
+	_check(current_scene == tutorial and tutorial.seen.has("superdash") and tutorial.player.velocity.y < 0, "Pad Dash then Jump continues the actual Superdash practice")
 	await _joy_button(JOY_BUTTON_START)
 	_check(current_scene == tutorial and tutorial.room_index == 16, "Start must still retry the current room")
 	await _key(KEY_ESCAPE)
