@@ -11,6 +11,8 @@
 - Godot 4.7.2 Stable（Standard版）、Git
 - Godotに `project.godot` をインポートし、`F5` で実行します。
 
+埋め込み実行の表示を広げたい場合は、Game画面右上のサイズ設定で「Keep Aspect Ratio」を選びます。単独実行・書き出し版では、F11またはステージ選択・ポーズメニューのボタンで全画面へ切り替えられ、次回起動時にウィンドウサイズと全画面状態を復元します。詳しくは[画面表示](docs/display-settings.md)を参照してください。
+
 ## スタート画面
 
 F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galaxy」のユーザー提供ロゴとSTARTを表示します。STARTのクリック、Enter／Space、ゲームパッドA／×でステージ選択へ進みます。選択画面の「タイトルに戻る」、Esc／Back・Selectでスタート画面へ戻れます。
@@ -45,9 +47,9 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ## ステージ3：壁キックと重力
 
-壁キックと重力反転を使う6部屋の本編ステージです。1部屋目はSpringから張り出しを交互の壁キックで越え、重力反転・天井のSpringへ、2部屋目は天井側の反発板から壁への掴み替えへつなぎます。3〜6部屋目は後半にも天井の穴があり、空中ジャンプのクリスタル、縦風と移動ゲート、短い足場のSpring、向かい風と横移動ゲートを、それぞれ違う経路で使います。ダッシュと壁登りは最初から使え、全6部屋をダッシュなしでも攻略できます。
+壁キックと重力反転を使う6部屋の本編ステージです。1部屋目はSpringから張り出しを交互の壁キックで越え、重力反転・天井のSpringへ、2部屋目は天井の穴を跳び、反転中に下側へ壁を渡って休める足場と反発板へつなぎます。3〜6部屋目は後半にも天井の穴があり、空中ジャンプのクリスタル、縦風と移動ゲート、短い足場のSpring、向かい風と横移動ゲートを、それぞれ違う経路で使います。ダッシュと壁登りは最初から使え、全6部屋をダッシュなしでも攻略できます。
 
-各部屋は1280×720の固定カメラで、到着台を押すと出口が開きます。3〜6部屋目には床の落とし穴もあり、クリア後は床の穴を埋める足場が現れます。穴の縁はオレンジ色で示します。落下やR / Startでその部屋の入口へ戻り、重力・ダッシュ・スタミナと移動ゲートをリセットします。開いた出口は、そのプレイ中は開いたままです。6部屋目のクリア後も前の部屋へ戻って練習できます。
+各部屋は1280×720の固定カメラで、到着台を押すと出口が開きます。2〜6部屋目には床の落とし穴もあり、クリア後は床の穴を埋める足場が現れます。穴の縁はオレンジ色で示します。落下やR / Startでその部屋の入口へ戻り、重力・ダッシュ・スタミナと移動ゲートをリセットします。開いた出口は、そのプレイ中は開いたままです。6部屋目のクリア後も前の部屋へ戻って練習できます。
 
 経路の矢印と説明文は初期状態で非表示です。「ポーズ [Esc]」またはEsc／Back・Selectで開く共通メニューから、説明文と経路の矢印を表示・非表示にできます。切り替え後もポーズを維持し、設定は部屋移動ややり直しでも保ちます。選択画面から入り直すと説明文と経路の矢印は非表示に戻ります。壁スタミナはチュートリアルと同じゲージで表示します。部屋番号・タイトル・ポーズの入口と、ゲージ・ダッシュ・空中ジャンプの表示は、通常重力では画面上側、反転中は下側へ同時に移ります。開いたメニュー自体は常に画面中央に表示します。
 
@@ -269,6 +271,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/gravity_wall_jump_route_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/gravity_room_two_terrain_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/corridor_companion_route_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/corridor_islands_route_test.gd

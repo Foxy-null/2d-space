@@ -30,6 +30,13 @@ func _run() -> void:
 	check(InputMap.action_get_events("pause_game").size() == pause_defaults.size(), "Missing pause setting keeps its project default count")
 	for event in pause_defaults:
 		check(InputMap.action_has_event("pause_game", event), "Missing pause setting keeps its project default event")
+	var fullscreen := InputEventKey.new()
+	fullscreen.physical_keycode = KEY_F11
+	legacy_config.set_value("bindings", "move_left", [fullscreen])
+	check(legacy_config.save(settings.save_path) == OK, "Old F11 binding fixture is saved")
+	settings.load_settings()
+	check(not InputMap.action_has_event("move_left", fullscreen), "F11 is reserved when loading old bindings")
+	check(settings.keyboard_events("move_left")[0].physical_keycode == KEY_A, "Reserving a sole F11 binding restores playable keyboard defaults")
 	var pad_before: Array = []
 	for event in InputMap.action_get_events("move_left"):
 		if not event is InputEventKey:
@@ -44,6 +51,10 @@ func _run() -> void:
 	check(settings.waiting_action == "" and settings.panel.visible, "Esc cancels capture without closing")
 	check(settings.keyboard_events("move_left")[0].physical_keycode == KEY_A, "Cancel preserves binding")
 	settings._wait("move_left", 0)
+	fullscreen.keycode = KEY_F11
+	fullscreen.pressed = true
+	settings._input(fullscreen)
+	check(settings.waiting_action == "move_left", "F11 cannot be captured as a gameplay binding")
 	var key := InputEventKey.new()
 	key.keycode = KEY_J
 	key.physical_keycode = KEY_J

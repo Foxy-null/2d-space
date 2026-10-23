@@ -95,7 +95,7 @@ func _run() -> void:
 		if index >= 2:
 			await _fall_into_pit([0, 0, 350, 620, 470, 340][index])
 		if index > 0:
-			await _fall_into_ceiling_pit([0, 500, 330, 320, 330, 530][index])
+			await _fall_into_ceiling_pit([0, 460, 330, 320, 330, 530][index])
 			await _fall_into_ceiling_pit([0, 950, 700, 850, 920, 950][index])
 		actions.clear()
 		flips.clear()
@@ -108,8 +108,7 @@ func _run() -> void:
 				await _until(func(): return actions.has("return_spring"), 160, "The first room's kicks enter Up gravity and its ceiling Spring")
 				await _until(func(): return player.gravity_direction == 1, 100, "The ceiling Spring passes through Down gravity before the arrival switch")
 			1:
-				await _cross_ceiling_pit(500, 600)
-				await _kick_pair(true, 0)
+				await _room_two_wall_course()
 				_drive("move_right")
 				await _until(func(): return actions.has("bumper"), 180, "The actual ceiling route rebounds from the pinball spring")
 				await _kick_gate(1060, 1, "", true)
@@ -383,6 +382,25 @@ func _room_one_wall_course(land_on_cap: bool = false, takeoffs := Vector4(548, 4
 		await _until(func(): return _x() > 626, 90, "Cross above the right wall")
 		_release_inputs()
 		await _until(func(): return player.is_on_floor() and _x() > 640 and _x() < 680, 120, "Land on the right wall cap before the gravity gate")
+
+
+func _room_two_wall_course(takeoffs := Vector2(280, 560)) -> void:
+	await _cross_ceiling_pit(460, 560)
+	_drive("move_right")
+	await _until(func(): return player.is_on_wall() and player.is_on_floor() and _x() > 550, 100, "Reach the second room's inverted wall")
+	await _jump()
+	await _step(10)
+	_drive("move_left", true, true)
+	await _until(func(): return player.is_wall_grabbing() and player.position.y > takeoffs.x, 100, "Descend above the landing's projection")
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _x() < 500 and player.position.y > 370, 130, "Kick below the left step without resting on its spikes")
+	await _until(func(): return player.position.y > takeoffs.y, 120, "Descend toward the open floor before the return kick")
+	_drive("move_right", true, true)
+	await _jump()
+	_drive("move_right")
+	await _until(func(): return _x() > 643, 100, "Clear the lower wall tip before braking")
+	_release_inputs()
+	await _until(func(): return player.is_on_floor() and _x() > 635 and _x() < 715, 140, "Rest on the safe underside after both wall transfers")
 
 
 func _kick_pair(inverted: bool, shift: int, spring_launch := false) -> void:

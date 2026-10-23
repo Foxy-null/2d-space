@@ -130,6 +130,11 @@ custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 text = "チェックポイントからやり直す"
 
+[node name="Fullscreen" type="Button" parent="Overlay/Center/Panel/Rows/Menu"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+text = "全画面 [F11]"
+
 [node name="Return" type="Button" parent="Overlay/Center/Panel/Rows/Menu"]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
