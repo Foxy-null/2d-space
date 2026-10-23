@@ -62,6 +62,7 @@ func _transition_to_next() -> void:
 
 
 func _on_respawned() -> void:
+	$Rooms/Room6/Goal.reset_for_respawn()
 	for item in rooms.get_child(room_index).get_node("Items").get_children():
 		item.reset_for_respawn()
 	for room in rooms.get_children():

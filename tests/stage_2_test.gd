@@ -55,11 +55,16 @@ func _run() -> void:
 	await _step(20)
 	_check(player.is_on_floor(), "Spawn is on a safe platform")
 	_check_signage()
-	# テレポートなしで全区間を通過し、バネ区間だけは配置されたバネを使う。
+	# テレポートなしで全区間を通過し、バネとダッシュの区間では主題の経路を使う。
 	for section in 6:
 		if section == 1:
 			await _spring_course()
 			_check(stage.checkpoint_index == 2, "The spring route reaches the next checkpoint")
+			_check_signage()
+			continue
+		if section == 2:
+			await _dash_course()
+			_check(stage.checkpoint_index == 3, "The dash chain reaches checkpoint 04")
 			_check_signage()
 			continue
 		var xs: Array = [620, 360, 620, 900] if section % 2 == 0 else [640, 900, 640, 360]
@@ -197,3 +202,64 @@ func _spring_course() -> void:
 	var seconds := (Engine.get_physics_frames() - started) / 60.0
 	_check(seconds <= 30, "The spring retry section stays below 30 seconds")
 	print("TOWER_SPRING_ROUTE_SECONDS %.2f respawns=%d position=%s" % [seconds, respawns, player.position])
+
+
+func _dash_course() -> void:
+	var started := Engine.get_physics_frames()
+	await _dash_launch()
+	_release()
+	Input.action_press("move_up")
+	for name in ["Item3", "Item4"]:
+		Input.action_press("dash")
+		await _step()
+		Input.action_release("dash")
+		for frame in 60:
+			await _step()
+			if not stage.get_node("Items/" + name).visible and not player.is_dashing():
+				break
+		_check(not stage.get_node("Items/" + name).visible, "A refilled upward dash reaches " + name)
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	for frame in 120:
+		if not player.is_dashing():
+			Input.action_press("move_right")
+			Input.action_press("wall_grab")
+		await _step()
+		if stage.checkpoint_index == 3:
+			break
+	_release()
+	_check(stage.checkpoint_index == 3, "The fourth dash reaches checkpoint 04")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The dash chain stays below 30 seconds")
+	print("TOWER_DASH_ROUTE_SECONDS %.2f respawns=%d position=%s" % [seconds, respawns, player.position])
+
+
+func _dash_launch() -> void:
+	_release()
+	await _step(12)
+	Input.action_press("move_right")
+	for frame in 60:
+		if player.position.x >= 450:
+			break
+		await _step()
+	_release()
+	await _step(12)
+	Input.action_press("move_right")
+	Input.action_press("jump")
+	await _step()
+	Input.action_release("jump")
+	await _step(26)
+	Input.action_press("move_up")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	for frame in 60:
+		await _step()
+		if not stage.get_node("Items/Item2").visible and not player.is_dashing():
+			break
+	_check(not stage.get_node("Items/Item2").visible, "The launch dash reaches the first crystal")
+	for frame in 30:
+		if player.position.x >= 740:
+			break
+		await _step()

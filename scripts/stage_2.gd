@@ -6,7 +6,7 @@ const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの
 const HINTS := [
 	"Shiftで壁を掴み、上へ登ってから反対の壁へキック。小さな足場で休憩できます。",
 	"緑のバネで上昇。跳んだ先の壁を掴んで次の足場へ。",
-	"空中の緑のクリスタルでダッシュ回復。斜め上のダッシュをつなごう。",
+	"空中の緑のクリスタルでダッシュ回復。上へのダッシュをつなごう。",
 	"紫のクリスタルで空中ジャンプを追加。上昇が止まるころにもう一度ジャンプ。",
 	"緑の生物をShiftで保持すると追加ジャンプ。壁を掴むときは生物を手放そう。",
 	"バネ・クリスタル・壁キックをつないで頂上の到着台へ。",
@@ -83,6 +83,7 @@ func _draw_checkpoint(canvas: Node2D, index: int) -> void:
 
 
 func _on_respawned() -> void:
+	$Goal.reset_for_respawn()
 	for crystal in $Items.get_children():
 		if crystal.has_method("reset_for_respawn") and not crystal is Grabbable:
 			crystal.reset_for_respawn()
