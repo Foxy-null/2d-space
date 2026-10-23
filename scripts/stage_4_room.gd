@@ -9,6 +9,8 @@ const GOAL = preload("res://scenes/arrival_switch.tscn")
 @export_range(0, 5) var room_number := 0
 var walls: Array[Rect2] = []
 var exit_top := 500.0
+var entrance_top := 620.0
+var room_height := 720.0
 
 
 func _ready() -> void:
@@ -18,14 +20,17 @@ func _ready() -> void:
 	var hazards := Node2D.new()
 	hazards.name = "Hazards"
 	add_child(hazards)
-	_block("LeftWall", Rect2(0, 100, 36, 620))
-	_block("Entrance", Rect2(36, 620, 184, 40))
+	if room_number == 1:
+		entrance_top = 1700.0
+		room_height = 1800.0
+	_block("LeftWall", Rect2(0, 100, 36, room_height - 100))
+	_block("Entrance", Rect2(36, entrance_top, 184, 40))
 	# Each route has its own silhouette and movement problem.
 	match room_number:
 		0: # Jumping from the companion before grabbing it also cannot reach this landing.
 			walls = [Rect2(370, 200, 450, 24), Rect2(960, 360, 120, 32)]
 		1: # Wall-kick shaft and high-to-low transfers.
-			walls = [Rect2(270, 300, 40, 420), Rect2(550, 430, 100, 32), Rect2(800, 310, 40, 390), Rect2(1040, 440, 80, 32)]
+			walls = [Rect2(270, 300, 240, 1500), Rect2(550, 430, 100, 32), Rect2(800, 310, 40, 390), Rect2(1040, 440, 80, 32)]
 		2: # Covered low crossing.
 			walls = [Rect2(300, 580, 150, 32), Rect2(570, 550, 160, 32), Rect2(850, 580, 150, 32)]
 			_block("LowRoof", Rect2(250, 260, 800, 45))
@@ -39,9 +44,9 @@ func _ready() -> void:
 		_block("Platform%d" % get_child_count(), rect, room_number == 0)
 	exit_top = 500.0
 	_block("Exit", Rect2(1160, exit_top, 120, 40))
-	_block("ExitBarrier", Rect2(1280, 100, 24, 620))
+	_block("ExitBarrier", Rect2(1280, 100, 24, room_height - 100))
 	if room_number != 0:
-		_label("Checkpoint", Vector2(45, 667), "↺ %02d / 06" % (room_number + 1), Color("81f6c2"), 16)
+		_label("Checkpoint", Vector2(45, entrance_top + 47), "↺ %02d / 06" % (room_number + 1), Color("81f6c2"), 16)
 	_label("ExitLabel", Vector2(1180, exit_top + 48), "○ →", Color.WHITE, 22)
 	var ceiling := SPIKE.instantiate()
 	ceiling.name = "CeilingSpikes"
@@ -57,7 +62,7 @@ func _ready() -> void:
 		1:
 			_spike(Vector2(150, 320), Vector2(0, 190), 3.6, 0.4)
 			_spike(Vector2(700, 230), Vector2(0, 260), 3.8, 0.0)
-			_spike(Vector2(430, 200), Vector2(0, 260), 4.1, 0.5)
+			_spike(Vector2(530, 200), Vector2(0, 260), 4.1, 0.5)
 			_spike(Vector2(940, 120), Vector2(0, 380), 4.3, 0.25)
 		2:
 			_spike(Vector2(480, 410), Vector2(0, 160), 3.4, 0.0)
@@ -81,7 +86,7 @@ func _ready() -> void:
 			_spike(Vector2(710, 180), Vector2(0, 300), 4.5, 0.4)
 	var creature := CREATURE.instantiate()
 	creature.name = "JumpCreature"
-	creature.position = Vector2(175, 580)
+	creature.position = Vector2(175, entrance_top - 40)
 	items.add_child(creature)
 	_label("CarryHint", Vector2(110, 495), "Shift / ZL・ZR", Color("a7f5ac"), 18)
 	var delivery_icon := Sprite2D.new()

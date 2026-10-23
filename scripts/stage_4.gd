@@ -32,19 +32,25 @@ func _ready() -> void:
 	_update_hud()
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if transitioning:
 		return
 	var local_x := player.position.x - room_index * ROOM_WIDTH
-	if player.position.y < -52 or player.position.y > 772 or local_x < -24:
+	if player.position.y < -52 or player.position.y > rooms.get_child(room_index).room_height + 52 or local_x < -24:
 		player.respawn()
 	elif local_x >= 1260 and room_index < 5 and player.is_on_floor() and _carry_requirement_met():
 		_transition_to_next()
+	camera.position.y = lerpf(camera.position.y, _camera_position().y, 1.0 - exp(-8.0 * delta))
 	_update_hud()
 
 
 func _set_checkpoint() -> void:
-	player.set_respawn_position(Vector2(room_index * ROOM_WIDTH + 110, 594))
+	player.set_respawn_position(Vector2(room_index * ROOM_WIDTH + 110, rooms.get_child(room_index).entrance_top - 26))
+
+
+func _camera_position() -> Vector2:
+	var bottom: float = rooms.get_child(room_index).room_height - 360.0
+	return Vector2(room_index * ROOM_WIDTH + 640, clampf(player.position.y - 80.0, 360.0, bottom))
 
 
 func _transition_to_next() -> void:
@@ -54,7 +60,7 @@ func _transition_to_next() -> void:
 	_set_checkpoint()
 	player.respawn()
 	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(camera, "position", Vector2(room_index * ROOM_WIDTH + 640, 360), 0.28)
+	tween.tween_property(camera, "position", _camera_position(), 0.28)
 	await tween.finished
 	transitioning = false
 	player.controls_enabled = true
@@ -69,7 +75,7 @@ func _on_respawned() -> void:
 		for spike in room.get_node("Hazards").get_children():
 			spike.reset_for_respawn()
 	if not transitioning:
-		camera.position = Vector2(room_index * ROOM_WIDTH + 640, 360)
+		camera.position = _camera_position()
 		camera.reset_smoothing()
 
 
@@ -87,7 +93,7 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
-	$HUD/Info.position.y = 620.0 if room_index == 0 else 40.0
+	$HUD/Info.position = Vector2(580, 620) if room_index == 1 else Vector2(24, 620 if room_index == 0 else 40)
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / 06　%s" % [room_index + 1, TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()

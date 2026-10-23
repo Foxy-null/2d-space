@@ -75,5 +75,11 @@ func reset_for_respawn() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
-	if body.has_method("set_gravity_direction"):
-		body.set_gravity_direction(target_gravity)
+	if not body is PlayerController:
+		return
+	# Enter notifications can arrive after retry; retain the player’s last swept contact.
+	var body_shape: CollisionShape2D = body.get_node("CollisionShape2D")
+	var previous_motion: Vector2 = -body.get_environment_velocity() * get_physics_process_delta_time()
+	if not $CollisionShape2D.shape.collide_with_motion($CollisionShape2D.global_transform, Vector2.ZERO, body_shape.shape, body_shape.global_transform, previous_motion):
+		return
+	body.set_gravity_direction(target_gravity)
