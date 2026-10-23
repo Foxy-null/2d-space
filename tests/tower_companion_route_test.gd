@@ -22,6 +22,7 @@ func _run() -> void:
 	var screenshots := OS.get_cmdline_user_args().has("--screenshots")
 	if not screenshots:
 		await _bypasses()
+		await _previous_boot_bypasses()
 		await _carry_fall()
 	for jump_delay in ([20] if screenshots else [16, 20, 24]):
 		for dash_delay in ([20] if screenshots else [16, 20, 24]):
@@ -186,3 +187,75 @@ func _step(count: int = 1) -> void:
 	if is_instance_valid(player) and not captured_rest and player.is_on_floor() and absf(player.position.y + 2696) < 2:
 		captured_rest = true
 		_capture("rest")
+
+
+func _previous_boot_bypasses() -> void:
+	await _previous_boot_return()
+	for approach in ["walk", "jump", "step"]:
+		for direction in _directions():
+			for dash_frame in [-1, 0, 12, 20, 28, 40]:
+				await _previous_boot_attempt(approach, direction, dash_frame)
+		print("TOWER_COMPANION_PREVIOUS_BOOT approach=%s: 48 attempts" % approach)
+
+
+func _previous_boot_attempt(approach: String, direction: Vector2, dash_frame: int) -> void:
+	await _enter()
+	if approach == "step":
+		await _stand_on_companion()
+	if approach != "walk":
+		await _pulse("jump")
+	var returned_with_boot := false
+	var picked_boot := false
+	var return_dash := false
+	for frame in 240:
+		_set_direction(Vector2(-1 if picked_boot else 1, 0))
+		if player.position.distance_to(companion.position) > 110:
+			Input.action_press("wall_grab")
+		else:
+			Input.action_release("wall_grab")
+		if not picked_boot and frame == dash_frame:
+			_set_direction(direction)
+			await _pulse("dash")
+		if player.is_air_jump_ready():
+			picked_boot = true
+			if player.is_dash_ready() and not return_dash:
+				return_dash = true
+				_set_direction(Vector2.UP)
+				await _pulse("dash")
+		await _step()
+		if respawns > 0:
+			break
+		returned_with_boot = returned_with_boot or (picked_boot and player.is_on_floor() and absf(player.position.y + 2266) < 2 and absf(player.position.x - 360) < 130)
+	_check(not returned_with_boot and companion_jumps == 0, "Returning from the previous boot cannot supply the companion lesson: approach=%s direction=%s frame=%d" % [approach, direction, dash_frame])
+	_release()
+
+
+func _previous_boot_return() -> void:
+	await _enter()
+	Input.action_press("move_right")
+	for frame in 120:
+		if player.position.x >= stage.get_node("Items/Item6").position.x - 5 or respawns > 0:
+			break
+		await _step()
+	_release()
+	for frame in 100:
+		if player.is_air_jump_ready() or respawns > 0:
+			break
+		await _step()
+	if respawns == 0 and player.is_air_jump_ready():
+		Input.action_press("move_up")
+		await _pulse("dash")
+		for frame in 150:
+			if not player.is_dashing():
+				Input.action_release("move_up")
+				if player.position.x > 455:
+					Input.action_press("move_left")
+				else:
+					Input.action_release("move_left")
+			await _step()
+			if respawns > 0 or (player.is_on_floor() and player.position.y < -2240):
+				break
+	var returned := respawns == 0 and player.is_on_floor() and absf(player.position.y + 2266) < 2 and player.is_air_jump_ready()
+	print("TOWER_COMPANION_PREVIOUS_BOOT reviewed_drop returned=%s respawns=%d" % [returned, respawns])
+	_check(not returned, "The reviewed drop-to-boot and upward-dash return cannot preserve an unused boot on CP05")
+	_release()

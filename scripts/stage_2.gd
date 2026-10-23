@@ -51,9 +51,14 @@ func _physics_process(delta: float) -> void:
 	var checkpoint_y: float = checkpoints.get_child(checkpoint_index).position.y
 	if player.position.y > minf(checkpoint_y + 180.0, peak_y + SECTION_HEIGHT - 80.0):
 		player.respawn()
-	var target_y := clampf(player.position.y - 80.0, -3920.0, 360.0)
+	var target_y := _camera_target_y()
 	camera.position.y = lerpf(camera.position.y, target_y, 1.0 - exp(-8.0 * delta))
 	_update_hud()
+
+
+func _camera_target_y() -> float:
+	# 右端の休憩足場を、ポーズボタンの下に見せる。
+	return clampf(player.position.y - (120.0 if checkpoint_index == 3 else 80.0), -3920.0, 360.0)
 
 
 func _set_checkpoint(index: int) -> void:
@@ -88,7 +93,7 @@ func _on_respawned() -> void:
 		if crystal.has_method("reset_for_respawn") and not crystal is Grabbable:
 			crystal.reset_for_respawn()
 	peak_y = player.position.y
-	camera.position = Vector2(640, clampf(player.position.y - 80.0, -3920.0, 360.0))
+	camera.position = Vector2(640, _camera_target_y())
 	camera.reset_smoothing()
 
 

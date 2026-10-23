@@ -205,9 +205,10 @@ polygon = PackedVector2Array(-120, -16, 120, -16, 120, 16, -120, 16)
 color = Color(0.10, 0.29, 0.32, 1)
 
 [node name="S4L1" type="StaticBody2D" parent="Terrain"]
-position = Vector2(570, -1952)
+position = Vector2(1130, -1952)
 [node name="Collision" type="CollisionShape2D" parent="Terrain/S4L1"]
 shape = SubResource("Shape_S4L1")
+one_way_collision = true
 [node name="Body" type="Polygon2D" parent="Terrain/S4L1"]
 script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-150, -8, 150, -8, 150, 8, -150, 8)
@@ -217,6 +218,7 @@ color = Color(0.10, 0.16, 0.29, 1)
 position = Vector2(360, -2224)
 [node name="Collision" type="CollisionShape2D" parent="Terrain/S4L4"]
 shape = SubResource("Shape_S4L4")
+one_way_collision = true
 [node name="Body" type="Polygon2D" parent="Terrain/S4L4"]
 script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-120, -16, 120, -16, 120, 16, -120, 16)
@@ -352,7 +354,7 @@ position = Vector2(740, -1420)
 position = Vector2(950, -1630)
 
 [node name="Item6" parent="Items" instance=ExtResource("5")]
-position = Vector2(590, -2070)
+position = Vector2(960, -2070)
 
 [node name="Item11" parent="Items" instance=ExtResource("6")]
 position = Vector2(640, -3140)

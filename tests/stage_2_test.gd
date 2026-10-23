@@ -284,7 +284,7 @@ func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
 	for leg in 2:
 		_release()
 		await _step(12)
-		var launch_x := 950.0 if leg == 0 else 650.0
+		var launch_x := 950.0 if leg == 0 else 970.0
 		for frame in 90:
 			var dx := launch_x - player.position.x
 			if absf(dx) < 10:
@@ -293,16 +293,16 @@ func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
 			Input.action_release("move_right")
 			Input.action_press("move_right" if dx > 0 else "move_left")
 			await _step()
-		_release()
-		await _step(12)
-		Input.action_press("move_left")
+		if leg == 0:
+			_release()
+			await _step(12)
+		Input.action_press("move_left" if leg == 1 else "move_right")
 		Input.action_press("jump")
 		await _step()
 		Input.action_release("jump")
-		var stop_x := 835.0 if leg == 0 else 550.0
 		for frame in jump_delay:
-			if player.position.x <= stop_x:
-				Input.action_release("move_left")
+			if leg == 0:
+				Input.action_release("move_right")
 			await _step()
 		var crystal := stage.get_node("Items/Item%d" % (5 + leg))
 		_check(not crystal.visible and player.is_air_jump_ready(), "The first jump collects the visible boot")
@@ -310,15 +310,16 @@ func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
 		await _step()
 		Input.action_release("jump")
 		for frame in dash_delay:
-			if player.position.x <= stop_x:
-				Input.action_release("move_left")
+			if leg == 0:
+				Input.action_release("move_right")
 			await _step()
-		_release()
+		if leg == 0:
+			_release()
 		Input.action_press("move_up")
 		Input.action_press("dash")
 		await _step()
 		Input.action_release("dash")
-		var target := Vector2(650, -1986) if leg == 0 else Vector2(350, -2266)
+		var target := Vector2(1100, -1986) if leg == 0 else Vector2(350, -2266)
 		for frame in 150:
 			if not player.is_dashing():
 				var dx := target.x - player.position.x
