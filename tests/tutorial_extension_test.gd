@@ -237,7 +237,13 @@ func _combo_course() -> void:
 
 func _glider_combo_course() -> void:
 	await _grab("Parachute")
-	await _walk_goal()
+	# Continue through DownGate; stopping left of the goal leaves gravity inverted.
+	for frame in 600:
+		if tutorial.cleared.has(15):
+			break
+		await _step()
+	_release()
+	await _step(2)
 	_check(tutorial.seen.has("wind_lift") and tutorial.seen.has("inverted_glide"), "Real updraft and gravity reversal work with the held parachute")
 
 
@@ -336,7 +342,7 @@ func _room() -> Node:
 
 
 func _local() -> Vector2:
-	return player.global_position - Vector2(tutorial.room_index * 1280, 0)
+	return player.global_position - _room().global_position
 
 
 func _pulse(action: String) -> void:
