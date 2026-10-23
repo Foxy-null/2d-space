@@ -121,7 +121,7 @@ size = Vector2(340, 80)
 size = Vector2(510, 20)
 
 [sub_resource type="RectangleShape2D" id="Shape_5_Landing"]
-size = Vector2(430, 80)
+size = Vector2(540, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_6_ExitBarrier"]
 size = Vector2(28, 720)
@@ -952,7 +952,7 @@ polygon = PackedVector2Array(-255.0, -10.0, 255.0, -10.0, 255.0, 10.0, -255.0, 1
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Landing" type="StaticBody2D" parent="Rooms/Room5"]
-position = Vector2(1065.0, 680.0)
+position = Vector2(1010.0, 680.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/Landing"]
@@ -960,11 +960,11 @@ shape = SubResource("Shape_5_Landing")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/Landing"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-215.0, -40.0, 215.0, -40.0, 215.0, 40.0, -215.0, 40.0)
+polygon = PackedVector2Array(-270.0, -40.0, 270.0, -40.0, 270.0, 40.0, -270.0, 40.0)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="DashCrystal" parent="Rooms/Room5" instance=ExtResource("6_crystal")]
-position = Vector2(550, 510)
+position = Vector2(510, 510)
 
 
 [node name="JumpHint" type="Label" parent="Rooms/Room5"]
@@ -976,7 +976,7 @@ text = "Space → X\nA / × → B / ○"
 mouse_filter = 2
 
 [node name="RefillHint" type="Label" parent="Rooms/Room5"]
-offset_left = 505
+offset_left = 465
 offset_top = 335
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
@@ -985,7 +985,7 @@ mouse_filter = 2
 
 [node name="RecoveryHint" type="Label" parent="Rooms/Room5"]
 offset_left = 405
-offset_top = 667
+offset_top = 617
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "↻  R / Start"
