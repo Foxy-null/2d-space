@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3]
+[gd_scene load_steps=36 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -16,10 +16,10 @@
 [ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="8"]
 
 [sub_resource type="RectangleShape2D" id="Shape_LeftBoundary"]
-size = Vector2(28, 3340)
+size = Vector2(28, 2620)
 
 [sub_resource type="RectangleShape2D" id="Shape_RightBoundary"]
-size = Vector2(28, 3340)
+size = Vector2(28, 2620)
 
 [sub_resource type="RectangleShape2D" id="Shape_StartFloor"]
 size = Vector2(1040, 70)
@@ -45,17 +45,8 @@ size = Vector2(300, 32)
 [sub_resource type="RectangleShape2D" id="Shape_S2L4"]
 size = Vector2(240, 190)
 
-[sub_resource type="RectangleShape2D" id="Shape_S3L1"]
-size = Vector2(100, 190)
-
-[sub_resource type="RectangleShape2D" id="Shape_S3L2"]
-size = Vector2(100, 190)
-
-[sub_resource type="RectangleShape2D" id="Shape_S3L3"]
-size = Vector2(100, 190)
-
 [sub_resource type="RectangleShape2D" id="Shape_S3L4"]
-size = Vector2(240, 190)
+size = Vector2(240, 32)
 
 [sub_resource type="RectangleShape2D" id="Shape_S4L1"]
 size = Vector2(100, 190)
@@ -109,21 +100,21 @@ script = ExtResource("3")
 [node name="Terrain" type="Node2D" parent="."]
 
 [node name="LeftBoundary" type="StaticBody2D" parent="Terrain"]
-position = Vector2(130, -2470)
+position = Vector2(130, -2830)
 [node name="Collision" type="CollisionShape2D" parent="Terrain/LeftBoundary"]
 shape = SubResource("Shape_LeftBoundary")
 [node name="Body" type="Polygon2D" parent="Terrain/LeftBoundary"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-14, -1670, 14, -1670, 14, 1670, -14, 1670)
+polygon = PackedVector2Array(-14, -1310, 14, -1310, 14, 1310, -14, 1310)
 color = Color(0.10, 0.16, 0.29, 1)
 
 [node name="RightBoundary" type="StaticBody2D" parent="Terrain"]
-position = Vector2(1150, -2470)
+position = Vector2(1150, -2830)
 [node name="Collision" type="CollisionShape2D" parent="Terrain/RightBoundary"]
 shape = SubResource("Shape_RightBoundary")
 [node name="Body" type="Polygon2D" parent="Terrain/RightBoundary"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-14, -1670, 14, -1670, 14, 1670, -14, 1670)
+polygon = PackedVector2Array(-14, -1310, 14, -1310, 14, 1310, -14, 1310)
 color = Color(0.10, 0.16, 0.29, 1)
 
 [node name="LeftLowerBoundary" type="StaticBody2D" parent="Terrain"]
@@ -216,40 +207,13 @@ script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-120, -95, 120, -95, 120, 95, -120, 95)
 color = Color(0.10, 0.29, 0.32, 1)
 
-[node name="S3L1" type="StaticBody2D" parent="Terrain"]
-position = Vector2(620, -885)
-[node name="Collision" type="CollisionShape2D" parent="Terrain/S3L1"]
-shape = SubResource("Shape_S3L1")
-[node name="Body" type="Polygon2D" parent="Terrain/S3L1"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-50, -95, 50, -95, 50, 95, -50, 95)
-color = Color(0.10, 0.16, 0.29, 1)
-
-[node name="S3L2" type="StaticBody2D" parent="Terrain"]
-position = Vector2(360, -1065)
-[node name="Collision" type="CollisionShape2D" parent="Terrain/S3L2"]
-shape = SubResource("Shape_S3L2")
-[node name="Body" type="Polygon2D" parent="Terrain/S3L2"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-50, -95, 50, -95, 50, 95, -50, 95)
-color = Color(0.10, 0.16, 0.29, 1)
-
-[node name="S3L3" type="StaticBody2D" parent="Terrain"]
-position = Vector2(620, -1245)
-[node name="Collision" type="CollisionShape2D" parent="Terrain/S3L3"]
-shape = SubResource("Shape_S3L3")
-[node name="Body" type="Polygon2D" parent="Terrain/S3L3"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-50, -95, 50, -95, 50, 95, -50, 95)
-color = Color(0.10, 0.16, 0.29, 1)
-
 [node name="S3L4" type="StaticBody2D" parent="Terrain"]
-position = Vector2(900, -1425)
+position = Vector2(900, -1504)
 [node name="Collision" type="CollisionShape2D" parent="Terrain/S3L4"]
 shape = SubResource("Shape_S3L4")
 [node name="Body" type="Polygon2D" parent="Terrain/S3L4"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-120, -95, 120, -95, 120, 95, -120, 95)
+polygon = PackedVector2Array(-120, -16, 120, -16, 120, 16, -120, 16)
 color = Color(0.10, 0.29, 0.32, 1)
 
 [node name="S4L1" type="StaticBody2D" parent="Terrain"]
@@ -422,13 +386,13 @@ position = Vector2(620, -530)
 spring_speed = 1100.0
 
 [node name="Item2" parent="Items" instance=ExtResource("4")]
-position = Vector2(720, -1070)
+position = Vector2(740, -1020)
 
 [node name="Item3" parent="Items" instance=ExtResource("4")]
-position = Vector2(460, -1250)
+position = Vector2(740, -1220)
 
 [node name="Item4" parent="Items" instance=ExtResource("4")]
-position = Vector2(720, -1430)
+position = Vector2(740, -1420)
 
 [node name="Item5" parent="Items" instance=ExtResource("5")]
 position = Vector2(545, -1760)
