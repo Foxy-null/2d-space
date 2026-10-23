@@ -142,7 +142,7 @@ antialiased = true
 position = Vector2(0, 0)
 
 [node name="Entrance" type="StaticBody2D" parent="Rooms/Room1"]
-position = Vector2(90, 620)
+position = Vector2(90, 480)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Entrance"]
 shape = SubResource("EntranceShape")
@@ -165,7 +165,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 
 [node name="EntranceLabel" type="Label" parent="Rooms/Room1"]
 offset_left = 24.0
-offset_top = 650.0
+offset_top = 510.0
 text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
@@ -182,7 +182,7 @@ theme_override_constants/outline_size = 5
 mouse_filter = 2
 
 [node name="Spawn" type="Marker2D" parent="Rooms/Room1"]
-position = Vector2(90, 570)
+position = Vector2(90, 430)
 
 [node name="Winds" type="Node2D" parent="Rooms/Room1"]
 
@@ -276,35 +276,11 @@ points = PackedVector2Array(-16.0, -87, 16.0, -77, -16.0, -67, 16.0, -57, -16.0,
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room1"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room1/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room1"]
 visible = false
 points = PackedVector2Array(300, 600, 820, 560, 1210, 570)
 width = 2.0
 default_color = Color(0.75, 1, 0.85, 0.6)
-antialiased = true
-
-[node name="EntryJumpPath" type="Line2D" parent="Rooms/Room1"]
-z_index = -1
-points = PackedVector2Array(144, 570, 166, 520, 197, 480, 230, 464, 265, 480, 289, 518, 300, 548)
-width = 3.0
-default_color = Color(1, 0.85, 0.4, 0.9)
-antialiased = true
-
-[node name="EntryJumpHead" type="Line2D" parent="Rooms/Room1"]
-z_index = -1
-points = PackedVector2Array(290, 541, 300, 548, 302, 536)
-width = 3.0
-default_color = Color(1, 0.85, 0.4, 0.9)
 antialiased = true
 
 [node name="Room2" type="Node2D" parent="Rooms"]
