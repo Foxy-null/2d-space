@@ -128,6 +128,8 @@ func _course(pause: int, joy_value: float = 0.0) -> void:
 	Input.action_release("move_right")
 	await _step(60)
 	_check(player.is_on_floor() and absf(_local().y - 304) < 2, "The landing provides a safe place to rest")
+	tutorial.seen.clear()
+	tutorial._update_lesson()
 	Input.action_press("move_right")
 	for frame in 180:
 		if tutorial.cleared.has(7):
@@ -139,6 +141,7 @@ func _course(pause: int, joy_value: float = 0.0) -> void:
 			Input.action_press("jump")
 		await _step()
 	_check(tutorial.cleared.has(7) and respawns == 0, "Pressing the real arrival switch completes the single-reflection lesson")
+	_check(not tutorial.seen.has("pinball") and tutorial.cleared.has(7), "Physical arrival opens the exit without a pinball history record")
 	_capture("cleared")
 	Input.action_press("move_right")
 	for frame in 180:

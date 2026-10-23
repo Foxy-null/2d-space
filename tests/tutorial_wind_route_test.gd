@@ -138,6 +138,8 @@ func _outside_dash_bypasses() -> void:
 
 
 func _finish_course() -> void:
+	tutorial.seen.clear()
+	tutorial._update_lesson()
 	Input.action_press("move_right")
 	for frame in 350:
 		if tutorial.cleared.has(8):
@@ -151,6 +153,7 @@ func _finish_course() -> void:
 	_release()
 	await _step(2)
 	_check(tutorial.cleared.has(8) and room.get_node("Goal").is_pressed(), "The natural wind route presses the actual arrival switch")
+	_check(not tutorial.seen.has("wind_dash") and tutorial.cleared.has(8), "Physical arrival opens the exit without a wind_dash history record")
 	_check(room.get_node("ExitBarrier/Collision").disabled, "The completed route opens the exit")
 	Input.action_press("move_right")
 	for frame in 180:

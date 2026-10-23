@@ -599,38 +599,6 @@ script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-65, -40, 65, -40, 65, 40, -65, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
-[node name="PracticeHint" type="Label" parent="Rooms/Room3"]
-offset_left = 40.0
-offset_top = 458.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 20
-text = "X · B / ○"
-mouse_filter = 2
-
-[node name="DashHint" type="Label" parent="Rooms/Room3"]
-offset_left = 315.0
-offset_top = 520.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 20
-text = "Space → X\nA / × → B / ○"
-mouse_filter = 2
-
-[node name="DiagonalHint" type="Label" parent="Rooms/Room3"]
-offset_left = 800.0
-offset_top = 280.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 20
-text = "↗  X · B / ○"
-mouse_filter = 2
-
-[node name="CrystalHint" type="Label" parent="Rooms/Room3"]
-offset_left = 890.0
-offset_top = 485.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 28
-text = "↻"
-mouse_filter = 2
-
 [node name="PreviousHint" type="Label" parent="Rooms/Room3"]
 offset_left = 24.0
 offset_top = 663.0
@@ -817,6 +785,7 @@ text = "目標達成で出口が開く"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room3" instance=ExtResource("14_arrival")]
+mission_required = false
 position = Vector2(1190, 640)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room3"]
@@ -1179,6 +1148,7 @@ text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room8" instance=ExtResource("14_arrival")]
+mission_required = false
 position = Vector2(950, 330)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room8"]
@@ -1254,23 +1224,6 @@ maximum_bounce_speed = 1750.0
 min_impact_normal_speed = 25.0
 
 
-[node name="BounceHint" type="Label" parent="Rooms/Room8"]
-offset_left = 625.0
-offset_top = 450.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 28
-text = "↗"
-mouse_filter = 2
-
-[node name="RecoveryHint" type="Label" parent="Rooms/Room8"]
-visible = false
-offset_left = 415
-offset_top = 668
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 28
-text = "↻"
-mouse_filter = 2
-
 [node name="Room9" type="Node2D" parent="Rooms"]
 position = Vector2(10240, 0)
 
@@ -1291,6 +1244,7 @@ text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room9" instance=ExtResource("14_arrival")]
+mission_required = false
 position = Vector2(1190, 700)
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room9"]
@@ -1349,31 +1303,6 @@ color = Color(0.12, 0.19, 0.34, 1)
 position = Vector2(575, 480)
 area_size = Vector2(450, 480)
 wind_direction = Vector2(-1, 0)
-
-[node name="WalkHint" type="Label" parent="Rooms/Room9"]
-offset_left = 305
-offset_top = 335
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 28
-text = "→ → →"
-mouse_filter = 2
-
-[node name="GrabHint" type="Label" parent="Rooms/Room9"]
-visible = false
-offset_left = 610
-offset_top = 420
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "Shift · ZL / ZR"
-mouse_filter = 2
-
-[node name="DashHint" type="Label" parent="Rooms/Room9"]
-offset_left = 440
-offset_top = 555
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "→ X · B / ○"
-mouse_filter = 2
 
 [node name="Room10" type="Node2D" parent="Rooms"]
 position = Vector2(11520, 0)
