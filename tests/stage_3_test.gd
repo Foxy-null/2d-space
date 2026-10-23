@@ -96,7 +96,8 @@ func _run() -> void:
 			await _fall_into_pit([0, 0, 350, 620, 470, 340][index])
 		if index > 0:
 			await _fall_into_ceiling_pit([0, 460, 330, 320, 330, 530][index])
-			await _fall_into_ceiling_pit([0, 950, 700, 850, 920, 950][index])
+			if index != 2:
+				await _fall_into_ceiling_pit([0, 950, 0, 850, 920, 950][index])
 		actions.clear()
 		flips.clear()
 		var respawns_before := respawns
@@ -130,7 +131,7 @@ func _run() -> void:
 				if OS.get_cmdline_user_args().has("--screenshots"):
 					RenderingServer.force_draw()
 					root.get_texture().get_image().save_png("res://docs/screenshots/stage-3/room_3_inverted.png")
-				await _cross_crystal_pit(700, 1060)
+				await _cross_crystal_wall()
 			3:
 				await _kick_gate(280, -1)
 				await _cross_ceiling_pit(320, 450)
@@ -165,7 +166,7 @@ func _run() -> void:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
 		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
-		_check(actions.get("dash", 0) == (1 if index == 4 else 0), "Only the fifth route uses one downward dash")
+		_check(actions.get("dash", 0) == (1 if index in [2, 4] else 0), "Only Room3 and Room5 use one downward dash")
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
 			_check(flips.count(-1) == 2 and flips.count(1) == 2, "Later rooms use two intended cycles without an accidental return flip")
@@ -281,7 +282,7 @@ func _verify_shortcuts() -> void:
 				if respawns > before or (player.is_on_floor() and _x() > 1080):
 					break
 				await _step()
-			_check(respawns > before and not stage.cleared.has(2), "Room 3's enlarged gap defeats an elevated jump plus dash (diagonal=%s, delay=%d)" % [diagonal, delay])
+			_check(respawns > before and not stage.cleared.has(2), "Room 3's floor hazards reject an elevated jump plus late dash (diagonal=%s, delay=%d)" % [diagonal, delay])
 			if failed:
 				return
 	stage._set_room(3, false)
@@ -359,16 +360,26 @@ func _cross_floating_spring() -> void:
 	await _until(func(): return player.gravity_direction == 1, 120, "The actual Spring reaches the right-hand Down gate")
 
 
-func _cross_crystal_pit(edge_x: int, end_x: int) -> void:
+func _cross_crystal_wall() -> void:
 	_drive("move_right")
-	await _until(func(): return player.is_on_floor() and _x() > edge_x - 36 and _x() < edge_x, 180, "Reach the wide ceiling gap")
+	await _until(func(): return player.is_on_floor() and _x() >= 760 and _x() < 800, 180, "Reach the wide ceiling rest before the hanging spikes")
+	_release_inputs()
+	await _step(30)
 	await _jump()
-	await _until(func(): return player.is_air_jump_ready() and _x() >= 850, 70, "Collect the crystal during the first inverted jump")
-	_check(actions.has("jump_crystal") and not player.is_on_floor(), "The crystal grants a jump in the middle of the ceiling gap")
+	await _step(20)
+	_check(player.is_air_jump_ready() and actions.has("jump_crystal") and not player.is_on_floor(), "The first inverted jump actually collects the airborne crystal")
 	_check(stage.get_node("HUD/Status/Rows/Resources").text.contains("空中ジャンプ：1"), "The HUD shows the available crystal jump even with hints hidden")
 	await _jump()
-	await _until(func(): return player.gravity_direction == 1 and _x() > end_x - 40, 100, "The air jump reaches the far ceiling's return gate")
-	_check(actions.has("air_jump"), "The wide late gap is crossed with an actual air jump")
+	await _step(20)
+	Input.action_press("move_down")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	Input.action_release("move_down")
+	await _until(func(): return player.position.y >= 500, 90, "The air jump and downward dash descend below the hanging spikes")
+	_drive("move_right")
+	await _until(func(): return player.gravity_direction == 1 and _x() > 900, 100, "The descent reaches the real return gate beyond the wall")
+	_check(actions.has("air_jump"), "The crystal right is actually spent before returning to the floor")
 	_check(not stage.get_node("HUD/Status/Rows/Resources").text.contains("空中ジャンプ：1"), "The HUD clears the extra jump after use")
 
 

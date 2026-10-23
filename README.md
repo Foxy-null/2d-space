@@ -47,17 +47,17 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ## ステージ3：壁キックと重力
 
-壁キックと重力反転を使う6部屋の本編ステージです。1部屋目はSpringから張り出しを交互の壁キックで越え、重力反転・天井のSpringへ、2部屋目は天井の穴を跳び、反転中に下側へ壁を渡って休める足場と反発板へつなぎます。3〜6部屋目は後半にも天井の穴があり、空中ジャンプのクリスタル、縦風と移動ゲート、空中のSpring、向かい風と横移動ゲートを、それぞれ違う経路で使います。ダッシュと壁登りは最初から使え、第5室は下ダッシュでSpringの下へ回り込みます。他の5部屋にはダッシュなしの攻略経路があります。
+壁キックと重力反転を使う6部屋の本編ステージです。1部屋目はSpringから張り出しを交互の壁キックで越え、重力反転・天井のSpringへ、2部屋目は天井の穴を跳び、反転中に下側へ壁を渡って休める足場と反発板へつなぎます。3〜6部屋目は空中ジャンプのクリスタル、縦風と移動ゲート、空中のSpring、向かい風と横移動ゲートを、それぞれ違う経路で使います。ダッシュと壁登りは最初から使えます。3部屋目は空中ジャンプと下ダッシュで吊り壁の下を回り、5部屋目は下ダッシュでSpringの下へ回り込みます。他4部屋にはダッシュなしの攻略経路があります。
 
 各部屋は1280×720の固定カメラで、到着台を押すと出口が開きます。2〜6部屋目には床の落とし穴もあり、クリア後は床の穴を埋める足場が現れます。穴の縁はオレンジ色で示します。落下やR / Startでその部屋の入口へ戻り、重力・ダッシュ・スタミナと移動ゲートをリセットします。開いた出口は、そのプレイ中は開いたままです。6部屋目のクリア後も前の部屋へ戻って練習できます。
 
 経路の矢印と説明文は初期状態で非表示です。「ポーズ [Esc]」またはEsc／Back・Selectで開く共通メニューから、説明文と経路の矢印を表示・非表示にできます。切り替え後もポーズを維持し、設定は部屋移動ややり直しでも保ちます。選択画面から入り直すと説明文と経路の矢印は非表示に戻ります。壁スタミナはチュートリアルと同じゲージで表示します。部屋番号・タイトル・ポーズの入口と、ゲージ・ダッシュ・空中ジャンプの表示は、通常重力では画面上側、反転中は下側へ同時に移ります。開いたメニュー自体は常に画面中央に表示します。
 
-3部屋目の床の穴は730px幅に広げ、壁の上からのジャンプとダッシュでも届かないようにしました。4部屋目は既存の重力ゲートを広げ、床の壁を登って重力反転を避ける抜け道を防いでいます。
+3部屋目では幅330pxの天井で休み、真下の靴を通常ジャンプで取って追加ジャンプと下ダッシュをつなぎます。谷底のトゲは深く落ちてからのダッシュによる代用を防ぎ、クリア後は帰りの橋に覆われます。4部屋目は既存の重力ゲートを広げ、床の壁を登って重力反転を避ける抜け道を防いでいます。
 
 配置は `scenes/stage_3.tscn`、進行は `scripts/stage_3.gd` で調整します。合意した仕様と6部屋の課題は [第３ステージの仕様書](docs/stage-3.md) に記録しています。
 
-![空中ジャンプで後半の大きな穴を越える3部屋目](docs/screenshots/stage-3/room_3.png)
+![空中ジャンプと下ダッシュでトゲ壁の下を回る3部屋目](docs/screenshots/stage-3/room_3.png)
 
 ## ステージ4：星渡りの回廊
 
@@ -271,6 +271,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_2_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_3_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/gravity_wall_jump_route_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/gravity_room_three_jump_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/gravity_room_three_roof_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/gravity_room_two_terrain_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_4_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/corridor_companion_route_test.gd
@@ -311,7 +313,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 `STAGE_5_TEST_OK` は、位置変更や能力の強制補充を使わずに全12部屋・43個の反射を実入力で攻略し、風・ダッシュ・最後の到着台を確認します。部屋移動、落下・Rによる復帰、共通ポーズとヒント、再選択時の初期化も検証します。
 
-`STAGE_3_TEST_OK` は、実入力で全6部屋を攻略し（第5室は下ダッシュ併用）、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
+`STAGE_3_TEST_OK` は、実入力で全6部屋を攻略し（第3・5室は下ダッシュ併用、他4室はダッシュなし）、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
 
 第5室のSpring経路・代替入力・復帰の検証は `tests/gravity_room_five_spring_test.gd` を実行します。通常と弱い横入力の踏切、通常Jumpと8方向Dash、実Superdash、屋根迂回、R・落下・隣室往復を確認します。
 
