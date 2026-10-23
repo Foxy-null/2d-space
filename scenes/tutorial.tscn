@@ -2112,18 +2112,10 @@ color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="PracticeHint" type="Label" parent="Rooms/Room17"]
 offset_left = 180
-offset_top = 340
+offset_top = 480
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "X → Space\nB / ○ → A / ×"
-mouse_filter = 2
-
-[node name="LaunchHint" type="Label" parent="Rooms/Room17"]
-offset_left = 480
-offset_top = 490
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "→ → →\nダッシュ → すぐジャンプ"
 mouse_filter = 2
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
