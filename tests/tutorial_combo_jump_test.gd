@@ -277,6 +277,7 @@ func _retry() -> void:
 
 func _backtrack() -> void:
 	pad = false
+	var start_respawns := respawns
 	_move(Vector2.LEFT)
 	for frame in 300:
 		if tutorial.room_index == 14 and not tutorial.transitioning:
@@ -285,7 +286,7 @@ func _backtrack() -> void:
 		await _step()
 	_release()
 	await _step(5)
-	_check(tutorial.room_index == 14 and player.is_on_floor() and _local().distance_to(room.get_node("Return").position) < 5, "Returning from Room16 reaches the wide high rest")
+	_check(tutorial.room_index == 14 and player.is_on_floor() and _local().distance_to(room.get_node("Return").position) < 5 and respawns == start_respawns + 1, "Returning from Room16 reaches the wide high rest with only its transition respawn")
 	var before := respawns
 	await _reset_key()
 	_check(respawns == before + 1 and tutorial.cleared.has(14) and _local().distance_to(room.get_node("Return").position) < 2, "R after returning preserves the cleared arrival and high checkpoint")
@@ -295,7 +296,7 @@ func _backtrack() -> void:
 			break
 		await _step()
 	_release()
-	_check(tutorial.room_index == 13 and player.controls_enabled and player.is_on_floor(), "Walking off the high rest lands on the entrance floor and returns safely to Room14")
+	_check(tutorial.room_index == 13 and player.controls_enabled and player.is_on_floor() and respawns == before + 2, "Walking off the high rest lands on the entrance floor and returns to Room14 without a fall retry")
 
 
 func _boot_roundtrip() -> void:
