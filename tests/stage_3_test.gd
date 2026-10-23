@@ -147,10 +147,7 @@ func _run() -> void:
 				await _kick_gate(360, -1, "UpGate")
 				await _cross_ceiling_pit(330, 470)
 				_check(actions.has("wind") and player.velocity.x < player.move_speed, "The ceiling jump actually crosses a slowing headwind")
-				await _kick_pair(true, 130)
-				_drive("move_right")
-				await _until(func(): return actions.has("exit_spring"), 150, "The short overhead platform leads into its exit Spring")
-				await _until(func(): return player.gravity_direction == 1, 120, "The exit Spring reaches the right-hand Down gate")
+				await _cross_floating_spring()
 			5:
 				await _kick_gate(260, -1)
 				await _kick_pair(true, -10, true)
@@ -164,12 +161,12 @@ func _run() -> void:
 			return
 		await _reach_goal()
 		_check(stage.cleared.has(index), "Actual arrival must clear room %d" % (index + 1))
-		_check(respawns == respawns_before, "The intended route crosses room %d without falling" % (index + 1))
+		_check(respawns == respawns_before, "The real route crosses room %d without falling" % (index + 1))
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 3, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
-		_check(actions.get("dash", 0) == (1 if index == 2 else 0), "Only Room3's crystal descent uses a dash")
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		_check(actions.get("dash", 0) == (1 if index in [2, 4] else 0), "Only Room3 and Room5 use one downward dash")
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
 			_check(flips.count(-1) == 2 and flips.count(1) == 2, "Later rooms use two intended cycles without an accidental return flip")
@@ -345,6 +342,22 @@ func _cross_ceiling_pit(edge_x: int, end_x: int) -> void:
 	_check(player.gravity_direction == -1, "The upper pit must be crossed while inverted")
 	await _jump()
 	await _until(func(): return player.is_on_floor() and _x() > end_x, 110, "An inverted jump must land beyond the ceiling pit")
+
+
+func _cross_floating_spring() -> void:
+	_drive("move_right")
+	await _until(func(): return _x() >= 914, 200, "Reach the wide ceiling's actual Spring takeoff")
+	await _jump()
+	await _step(20)
+	_release_inputs()
+	Input.action_press("move_down")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	Input.action_release("move_down")
+	await _until(func(): return actions.has("exit_spring"), 180, "Down dash below the floating Spring and rise naturally into it")
+	_drive("move_right")
+	await _until(func(): return player.gravity_direction == 1, 120, "The actual Spring reaches the right-hand Down gate")
 
 
 func _cross_crystal_wall() -> void:
