@@ -28,7 +28,7 @@ const CONTROLS := [
 ]
 const STEPS := [
 	["jump"], ["climb", "wall_jump"], ["dash"], ["up", "down"],
-	["air_dash", "dash_refill", "refilled_dash"], [],
+	[], [],
 	["floor_spring"], ["pinball"],
 	["wind_dash"], ["up", "down"],
 	["button_on"],
@@ -217,6 +217,10 @@ func _update_lesson() -> void:
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
+	var bridge := room.get_node_or_null("ReturnBridge")
+	if bridge != null:
+		bridge.visible = done
+		bridge.get_node("Collision").set_deferred("disabled", not done)
 	room.get_node("ExitHint").text = "任意の練習 →" if done and room_index == 15 else ("→" if done else "到着台で開く")
 	room.get_node("ExitHint").visible = done or hints_visible
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)

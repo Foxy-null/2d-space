@@ -36,6 +36,11 @@ func _draw() -> void:
 func _on_body_entered(body: Node) -> void:
 	if not _available or not body is PlayerController:
 		return
+	# Enter notifications can lag a fast contact by one tick. Retry clears this motion.
+	var body_shape: CollisionShape2D = body.get_node("CollisionShape2D")
+	var previous_motion: Vector2 = -body.get_environment_velocity() * get_physics_process_delta_time()
+	if not $CollisionShape2D.shape.collide_with_motion($CollisionShape2D.global_transform, Vector2.ZERO, body_shape.shape, body_shape.global_transform, previous_motion):
+		return
 	# Logical guard is immediate; physics-server changes must be deferred in callbacks.
 	_available = false
 	$CollisionShape2D.set_deferred("disabled", true)

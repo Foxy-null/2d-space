@@ -130,9 +130,12 @@ func _run() -> void:
 	_check(stage.checkpoint_index == 5 and player.position.y < -2900, "Fall returns to latest checkpoint")
 	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "Respawn restores movement resources")
 	var crystal := stage.get_node("Items/Item4")
-	crystal._on_body_entered(player)
+	var crystal_start: Vector2 = crystal.position
+	# Keep the physical pickup fixture inside the current checkpoint bounds.
+	crystal.global_position = player.global_position
 	await _step(2)
 	_check(not crystal.visible, "Collecting a crystal consumes it")
+	crystal.position = crystal_start
 	Input.action_press("reset")
 	await _step(1)
 	Input.action_release("reset")

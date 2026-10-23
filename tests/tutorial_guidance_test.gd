@@ -5,7 +5,7 @@ const REQUIRED_CUES := [
 	{"ClimbHint": "Shift", "KickHint": "Space"},
 	{"PracticeHint": "X", "DashHint": "Space"},
 	{"UpHint": "↑", "CeilingHint": "Space", "DownHint": "↓"},
-	{"JumpHint": "Space", "RefillHint": "X"},
+	{},
 	{}, {"FloorHint": "↑"}, {"BounceHint": "↗"},
 	{"DashHint": "X"}, {"WaitHint": "↑", "CeilingHint": "↓"},
 	{"BoxHint": "Shift", "ButtonHint": "↓"},
