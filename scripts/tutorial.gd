@@ -4,8 +4,8 @@ const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
 const MAIN_ROOM_COUNT := 16
 const TITLES := ["移動・ジャンプ", "よじ登り・壁キック", "ダッシュ", "重力切り替え",
-	"ダッシュの補充", "追加ジャンプ", "Spring", "PinballSpring", "風", "動く重力ゲート",
-	"掴む・運ぶ・置く", "投げる", "Jump Creature", "Parachute Creature",
+	"ダッシュの補充", "追加ジャンプ", "ばねで跳ぶ", "はね返り", "風", "動く重力ゲート",
+	"掴む・運ぶ・置く", "投げる", "相棒ジャンプ", "傘で滑空",
 	"追加ジャンプの連携", "滑空・風・重力の連携", "Superdash（任意）"]
 const CONTROLS := [
 	"移動：A / D・← / →　ジャンプ：Space / W・A / ×",
@@ -63,6 +63,7 @@ var room_index := 0
 var furthest_room := 0
 var transitioning := false
 var completed := false
+var hints_visible := false
 var cleared: Dictionary = {}
 var seen: Dictionary = {}
 var _resetting := false
@@ -134,7 +135,14 @@ func _set_room(index: int, from_right: bool) -> void:
 	player.set_respawn_position(entrance.global_position)
 	player.wall_actions_enabled = furthest_room >= 1
 	player.dash_enabled = furthest_room >= 2
-	hud.show_tutorial_room(index, TITLES[index], CONTROLS[index], player.wall_actions_enabled, player.dash_enabled, MAIN_ROOM_COUNT)
+	set_hints_visible(hints_visible)
+
+
+func set_hints_visible(value: bool) -> void:
+	hints_visible = value
+	for room in rooms.get_children():
+		room.get_node("Goal").set_hints_visible(value)
+	hud.show_tutorial_room(room_index, TITLES[room_index], CONTROLS[room_index], player.wall_actions_enabled, player.dash_enabled, MAIN_ROOM_COUNT, value)
 	_update_lesson()
 
 
@@ -207,7 +215,8 @@ func _update_lesson() -> void:
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
-	room.get_node("ExitHint").text = "任意のSuperdash →" if done and room_index == 15 else ("次の部屋へ →" if done else "到着台を押すと開く")
+	room.get_node("ExitHint").text = "任意の練習 →" if done and room_index == 15 else ("→" if done else "到着台で開く")
+	room.get_node("ExitHint").visible = done or hints_visible
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
 	var count := 0
 	var next := "足跡の到着台に乗ろう"
@@ -221,9 +230,9 @@ func _update_lesson() -> void:
 	room.get_node("Goal").set_progress(STEPS[room_index].size() - count, STEPS[room_index].size(), next_key, next, done)
 	hud.show_lesson_progress("体験済み ✓　自由に練習できます" if done else "目標 %d/%d：%s" % [count, STEPS[room_index].size(), next], done)
 	$HUD/Completion.visible = completed and room_index >= 15
-	$HUD/Completion.text = "チュートリアル完了！　右は任意のSuperdash部屋" if room_index == 15 else "本編クリア済み　Superdashも自由に練習できます"
+	$HUD/Completion.text = "チュートリアル完了！" if room_index == 15 else "自由に練習できます"
 	if room_index == 16:
-		room.get_node("ExitHint").text = "練習完了 ✓" if done else "到着台へ着地しよう"
+		room.get_node("ExitHint").text = "✓" if done else "到着台で開く"
 
 
 func _on_action(action: String) -> void:

@@ -202,12 +202,15 @@ func _test_creature_exit() -> void:
 
 func _parachute_course() -> void:
 	await _grab("Parachute")
+	await _walk_to(220)
+	await _pulse("jump")
 	Input.action_press("move_right")
 	for frame in 130:
 		if tutorial.seen.has("glide"):
 			break
 		await _step()
 	_check(tutorial.seen.has("glide"), "Held parachute must actually slow a fall")
+	await _walk_to(975)
 	Input.action_release("wall_grab")
 	await _walk_goal()
 
