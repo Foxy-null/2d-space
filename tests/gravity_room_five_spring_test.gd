@@ -3,12 +3,14 @@ const DIRECTIONS := [Vector2.RIGHT, Vector2(1, -1), Vector2.UP, Vector2(-1, -1),
 	Vector2.LEFT, Vector2(-1, 1), Vector2.DOWN, Vector2(1, 1)]
 var raw := 1.0
 var landed := false
+var boundary_hits := 0
 
 
 func _run() -> void:
 	if not OS.get_cmdline_user_args().has("--routes-only"):
 		if not OS.get_cmdline_user_args().has("--remaining-only"):
 			await _alternatives()
+			await _late_boundary_alternatives()
 		await _roof_alternative()
 		await _superdash_alternatives()
 	for strength in [1.0, 0.85]:
@@ -73,6 +75,31 @@ func _observe_alternative() -> void:
 			Input.action_press("jump")
 		await _step()
 	_release_inputs()
+
+
+func _late_boundary_alternatives() -> void:
+	raw = 1
+	for takeoff in [930, 936]:
+		for delay in [22, 24, 26, 28]:
+			for direction in [Vector2.DOWN, Vector2(1, 1)]:
+				await _prepare_room()
+				await _approach()
+				_drive("move_right")
+				await _until(func(): return _x() >= takeoff, 120, "Reach the real edge takeoff used by the boundary-wall shortcut")
+				var before: int = actions.get("jump", 0)
+				await _jump()
+				_check(actions.get("jump", 0) == before + 1, "The edge shortcut begins with an actual ordinary or coyote jump")
+				await _step(delay)
+				_aim(direction)
+				await _dash()
+				_drive("move_right", true, true)
+				await _observe_alternative()
+				print("ROOM5_BOUNDARY takeoff=%d delay=%d direction=%s clear=%s spring=%d deaths=%d hits=%d" % [takeoff, delay, direction, stage.cleared.has(4), actions.get("exit_spring", 0), respawns, boundary_hits])
+				_check((not landed and not stage.cleared.has(4)) or actions.has("exit_spring"), "A late edge dash and real boundary wall kicks cannot replace the Spring")
+				if direction == Vector2.DOWN and delay in [24, 26]:
+					await _step(6)
+					_check(boundary_hits == 1 and respawns == 1 and actions.get("wall_jump", 0) == 1 and not actions.has("exit_spring"), "The real upper-boundary spikes reject the observed shortcut before its extra wall kick")
+					_check(_at_spawn(), "The boundary hazard retries safely with ordinary gravity and restored resources")
 
 
 func _roof_alternative() -> void:
@@ -189,6 +216,9 @@ func _prepare_room() -> void:
 	player.gravity_changed.connect(func(inverted: bool): flips.append(-1 if inverted else 1))
 	player.respawned.connect(func(): respawns+=1)
 	stage.rooms.get_child(4).get_node("ExitSpring").launched.connect(func(_body): actions["exit_spring"]=actions.get("exit_spring", 0)+1)
+	var boundary_spikes: SpikeBlock = stage.rooms.get_child(4).get_node_or_null("ExitBoundarySpikes")
+	if boundary_spikes != null:
+		boundary_spikes.player_hit.connect(func(): boundary_hits += 1)
 	stage.cleared[3]=true
 	stage._set_room(3, false)
 	player.respawn()
@@ -200,6 +230,7 @@ func _prepare_room() -> void:
 	flips.clear()
 	respawns = 0
 	landed = false
+	boundary_hits = 0
 
 
 func _approach() -> void:

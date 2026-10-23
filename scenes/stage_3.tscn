@@ -1849,6 +1849,15 @@ width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
+[node name="ExitBoundarySpikes" parent="Rooms/Room5" instance=ExtResource("spikes")]
+position = Vector2(1252, 230)
+rotation = 1.57079633
+travel = Vector2(0, 0)
+room_number = 4
+ceiling_strip = true
+strip_half_width = 230.0
+stage_group = &"stage_three"
+
 [node name="Goal" parent="Rooms/Room5" instance=ExtResource("6_goal")]
 position = Vector2(1150, 640)
 mission_required = false
