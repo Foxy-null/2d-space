@@ -29,7 +29,7 @@ const CONTROLS := [
 const STEPS := [
 	["jump"], ["climb", "wall_jump"], ["dash"], ["up", "down"],
 	[], [],
-	["floor_spring"], ["pinball"],
+	[], ["pinball"],
 	["wind_dash"], ["up", "down"],
 	["button_on"],
 	["throw", "throw_button"], [],
