@@ -86,10 +86,16 @@ func _test_airborne_sequence() -> void:
 
 
 func _air_jump_course() -> void:
-	await _walk_to(400)
+	await _walk_to(430)
 	await _pulse("jump")
 	await _step(16)
 	await _pulse("jump")
+	await _step(16)
+	Input.action_release("move_right")
+	Input.action_press("move_up")
+	await _pulse("dash")
+	Input.action_release("move_up")
+	Input.action_press("move_right")
 	await _walk_goal()
 
 
