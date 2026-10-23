@@ -88,7 +88,7 @@ func traverse(section: int) -> bool:
 				target = room.walls[waypoint] if waypoint < room.walls.size() else Rect2(1200 if section == 5 else 1240, 420 if section == 5 else room.exit_top, 40, 30)
 			var dx: float = target.get_center().x - x
 			steer_to(dx)
-			if player.is_on_floor() and cooldown == 0 and absf(dx) > 35 and (waypoint < room.walls.size() or player.position.y + 26 > target.position.y + 5):
+			if player.is_on_floor() and cooldown == 0 and absf(dx) > 35 and not (section == 0 and waypoint == 1) and (waypoint < room.walls.size() or player.position.y + 26 > target.position.y + 5):
 				if safe_launch(room, Vector2(player.velocity.x, -650), int(signf(dx)), 32):
 					Input.action_press("jump")
 					cooldown = 10

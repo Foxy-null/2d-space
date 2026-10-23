@@ -86,6 +86,7 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
+	$HUD/Info.position.y = 620.0 if room_index == 0 else 40.0
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / 06　%s" % [room_index + 1, TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()

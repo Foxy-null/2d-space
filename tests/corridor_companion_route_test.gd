@@ -37,6 +37,34 @@ func _run() -> void:
 	for hazard in room.get_node("Hazards").get_children():
 		if not hazard.ceiling_strip:
 			hazard.set_physics_process(false)
+	await _companion_step_shortcut()
+	for extra_delay in [16, 20, 24]:
+		for dash_delay in [16, 20, 24]:
+			release()
+			player.respawn()
+			await step(5)
+			deaths = 0
+			Input.action_press("wall_grab")
+			Input.action_press("move_right")
+			while player.position.x < 190:
+				await step()
+			Input.action_press("jump")
+			await step()
+			Input.action_release("jump")
+			await _steer_frames(extra_delay)
+			Input.action_press("jump")
+			await step()
+			Input.action_release("jump")
+			await _steer_frames(dash_delay)
+			Input.action_release("move_right")
+			Input.action_release("move_left")
+			Input.action_press("move_up")
+			Input.action_press("dash")
+			await step()
+			Input.action_release("move_up")
+			Input.action_release("dash")
+			await _steer_frames(100)
+			_check(deaths == 0 and player.is_on_floor() and absf(player.position.y + 26 - room.walls[0].position.y) < 5, "The companion/dash combination accepts timing gaps %d/%df" % [extra_delay, dash_delay])
 	for launch_x in [55, 190, 220, 250]:
 		for delay in [0, 12, 24, 36, 48, 60]:
 			for direction in [Vector2.ZERO, Vector2.RIGHT, Vector2(1, -1), Vector2.UP, Vector2(-1, -1), Vector2.LEFT, Vector2(-1, 1), Vector2.DOWN, Vector2(1, 1)]:
@@ -83,6 +111,61 @@ func _run() -> void:
 	_check(player.position.distance_to(Vector2(110, 594)) < 2 and player.is_dash_ready() and creature.extra_jump_count() == 1 and player.get_held_object() == null, "Retry restores the safe entrance, creature and abilities")
 	print("CORRIDOR_COMPANION_ROUTE_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
+
+
+func _steer_frames(count: int) -> void:
+	for frame in count:
+		Input.action_release("move_left")
+		Input.action_release("move_right")
+		steer_to(450 - player.position.x)
+		await step()
+
+
+func _companion_step_shortcut() -> void:
+	release()
+	player.respawn()
+	await step(5)
+	deaths = 0
+	actions.clear()
+	Input.action_press("jump")
+	await step()
+	Input.action_release("jump")
+	var stood := false
+	for frame in 100:
+		Input.action_release("move_left")
+		Input.action_release("move_right")
+		steer_to(175 - player.position.x)
+		await step()
+		if player.is_on_floor() and player.position.y < 570:
+			stood = true
+			break
+	_check(stood, "The shortcut genuinely starts on top of the free companion")
+	Input.action_press("wall_grab")
+	Input.action_press("jump")
+	Input.action_press("move_right")
+	await step()
+	Input.action_release("jump")
+	_check(player.get_held_object() != null, "Grab and jump together preserve the raised takeoff")
+	var dashed := false
+	var landed_high := false
+	for frame in 200:
+		Input.action_release("move_left")
+		Input.action_release("move_right")
+		Input.action_release("move_up")
+		steer_to(450 - player.position.x)
+		if not dashed and player.velocity.y > -40:
+			Input.action_release("move_right")
+			Input.action_release("move_left")
+			Input.action_press("move_up")
+			Input.action_press("dash")
+			dashed = true
+		else:
+			Input.action_release("dash")
+		await step()
+		landed_high = landed_high or (player.is_on_floor() and player.position.y < 250)
+		if deaths > 0:
+			break
+	_check(dashed and not landed_high and not actions.has("creature_jump"), "A jump and dash from the companion's back cannot bypass its additional jump")
 
 
 func _check(condition: bool, message: String) -> void:
