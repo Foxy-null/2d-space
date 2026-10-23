@@ -207,15 +207,15 @@ func _climb_and_kick() -> void:
 
 
 func _dash_course() -> void:
-	player.global_position = Vector2(2560 + 325, 614)
-	player.velocity = Vector2(360, 0)
-	player.set("_contacts_valid", false)
 	Input.action_press("move_right")
-	await _step(2)
+	for frame in 180:
+		if player.global_position.x >= 2560 + 325:
+			break
+		await _step()
 	Input.action_press("jump")
 	await _step()
 	Input.action_release("jump")
-	await _step(17)
+	await _step(20)
 	Input.action_press("dash")
 	await _step()
 	_check(player.is_dashing(), "Dash must work in room 3")
@@ -296,15 +296,8 @@ func _test_respawn_and_backtrack() -> void:
 	player.respawn()
 	await _step(2)
 	_check(crystal.visible, "Retry restores the current room's crystal")
-	_check(player.global_position.x > 2560 + 1150, "Backtracking checkpoint is the entrance on the right")
-	Input.action_press("move_right")
-	Input.action_press("dash")
-	await _step()
-	_check(player.is_dashing(), "Dash starts before crossing the edge")
-	Input.action_release("dash")
-	await _step(5)
-	_release_inputs()
-	await _finish_transition()
+	_check(player.global_position.distance_to(Vector2(2560 + 72, 614)) < 2, "Backtracking checkpoint is the safe left entrance")
+	await _dash_course()
 	_check(tutorial.room_index == 3 and not player.is_dashing() and player.is_dash_ready(), "Dash boundary crossing starts the next room in a safe, refilled state")
 
 

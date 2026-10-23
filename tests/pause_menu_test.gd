@@ -24,7 +24,7 @@ func _run() -> void:
 		_check(paused and pause.overlay.visible, scene + ": Esc pauses")
 		_check(root.gui_get_focus_owner() == pause.menu.get_node("Resume"), "Resume initially owns focus")
 		var hint_button: Button = pause.menu.get_node("Hints")
-		_check(hint_button.visible == (scene in ["stage_2", "stage_3", "stage_4", "stage_5"]), "Hide the whole hint button when no toggle is provided")
+		_check(hint_button.visible == (scene in ["tutorial", "stage_2", "stage_3", "stage_4", "stage_5"]), "Hide the whole hint button when no toggle is provided")
 		var before := player.position
 		var velocity := player.velocity
 		Input.action_press("move_right")
@@ -162,6 +162,8 @@ func _check_completion_input() -> void:
 	var pause := stage.get_node("PauseMenu")
 	stage.get_node("HUD/Completion").show()
 	await _key(KEY_ESCAPE)
+	await _joy(JOY_BUTTON_Y)
+	_check(current_scene == stage and paused, "Completion does not intercept Y while paused")
 	await _key(KEY_DOWN)
 	await _key(KEY_ENTER)
 	_check(current_scene == stage and paused and stage.hints_visible, "Completion does not intercept Enter in pause")

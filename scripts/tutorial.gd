@@ -4,8 +4,8 @@ const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
 const MAIN_ROOM_COUNT := 16
 const TITLES := ["移動・ジャンプ", "よじ登り・壁キック", "ダッシュ", "重力切り替え",
-	"ダッシュの補充", "追加ジャンプ", "Spring", "PinballSpring", "風", "動く重力ゲート",
-	"掴む・運ぶ・置く", "投げる", "Jump Creature", "Parachute Creature",
+	"ダッシュの補充", "追加ジャンプ", "ばねで跳ぶ", "はね返り", "風", "動く重力ゲート",
+	"掴む・運ぶ・置く", "投げる", "相棒ジャンプ", "傘で滑空",
 	"追加ジャンプの連携", "滑空・風・重力の連携", "Superdash（任意）"]
 const CONTROLS := [
 	"移動：A / D・← / →　ジャンプ：Space / W・A / ×",
@@ -29,9 +29,9 @@ const CONTROLS := [
 const STEPS := [
 	["jump"], ["climb", "wall_jump"], ["dash"], ["up", "down"],
 	["air_dash", "dash_refill", "refilled_dash"], ["jump_crystal", "air_jump"],
-	["floor_spring", "wall_spring", "spring_dash"], ["pinball"],
-	["wind_walk", "wind_grab", "wind_dash"], ["up", "down"],
-	["light_grab", "light_drop", "heavy_move", "button_on", "button_off"],
+	["floor_spring"], ["pinball"],
+	["wind_dash"], ["up", "down"],
+	["button_on"],
 	["throw", "throw_button"], ["creature_jump", "creature_landed", "second_creature_jump"],
 	["glide", "parachute_release", "fast_fall"],
 	["two_jumps", "combo_air", "combo_creature"],
@@ -48,7 +48,7 @@ const STEP_LABELS := {
 	"pinball": "丸いバンパーで跳ぼう", "wind_walk": "風の中を歩こう",
 	"wind_grab": "風の中で壁を掴もう", "wind_dash": "風の中でダッシュ",
 	"light_grab": "小さな箱を掴もう", "light_drop": "止まって箱を置こう",
-	"heavy_move": "重い箱を運ぼう", "button_on": "重い箱を置いてON",
+	"heavy_move": "重い箱を運ぼう", "button_on": "箱を置こう",
 	"button_off": "箱を持ち上げてOFF", "throw": "移動しながら投げよう",
 	"throw_button": "投げた箱でボタンON", "creature_jump": "生物の追加ジャンプ",
 	"creature_landed": "生物と着地して回復", "second_creature_jump": "回復後にもう一度跳ぶ",
@@ -63,6 +63,7 @@ var room_index := 0
 var furthest_room := 0
 var transitioning := false
 var completed := false
+var hints_visible := false
 var cleared: Dictionary = {}
 var seen: Dictionary = {}
 var _resetting := false
@@ -134,7 +135,14 @@ func _set_room(index: int, from_right: bool) -> void:
 	player.set_respawn_position(entrance.global_position)
 	player.wall_actions_enabled = furthest_room >= 1
 	player.dash_enabled = furthest_room >= 2
-	hud.show_tutorial_room(index, TITLES[index], CONTROLS[index], player.wall_actions_enabled, player.dash_enabled, MAIN_ROOM_COUNT)
+	set_hints_visible(hints_visible)
+
+
+func set_hints_visible(value: bool) -> void:
+	hints_visible = value
+	for room in rooms.get_children():
+		room.get_node("Goal").set_hints_visible(value)
+	hud.show_tutorial_room(room_index, TITLES[room_index], CONTROLS[room_index], player.wall_actions_enabled, player.dash_enabled, MAIN_ROOM_COUNT, value)
 	_update_lesson()
 
 
@@ -207,8 +215,11 @@ func _update_lesson() -> void:
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
-	room.get_node("ExitHint").text = "任意のSuperdash →" if done and room_index == 15 else ("次の部屋へ →" if done else "到着台を押すと開く")
+	room.get_node("ExitHint").text = "任意の練習 →" if done and room_index == 15 else ("→" if done else "到着台で開く")
+	room.get_node("ExitHint").visible = done or hints_visible
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
+	if room_index == 10:
+		room.get_node("ButtonLink").default_color = Color("86e7a4") if room.get_node("Button").is_pressed() else Color("56718d")
 	var count := 0
 	var next := "足跡の到着台に乗ろう"
 	var next_key := ""
@@ -221,9 +232,9 @@ func _update_lesson() -> void:
 	room.get_node("Goal").set_progress(STEPS[room_index].size() - count, STEPS[room_index].size(), next_key, next, done)
 	hud.show_lesson_progress("体験済み ✓　自由に練習できます" if done else "目標 %d/%d：%s" % [count, STEPS[room_index].size(), next], done)
 	$HUD/Completion.visible = completed and room_index >= 15
-	$HUD/Completion.text = "チュートリアル完了！　右は任意のSuperdash部屋" if room_index == 15 else "本編クリア済み　Superdashも自由に練習できます"
+	$HUD/Completion.text = "チュートリアル完了！" if room_index == 15 else "自由に練習できます"
 	if room_index == 16:
-		room.get_node("ExitHint").text = "練習完了 ✓" if done else "到着台へ着地しよう"
+		room.get_node("ExitHint").text = "✓" if done else "到着台で開く"
 
 
 func _on_action(action: String) -> void:
@@ -303,6 +314,9 @@ func _on_button(pressed: bool, button: Area2D) -> void:
 
 
 func _observe_lesson(delta: float) -> void:
+	if room_index == 10 and seen.has("button_on") and not cleared.has(room_index) and not rooms.get_child(room_index).get_node("Button").is_pressed():
+		seen.erase("button_on")
+		_update_lesson()
 	if room_index == 4 and player.is_on_floor() and not seen.has("refilled_dash") and (seen.has("air_dash") or seen.has("dash_refill")):
 		seen.erase("air_dash")
 		seen.erase("dash_refill")
