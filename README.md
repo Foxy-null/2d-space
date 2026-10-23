@@ -23,7 +23,7 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ## ステージ選択
 
-スタート画面のSTARTから、ステージ1〜5が左から順に並んだ選択画面へ進みます。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」「ステージ5：暴風バンパー峡谷」を自由に選べます。「5つの環境を見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
+スタート画面のSTARTから、ステージ1〜5が左から順に並んだ選択画面へ進みます。「ステージ1：チュートリアル」「ステージ2：星のぼりの塔」「ステージ3：壁キックと重力」「ステージ4：星渡りの回廊」「ステージ5：暴風バンパー峡谷」を自由に選べます。各カードには、練習の段差、塔の上昇、壁と重力、相棒、バンパーと風を表す小さな絵を添えています。「背景・ギミックを見る」から、全環境の背景・地形・ギミックを操作できるプレビューへ入れます。
 
 クリック、方向キー＋Enter、ゲームパッドの十字キー／左スティック＋A／×で選べます。全プレイ画面でEsc／Back・Select、または「ポーズ [Esc]」からポーズメニューを開けます。背景を含むゲーム全体が止まり、再開・ヒント切り替え・チェックポイントからのやり直し・ステージ選択への帰還を選べます。ヒントのない画面では該当ボタンを表示しません。帰還時は進み具合が保存されない旨を確認します。再選択時は最初から始まり、進捗は保存しません。クリア後も、引き続き自由に練習できます。
 
@@ -37,7 +37,7 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ## ステージ2：星のぼりの塔
 
-`sota_sodex_1st`から取り込んだ、上へ連続スクロールする全6区間・24段のコースです。壁登り・壁キック、Spring、ダッシュ回復・追加ジャンプのクリスタル、生物をつないで頂上を目指します。各区間の広い足場に着地すると復帰地点を更新し、落下やR / Startで最新の復帰地点へ戻ります。
+`sota_sodex_1st`から取り込んだ、上へ連続スクロールする全6区間・24段のコースです。壁登り・壁キック、Spring、ダッシュ回復・追加ジャンプのクリスタル、生物をつないで頂上を目指します。各区間の旗と足跡がある広い足場に着地すると復帰地点を更新し、落下やR / Startで最新の復帰地点へ戻ります。中空の旗は未到達、「↺」は現在の復帰地点、「✓」は到達済みを示します。
 
 生活圏の惑星のふもとから、雲の上、星が見える上空へ登ります。街と山は登るにつれて下へ遠ざかり、雲と星は足場よりゆっくり動きます。背景は高度に合わせて連続して変わり、降下ややり直しでも同じ高さの景色へ戻ります。
 
@@ -63,9 +63,9 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ポーズメニューで操作のヒントを表示できます。配置・操作・テストは [第4ステージの仕様](docs/stage-4.md) を参照してください。
 
-全5ステージでクリア時に「ステージクリア！」と戻るボタンを表示します。Enter（テンキーも可）、ボタンのクリック、ゲームパッドAで確認なしにステージ選択へ戻れます。
+全5ステージでクリア時に右上へ小さな通知と戻るボタンを表示します。Space・A/×で自由練習を続けられ、Enter（テンキーも可）、ボタンのクリック、Y/△でステージ選択へ戻れます。
 
-![共通クリア画面の表示例](docs/screenshots/stage-clear.png)
+![クリア後も練習を続けられる小さな通知](docs/screenshots/ux-before-after/clear-practice-stage5-after.png)
 
 ## ステージ5：暴風バンパー峡谷
 
@@ -105,19 +105,24 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 | 1：移動・ジャンプ | 平地、64pxと96pxの段差、下に戻れる床を置いた短い穴 | 移動・ジャンプ |
 | 2：よじ登り・壁キック | 左の壁を登って休憩足場へ。中央の壁の下を通り、向かい合う壁の張り出しを壁キックで越えて右へ進む | 壁Grab・壁登り・壁スライド・壁キック |
 | 3：ダッシュ | 練習床、360pxの穴、140px高い足場、任意で取れるDash Crystal | 8方向Dash |
-| 4：重力切り替え | 安全なUpゲート、天井を歩いて越える障害物、反転中に跳び越す段差、Downゲート、床のゴール | ゲートによる重力反転 |
+| 4：重力切り替え | Upゲートで天井へ。ジャンプとDashでは渡れない780pxの穴を天井から越え、段差を跳んでDownゲートからゴールへ降りる | ゲートによる重力反転 |
 
-- 操作説明は、その部屋の課題の近くに表示します。
+- 課題の近くには短い操作キーと矢印を常時表示します。詳しい操作説明・状態・目標の進捗は、ポーズメニューの「ヒントを表示」で確認できます。表示の選択は部屋移動ややり直しでも維持します。
 - 部屋に入ると入口を復帰地点にし、重力Down、速度0、Dash回復、スタミナ最大の状態で始めます。
 - 落下またはR / Startで、現在の部屋の入口へ戻ります。その部屋のDash Crystalもすぐに戻ります。
+- 10部屋目も同じ幅の穴を天井から越えます。入口の床で往復ゲートを待てるため、走り続けずにタイミングを試せます。
 - 左端から前の部屋へ戻れます。習得した壁アクションとDashは、戻ったりやり直したりしても使用可能です。
 - 16部屋目の到着台を押すと本編の完了を表示します。その後も戻って練習したり、17部屋目でSuperdashを試したりできます。
 
+16部屋目は、傘を保持して右へ進むと、上昇気流から休める短い天井へ移り、反転中の滑空で穴を渡ってDownゲートから出口へ降りられます。通常の歩行・ジャンプ・初期ダッシュでは出口へ届きません。天井からの反転ジャンプと遅らせた斜め下ダッシュによる高度な別経路は残り、到着台の既存3条件は傘での体験を必要とします。
+
 部屋の足場・入口・説明文は `scenes/tutorial.tscn` の `Rooms/Room1` ～ `Room17`、切り替えと解禁は `scripts/tutorial.gd` で調整します。風・Spring・運搬などをまとめた既存デモは `scenes/main.tscn` に残しています。GodotでそのSceneを開き、F6で実行できます。
+
+11部屋目は、箱を重量スイッチに置くと到着台が開きます。床の配線がつながりを示し、押す前に箱を取り除くと再びロックします。軽い箱でも重い箱でも攻略できます。
 
 ### 到着台
 
-各部屋の足跡とチェッカー旗がある丸い到着台は、ミッション未達成の間、南京錠付きのガラスケースで覆われています。上の吹き出しには「のこり 2/3」のような残りステップ数と、最初の未達成目標を図と短文で表示します。ケースは実際にプレイヤーを支えるため、未達成のままスイッチを押すことはできません。
+各部屋の足跡とチェッカー旗がある丸い到着台は、ミッション未達成の間、南京錠付きのガラスケースで覆われています。上の小さな枠には次の操作の絵と「のこり 2/3」のような残り数を表示し、解除後は足跡と「乗ろう ↓」、完了後は星と「完了 ✓」に変わります。詳しい目標文はポーズメニューの「ヒントを表示」で確認できます。案内枠は忍者や持っている物と重なる間だけ隠れ、離れると元の表示に戻ります。ケースは実際にプレイヤーを支えるため、未達成のままスイッチを押すことはできません。
 
 全ステップを達成すると、南京錠が跳ねて開き、星が散ってケースが消え、短いチャイムが鳴ります。ケースの上で待っていた場合も、そのまま下のスイッチへ着地できます。スイッチに乗るとプレイヤーごと約0.2秒で32px沈み、押し込みが完了してから出口の壁が開きます。一度押すとその位置で固定され、離れたりやり直したりしても出口は開いたままです。押す前に落下またはR / Startでやり直すと、ミッションとケースのロックをリセットします。
 
@@ -152,6 +157,10 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 - **Jump Crystal**：紫のばね靴の形をしたアイテムです。触れるとAir Jumpを1回得ます。重複取得しても蓄積せず、DashやWall Stamina、保持中のCreatureのジャンプは回復しません。取得後は消え、2.5秒で再出現します。見た目の向きにかかわらず、ジャンプは現在の重力と逆向きです。
 - **Air Jump**：Jump Crystal取得後、地上／コヨーテジャンプと壁ジャンプができない空中でジャンプすると発動。現在の重力に逆らって跳び、水平慣性を保ちます。未使用の権利は着地後も保持します（重力反転中も同様）。使用すると消費し、着地だけでは回復しません。Dashで上へ向かうときは方向入力とXを同時に押すか、Spaceでジャンプ後に方向を指定してください。
 - **Respawn**：R / Startまたは画面外落下で、重力Down、Dash使用可能、Air Jumpなし、スタミナ最大へ戻ります。
+
+チュートリアル第6室は、踏み切り前の紫の靴を取り、2回のジャンプで広い片面足場へ上がる練習です。下は連続した安全な床なので、その場で跳び直したり靴へ戻ったりできます。上向きDashや壁技で台に上がる代替経路も保ち、到着台は従来どおり靴の取得と実際のAir Jumpで解錠します。
+
+第6室の実入力・再試行・部屋往復は、`godot --headless --fixed-fps 60 --path . --script res://tests/tutorial_extra_jump_route_test.gd` で確認できます。
 
 ![更新した背景・地形・ギミックのプレビュー](docs/screenshots/art-review/final-lava.png)
 
@@ -197,6 +206,10 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `min_impact_normal_speed = 50.0`：表面へ向かう法線速度の最低値。浅い擦れは発動せず、反射は必ず外向き。1接触につき1回です。
 
 ### Wind Area
+
+チュートリアル第9室は、安全な入口床で向かい風を確かめ、地上ダッシュで短い谷を越えます。着地床を低くして開始位置に余裕を持たせ、壁掴みの記録は不要にしています。落下・R・右からの部屋戻りはいずれも左の安全な入口へ戻ります。
+
+この経路と迂回・復帰の回帰確認は、`godot --headless --fixed-fps 60 --path . --script res://tests/tutorial_wind_route_test.gd` で実行できます。
 
 `wind_area.tscn` は半透明の領域と方向矢印です。横風は地上・空中の移動目標速度に加わり、無入力でも風下へ流されます。標準の横風では通常歩行360に対して、向かい風36、無入力324、追い風684になります。向かい風でも入力中は実効歩行速度の10%以上で前進でき、Heavy保持中は27です。歩行でじりじり進むこともできますが、素早く抜けるにはDashを使います。上下の風は加速度として作用します。Dash中・Wall Grab中は無効で、解除後に再適用します。
 
@@ -244,6 +257,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/stage_5_exit_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/ascent_backdrop_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/environment_art_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_guidance_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/arrival_cues_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/base_system_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase1_movement_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 240 --path . --script res://tests/wall_jump_regression_test.gd
@@ -251,6 +266,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/p
 Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/phase3_grab_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_rooms_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_extension_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_final_glide_test.gd
+Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/tutorial_movement_learning_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/arrival_switch_test.gd
 Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --script res://tests/character_sprites_test.gd
 ```
@@ -276,6 +293,10 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 `WALL_JUMP_REGRESSION_TEST_OK` は、30・60・120回／秒の物理更新、両重力・壁の両側で、同じ壁への連続キックが高さを増やさず、スタミナ残量0でも無料で使えることを確認します。SpaceとWの入力、重い箱・傘の保持、傘と壁方向への横風の組み合わせも対象です。
 
 `TUTORIAL_EXTENSION_TEST_OK` は追加した部屋を実入力で攻略します。`ARRIVAL_SWITCH_TEST_OK` は全17面のケースへの接地、残り目標の表示、解除時のフィードバック、ケース上からの着地、押し込みへの追従、完了後の出口解禁、やり直し前後のロックと固定、下降中のジャンプを確認します。
+
+`TUTORIAL_GUIDANCE_TEST_OK` は全17部屋の常設ガイドと到着台の目標、画面内の配置、詳細ヒントの切替と進捗・復帰地点の保持を確認します。描画ありで `-- --screenshots` を付けると、通常表示17部屋と詳細表示1枚を `docs/screenshots/tutorial-guidance/` に保存します。
+
+`ARRIVAL_CUES_TEST_OK` は全17部屋の到着台について、未解除・解除後・完了後とヒントON/OFFの6通りで、表示範囲・残り数・詳細文・台上のプレイヤーとの間隔を確認します。固定した表示用の姿勢を使い、押し込みの物理は既存の到着台テストで確認します。描画ありで `-- --screenshots` を付けると102枚を `/tmp/arrival-cues-screenshots/` に保存します。
 
 
 ## Phase 3：Grab / Carry
