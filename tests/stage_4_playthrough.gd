@@ -105,8 +105,8 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 				target = room.walls[waypoint] if waypoint < room.walls.size() else Rect2(1200 if section == 5 else 1240, 420 if section == 5 else room.exit_top, 40, 30)
 			var dx: float = target.get_center().x - x
 			steer_to(dx)
-			if player.is_on_floor() and cooldown == 0 and absf(dx) > 35 and not (section == 0 and waypoint == 1) and (waypoint < room.walls.size() or player.position.y + 26 > target.position.y + 5):
-				if safe_launch(room, Vector2(player.velocity.x, -650), int(signf(dx)), 80 if section == 4 else (48 if section == 1 and waypoint == 1 else 32), 20 if section == 4 else -1):
+			if player.is_on_floor() and cooldown == 0 and absf(dx) > 35 and not (section == 0 and waypoint == 1) and (waypoint < room.walls.size() or (section == 4 and x < room.walls[0].end.x + 20) or player.position.y + 26 > target.position.y + 5):
+				if safe_launch(room, Vector2(player.velocity.x, -650), int(signf(dx)), 48 if section == 4 or (section == 1 and waypoint == 1) else 32):
 					Input.action_press("jump")
 					cooldown = 10
 				else:
@@ -127,11 +127,9 @@ func steer_to(dx: float) -> void:
 	if absf(steer) > 20:
 		Input.action_press("move_right" if steer > 0 else "move_left")
 
-func safe_launch(room: Node2D, velocity: Vector2, direction: int, frames: int, extra_jump_frame := -1) -> bool:
+func safe_launch(room: Node2D, velocity: Vector2, direction: int, frames: int) -> bool:
 	var at := player.global_position
 	for frame in frames:
-		if frame == extra_jump_frame:
-			velocity.y = -650.0
 		if frame > 0:
 			velocity.x = move_toward(velocity.x, direction * 360.0, 1700.0 / 60)
 			velocity.y += 1900.0 / 60
@@ -145,7 +143,7 @@ func safe_launch(room: Node2D, velocity: Vector2, direction: int, frames: int, e
 	return true
 
 
-func island_leap(extra_delay := 28, dash_delay := 28, strength := 1.0) -> bool:
+func island_leap(extra_delay := 20, dash_delay := 20, strength := 1.0) -> bool:
 	var room: Node2D = stage.rooms.get_child(4)
 	var before := deaths
 	Input.action_press("wall_grab")
@@ -162,14 +160,20 @@ func island_leap(extra_delay := 28, dash_delay := 28, strength := 1.0) -> bool:
 	if not await _island_step(1, before): return false
 	Input.action_release("jump")
 	if not await _island_step(dash_delay, before): return false
+	Input.action_release("move_right")
 	Input.action_press("move_up", strength)
 	Input.action_press("dash")
 	if not await _island_step(1, before): return false
 	Input.action_release("dash")
 	Input.action_release("move_up")
+	Input.action_press("move_right", strength)
 	for frame in 180:
 		if deaths != before:
 			return false
+		if player.position.x > room.position.x + room.walls[0].position.x and not player.is_on_floor():
+			Input.action_release("move_right")
+		elif player.is_on_floor():
+			Input.action_press("move_right", strength)
 		if player.is_on_floor() and player.position.x > room.position.x + room.walls[0].get_center().x:
 			Input.action_release("move_right")
 			if not await _island_step(20, before): return false

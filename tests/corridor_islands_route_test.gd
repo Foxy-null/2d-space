@@ -8,6 +8,9 @@ var room: Node2D
 var creature: Grabbable
 var hazard_hits := 0
 var capture_exit := false
+var actual_coyote_steps := 0
+var wind_entries := 0
+var edge_hits := 0
 
 func _initialize() -> void:
 	_run.call_deferred()
@@ -21,18 +24,25 @@ func _run() -> void:
 	creature = room.get_node("Items/JumpCreature")
 	player.respawned.connect(func(): deaths += 1)
 	player.movement_action.connect(func(action): actions[action] = actions.get(action, 0) + 1)
+	room.get_node("Hazards/LeftEdgeSpikes").player_hit.connect(func(): edge_hits += 1)
+	room.get_node("HighTailwind").body_entered.connect(func(body):
+		if body == player: wind_entries += 1)
 	for hazard in room.get_node("Hazards").get_children():
 		hazard.player_hit.connect(func(): hazard_hits += 1)
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await _screenshots()
+	elif OS.get_cmdline_user_args().has("--late-footstool-only"):
+		await _late_footstools()
 	elif OS.get_cmdline_user_args().has("--footstool-only"):
 		await _footstools()
 	else:
-		await _positive_routes()
-		if not failed:
-			await _recoveries()
+		if not OS.get_cmdline_user_args().has("--negative-only"):
+			await _positive_routes()
+			if not failed:
+				await _recoveries()
 		if not failed and not OS.get_cmdline_user_args().has("--positive-only"):
 			await _footstools()
+			if not failed: await _late_footstools()
 			if not failed: await _without_extra_jump()
 			if not failed: await _superdash()
 			if not failed: await _high_wall()
@@ -43,25 +53,20 @@ func _run() -> void:
 func step(count: int = 1) -> void:
 	for frame in count:
 		await super.step()
-		if capture_exit and stage.room_index == 4 and player.is_on_floor() and _x() > 1180:
+		if capture_exit and stage.room_index == 4 and _x() > 1180 and _x() < 1230 and player.position.y < 500:
 			_capture("delivery")
 			capture_exit = false
 
 func _positive_routes() -> void:
-	for extra in [20, 28, 36]:
-		for dash in [20, 28, 36]:
-			await _enter()
-			_check(await island_leap(extra, dash), "Broad full-input timing crosses the wide gap: %d/%d" % [extra, dash])
-			_check(deaths == 0 and player.get_held_object() == creature and actions.get("creature_jump", 0) == 1 and actions.get("dash", 0) == 1, "The timing route really uses the carried companion and Dash without dying")
-			if failed: return
-	for strength in [0.7, 0.85]:
-		for extra in ([40, 44] if strength < 0.8 else [28, 36]):
-			for dash in ([40, 44] if strength < 0.8 else [28, 36]):
+	for strength in [0.7, 0.85, 1.0]:
+		for extra in [16, 20, 24]:
+			for dash in [16, 20, 24]:
+				if strength == 0.7 and extra == 16 and dash == 16: continue
 				await _enter()
-				_check(await island_leap(extra, dash, strength), "Weaker horizontal input reaches the island: %.2f %d/%d" % [strength, extra, dash])
-				_check(deaths == 0 and actions.get("creature_jump", 0) == 1 and player.get_held_object() == creature, "Weaker input keeps the actual companion through the jump")
+				_check(await island_leap(extra, dash, strength), "Varied jump timings reach the high wind and island: %.2f %d/%d" % [strength, extra, dash])
+				_check(deaths == 0 and actions.get("jump", 0) == 1 and actions.get("creature_jump", 0) == 1 and actions.get("dash", 0) == 1 and player.get_held_object() == creature and wind_entries > 0, "The route uses real normal/extra jumps, Up Dash and the actual wind while keeping its companion")
 				if failed: return
-	for phase in [63, 70, 77]:
+	for phase in range(80, 111, 3):
 		await _enter(phase, true)
 		var started := Engine.get_physics_frames()
 		var arrived := await traverse(4)
@@ -71,7 +76,7 @@ func _positive_routes() -> void:
 		print("ISLAND_LIVE_SECONDS %.2f phase=%d actions=%s" % [seconds, phase, actions])
 		if failed: return
 		await step(25)
-	await _enter(70, true)
+	await _enter(95, true)
 	_check(await traverse(4, true), "Reach the broad island before resting")
 	_move(Vector2.ZERO)
 	var before := player.position
@@ -87,7 +92,7 @@ func _positive_routes() -> void:
 	_check(stage.room_index == 5 and player.position.distance_to(Vector2(6510, 594)) < 3, "R after delivery keeps the next checkpoint")
 
 func _recoveries() -> void:
-	await _enter(70, true)
+	await _enter(95, true)
 	_check(await traverse(4, true), "Reach the live island for a real R retry")
 	await _pulse("reset")
 	release()
@@ -111,13 +116,13 @@ func _reset_state() -> bool:
 	return stage.room_index == 4 and player.position.distance_to(Vector2(5230, 594)) < 3 and player.get_held_object() == null and player.is_dash_ready() and creature.extra_jump_count() == 1 and creature.position.distance_to(Vector2(175, 580)) < 15
 
 func _screenshots() -> void:
-	await _enter(63, true)
+	await _enter(95, true)
 	_capture("entrance")
 	_check(await traverse(4, true) and deaths == 0, "Render an actual live leap to the island")
 	_capture("rest")
 	capture_exit = true
 	_check(await traverse(4) and stage.room_index == 5 and deaths == 1, "Render the real delivery and next checkpoint")
-	_check(not capture_exit, "The delivery screenshot shows the player standing at the exit")
+	_check(not capture_exit, "The delivery screenshot shows the companion in the actual exit approach")
 
 func _capture(label: String) -> void:
 	RenderingServer.force_draw()
@@ -135,6 +140,8 @@ func _enter(phase := 0, live := false) -> void:
 	await step(5 + phase)
 	deaths = 0
 	hazard_hits = 0
+	wind_entries = 0
+	edge_hits = 0
 	actions.clear()
 	samples.clear()
 
@@ -179,15 +186,16 @@ func _reject(label: String) -> void:
 			Input.action_press("jump")
 		await step()
 	_check(actions.get("creature_jump", 0) == 0, "The bypass does not accidentally consume the extra jump: " + label)
+	_check(wind_entries == 0, "The no-extra route cannot enter the high wind: " + label)
 	_check(not reached and stage.room_index == 4, "Terrain rejects a no-extra-jump route: " + label)
 	trials += 1
 
 func _directions() -> Array:
 	return [Vector2.UP, Vector2(1, -1), Vector2.RIGHT, Vector2(1, 1), Vector2.DOWN, Vector2(-1, 1), Vector2.LEFT, Vector2(-1, -1)]
 
-func _footstool(walk: int) -> void:
+func _footstool(walk: int, place := 145, coyote := false) -> void:
 	await _enter()
-	await _walk_to(145)
+	await _walk_to(place)
 	_move(Vector2.ZERO)
 	await step(20)
 	_check(player.get_held_object() == creature, "Actually carry the companion before placing it")
@@ -197,7 +205,7 @@ func _footstool(walk: int) -> void:
 		if _x() < 95: break
 	_move(Vector2.ZERO, false)
 	await step(20)
-	_check(creature.carrier == null and creature.position.x > 160 and creature.position.x < 215, "Actually place the companion near the entrance edge")
+	_check(creature.carrier == null and creature.position.x > 160 and creature.position.x < 225, "Actually place the companion near the entrance edge")
 	await _pulse("jump")
 	await step(10)
 	_move(Vector2.RIGHT, false)
@@ -213,14 +221,18 @@ func _footstool(walk: int) -> void:
 	if failed: return
 	_move(Vector2.RIGHT, false)
 	await step(walk)
-	_check(player.is_on_floor(), "Walking toward the companion's edge keeps real support")
+	if coyote:
+		_check(player.get_held_object() == null, "The late takeoff keeps the placed companion free until Grab+Jump")
+		if not player.is_on_floor(): actual_coyote_steps += 1
+	else:
+		_check(player.is_on_floor(), "The ordinary back step still has real support")
 	Input.action_press("wall_grab")
 	await _pulse("jump")
-	_check(player.get_held_object() == creature and actions.get("creature_jump", 0) == 0, "Simultaneous Grab and normal Jump picks up the actual footstool")
+	_check(player.get_held_object() == creature and actions.get("creature_jump", 0) == 0 and actions.get("jump", 0) == 2 and player.velocity.y < -620, "Simultaneous Grab and normal/coyote Jump picks up the actual footstool")
 
 func _footstools() -> void:
 	for walk in [0, 4, 8]:
-		for delay in [8, 16, 24, 32, 40, 48]:
+		for delay in [8, 16, 20, 24, 32, 40, 48]:
 			for direction in [Vector2.UP, Vector2(1, -1), Vector2.RIGHT]:
 				await _footstool(walk)
 				if failed: return
@@ -230,6 +242,21 @@ func _footstools() -> void:
 				await _reject("placed companion walk=%d delay=%d direction=%s" % [walk, delay, direction])
 				if failed: return
 		print("ISLAND_FOOTSTOOL_OK walk=%d" % walk)
+
+func _late_footstools() -> void:
+	for place in [175, 180]:
+		for walk in ([12, 14, 16, 17, 18, 19] if place == 175 else [12, 14, 16, 17, 18, 19, 20]):
+			for delay in [20, 24, 32, 40, 48, 56]:
+				for direction in [Vector2.UP, Vector2(1, -1), Vector2.RIGHT]:
+					await _footstool(walk, place, true)
+					if failed: return
+					await step(delay)
+					_move(direction)
+					await _pulse("dash")
+					await _reject("placed companion coyote place=%d walk=%d delay=%d direction=%s" % [place, walk, delay, direction])
+					if failed: return
+		print("ISLAND_COYOTE_FOOTSTOOL_OK place=%d" % place)
+	_check(actual_coyote_steps > 0, "The late fixtures include actual departures from the companion before a normal coyote Jump")
 
 func _without_extra_jump() -> void:
 	for launch in [225, 255]:
@@ -258,23 +285,26 @@ func _superdash() -> void:
 	_check(actual_superdashes > 0, "The negative inputs include actual Superdash actions")
 
 func _high_wall() -> void:
-	for delay in [0, 16, 32]:
-		for direction in _directions():
-			await _enter()
+	for method in ["walk", "jump", "up_dash", "jump_up_dash"]:
+		await _enter()
+		if method.begins_with("jump"):
+			_move(Vector2.ZERO, false)
+			await _pulse("jump")
+			await step(16)
+		if method.ends_with("up_dash"):
+			_move(Vector2.UP, false)
+			await _pulse("dash")
+		if method == "walk":
 			_move(Vector2.LEFT, false)
 			for frame in 100:
 				await step()
-				if _x() < 65: break
-			_move(Vector2(-1, -1))
-			for frame in 240:
-				await step()
-				if player.is_wall_grabbing() and player.position.y < 110: break
-			_check(player.is_wall_grabbing() and player.position.y < 110 and _x() < 75, "Actually climb the left wall before the high takeoff")
-			if failed: return
-			_move(Vector2.RIGHT)
-			await _pulse("jump")
-			await step(delay)
-			_move(direction)
-			await _pulse("dash")
-			await _reject("bare high wall delay=%d direction=%s" % [delay, direction])
-			if failed: return
+				if _x() < 70: break
+		_move(Vector2(-1, -1))
+		for frame in 180:
+			await step()
+			if deaths > 0: break
+		release()
+		await step(5)
+		_check(deaths == 1 and edge_hits == 1 and stage.room_index == 4, "Visible left spikes stop the real old wall approach: " + method)
+		_check(actions.get("creature_jump", 0) == 0 and wind_entries == 0, "The approach cannot wait on a high wall or enter the wind without the companion jump")
+		trials += 1

@@ -41,7 +41,7 @@ func _run() -> void:
 					check(not bounds.intersects(wall), "Patrol stays clear of terrain")
 	check(SpikeBlock.segment_hits_box(Vector2(-100, 0), Vector2(100, 0), Vector2(43, 51)), "Swept collision detects a full crossing")
 	check(not SpikeBlock.segment_hits_box(Vector2(-100, 70), Vector2(100, 70), Vector2(43, 51)), "Safe clearance remains safe")
-	var delays := [21, 30, 42, 182, 63, 581]
+	var delays := [21, 30, 42, 182, 95, 581]
 	for section in 6:
 		var arrived := false
 		var used_delay := 0
