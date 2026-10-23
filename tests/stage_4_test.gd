@@ -41,7 +41,7 @@ func _run() -> void:
 					check(not bounds.intersects(wall), "Patrol stays clear of terrain")
 	check(SpikeBlock.segment_hits_box(Vector2(-100, 0), Vector2(100, 0), Vector2(43, 51)), "Swept collision detects a full crossing")
 	check(not SpikeBlock.segment_hits_box(Vector2(-100, 70), Vector2(100, 70), Vector2(43, 51)), "Safe clearance remains safe")
-	var delays := [21, 30, 42, 182, 497, 581]
+	var delays := [21, 30, 42, 182, 63, 581]
 	for section in 6:
 		var arrived := false
 		var used_delay := 0
@@ -67,7 +67,7 @@ func _run() -> void:
 		check(not actions.has("climb"), "Carry route never climbs a wall")
 		if section == 1:
 			check(actions.get("wall_jump", 0) > 0, "The canyon uses real wall kicks while carrying its companion")
-		check(actions.has("dash") if section == 0 else (section == 1 or not actions.has("dash")), "Only the high entrance and wall-kick shaft may use dash")
+		check(actions.has("dash") if section in [0, 4] else (section == 1 or not actions.has("dash")), "The high entrance and the long island leap use dash")
 		check(actions.get("creature_jump", 0) > 0, "Use the carried creature's additional jump")
 		var room: Node2D = stage.rooms.get_child(section)
 		for hazard in room.get_node("Hazards").get_children():

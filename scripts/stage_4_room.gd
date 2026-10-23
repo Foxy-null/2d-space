@@ -37,7 +37,7 @@ func _ready() -> void:
 		3: # Ridge followed by descending landings.
 			walls = [Rect2(310, 510, 110, 32), Rect2(530, 370, 110, 32), Rect2(750, 450, 90, 32), Rect2(980, 550, 100, 32)]
 		4: # Long jumps over wide gaps.
-			walls = [Rect2(350, 550, 90, 40), Rect2(670, 500, 90, 40), Rect2(970, 550, 90, 40)]
+			walls = [Rect2(850, 600, 230, 40)]
 		5: # Right, back left, then a long jump to the right.
 			walls = [Rect2(300, 510, 120, 32), Rect2(560, 390, 120, 32), Rect2(340, 270, 130, 32), Rect2(790, 360, 130, 32), Rect2(1040, 450, 90, 32)]
 	for rect in walls:
