@@ -222,16 +222,16 @@ size = Vector2(220, 20)
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_15_EntryFloor"]
-size = Vector2(400, 80)
-
-[sub_resource type="RectangleShape2D" id="Shape_15_RecoveryFloor"]
-size = Vector2(680, 80)
+size = Vector2(500, 10)
 
 [sub_resource type="RectangleShape2D" id="Shape_15_HighLanding"]
-size = Vector2(650, 28)
+size = Vector2(520, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_15_ExitFloor"]
-size = Vector2(200, 80)
+size = Vector2(160, 20)
+
+[sub_resource type="RectangleShape2D" id="Shape_15_RightWall"]
+size = Vector2(40, 570)
 
 [sub_resource type="RectangleShape2D" id="Shape_16_ExitBarrier"]
 size = Vector2(28, 720)
@@ -1762,11 +1762,11 @@ position = Vector2(170, 223.4)
 position = Vector2(17920, 0)
 
 [node name="Spawn" type="Marker2D" parent="Rooms/Room15"]
-position = Vector2(72, 614)
+position = Vector2(72, 684)
 
 
 [node name="Return" type="Marker2D" parent="Rooms/Room15"]
-position = Vector2(1208, 614)
+position = Vector2(1000, 124)
 
 
 [node name="PreviousHint" type="Label" parent="Rooms/Room15"]
@@ -1778,11 +1778,12 @@ text = "←"
 mouse_filter = 2
 
 [node name="Goal" parent="Rooms/Room15" instance=ExtResource("14_arrival")]
-position = Vector2(930, 350)
+position = Vector2(1190, 240)
+mission_required = false
 
 [node name="ArrivalHint" type="Label" parent="Rooms/Room15"]
-offset_left = 882
-offset_top = 241
+offset_left = 1142
+offset_top = 121
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "到着台"
@@ -1809,7 +1810,7 @@ text = "目標達成で出口が開く"
 mouse_filter = 2
 
 [node name="EntryFloor" type="StaticBody2D" parent="Rooms/Room15"]
-position = Vector2(200.0, 680.0)
+position = Vector2(250, 715)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room15/EntryFloor"]
@@ -1817,23 +1818,11 @@ shape = SubResource("Shape_15_EntryFloor")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room15/EntryFloor"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-200.0, -40.0, 200.0, -40.0, 200.0, 40.0, -200.0, 40.0)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="RecoveryFloor" type="StaticBody2D" parent="Rooms/Room15"]
-position = Vector2(740.0, 680.0)
-
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room15/RecoveryFloor"]
-shape = SubResource("Shape_15_RecoveryFloor")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room15/RecoveryFloor"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-340.0, -40.0, 340.0, -40.0, 340.0, 40.0, -340.0, 40.0)
+polygon = PackedVector2Array(-250, -5, 250, -5, 250, 5, -250, 5)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="HighLanding" type="StaticBody2D" parent="Rooms/Room15"]
-position = Vector2(785.0, 364.0)
+position = Vector2(860, 164)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room15/HighLanding"]
@@ -1842,44 +1831,48 @@ one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room15/HighLanding"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-325.0, -14.0, 325.0, -14.0, 325.0, 14.0, -325.0, 14.0)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room15"]
-position = Vector2(1180.0, 680.0)
-
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room15/ExitFloor"]
-shape = SubResource("Shape_15_ExitFloor")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room15/ExitFloor"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-100.0, -40.0, 100.0, -40.0, 100.0, 40.0, -100.0, 40.0)
+polygon = PackedVector2Array(-260, -14, 260, -14, 260, 14, -260, 14)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Creature" parent="Rooms/Room15" instance=ExtResource("ext_jump_creature")]
-position = Vector2(170, 607.1)
+position = Vector2(170, 677.1)
 
 
 [node name="JumpCrystal" parent="Rooms/Room15" instance=ExtResource("ext_jump_crystal")]
-position = Vector2(275, 580)
+position = Vector2(550, 480)
 
 
-[node name="ComboHint" type="Label" parent="Rooms/Room15"]
-offset_left = 24
-offset_top = 250
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "掴む ＋ 紫\nShift · ZL / ZR"
-mouse_filter = 2
+[node name="RightWall" type="StaticBody2D" parent="Rooms/Room15"]
+position = Vector2(1100, 435)
 
-[node name="CountHint" type="Label" parent="Rooms/Room15"]
-offset_left = 460.0
-offset_top = 420.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "↑ ↑\n空中で2回"
-mouse_filter = 2
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room15/RightWall"]
+shape = SubResource("Shape_15_RightWall")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room15/RightWall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-20, -285, 20, -285, 20, 285, -20, 285)
+color = Color(0.12, 0.19, 0.34, 1)
+
+[node name="WallSpikes" parent="Rooms/Room15" instance=ExtResource("ext_spike")]
+position = Vector2(1080, 435.5)
+rotation = 1.57079633
+travel = Vector2(0, 0)
+room_number = 14
+ceiling_strip = true
+strip_half_width = 284.5
+stage_group = &"tutorial"
+
+[node name="ExitFloor" type="StaticBody2D" parent="Rooms/Room15"]
+position = Vector2(1200, 250)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room15/ExitFloor"]
+shape = SubResource("Shape_15_ExitFloor")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room15/ExitFloor"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-80, -10, 80, -10, 80, 10, -80, 10)
+color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="Room16" type="Node2D" parent="Rooms"]
 position = Vector2(19200, 0)
@@ -2105,18 +2098,10 @@ color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="PracticeHint" type="Label" parent="Rooms/Room17"]
 offset_left = 180
-offset_top = 340
+offset_top = 480
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "X → Space\nB / ○ → A / ×"
-mouse_filter = 2
-
-[node name="LaunchHint" type="Label" parent="Rooms/Room17"]
-offset_left = 480
-offset_top = 490
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "→ → →\nダッシュ → すぐジャンプ"
 mouse_filter = 2
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
