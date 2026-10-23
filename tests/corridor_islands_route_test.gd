@@ -298,11 +298,12 @@ func _high_wall() -> void:
 			_move(Vector2.LEFT, false)
 			for frame in 100:
 				await step()
-				if _x() < 70: break
-		_move(Vector2(-1, -1))
-		for frame in 180:
-			await step()
-			if deaths > 0: break
+				if _x() < 70 or deaths > 0: break
+		if deaths == 0:
+			_move(Vector2(-1, -1))
+			for frame in 180:
+				await step()
+				if deaths > 0: break
 		release()
 		await step(5)
 		_check(deaths == 1 and edge_hits == 1 and stage.room_index == 4, "Visible left spikes stop the real old wall approach: " + method)

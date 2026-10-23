@@ -96,7 +96,7 @@ func _ready() -> void:
 	if room_number == 4:
 		var edge := SPIKE.instantiate()
 		edge.name = "LeftEdgeSpikes"
-		edge.position = Vector2(24, 350)
+		edge.position = Vector2(36, 350)
 		edge.rotation = -PI / 2
 		edge.travel = Vector2.ZERO
 		edge.ceiling_strip = true
