@@ -313,6 +313,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 `STAGE_3_TEST_OK` は、実入力で全6部屋を攻略し（第5室は下ダッシュ併用）、壁キック・通常重力と反転中の連携、移動ゲート、到着台、部屋移動と逆戻り、落下・やり直し、クリア後の自由練習、再選択時の進捗初期化を確認します。
 
+第5室のSpring経路・代替入力・復帰の検証は `tests/gravity_room_five_spring_test.gd` を実行します。通常と弱い横入力の踏切、通常Jumpと8方向Dash、実Superdash、屋根迂回、R・落下・隣室往復を確認します。
+
 `CHARACTER_SPRITES_TEST_OK` は、元画像の使い分け、少数フレームの歩行・壁登り・運搬、両重力の左右向きと壁キック、大きなアイテムの縦横比・表示幅・手との接点、追加ジャンプ表示の位置を確認します。
 
 `TUTORIAL_ROOMS_TEST_OK` は、操作の制限と解禁、部屋内の固定カメラ、画面端での切り替え、段差と穴のジャンプ、壁登りと壁キック、水平・斜めDashでの攻略、重力ゲートとゴール、各部屋への復帰、戻った後の操作維持、Crystalの復帰を確認します。
@@ -394,5 +396,3 @@ Wall Grab中は、登り・静止・降りのいずれでも近くのObjectを�
 上記4本をGodot 4.7.2 headlessで実行します。新しい `tests/phase3_grab_test.gd` は `PHASE3_GRAB_TEST_OK` と終了コード0で成功です。保持中の衝突無効化と頭上追従を各テストframeで確認し、両重力の壁キック／壁スライド、低い天井での取得と方向転換、薄い壁越しGrab拒否、Release位置補正・待機・自動再試行、狭い通路での重なり解消、通常移動での押し合いを検証します。入力の共有・優先順位、Drop／全方向Throw／同frame Dash Throw、独立Jump残数と表示、Heavyの例外、ParachuteとWind／Launch猶予、実RigidBodyの投擲からButton ON、Respawnも対象です。上昇気流は両重力で、傘の有無・他Objectの保持・落下450・浮上180・斜め風・風の相殺・Release後の慣性・実Areaからの退出を検証します。
 
 Wall GrabとObject Grabの切り替えは両重力で検証します。壁を掴んだままの登り・静止・降りでは取得せず、キーの押し直しと、登り切り・降り切り・スタミナ切れ・壁ジャンプでの解除時には取得すること、Dashによる解除では取得しないことを確認します。
-
-第5室のSpring経路・代替入力・復帰の検証は `tests/gravity_room_five_spring_test.gd` を実行します。通常と弱い横入力の踏切、通常Jumpと8方向Dash、実Superdash、屋根迂回、R・落下・隣室往復を確認します。
