@@ -6,6 +6,8 @@ var room: Node2D
 var checks := 0
 var failed := false
 var respawns := 0
+var frames := 0
+var route_start := 0
 
 
 func _initialize() -> void:
@@ -24,24 +26,49 @@ func _run() -> void:
 	tutorial.call("_set_room", 4, false)
 	player.respawn()
 	await _step(3)
+	await _enter()
+	_check(not room.get_node("Goal").locked and tutorial.seen.is_empty(), "Room 6 arrival is available without an action-history lock")
+	await _capture("entrance")
 	await _safe_retry()
 	await _dash_alternatives()
 	await _wall_alternative()
 	await _superdash_attempt()
 	for launch_x in [390, 410, 430]:
-		for delay in [8, 12, 16, 20, 24, 28]:
+		for delay in [12, 16, 20, 24, 28]:
 			await _enter()
 			await _walk_to(launch_x)
 			_check(tutorial.seen.has("jump_crystal") and player.is_air_jump_ready(), "Walking to the takeoff naturally collects the purple boot")
 			await _double_jump(delay)
-			_check(tutorial.seen.has("air_jump") and not tutorial.seen.has("dash"), "The second real jump uses the boot without a dash")
+			await _step(16)
+			await _up_dash()
+			_check(tutorial.seen.has("air_jump") and tutorial.seen.has("dash"), "The real route combines the boot and learned upward dash")
 			for frame in 100:
 				if _on_landing():
 					break
 				await _step()
 			_check(respawns == 0 and _on_landing() and player.is_dash_ready() and not player.is_air_jump_ready(), "The broad platform accepts x=%d, second-jump delay=%df" % [launch_x, delay])
 			if launch_x == 430 and delay == 28:
+				await _capture("upper_landing")
 				await _finish_course()
+	for first in [12, 16, 20, 24, 28]:
+		for second in [12, 16, 20, 24, 28]:
+			await _enter()
+			await _walk_to(390)
+			await _double_jump(first)
+			await _step(second)
+			await _up_dash()
+			_check(await _reaches_raised_area(), "Additional-jump-first route accepts gaps %d/%df" % [first, second])
+	for first in [8, 16, 24, 32]:
+		for second in [16, 20, 24, 28]:
+			await _enter()
+			await _walk_to(430)
+			await _pulse("jump")
+			await _step(first)
+			await _up_dash()
+			await _step(second)
+			await _pulse("jump")
+			_check(await _reaches_raised_area(), "Dash-first route accepts gaps %d/%df" % [first, second])
+	await _finish_course()
 	await _backtrack()
 	_release()
 	tutorial.free()
@@ -58,48 +85,40 @@ func _safe_retry() -> void:
 	await _step(6)
 	_check(player.is_on_floor() and absf(_local().y - 614) < 1 and respawns == 0, "A missed normal jump lands safely below the platform")
 	_check(player.is_air_jump_ready(), "The unused boot remains available after landing")
-	await _double_jump(8)
-	for frame in 100:
-		if _on_landing():
-			break
-		await _step()
-	_check(_on_landing(), "Two jumps can retry through the one-way platform from the safe floor")
-	Input.action_press("move_left")
-	for frame in 150:
-		if _local().x < 520:
-			break
-		await _step()
+	await _double_jump(16)
+	await _step(100)
 	_release()
-	for frame in 90:
-		if player.is_on_floor() and _local().y > 600:
-			break
-		await _step()
-	_check(respawns == 0 and player.is_on_floor() and not player.is_air_jump_ready(), "Dropping from the landing is safe and does not refill a used boot")
+	_check(player.is_on_floor() and absf(_local().y - 614) < 1 and not player.is_air_jump_ready(), "Two jumps alone return safely to the floor below the 400px ascent")
 	await _pulse("reset")
 	await _step(4)
 	_check(_local().x < 100 and player.is_on_floor() and room.get_node("JumpCrystal").visible, "R restores the safe entrance and purple boot")
+	player.global_position.y = 780
+	player.velocity = Vector2.ZERO
+	await _step(4)
+	_check(_local().x < 100 and player.is_on_floor() and room.get_node("JumpCrystal").visible, "A fall below the room restores the safe entrance and boot")
 	await _walk_to(400)
 	_check(player.is_air_jump_ready(), "The restored boot can be collected naturally again")
 
 
 func _dash_alternatives() -> void:
 	for direction in [Vector2.RIGHT, Vector2(1, -1), Vector2.UP, Vector2(-1, -1), Vector2.LEFT, Vector2(-1, 1), Vector2.DOWN, Vector2(1, 1)]:
-		await _enter()
-		await _walk_to(400)
-		await _pulse("jump")
-		await _step(16)
-		_release()
-		if direction.x != 0:
-			Input.action_press("move_right" if direction.x > 0 else "move_left")
-		if direction.y != 0:
-			Input.action_press("move_down" if direction.y > 0 else "move_up")
-		await _pulse("dash")
-		_check(player.is_dashing(), "The alternative starts a real directional dash")
-		_release()
-		Input.action_press("move_right")
-		var reached := await _reaches_raised_area()
-		_check(reached == (direction == Vector2.UP or direction == Vector2(1, -1)), "Only the existing upward dash alternatives reach the raised area: %s" % direction)
-		_check(not tutorial.seen.has("air_jump") and room.get_node("Goal").locked and not tutorial.cleared.has(5), "A dash alternative does not fake the additional-jump lesson")
+		for delay in [0, 16, 32]:
+			await _enter()
+			await _walk_to(400)
+			await _pulse("jump")
+			await _step(delay)
+			_release()
+			if direction.x != 0:
+				Input.action_press("move_right" if direction.x > 0 else "move_left")
+			if direction.y != 0:
+				Input.action_press("move_down" if direction.y > 0 else "move_up")
+			await _pulse("dash")
+			_check(player.is_dashing(), "The alternative starts a real directional dash")
+			_release()
+			Input.action_press("move_right")
+			var reached := await _reaches_raised_area()
+			_check(not reached, "No directional dash without the extra jump reaches the 400px landing: %s" % direction)
+			_check(not tutorial.seen.has("air_jump") and not room.get_node("Goal").locked and not tutorial.cleared.has(5), "The open arrival remains unreachable without the additional jump")
 
 
 func _wall_alternative() -> void:
@@ -107,36 +126,62 @@ func _wall_alternative() -> void:
 	await _walk_to(1230)
 	Input.action_press("wall_grab")
 	Input.action_press("move_up")
-	await _step(80)
-	_check(player.is_wall_grabbing() and tutorial.seen.has("climb"), "The existing exit wall permits a real wall climb")
+	var climbed := false
+	for frame in 80:
+		climbed = climbed or player.is_wall_grabbing()
+		if respawns > 0:
+			break
+		await _step()
 	_release()
+	await _step(3)
+	_check(climbed and respawns > 0, "Visible spikes stop climbing the exit wall above the safe floor")
+	_check(_local().x < 100 and player.is_on_floor() and room.get_node("JumpCrystal").visible, "Wall contact restores the entrance and boot without a teleport collision")
+	_check(not tutorial.cleared.has(5), "Wall techniques do not reach the open arrival")
+	await _enter()
+	await _walk_to(1230)
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	await _step(4)
+	Input.action_release("move_up")
+	await _step(10)
+	Input.action_release("move_right")
 	Input.action_press("move_left")
 	await _pulse("jump")
-	_check(tutorial.seen.has("wall_jump"), "The wall route performs a real wall kick")
-	_check(await _reaches_raised_area(), "The existing wall route remains an advanced alternative")
-	_check(not tutorial.seen.has("air_jump") and room.get_node("Goal").locked, "Wall techniques do not unlock the additional-jump lesson")
+	Input.action_release("wall_grab")
+	_check(tutorial.seen.has("wall_jump"), "The strongest wall attempt starts a real wall kick")
+	await _step(12)
+	Input.action_release("move_left")
+	Input.action_press("move_up")
+	await _pulse("dash")
+	Input.action_release("move_up")
+	Input.action_press("move_left")
+	_check(not await _reaches_raised_area(), "A low wall kick plus upward dash cannot reach the landing")
 
 
 func _superdash_attempt() -> void:
 	await _enter()
-	await _walk_to(400)
+	await _walk_to(260)
 	await _pulse("dash")
-	await _step(3)
+	await _step(10)
 	await _pulse("jump")
-	_check(tutorial.seen.has("superdash"), "The attempt performs an actual Superdash")
-	_check(not await _reaches_raised_area(), "A horizontal Superdash cannot reach the high platform")
-	_check(not tutorial.seen.has("air_jump") and room.get_node("Goal").locked, "Superdash does not bypass the lesson")
+	_check(tutorial.seen.has("superdash") and player.is_dash_ready(), "A late Superdash retains a fresh air dash")
+	await _step(16)
+	await _up_dash()
+	_check(player.is_dashing(), "The strongest Superdash attempt includes a real upward air dash")
+	_check(not await _reaches_raised_area(), "Superdash plus upward dash still cannot reach the high platform")
+	_check(not tutorial.seen.has("air_jump") and not tutorial.cleared.has(5), "Superdash does not bypass the terrain")
 
 
 func _reaches_raised_area() -> bool:
 	for frame in 180:
-		if player.is_on_floor() and _local().x > 530 and _local().y < 470:
-			return true
+		if player.is_on_floor():
+			return _local().x > 470 and _local().y <= 214
 		await _step()
 	return false
 
 
 func _finish_course() -> void:
+	var before_respawns := respawns
 	Input.action_press("move_right")
 	for frame in 350:
 		if tutorial.cleared.has(5):
@@ -150,13 +195,17 @@ func _finish_course() -> void:
 	_release()
 	_check(tutorial.cleared.has(5) and room.get_node("Goal").is_pressed(), "The two-jump route presses the actual arrival switch")
 	_check(room.get_node("ExitBarrier/Collision").disabled, "The actual arrival opens the exit")
+	print("ROOM6_ROUTE_SECONDS %.2f" % ((frames - route_start) / 60.0))
 	Input.action_press("move_right")
 	for frame in 180:
 		if tutorial.room_index == 6 and not tutorial.transitioning:
 			break
+		Input.action_release("jump")
+		if player.is_on_floor() and player.is_on_wall():
+			Input.action_press("jump")
 		await _step()
 	_release()
-	_check(tutorial.room_index == 6 and player.is_on_floor() and player.controls_enabled, "Walking out reaches room 7")
+	_check(tutorial.room_index == 6 and player.is_on_floor() and player.controls_enabled and respawns == before_respawns + 1, "Dropping from the upper landing and walking out reaches room 7 safely")
 
 
 func _backtrack() -> void:
@@ -187,6 +236,7 @@ func _enter() -> void:
 	player.respawn()
 	await _step(6)
 	respawns = 0
+	route_start = frames
 
 
 func _walk_to(x: float) -> void:
@@ -198,6 +248,22 @@ func _walk_to(x: float) -> void:
 	_check(false, "Walking to x=%s timed out" % x)
 
 
+func _up_dash() -> void:
+	Input.action_release("move_right")
+	Input.action_press("move_up")
+	await _pulse("dash")
+	Input.action_release("move_up")
+	Input.action_press("move_right")
+
+
+func _capture(name: String) -> void:
+	if not OS.get_cmdline_user_args().has("--screenshots"):
+		return
+	DirAccess.make_dir_recursive_absolute("res://docs/screenshots/tutorial-air-jump")
+	RenderingServer.force_draw()
+	root.get_texture().get_image().save_png("res://docs/screenshots/tutorial-air-jump/%s.png" % name)
+
+
 func _double_jump(delay: int) -> void:
 	await _pulse("jump")
 	await _step(delay)
@@ -205,12 +271,7 @@ func _double_jump(delay: int) -> void:
 
 
 func _on_landing() -> bool:
-	if not player.is_on_floor():
-		return false
-	for index in player.get_slide_collision_count():
-		if player.get_slide_collision(index).get_collider() == room.get_node("HighLanding"):
-			return true
-	return false
+	return player.is_on_floor() and _local().y <= 214.0
 
 
 func _pulse(action: String) -> void:
@@ -223,6 +284,7 @@ func _step(count: int = 1) -> void:
 	for frame in count:
 		await physics_frame
 		await process_frame
+		frames += 1
 
 
 func _local() -> Vector2:

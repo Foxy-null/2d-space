@@ -102,7 +102,7 @@ func _run() -> void:
 		var respawns_before := respawns
 		match index:
 			0:
-				await _kick_pair(false, 0, true)
+				await _room_one_wall_course()
 				_check(actions.has("launch_spring"), "The first room launches from its Spring into the wall kicks")
 				_drive("move_right")
 				await _until(func(): return actions.has("return_spring"), 160, "The first room's kicks enter Up gravity and its ceiling Spring")
@@ -360,6 +360,31 @@ func _cross_crystal_pit(edge_x: int, end_x: int) -> void:
 	_check(not stage.get_node("HUD/Status/Rows/Resources").text.contains("空中ジャンプ：1"), "The HUD clears the extra jump after use")
 
 
+func _room_one_wall_course(land_on_cap: bool = false, takeoffs := Vector4(548, 440, 332, 78)) -> void:
+	_drive("move_right")
+	await _until(func(): return player.is_on_wall() and _x() > 600, 260, "Spring reaches the first wall below its overhang")
+	await _until(func(): return player.position.y >= takeoffs.x, 100, "Let the Spring descent leave room to kick around the lower lip")
+	_drive("move_left", true)
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _x() < 500, 90, "Kick onto the first left grip")
+	await _until(func(): return player.position.y < takeoffs.y, 90, "Climb below the left overhang")
+	_drive("move_right", true)
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _x() > 600, 90, "Kick over the lower overhang onto the middle right grip")
+	await _until(func(): return player.position.y < takeoffs.z, 90, "Climb below the upper right overhang")
+	_drive("move_left", true)
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _x() < 500, 90, "Kick above the left overhang")
+	await _until(func(): return player.position.y < takeoffs.w, 140, "Climb the clear upper wall before the last transfer")
+	_drive("move_right", true)
+	await _jump()
+	_drive("move_right")
+	if land_on_cap:
+		await _until(func(): return _x() > 626, 90, "Cross above the right wall")
+		_release_inputs()
+		await _until(func(): return player.is_on_floor() and _x() > 640 and _x() < 680, 120, "Land on the right wall cap before the gravity gate")
+
+
 func _kick_pair(inverted: bool, shift: int, spring_launch := false) -> void:
 	_drive("move_right")
 	await _until(func(): return player.is_on_wall() and (spring_launch or player.is_on_floor()) and _x() > 500 + shift, 260, "Reach the inner wall")
@@ -492,7 +517,7 @@ func _check_hints(expected: bool) -> void:
 	var labels := hints.filter(func(hint): return hint is Label)
 	var routes := hints.filter(func(hint): return hint is Line2D)
 	_check(stage.hints_visible == expected and not labels.is_empty() and labels.all(func(hint): return hint.visible == expected), "All explanation labels follow the hint setting")
-	_check(not routes.is_empty() and routes.all(func(hint): return hint.visible), "All existing route lines and arrowheads stay visible with either hint setting")
+	_check(not routes.is_empty() and routes.all(func(hint): return hint.visible == expected), "Route lines and arrowheads follow the optional hint setting")
 	_check(stage.get_node("HUD/Margin/Panel/Rows/Title").text.contains(stage.HINTS[stage.room_index]) == expected, "HUD explanations follow the hint setting")
 	_check(stage.rooms.get_child(1).get_node("UpGate/Arrow").visible and stage.get_node("HUD/Status").visible, "Mechanism directions and player resources stay visible")
 

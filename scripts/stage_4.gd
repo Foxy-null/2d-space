@@ -1,8 +1,8 @@
 extends Node2D
 
-const TITLES := ["相棒と登る階段", "壁キックの峡谷", "低い天井の回廊", "峠を越えて下る", "離れ小島の大跳躍", "折り返しの頂"]
+const TITLES := ["相棒と高い足場へ", "壁キックの峡谷", "低い天井の回廊", "峠を越えて下る", "離れ小島の大跳躍", "折り返しの頂"]
 const HINTS := [
-	"全室、相棒を持ったまま出口へ。空中ジャンプは頂点近くで使い、段ごとに着地して回復。",
+	"相棒の追加ジャンプと上向きダッシュで高い足場へ。広い足場で次の着地点を見よう。",
 	"相棒を持つと壁登りはできない。左右の壁を交互に蹴って峡谷を登ろう。",
 	"低い屋根の下を渡る。頭をぶつけると高さを失うので、追加ジャンプは慌てずに。",
 	"最初は登り、峠からは下り。飛びすぎないよう空中で向きを調整しよう。",
@@ -32,19 +32,25 @@ func _ready() -> void:
 	_update_hud()
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if transitioning:
 		return
 	var local_x := player.position.x - room_index * ROOM_WIDTH
-	if player.position.y < -52 or player.position.y > 772 or local_x < -24:
+	if player.position.y < -52 or player.position.y > rooms.get_child(room_index).room_height + 52 or local_x < -24:
 		player.respawn()
 	elif local_x >= 1260 and room_index < 5 and player.is_on_floor() and _carry_requirement_met():
 		_transition_to_next()
+	camera.position.y = lerpf(camera.position.y, _camera_position().y, 1.0 - exp(-8.0 * delta))
 	_update_hud()
 
 
 func _set_checkpoint() -> void:
-	player.set_respawn_position(Vector2(room_index * ROOM_WIDTH + 110, 594))
+	player.set_respawn_position(Vector2(room_index * ROOM_WIDTH + 110, rooms.get_child(room_index).entrance_top - 26))
+
+
+func _camera_position() -> Vector2:
+	var bottom: float = rooms.get_child(room_index).room_height - 360.0
+	return Vector2(room_index * ROOM_WIDTH + 640, clampf(player.position.y - 80.0, 360.0, bottom))
 
 
 func _transition_to_next() -> void:
@@ -54,7 +60,7 @@ func _transition_to_next() -> void:
 	_set_checkpoint()
 	player.respawn()
 	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(camera, "position", Vector2(room_index * ROOM_WIDTH + 640, 360), 0.28)
+	tween.tween_property(camera, "position", _camera_position(), 0.28)
 	await tween.finished
 	transitioning = false
 	player.controls_enabled = true
@@ -62,13 +68,14 @@ func _transition_to_next() -> void:
 
 
 func _on_respawned() -> void:
+	$Rooms/Room6/Goal.reset_for_respawn()
 	for item in rooms.get_child(room_index).get_node("Items").get_children():
 		item.reset_for_respawn()
 	for room in rooms.get_children():
 		for spike in room.get_node("Hazards").get_children():
 			spike.reset_for_respawn()
 	if not transitioning:
-		camera.position = Vector2(room_index * ROOM_WIDTH + 640, 360)
+		camera.position = _camera_position()
 		camera.reset_smoothing()
 
 
@@ -86,6 +93,7 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
+	$HUD/Info.position = Vector2(580, 620) if room_index == 1 else Vector2(24, 620 if room_index == 0 else 40)
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / 06　%s" % [room_index + 1, TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()

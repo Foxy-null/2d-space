@@ -1,4 +1,4 @@
-[gd_scene load_steps=44 format=3]
+[gd_scene load_steps=45 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_5.gd" id="stage"]
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
@@ -22,8 +22,11 @@ size = Vector2(180, 40)
 [sub_resource type="RectangleShape2D" id="ExitShape"]
 size = Vector2(140, 40)
 
-[sub_resource type="RectangleShape2D" id="LockShape"]
-size = Vector2(20, 1000)
+[sub_resource type="RectangleShape2D" id="Room9ExitShape"]
+size = Vector2(140, 16)
+
+[sub_resource type="RectangleShape2D" id="Room11RestShape"]
+size = Vector2(120, 16)
 
 [sub_resource type="RectangleShape2D" id="Hazard1_1"]
 size = Vector2(32, 280)
@@ -110,7 +113,7 @@ size = Vector2(28, 460)
 size = Vector2(28, 120)
 
 [sub_resource type="RectangleShape2D" id="Hazard11_4"]
-size = Vector2(28, 505)
+size = Vector2(28, 460)
 
 [sub_resource type="RectangleShape2D" id="Hazard12_1"]
 size = Vector2(28, 155)
@@ -142,7 +145,7 @@ antialiased = true
 position = Vector2(0, 0)
 
 [node name="Entrance" type="StaticBody2D" parent="Rooms/Room1"]
-position = Vector2(90, 620)
+position = Vector2(90, 480)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/Entrance"]
 shape = SubResource("EntranceShape")
@@ -165,7 +168,7 @@ color = Color(0.32, 0.25, 0.35, 1)
 
 [node name="EntranceLabel" type="Label" parent="Rooms/Room1"]
 offset_left = 24.0
-offset_top = 650.0
+offset_top = 510.0
 text = "↺"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
@@ -175,14 +178,14 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room1"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
 mouse_filter = 2
 
 [node name="Spawn" type="Marker2D" parent="Rooms/Room1"]
-position = Vector2(90, 570)
+position = Vector2(90, 430)
 
 [node name="Winds" type="Node2D" parent="Rooms/Room1"]
 
@@ -276,35 +279,11 @@ points = PackedVector2Array(-16.0, -87, 16.0, -77, -16.0, -67, 16.0, -57, -16.0,
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room1"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room1/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room1"]
 visible = false
 points = PackedVector2Array(300, 600, 820, 560, 1210, 570)
 width = 2.0
 default_color = Color(0.75, 1, 0.85, 0.6)
-antialiased = true
-
-[node name="EntryJumpPath" type="Line2D" parent="Rooms/Room1"]
-z_index = -1
-points = PackedVector2Array(144, 570, 166, 520, 197, 480, 230, 464, 265, 480, 289, 518, 300, 548)
-width = 3.0
-default_color = Color(1, 0.85, 0.4, 0.9)
-antialiased = true
-
-[node name="EntryJumpHead" type="Line2D" parent="Rooms/Room1"]
-z_index = -1
-points = PackedVector2Array(290, 541, 300, 548, 302, 536)
-width = 3.0
-default_color = Color(1, 0.85, 0.4, 0.9)
 antialiased = true
 
 [node name="Room2" type="Node2D" parent="Rooms"]
@@ -344,7 +323,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room2"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -459,16 +438,6 @@ points = PackedVector2Array(-14.0, -199, 14.0, -189, -14.0, -179, 14.0, -169, -1
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room2"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room2/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room2/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room2"]
 visible = false
 points = PackedVector2Array(90, 570, 290, 580, 680, 430, 990, 570, 1210, 570)
@@ -513,7 +482,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room3"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -683,16 +652,6 @@ points = PackedVector2Array(-14.0, -154, 14.0, -144, -14.0, -134, 14.0, -124, -1
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room3"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room3/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room3/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room3"]
 visible = false
 points = PackedVector2Array(90, 570, 280, 610, 650, 500, 990, 570, 1210, 570)
@@ -737,7 +696,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room4"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -886,16 +845,6 @@ points = PackedVector2Array(-14.0, -237, 14.0, -227, -14.0, -217, 14.0, -207, -1
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room4"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room4/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room4"]
 visible = false
 points = PackedVector2Array(90, 570, 285, 610, 630, 450, 990, 600, 1210, 570)
@@ -940,7 +889,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room5"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1055,16 +1004,6 @@ points = PackedVector2Array(-14.0, -152, 14.0, -142, -14.0, -132, 14.0, -122, -1
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room5"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room5"]
 visible = false
 points = PackedVector2Array(90, 570, 280, 610, 620, 530, 990, 590, 1210, 570)
@@ -1109,7 +1048,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room6"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1238,16 +1177,6 @@ points = PackedVector2Array(-14.0, -174, 14.0, -164, -14.0, -154, 14.0, -144, -1
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room6"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room6/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room6"]
 visible = false
 points = PackedVector2Array(90, 570, 280, 610, 560, 130, 820, 590, 1040, 470, 1210, 570)
@@ -1292,7 +1221,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room7"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1407,16 +1336,6 @@ points = PackedVector2Array(-14.0, -167, 14.0, -157, -14.0, -147, 14.0, -137, -1
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room7"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room7/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room7/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room7"]
 visible = false
 points = PackedVector2Array(90, 570, 290, 600, 610, 500, 990, 610, 1210, 570)
@@ -1461,7 +1380,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room8"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1590,16 +1509,6 @@ points = PackedVector2Array(-14.0, -199, 14.0, -189, -14.0, -179, 14.0, -169, -1
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room8"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room8/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room8/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room8"]
 visible = false
 points = PackedVector2Array(90, 570, 290, 610, 670, 420, 480, 600, 1000, 540, 1210, 570)
@@ -1622,14 +1531,15 @@ polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
 color = Color(0.32, 0.25, 0.35, 1)
 
 [node name="Exit" type="StaticBody2D" parent="Rooms/Room9"]
-position = Vector2(1210, 620)
+position = Vector2(1210, 608)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/Exit"]
-shape = SubResource("ExitShape")
+shape = SubResource("Room9ExitShape")
+one_way_collision = true
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room9/Exit"]
 script = ExtResource("terrain")
-polygon = PackedVector2Array(-70.0, -20.0, 70.0, -20.0, 70.0, 20.0, -70.0, 20.0)
+polygon = PackedVector2Array(-70, -8, 70, -8, 70, 8, -70, 8)
 color = Color(0.32, 0.25, 0.35, 1)
 
 [node name="EntranceLabel" type="Label" parent="Rooms/Room9"]
@@ -1644,7 +1554,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room9"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1770,16 +1680,6 @@ script = ExtResource("terrain")
 polygon = PackedVector2Array(-16.0, -110.0, 16.0, -110.0, 16.0, 110.0, -16.0, 110.0)
 color = Color(0.32, 0.25, 0.35, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room9"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room9/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room9/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room9"]
 visible = false
 points = PackedVector2Array(90, 570, 280, 610, 700, 390, 1000, 580, 1210, 570)
@@ -1824,7 +1724,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room10"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -1953,16 +1853,6 @@ points = PackedVector2Array(-14.0, -232, 14.0, -222, -14.0, -212, 14.0, -202, -1
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room10"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room10/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room10/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
-
 [node name="Route" type="Line2D" parent="Rooms/Room10"]
 visible = false
 points = PackedVector2Array(90, 570, 280, 610, 540, 440, 800, 590, 1030, 430, 1210, 570)
@@ -2007,7 +1897,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room11"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -2081,6 +1971,18 @@ mouse_filter = 2
 points = PackedVector2Array(-90.0, -170.0, 90.0, -170.0, 90.0, 170.0, -90.0, 170.0, -90.0, -170.0)
 width = 1.5
 default_color = Color(0.48, 0.4, 0.6, 0.55)
+
+[node name="Rest" type="StaticBody2D" parent="Rooms/Room11"]
+position = Vector2(780, 668)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/Rest"]
+shape = SubResource("Room11RestShape")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room11/Rest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-60, -8, 60, -8, 60, 8, -60, 8)
+color = Color(0.16, 0.12, 0.24, 1)
 
 [node name="Bumpers" type="Node2D" parent="Rooms/Room11"]
 
@@ -2210,7 +2112,7 @@ width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
 [node name="Thorns4" type="Area2D" parent="Rooms/Room11/Hazards"]
-position = Vector2(950, 507.5)
+position = Vector2(950, 530)
 collision_layer = 0
 collision_mask = 1
 
@@ -2218,23 +2120,13 @@ collision_mask = 1
 shape = SubResource("Hazard11_4")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room11/Hazards/Thorns4"]
-polygon = PackedVector2Array(-14.0, -252.5, 14.0, -252.5, 14.0, 252.5, -14.0, 252.5)
+polygon = PackedVector2Array(-14, -230, 14, -230, 14, 230, -14, 230)
 color = Color(0.85, 0.25, 0.31, 1)
 
 [node name="Stripes" type="Line2D" parent="Rooms/Room11/Hazards/Thorns4"]
-points = PackedVector2Array(-14.0, -244, 14.0, -234, -14.0, -224, 14.0, -214, -14.0, -204, 14.0, -194, -14.0, -184, 14.0, -174, -14.0, -164, 14.0, -154, -14.0, -144, 14.0, -134, -14.0, -124, 14.0, -114, -14.0, -104, 14.0, -94, -14.0, -84, 14.0, -74, -14.0, -64, 14.0, -54, -14.0, -44, 14.0, -34, -14.0, -24, 14.0, -14, -14.0, -4, 14.0, 6, -14.0, 16, 14.0, 26, -14.0, 36, 14.0, 46, -14.0, 56, 14.0, 66, -14.0, 76, 14.0, 86, -14.0, 96, 14.0, 106, -14.0, 116, 14.0, 126, -14.0, 136, 14.0, 146, -14.0, 156, 14.0, 166, -14.0, 176, 14.0, 186, -14.0, 196, 14.0, 206, -14.0, 216, 14.0, 226, -14.0, 236, 14.0, 246)
+points = PackedVector2Array(-12, -222, 12, -212, -12, -202, 12, -192, -12, -182, 12, -172, -12, -162, 12, -152, -12, -142, 12, -132, -12, -122, 12, -112, -12, -102, 12, -92, -12, -82, 12, -72, -12, -62, 12, -52, -12, -42, 12, -32, -12, -22, 12, -12, -12, -2, 12, 8, -12, 18, 12, 28, -12, 38, 12, 48, -12, 58, 12, 68, -12, 78, 12, 88, -12, 98, 12, 108, -12, 118, 12, 128, -12, 138, 12, 148, -12, 158, 12, 168, -12, 178, 12, 188, -12, 198, 12, 208, -12, 218, 12, 228)
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
-
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room11"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room11/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
 
 [node name="Route" type="Line2D" parent="Rooms/Room11"]
 visible = false
@@ -2280,7 +2172,7 @@ mouse_filter = 2
 [node name="ExitLabel" type="Label" parent="Rooms/Room12"]
 offset_left = 1020.0
 offset_top = 650.0
-text = "0 / 0"
+text = "→"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
 theme_override_constants/outline_size = 5
@@ -2499,16 +2391,6 @@ color = Color(0.85, 0.25, 0.31, 1)
 points = PackedVector2Array(-14.0, -232, 14.0, -222, -14.0, -212, 14.0, -202, -14.0, -192, 14.0, -182, -14.0, -172, 14.0, -162, -14.0, -152, 14.0, -142, -14.0, -132, 14.0, -122, -14.0, -112, 14.0, -102, -14.0, -92, 14.0, -82, -14.0, -72, 14.0, -62, -14.0, -52, 14.0, -42, -14.0, -32, 14.0, -22, -14.0, -12, 14.0, -2, -14.0, 8, 14.0, 18, -14.0, 28, 14.0, 38, -14.0, 48, 14.0, 58, -14.0, 68, 14.0, 78, -14.0, 88, 14.0, 98, -14.0, 108, 14.0, 118, -14.0, 128, 14.0, 138, -14.0, 148, 14.0, 158, -14.0, 168, 14.0, 178, -14.0, 188, 14.0, 198, -14.0, 208, 14.0, 218, -14.0, 228, 14.0, 238)
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
-
-[node name="ExitLock" type="StaticBody2D" parent="Rooms/Room12"]
-position = Vector2(1125, 360)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room12/ExitLock"]
-shape = SubResource("LockShape")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room12/ExitLock"]
-polygon = PackedVector2Array(-10, -460, 10, -460, 10, 460, -10, 460)
-color = Color(0.82, 0.62, 0.28, 0.8)
 
 [node name="Route" type="Line2D" parent="Rooms/Room12"]
 visible = false

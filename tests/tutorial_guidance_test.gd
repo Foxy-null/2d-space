@@ -3,18 +3,18 @@ extends SceneTree
 const REQUIRED_CUES := [
 	{"MoveHint": "A / D", "JumpHint": "Space"},
 	{"ClimbHint": "Shift", "KickHint": "Space"},
-	{"PracticeHint": "X", "DashHint": "Space"},
-	{"UpHint": "↑", "CeilingHint": "Space", "DownHint": "↓"},
-	{"JumpHint": "Space", "RefillHint": "X"},
-	{"JumpHint": "Space"}, {"FloorHint": "↑"}, {"BounceHint": "↗"},
-	{"DashHint": "X"}, {"WaitHint": "↑", "CeilingHint": "↓"},
+	{},
+	{},
+	{},
+	{}, {}, {},
+	{}, {},
 	{"BoxHint": "Shift", "ButtonHint": "↓"},
 	{"ThrowHint": "Shift", "TargetHint": "ON"},
-	{"CreatureHint": "Space", "RefillHint": "↑"},
-	{"GlideHint": "Shift", "ReleaseHint": "離す"},
-	{"ComboHint": "Shift", "CountHint": "2回"},
+	{},
+	{},
+	{},
 	{"WindHint": "Shift", "GravityHint": "↓"},
-	{"PracticeHint": "Space", "LaunchHint": "ジャンプ"},
+	{"PracticeHint": "Space"},
 ]
 
 var failed := false
@@ -49,7 +49,10 @@ func _run() -> void:
 			var cue: Label = room.get_node(name)
 			_check(cue.visible and cue.text.contains(REQUIRED_CUES[index][name]), "Required action cue remains visible in room %d: %s" % [index + 1, name])
 		_check(index == 0 or (room.get_node("PreviousHint").visible and room.get_node("PreviousHint").text.contains("←")), "Backtracking remains visible after the first room")
-		_check(goal.visible and goal.locked and room.get_node("Goal/Bubble").visible and room.get_node("Goal/Bubble/Progress").visible, "The locked goal and remaining-count cue stay visible")
+		if tutorial.STEPS[index].is_empty():
+			_check(goal.visible and not goal.locked and not room.get_node("Goal/Bubble").visible, "Terrain-led rooms have an unlocked goal without a redundant mission bubble")
+		else:
+			_check(goal.visible and goal.locked and room.get_node("Goal/Bubble").visible and room.get_node("Goal/Bubble/Progress").visible, "The locked goal and remaining-count cue stay visible")
 		_check(not room.get_node("ExitHint").visible, "The closed exit does not duplicate the goal explanation")
 		for name in ["Controls", "WallControls", "Objective", "Gravity", "Carry", "StaminaLabel"]:
 			_check(not rows.get_node(name).visible, "Default HUD avoids duplicate details: " + name)
@@ -61,6 +64,8 @@ func _run() -> void:
 		pause.toggle_hints()
 		_check(paused and tutorial.hints_visible and rows.get_node("Controls").text == tutorial.CONTROLS[index], "Pause enables the original detailed controls without unpausing")
 		_check(rows.get_node("Controls").visible and rows.get_node("Objective").visible, "Detailed controls and mission progress are visible on demand")
+		if tutorial.STEPS[index].is_empty():
+			_check(rows.get_node("Objective").text == "足跡の到着台に乗ろう", "Terrain-led rooms have a useful optional hint without a zero-step counter")
 		_check(room.get_node("ExitHint").visible and room.get_node("ExitHint").text == "到着台で開く", "Detailed hints retain the original closed-exit explanation")
 		pause.retry()
 		await _step(3)

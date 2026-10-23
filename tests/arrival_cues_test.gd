@@ -27,7 +27,7 @@ func _run() -> void:
 		goal.set_physics_process(false)
 		goal.cap.sync_to_physics = false
 		var total: int = tutorial.STEPS[index].size()
-		for state in ["locked", "ready", "cleared"]:
+		for state in (["ready", "cleared"] if total == 0 else ["locked", "ready", "cleared"]):
 			if state == "ready":
 				for key in tutorial.STEPS[index]:
 					tutorial._mark(key)
@@ -42,6 +42,12 @@ func _run() -> void:
 			for details in [false, true]:
 				tutorial.set_hints_visible(details)
 				await _step(2)
+				if total == 0:
+					_check(not goal.locked and not goal.get_node("Bubble").visible, "Terrain-led arrival stays ready without a mission bubble in either hint mode")
+					_check(goal.is_pressed() == (state == "cleared") and goal.cap.position.y == (32 if state == "cleared" else 0), "Terrain-led ready and cleared states preserve their physical cap")
+					_check(room.get_node("ExitBarrier/Collision").disabled == (state == "cleared"), "Terrain-led exit opens only after arrival")
+					_check(tutorial.get_node("HUD/Margin/Panel/Rows/Objective").visible == details, "Terrain-led optional guidance follows the hint preference")
+					continue
 				var bounds := goal.get_hint_rect()
 				var room_bounds := Rect2(goal.position + goal.get_node("Bubble").position + bounds.position, bounds.size)
 				_check(Rect2(0, 0, 1280, 720).encloses(room_bounds), "Cue stays in the room")

@@ -15,7 +15,7 @@ func _run() -> void:
 	root.add_child(tutorial)
 	player = tutorial.player
 	await _step(5)
-	# Every room, including the four elevated goals, has a physical locked lid.
+	# Mission rooms have a physical lid; terrain-led rooms start ready.
 	for index in 17:
 		await _enter(index)
 		var goal := _goal()
@@ -27,10 +27,16 @@ func _run() -> void:
 		player.velocity = Vector2.ZERO
 		player.set("_contacts_valid", false)
 		await _step(30)
-		_check(goal.locked and not goal.is_pressed(), "Locked case cannot activate in room %d" % (index + 1))
-		_check(player.is_on_floor() and absf(player.global_position.y - goal.global_position.y + 147.741) < 1, "Case supports the player in room %d" % (index + 1))
-		_check(not _room().get_node("ExitBarrier/Collision").disabled, "Locked exit remains solid")
-	await _enter(0)
+		if tutorial.STEPS[index].is_empty():
+			_check(not goal.locked and goal.is_pressed() and tutorial.cleared.has(index), "Terrain-led arrivals activate on a real landing without action history")
+			_check(player.is_on_floor() and absf(goal.cap.position.y - 32) < 0.1, "Terrain-led arrival supports the player after its full press")
+			_check(_room().get_node("ExitBarrier/Collision").disabled, "Terrain-led arrival opens the real exit")
+		else:
+			_check(goal.locked and not goal.is_pressed(), "Locked case cannot activate in room %d" % (index + 1))
+			_check(player.is_on_floor() and absf(player.global_position.y - goal.global_position.y + 147.741) < 1, "Case supports the player in room %d" % (index + 1))
+			_check(not _room().get_node("ExitBarrier/Collision").disabled, "Locked exit remains solid")
+	# Keep the rim probe separate from the already-pressed terrain-led arrivals.
+	await _enter(1)
 	_complete_steps()
 	player.global_position = _goal().global_position + Vector2(-80, -90)
 	player.velocity = Vector2.ZERO
@@ -38,28 +44,28 @@ func _run() -> void:
 	await _step(30)
 	_check(player.is_on_floor() and absf(player.global_position.y - _goal().global_position.y + 80.959) < 1, "Player can stand on the exposed pedestal rim above the floor")
 	_check(not _goal().is_pressed(), "Standing on the pedestal does not press the red cap")
-	await _enter(12)
+	await _enter(11)
 	var goal := _goal()
 	var events := [0, 0]
 	goal.unlocked.connect(func(): events[0] += 1)
 	goal.activated.connect(func(): events[1] += 1)
-	tutorial.call("_mark", "creature_jump")
-	_check(goal.get_node("Bubble/Progress").text == "のこり 2/3", "Fraction shows remaining rather than completed steps")
-	_check(goal.get_node("Bubble/Objective").text == tutorial.STEP_LABELS["creature_landed"], "Bubble shows the next incomplete objective")
+	_check(goal.get_node("Bubble/Progress").text == "のこり 2/2", "An untouched mission shows remaining rather than completed steps")
+	tutorial.call("_mark", "throw")
+	_check(goal.get_node("Bubble/Progress").text == "のこり 1/2", "The remaining count decreases after the first step")
+	_check(goal.get_node("Bubble/Objective").text == tutorial.STEP_LABELS["throw_button"], "Bubble shows the next incomplete objective")
 	player.global_position = goal.global_position + Vector2(0, -160)
 	player.velocity = Vector2.ZERO
 	player.set("_contacts_valid", false)
 	await _step(30)
 	var case_height := player.global_position.y
-	tutorial.call("_mark", "creature_landed")
-	tutorial.call("_mark", "second_creature_jump")
+	tutorial.call("_mark", "throw_button")
 	_check(not goal.locked and events == [1, 0], "Completing all missions unlocks exactly once")
 	_check(goal.get_node("UnlockSound").playing, "Unlock starts the audible reward")
-	_check(not tutorial.cleared.has(12), "Unlocking the case alone cannot open the exit")
+	_check(not tutorial.cleared.has(11), "Unlocking the case alone cannot open the exit")
 	await _step(2)
-	_check(not tutorial.cleared.has(12), "Exit stays locked before the deep press finishes")
+	_check(not tutorial.cleared.has(11), "Exit stays locked before the deep press finishes")
 	await _step(40)
-	_check(goal.is_pressed() and tutorial.cleared.has(12) and events == [1, 1], "Player waiting on the case falls onto and activates the switch")
+	_check(goal.is_pressed() and tutorial.cleared.has(11) and events == [1, 1], "Player waiting on the case falls onto and activates the switch")
 	_check(absf(goal.cap.position.y - 32) < 0.1 and absf(player.global_position.y - case_height - 64.209) < 1, "Player follows the full deep press without sinking into the floor")
 	_check(player.is_on_floor() and _room().get_node("ExitBarrier/Collision").disabled, "Pressed platform supports player and opens exit")
 	for i in 3:
@@ -147,7 +153,7 @@ func _screenshots() -> void:
 	DirAccess.make_dir_recursive_absolute("res://docs/screenshots/arrival")
 	for index in [0, 5, 7, 12, 14, 16]:
 		await _enter(index)
-		await _capture("room_%d_locked" % (index + 1))
+		await _capture("room_%d_%s" % [index + 1, "ready" if tutorial.STEPS[index].is_empty() else "locked"])
 	tutorial.cleared.erase(8)
 	await _enter(8)
 	# A fresh room is used because a pressed latch deliberately never rises.

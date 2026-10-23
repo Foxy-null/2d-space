@@ -13,28 +13,28 @@ const CONTROLS := [
 	"ダッシュ：X・B / ○ ＋ 方向入力　空中では1回、着地で回復",
 	"↑ ゲート：天井へ　↓ ゲート：床へ　左右の操作は同じ",
 	"緑の速度マークでダッシュ回復　空中で回復してもう一度ダッシュ",
-	"紫のばね靴で追加ジャンプ1回　ジャンプ：Space・A / ×",
+	"追加ジャンプ：Space・A / ×　上ダッシュ：↑ + X・B / ○",
 	"ばねの板に触れると発射　ダッシュと壁スタミナも回復",
 	"丸いバンパーは当たる位置で反射方向が変わる",
 	"風は歩行・空中に作用　ダッシュ中・壁を掴んでいる間は無効",
 	"ゲートの往復を見てから通過　↑ で天井、↓ で床へ",
 	"Shift・ZL / ZRを保持して掴む　止まって離すと置く",
 	"動きながらGrabキーを離すと、自分の移動方向へ投げる",
-	"緑の生物を保持して追加ジャンプ　保持したまま着地で回復",
-	"赤い和傘を保持してゆっくり落下　離すと通常の落下へ",
-	"紫のばね靴 ＋ 緑の生物で追加ジャンプ2回　白い山形に注目",
+	"Shiftで相棒を保持　追加ジャンプ＋上ダッシュ　着地で回復",
+	"赤い和傘を保持して滑空　空中の水平ダッシュも使える　離すと通常の落下へ",
+	"相棒で空中の紫のばね靴へ　追加ジャンプをつなぎ上ダッシュで渡る",
 	"傘を保持して上昇気流へ　反転しても落下がゆっくりになる",
 	"地上で水平ダッシュ → すぐジャンプ　Space・A / ×を使おう",
 ]
 const STEPS := [
-	["jump"], ["climb", "wall_jump"], ["dash"], ["up", "down"],
-	["air_dash", "dash_refill", "refilled_dash"], ["jump_crystal", "air_jump"],
-	["floor_spring"], ["pinball"],
-	["wind_dash"], ["up", "down"],
+	[], ["climb", "wall_jump"], [], [],
+	[], [],
+	[], [],
+	[], [],
 	["button_on"],
-	["throw", "throw_button"], ["creature_jump", "creature_landed", "second_creature_jump"],
-	["glide", "parachute_release", "fast_fall"],
-	["two_jumps", "combo_air", "combo_creature"],
+	["throw", "throw_button"], [],
+	[],
+	[],
 	["wind_lift", "inverted_glide", "down"], ["superdash"],
 ]
 const STEP_LABELS := {
@@ -79,6 +79,7 @@ var _released_parachute := false
 
 
 func _ready() -> void:
+	add_to_group("tutorial")
 	player.get_node("Camera2D").enabled = false
 	player.respawned.connect(_on_respawned)
 	player.movement_action.connect(_on_action)
@@ -94,7 +95,8 @@ func _ready() -> void:
 		var index := room.get_index()
 		goal.activated.connect(_on_arrival.bind(index))
 		room.get_node("ExitHint").z_index = 1
-		goal.set_progress(STEPS[index].size(), STEPS[index].size(), STEPS[index][0], STEP_LABELS[STEPS[index][0]])
+		var first_step: String = "" if STEPS[index].is_empty() else STEPS[index][0]
+		goal.set_progress(STEPS[index].size(), STEPS[index].size(), first_step, STEP_LABELS.get(first_step, "足跡の到着台に乗ろう"))
 		for hint in ["ArrivalHint", "GoalHint", "NextHint"]:
 			if room.has_node(hint):
 				room.get_node(hint).hide()
@@ -215,6 +217,10 @@ func _update_lesson() -> void:
 	var done := cleared.has(room_index)
 	room.get_node("ExitBarrier/Collision").set_deferred("disabled", done)
 	room.get_node("ExitBarrier/Visual").visible = not done
+	var bridge := room.get_node_or_null("ReturnBridge")
+	if bridge != null:
+		bridge.visible = done
+		bridge.get_node("Collision").set_deferred("disabled", not done)
 	room.get_node("ExitHint").text = "任意の練習 →" if done and room_index == 15 else ("→" if done else "到着台で開く")
 	room.get_node("ExitHint").visible = done or hints_visible
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
@@ -230,7 +236,8 @@ func _update_lesson() -> void:
 			next_key = key
 			next = STEP_LABELS[key]
 	room.get_node("Goal").set_progress(STEPS[room_index].size() - count, STEPS[room_index].size(), next_key, next, done)
-	hud.show_lesson_progress("体験済み ✓　自由に練習できます" if done else "目標 %d/%d：%s" % [count, STEPS[room_index].size(), next], done)
+	var progress := next if STEPS[room_index].is_empty() else "目標 %d/%d：%s" % [count, STEPS[room_index].size(), next]
+	hud.show_lesson_progress("体験済み ✓　自由に練習できます" if done else progress, done)
 	$HUD/Completion.visible = completed and room_index >= 15
 	$HUD/Completion.text = "チュートリアル完了！" if room_index == 15 else "自由に練習できます"
 	if room_index == 16:

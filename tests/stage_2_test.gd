@@ -28,12 +28,16 @@ func _release() -> void:
 
 
 func _check_signage() -> void:
+	# 旗の地形確認では、移動できるプレイヤーや生物を障害物として数えない。
+	var excluded: Array[RID] = [player.get_rid()]
+	for object in get_nodes_in_group("grabbable"):
+		excluded.append(object.get_rid())
 	for index in stage.checkpoints.get_child_count():
 		var point: Node2D = stage.checkpoints.get_child(index)
 		var mark := "↺ " if index == stage.checkpoint_index else ("✓ " if index < stage.checkpoint_index else "")
 		_check(point.get_node("Label").text == mark + "%02d" % (index + 1), "Checkpoint marks distinguish unseen, current, and reached platforms")
 		_check(point.get_node("Sign").visible and point.get_node("Sign").get_signal_connection_list("draw").size() == 1, "Every checkpoint keeps its static flag visible")
-		var ray := PhysicsRayQueryParameters2D.create(point.position + Vector2(-110, -36), point.position + Vector2(-50, -36), 1)
+		var ray := PhysicsRayQueryParameters2D.create(point.position + Vector2(-110, -36), point.position + Vector2(-50, -36), 1, excluded)
 		_check(root.world_2d.direct_space_state.intersect_ray(ray).is_empty(), "Checkpoint flag does not obstruct the route")
 	var panel: Control = stage.get_node("HUD/Info")
 	_check(panel.get_global_rect().end.x <= 600, "The HUD leaves the right half of the view clear")
@@ -55,49 +59,37 @@ func _run() -> void:
 	await _step(20)
 	_check(player.is_on_floor(), "Spawn is on a safe platform")
 	_check_signage()
-	# テレポートなしで全区間を、ジャンプ・壁掴み・登りで通過する。
-	# アイテムを使い損ねても休憩足場経由で復帰できることも確認する。
+	# テレポートなしで全区間を通過し、各区間で既習ギミックをつなぐ。
 	for section in 6:
-		var xs: Array = [620, 360, 620, 900] if section % 2 == 0 else [640, 900, 640, 360]
-		for ledge in 4:
-			var target := Vector2(xs[ledge], 640 - section * 720 - (ledge + 1) * 180)
-			var reached := false
-			var release_frames := 0
-			for frame in 300:
-				Input.action_release("jump")
-				var dx := target.x - player.position.x
-				Input.action_release("move_left")
-				Input.action_release("move_right")
-				if absf(dx) > 12.0:
-					Input.action_press("move_right" if dx > 0 else "move_left")
-				if player.get_held_object() != null:
-					release_frames = 30
-				if release_frames > 0:
-					Input.action_release("wall_grab")
-					release_frames -= 1
-				else:
-					Input.action_press("wall_grab")
-				Input.action_press("move_up")
-				if player.is_on_floor() and player.position.y > target.y - 20:
-					Input.action_press("jump")
-				await _step()
-				if absf(player.position.x - target.x) < 48 and player.position.y < target.y - 24:
-					reached = true
-					break
-			_check(reached, "Reach section %d ledge %d via real movement; position %s" % [section + 1, ledge + 1, player.position])
-			if not reached:
-				_release()
-				quit(1)
-				return
-			_release()
-			# バネのある足場以外は着地を待つ。
-			if section not in [1, 5] or ledge not in [0, 2]:
-				await _step(40)
-			if ledge == 3 and section < 5:
-				_check(stage.checkpoint_index == section + 1, "Landing updates the checkpoint")
-				_check_signage()
-		print("区間 %d 登頂確認 / 復帰 %d" % [section + 1, respawns])
-	_check(respawns == 0, "The entire fallback route is traversable without respawning")
+		if section == 0:
+			await _wall_course()
+			_check(stage.checkpoint_index == 1, "The wall route reaches checkpoint 02")
+			_check_signage()
+			continue
+		if section == 1:
+			await _spring_course()
+			_check(stage.checkpoint_index == 2, "The spring route reaches the next checkpoint")
+			_check_signage()
+			continue
+		if section == 2:
+			await _dash_course()
+			_check(stage.checkpoint_index == 3, "The dash chain reaches checkpoint 04")
+			_check_signage()
+			continue
+		if section == 3:
+			await _extra_jump_course()
+			_check(stage.checkpoint_index == 4, "The extra-jump route reaches checkpoint 05")
+			_check_signage()
+			continue
+		if section == 4:
+			await _companion_course()
+			_check(stage.checkpoint_index == 5, "The companion route reaches checkpoint 06")
+			_check_signage()
+			continue
+		if section == 5:
+			await _finale_course()
+			continue
+	_check(respawns == 0, "The entire tower is traversable without respawning")
 	await _step(90)
 	_check(stage.completed, "Summit arrival switch completes the stage")
 	_check(stage.camera.position.y < -3000, "Camera follows the ascent continuously")
@@ -107,9 +99,12 @@ func _run() -> void:
 	_check(stage.checkpoint_index == 5 and player.position.y < -2900, "Fall returns to latest checkpoint")
 	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "Respawn restores movement resources")
 	var crystal := stage.get_node("Items/Item4")
-	crystal._on_body_entered(player)
+	var crystal_start: Vector2 = crystal.position
+	# Keep the physical pickup fixture inside the current checkpoint bounds.
+	crystal.global_position = player.global_position
 	await _step(2)
 	_check(not crystal.visible, "Collecting a crystal consumes it")
+	crystal.position = crystal_start
 	Input.action_press("reset")
 	await _step(1)
 	Input.action_release("reset")
@@ -145,3 +140,349 @@ func _run() -> void:
 	OS.delay_msec(100)
 	print("STAGE_2_TEST_%s" % ("FAILED" if failed else "OK"))
 	quit(1 if failed else 0)
+
+
+func _wall_course(grab_delay: int = 0, dash_delay: int = 20) -> void:
+	var started := Engine.get_physics_frames()
+	_release()
+	Input.action_press("move_right")
+	for frame in 90:
+		await _step()
+		if player.is_on_wall(): break
+	_check(player.is_on_floor() and player.is_on_wall(), "The first wall can be reached safely by walking on the entrance")
+	await _step(grab_delay)
+	Input.action_press("move_up")
+	Input.action_press("wall_grab")
+	var climbed := false
+	for frame in 240:
+		await _step()
+		climbed = climbed or (player.is_wall_grabbing() and player.velocity.y < -100)
+		if player.is_on_floor() and absf(player.position.y - 184) < 2: break
+	_check(climbed and player.is_on_floor() and absf(player.position.y - 184) < 2, "A real wall climb reaches the broad first rest")
+	_release()
+	await _step(12)
+	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "The broad rest refills dash and wall stamina")
+	Input.action_press("move_right")
+	for frame in 60:
+		if player.position.x >= 680: break
+		await _step()
+	_release()
+	await _step(12)
+	Input.action_press("jump")
+	await _step()
+	Input.action_release("jump")
+	await _step(dash_delay)
+	Input.action_press("move_up")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	for frame in 180:
+		if not player.is_dashing():
+			Input.action_release("move_up")
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			if absf(player.position.x - 880) > 10:
+				Input.action_press("move_right" if player.position.x < 880 else "move_left")
+		await _step()
+		if stage.checkpoint_index == 1 and player.is_on_floor(): break
+	_release()
+	_check(stage.checkpoint_index == 1 and player.is_on_floor(), "The first rest leads to safe checkpoint 02")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The opening wall section stays below thirty seconds")
+	print("TOWER_WALL_SECONDS %.2f delays=%d/%d respawns=%d" % [seconds, grab_delay, dash_delay, respawns])
+
+
+func _spring_course() -> void:
+	var started := Engine.get_physics_frames()
+	Input.action_press("move_right")
+	for frame in 90:
+		await _step()
+		if player.velocity.y < -1000:
+			break
+	_check(player.velocity.y < -1000, "Walking onto the entrance spring starts the high leap")
+	_release()
+	# The broad inner landing gives the first launch a generous steering target.
+	for frame in 150:
+		var dx := 640.0 - player.position.x
+		Input.action_release("move_left")
+		Input.action_release("move_right")
+		if absf(dx) > 10:
+			Input.action_press("move_right" if dx > 0 else "move_left")
+		await _step()
+		if player.is_on_floor() and absf(player.position.y + 556) < 2:
+			break
+	_release()
+	_check(player.is_on_floor() and absf(player.position.y + 556) < 2, "The high spring reaches a safe inner rest")
+	await _step(30)
+	_check(player.is_on_floor(), "The inner rest permits a pause without relaunching")
+	Input.action_press("move_left")
+	for frame in 90:
+		await _step()
+		if player.velocity.y < -800:
+			break
+	_check(player.velocity.y < -800, "The second spring starts the smaller transfer")
+	_release()
+	for frame in 180:
+		var dx := 400.0 - player.position.x
+		Input.action_release("move_left")
+		Input.action_release("move_right")
+		if absf(dx) > 10:
+			Input.action_press("move_right" if dx > 0 else "move_left")
+		Input.action_press("wall_grab")
+		Input.action_press("move_up")
+		await _step()
+		if stage.checkpoint_index == 2:
+			break
+	_release()
+	_check(stage.checkpoint_index == 2, "Spring steering reaches checkpoint 03 without a history lock")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The spring retry section stays below 30 seconds")
+	print("TOWER_SPRING_ROUTE_SECONDS %.2f respawns=%d position=%s" % [seconds, respawns, player.position])
+
+
+func _dash_course() -> void:
+	var started := Engine.get_physics_frames()
+	await _dash_launch()
+	_release()
+	Input.action_press("move_up")
+	for name in ["Item3", "Item4"]:
+		Input.action_press("dash")
+		await _step()
+		Input.action_release("dash")
+		for frame in 60:
+			await _step()
+			if not stage.get_node("Items/" + name).visible and not player.is_dashing():
+				break
+		_check(not stage.get_node("Items/" + name).visible, "A refilled upward dash reaches " + name)
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	for frame in 120:
+		if not player.is_dashing():
+			Input.action_press("move_right")
+			Input.action_press("wall_grab")
+		await _step()
+		if stage.checkpoint_index == 3:
+			break
+	_release()
+	_check(stage.checkpoint_index == 3, "The fourth dash reaches checkpoint 04")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The dash chain stays below 30 seconds")
+	print("TOWER_DASH_ROUTE_SECONDS %.2f respawns=%d position=%s" % [seconds, respawns, player.position])
+
+
+func _dash_launch() -> void:
+	_release()
+	await _step(12)
+	Input.action_press("move_right")
+	for frame in 60:
+		if player.position.x >= 450:
+			break
+		await _step()
+	_release()
+	await _step(12)
+	Input.action_press("move_right")
+	Input.action_press("jump")
+	await _step()
+	Input.action_release("jump")
+	await _step(26)
+	Input.action_press("move_up")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	for frame in 60:
+		await _step()
+		if not stage.get_node("Items/Item2").visible and not player.is_dashing():
+			break
+	_check(not stage.get_node("Items/Item2").visible, "The launch dash reaches the first crystal")
+	for frame in 30:
+		if player.position.x >= 740:
+			break
+		await _step()
+
+
+func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
+	var started := Engine.get_physics_frames()
+	for leg in 2:
+		_release()
+		await _step(12)
+		var launch_x := 950.0 if leg == 0 else 970.0
+		for frame in 90:
+			var dx := launch_x - player.position.x
+			if absf(dx) < 10:
+				break
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			Input.action_press("move_right" if dx > 0 else "move_left")
+			await _step()
+		if leg == 0:
+			_release()
+			await _step(12)
+		Input.action_press("move_left" if leg == 1 else "move_right")
+		Input.action_press("jump")
+		await _step()
+		Input.action_release("jump")
+		for frame in jump_delay:
+			if leg == 0:
+				Input.action_release("move_right")
+			await _step()
+		var crystal := stage.get_node("Items/Item%d" % (5 + leg))
+		_check(not crystal.visible and player.is_air_jump_ready(), "The first jump collects the visible boot")
+		Input.action_press("jump")
+		await _step()
+		Input.action_release("jump")
+		for frame in dash_delay:
+			if leg == 0:
+				Input.action_release("move_right")
+			await _step()
+		if leg == 0:
+			_release()
+		Input.action_press("move_up")
+		Input.action_press("dash")
+		await _step()
+		Input.action_release("dash")
+		var target := Vector2(1100, -1986) if leg == 0 else Vector2(350, -2266)
+		for frame in 150:
+			if not player.is_dashing():
+				var dx := target.x - player.position.x
+				Input.action_release("move_left")
+				Input.action_release("move_right")
+				if absf(dx) > 10:
+					Input.action_press("move_right" if dx > 0 else "move_left")
+			await _step()
+			if player.is_on_floor() and absf(player.position.y - target.y) < 2:
+				break
+		_release()
+		_check(player.is_on_floor() and absf(player.position.y - target.y) < 2, "Extra jump plus dash reaches the broad landing")
+		await _step(30)
+		_check(player.is_on_floor(), "The broad landing permits a pause")
+	_check(stage.checkpoint_index == 4, "The extra-jump route reaches checkpoint 05")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The extra-jump section stays below 30 seconds")
+	print("TOWER_EXTRA_JUMP_SECONDS %.2f delays=%d/%d respawns=%d" % [seconds, jump_delay, dash_delay, respawns])
+
+
+func _companion_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
+	var started := Engine.get_physics_frames()
+	var companion: Grabbable = stage.get_node("Items/Item20")
+	Input.action_press("wall_grab")
+	Input.action_press("move_right")
+	for frame in 90:
+		await _step()
+		if player.get_held_object() == companion:
+			break
+	_check(player.get_held_object() == companion, "The safe entrance allows grabbing the companion")
+	for leg in 2:
+		var launch_x := 450.0 if leg == 0 else 740.0
+		for frame in 90:
+			var dx := launch_x - player.position.x
+			if absf(dx) < 10:
+				break
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			Input.action_press("move_right" if dx > 0 else "move_left")
+			await _step()
+		_release()
+		Input.action_press("wall_grab")
+		await _step(12)
+		Input.action_press("jump")
+		await _step()
+		Input.action_release("jump")
+		await _step(jump_delay)
+		Input.action_press("jump")
+		await _step()
+		Input.action_release("jump")
+		await _step(dash_delay)
+		Input.action_press("move_up")
+		Input.action_press("dash")
+		await _step()
+		Input.action_release("dash")
+		var target := Vector2(600, -2696) if leg == 0 else Vector2(860, -2986)
+		for frame in 150:
+			if not player.is_dashing():
+				var dx := target.x - player.position.x
+				Input.action_release("move_left")
+				Input.action_release("move_right")
+				if absf(dx) > 10:
+					Input.action_press("move_right" if dx > 0 else "move_left")
+			await _step()
+			if player.is_on_floor() and absf(player.position.y - target.y) < 2:
+				break
+		_release()
+		Input.action_press("wall_grab")
+		_check(player.is_on_floor() and absf(player.position.y - target.y) < 2, "Carried extra jump plus dash reaches the one-way landing")
+		await _step(30)
+		_check(player.get_held_object() == companion and companion.extra_jump_count() == 1, "Landing keeps the companion and refills its jump")
+	_check(stage.checkpoint_index == 5, "The carried route reaches checkpoint 06")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The companion section stays below 30 seconds")
+	print("TOWER_COMPANION_SECONDS %.2f delays=%d/%d respawns=%d" % [seconds, jump_delay, dash_delay, respawns])
+
+
+func _finale_course(spring_delay: int = 40, jump_delay: int = 20, route: String = "combined") -> void:
+	var started := Engine.get_physics_frames()
+	var carried := player.get_held_object()
+	_release()
+	if carried != null:
+		Input.action_press("wall_grab")
+	Input.action_press("move_left")
+	for frame in 90:
+		await _step()
+		if player.velocity.y < -1000:
+			break
+	_check(player.velocity.y < -1000, "The entrance spring launches the finale")
+	for frame in spring_delay:
+		if player.position.x <= 780:
+			Input.action_release("move_left")
+		await _step()
+	Input.action_press("move_up")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	for frame in 90:
+		if not player.is_dashing():
+			Input.action_release("move_up")
+			if player.position.x > 680:
+				Input.action_press("move_left")
+			else:
+				Input.action_release("move_left")
+		await _step()
+		if (route == "dash" and not stage.get_node("Items/Item12").visible and not player.is_dashing()) or (route != "dash" and player.is_air_jump_ready()):
+			break
+	Input.action_release("move_left")
+	_check((route == "dash" or player.is_air_jump_ready()) and (route == "jump" or player.is_dash_ready()), "The first aerial dash reaches the chosen crystals")
+	if route == "jump":
+		await _step(4)
+		Input.action_press("move_left")
+	if route != "dash":
+		Input.action_press("jump")
+		await _step()
+		Input.action_release("jump")
+		await _step(jump_delay)
+	if route != "jump":
+		Input.action_press("move_up")
+		Input.action_press("dash")
+		await _step()
+		Input.action_release("dash")
+	for frame in 240:
+		if not player.is_dashing():
+			Input.action_release("move_up")
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			if absf(player.position.x - 360) > 10:
+				Input.action_press("move_left" if player.position.x > 360 else "move_right")
+			if player.is_on_floor() and player.position.y > -3740:
+				Input.action_press("jump")
+			else:
+				Input.action_release("jump")
+		await _step()
+		if stage.completed:
+			break
+	_release()
+	if carried != null:
+		Input.action_press("wall_grab")
+	_check(stage.completed and stage.get_node("Goal").is_pressed(), "The crystal chain lands on and presses the final arrival switch")
+	_check(carried == null or player.get_held_object() == carried, "The finale preserves a companion carried from the previous section")
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(seconds <= 30, "The finale stays below thirty seconds")
+	print("TOWER_FINALE_SECONDS %.2f delays=%d/%d route=%s respawns=%d" % [seconds, spring_delay, jump_delay, route, respawns])

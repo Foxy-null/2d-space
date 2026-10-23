@@ -1,4 +1,4 @@
-[gd_scene load_steps=82 format=3]
+[gd_scene load_steps=85 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -18,6 +18,11 @@
 [ext_resource type="PackedScene" path="res://scenes/pinball_spring.tscn" id="9_pinball"]
 [ext_resource type="PackedScene" path="res://scenes/jump_crystal.tscn" id="10_jump_crystal"]
 
+[ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="spikes"]
+
+[sub_resource type="RectangleShape2D" id="Room1Overhang"]
+size = Vector2(60, 28)
+
 [sub_resource type="RectangleShape2D" id="Shape_0"]
 size = Vector2(1280, 80)
 
@@ -25,13 +30,13 @@ size = Vector2(1280, 80)
 size = Vector2(40, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_2"]
-size = Vector2(36, 580)
+size = Vector2(36, 570)
 
 [sub_resource type="RectangleShape2D" id="Shape_3"]
 size = Vector2(52, 28)
 
 [sub_resource type="RectangleShape2D" id="Shape_4"]
-size = Vector2(36, 320)
+size = Vector2(36, 520)
 
 [sub_resource type="RectangleShape2D" id="Shape_6"]
 size = Vector2(28, 720)
@@ -219,10 +224,13 @@ size = Vector2(50, 40)
 [sub_resource type="RectangleShape2D" id="Shape_ExitSpringPlatform"]
 size = Vector2(140, 28)
 
+[sub_resource type="RectangleShape2D" id="Shape_Room1UpGate"]
+size = Vector2(64, 800)
+
 [sub_resource type="RectangleShape2D" id="Shape_SpringCeiling_Room1"]
 size = Vector2(160, 40)
 
-[node name="Stage3" type="Node2D"]
+[node name="Stage3" type="Node2D" groups=["stage_three"]]
 metadata/environment_theme = 1
 script = ExtResource("1_stage")
 
@@ -279,18 +287,18 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="LeftKickWall" type="StaticBody2D" parent="Rooms/Room1"]
-position = Vector2(418.0, 210.0)
+position = Vector2(418.0, 205.0)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/LeftKickWall"]
 shape = SubResource("Shape_2")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/LeftKickWall"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-18.0, -290.0, 18.0, -290.0, 18.0, 290.0, -18.0, 290.0)
+polygon = PackedVector2Array(-18.0, -285.0, 18.0, -285.0, 18.0, 285.0, -18.0, 285.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
 [node name="Edge" type="Line2D" parent="Rooms/Room1/LeftKickWall"]
-points = PackedVector2Array(-18.0, -290.0, 18.0, -290.0)
+points = PackedVector2Array(-18.0, -285.0, 18.0, -285.0)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
@@ -313,18 +321,18 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="RightKickWall" type="StaticBody2D" parent="Rooms/Room1"]
-position = Vector2(662, 480)
+position = Vector2(662, 380)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/RightKickWall"]
 shape = SubResource("Shape_4")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room1/RightKickWall"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-18, -160, 18, -160, 18, 160, -18, 160)
+polygon = PackedVector2Array(-18, -260, 18, -260, 18, 260, -18, 260)
 color = Color(0.24, 0.38, 0.56, 1)
 
 [node name="Edge" type="Line2D" parent="Rooms/Room1/RightKickWall"]
-points = PackedVector2Array(-18, -160, 18, -160)
+points = PackedVector2Array(-18, -260, 18, -260)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
@@ -335,19 +343,19 @@ offset_left = 70.0
 offset_top = 220.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "Springから右の壁へ\n反対の壁へキック → もう一度キック"
+text = "張り出しの下から反対の壁へ\nキックと壁登りをつなぐ"
 mouse_filter = 2
 
 [node name="KickPath" type="Line2D" parent="Rooms/Room1" groups=["stage_3_hints"]]
 visible = false
-points = PackedVector2Array(628, 415, 512, 300, 452, 270, 790, 200)
+points = PackedVector2Array(626, 548, 454, 460, 454, 440, 626, 352, 626, 332, 454, 245, 454, 78, 790, 110)
 width = 3.0
 default_color = Color(1, 0.8, 0.35, 0.7)
 antialiased = true
 
 [node name="KickPathHead" type="Line2D" parent="Rooms/Room1" groups=["stage_3_hints"]]
 visible = false
-points = PackedVector2Array(779.67, 209.29, 790.00, 200.00, 776.83, 195.58)
+points = PackedVector2Array(777, 102, 790, 110, 776, 116)
 width = 3.0
 default_color = Color(1, 0.8, 0.35, 0.7)
 antialiased = true
@@ -393,11 +401,14 @@ mouse_filter = 2
 
 [node name="LaunchSpring" parent="Rooms/Room1" instance=ExtResource("7_spring")]
 position = Vector2(490, 640)
-spring_speed = 900.0
+spring_speed = 700.0
 
 [node name="UpGate" parent="Rooms/Room1" instance=ExtResource("5_gate")]
-position = Vector2(860, 430)
+position = Vector2(900, 320)
 target_gravity = -1
+
+[node name="CollisionShape2D" parent="Rooms/Room1/UpGate" index="0"]
+shape = SubResource("Shape_Room1UpGate")
 
 [node name="SpringCeiling" type="StaticBody2D" parent="Rooms/Room1"]
 position = Vector2(1040, 60)
@@ -424,6 +435,55 @@ spring_speed = 900.0
 [node name="DownGate" parent="Rooms/Room1" instance=ExtResource("5_gate")]
 position = Vector2(1130, 260)
 target_gravity = 1
+
+[node name="LowerOverhang" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(614, 440)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/LowerOverhang"]
+shape = SubResource("Room1Overhang")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/LowerOverhang"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-30, -14, 30, -14, 30, 14, -30, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
+[node name="UpperOverhang" type="StaticBody2D" parent="Rooms/Room1"]
+position = Vector2(614, 210)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room1/UpperOverhang"]
+shape = SubResource("Room1Overhang")
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room1/UpperOverhang"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-30, -14, 30, -14, 30, 14, -30, 14)
+color = Color(0.24, 0.38, 0.56, 1)
+
+[node name="LowerCap" parent="Rooms/Room1" instance=ExtResource("spikes")]
+position = Vector2(614, 426)
+rotation = 3.1415927
+stage_group = &"stage_three"
+room_number = 0
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 30.0
+
+[node name="UpperCap" parent="Rooms/Room1" instance=ExtResource("spikes")]
+position = Vector2(614, 196)
+rotation = 3.1415927
+stage_group = &"stage_three"
+room_number = 0
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 30.0
+
+[node name="StepCap" parent="Rooms/Room1" instance=ExtResource("spikes")]
+position = Vector2(462, 320)
+rotation = 3.1415927
+stage_group = &"stage_three"
+room_number = 0
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 26.0
 
 [node name="Room2" type="Node2D" parent="Rooms"]
 position = Vector2(1280, 0)
@@ -2414,13 +2474,10 @@ theme_override_font_sizes/font_size = 16
 text = "ポーズ [Esc]"
 
 [node name="Status" type="PanelContainer" parent="HUD"]
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -394.0
-offset_top = 24.0
-offset_right = -24.0
-offset_bottom = 108.0
-grow_horizontal = 0
+offset_left = 24.0
+offset_top = 90.0
+offset_right = 354.0
+offset_bottom = 174.0
 mouse_filter = 2
 
 [node name="Rows" type="VBoxContainer" parent="HUD/Status"]

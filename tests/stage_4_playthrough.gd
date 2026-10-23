@@ -16,7 +16,7 @@ func release() -> void:
 	for action in ["move_left", "move_right", "move_up", "move_down", "wall_grab", "jump", "dash"]:
 		Input.action_release(action)
 
-func traverse(section: int) -> bool:
+func traverse(section: int, stop_at_rest := false) -> bool:
 	var before := deaths
 	var room: Node2D = stage.rooms.get_child(section)
 	var waypoint := 0
@@ -41,14 +41,43 @@ func traverse(section: int) -> bool:
 		if player.is_wall_grabbing():
 			return false
 		cooldown = maxi(0, cooldown - 1)
-		if section == 1 and waypoint == 0:
-			if player.position.y < room.walls[0].position.y - 55 and x > 220:
+		if section == 0 and waypoint == 0:
+			var first: Rect2 = room.walls[0]
+			if player.is_on_floor() and x > first.position.x and absf(player.position.y + 26 - first.position.y) < 5:
+				waypoint = 1
+			elif player.is_on_floor():
+				steer_to(190 - x)
+				if x > 180:
+					Input.action_press("jump")
+					cooldown = 10
+			else:
+				steer_to(450 - x)
+				if cooldown == 0 and player.velocity.y > -40:
+					if player.get_available_extra_jump_count() > 0:
+						Input.action_press("jump")
+						cooldown = 10
+					elif player.is_dash_ready():
+						Input.action_release("move_right")
+						Input.action_release("move_left")
+						Input.action_press("move_up")
+						Input.action_press("dash")
+		elif section == 1 and waypoint == 0:
+			if player.position.y < room.walls[0].position.y - 55 and x > room.walls[0].position.x - 50:
 				landing_first = true
 			if landing_first and player.is_on_floor() and x > 250:
+				if stop_at_rest:
+					return true
 				waypoint = 1
 			elif landing_first:
 				steer_to(290 - x)
 			else:
+				if player.is_dash_ready() and x > 230 and player.position.y < 480 and not player.is_on_floor():
+					Input.action_release("move_right")
+					Input.action_release("move_left")
+					Input.action_press("move_up")
+					Input.action_press("dash")
+					await step()
+					continue
 				if player.is_on_wall() and cooldown == 0:
 					var kick := int(player.get_wall_normal().x)
 					if safe_launch(room, Vector2(kick * 720, -560), kick, 24):
@@ -68,8 +97,8 @@ func traverse(section: int) -> bool:
 				target = room.walls[waypoint] if waypoint < room.walls.size() else Rect2(1200 if section == 5 else 1240, 420 if section == 5 else room.exit_top, 40, 30)
 			var dx: float = target.get_center().x - x
 			steer_to(dx)
-			if player.is_on_floor() and cooldown == 0 and absf(dx) > 35 and (waypoint < room.walls.size() or player.position.y + 26 > target.position.y + 5):
-				if safe_launch(room, Vector2(player.velocity.x, -650), int(signf(dx)), 32):
+			if player.is_on_floor() and cooldown == 0 and absf(dx) > 35 and not (section == 0 and waypoint == 1) and (waypoint < room.walls.size() or player.position.y + 26 > target.position.y + 5):
+				if safe_launch(room, Vector2(player.velocity.x, -650), int(signf(dx)), 48 if section == 1 and waypoint == 1 else 32):
 					Input.action_press("jump")
 					cooldown = 10
 				else:

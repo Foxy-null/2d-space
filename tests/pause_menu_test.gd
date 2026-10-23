@@ -107,7 +107,9 @@ func _check_world_pause() -> void:
 	var gate: Node2D = stage.get_node("MovingGate")
 	var box: RigidBody2D = stage.get_node("LightBox")
 	var background := stage.get_node("Background/Starfield")
-	crystal._on_body_entered(stage.get_node("Player"))
+	stage.get_node("Player").global_position = crystal.global_position
+	stage.get_node("Player").velocity = Vector2.ZERO
+	await _step(5)
 	box.linear_velocity = Vector2(90, -150)
 	await _step()
 	pause.open()
@@ -144,6 +146,7 @@ func _check_transitions() -> void:
 			stage._transition_to_next()
 		else:
 			stage._transition_to(1)
+		var destination := Vector2(1920, stage._camera_position().y if scene == "stage_4" else 360)
 		var pause := stage.get_node("PauseMenu")
 		pause.open()
 		var camera_before: Vector2 = stage.camera.position
@@ -152,7 +155,7 @@ func _check_transitions() -> void:
 		await _click(pause.menu.get_node("Retry"))
 		await _step(30)
 		_check(not paused and not stage.transitioning and stage.player.controls_enabled, "Retry during transition finishes at the new room")
-		_check(stage.camera.position == Vector2(1920, 360), "The resumed camera reaches the checkpoint's room")
+		_check(stage.camera.position == destination, scene + ": the resumed camera reaches the checkpoint's room")
 
 
 func _check_completion_input() -> void:

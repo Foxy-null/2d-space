@@ -4,12 +4,12 @@ const SECTION_HEIGHT := 720.0
 const START_Y := 640.0
 const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "頂上への連携"]
 const HINTS := [
-	"Shiftで壁を掴み、上へ登ってから反対の壁へキック。小さな足場で休憩できます。",
-	"緑のバネで上昇。跳んだ先の壁を掴んで次の足場へ。",
-	"空中の緑のクリスタルでダッシュ回復。斜め上のダッシュをつなごう。",
-	"紫のクリスタルで空中ジャンプを追加。上昇が止まるころにもう一度ジャンプ。",
-	"緑の生物をShiftで保持すると追加ジャンプ。壁を掴むときは生物を手放そう。",
-	"バネ・クリスタル・壁キックをつないで頂上の到着台へ。",
+	"Shiftで目の前の壁を掴んで上へ。広い足場で休み、ジャンプと上ダッシュで次の旗へ。",
+	"バネで上昇。空中で左右を調整し、次の足場へ着地しよう。",
+	"空中の緑のクリスタルでダッシュ回復。上へのダッシュをつなごう。",
+	"紫の靴で追加ジャンプ。上昇が止まるころにもう一度跳び、上ダッシュで足場へ。",
+	"緑の生物をShiftで保持すると追加ジャンプ。追加ジャンプと上ダッシュで足場へ。",
+	"入口のバネから上ダッシュ。緑のダッシュ回復か紫の追加ジャンプをつないで到着台へ。",
 ]
 
 var checkpoint_index := 0
@@ -51,9 +51,14 @@ func _physics_process(delta: float) -> void:
 	var checkpoint_y: float = checkpoints.get_child(checkpoint_index).position.y
 	if player.position.y > minf(checkpoint_y + 180.0, peak_y + SECTION_HEIGHT - 80.0):
 		player.respawn()
-	var target_y := clampf(player.position.y - 80.0, -3920.0, 360.0)
+	var target_y := _camera_target_y()
 	camera.position.y = lerpf(camera.position.y, target_y, 1.0 - exp(-8.0 * delta))
 	_update_hud()
+
+
+func _camera_target_y() -> float:
+	# 右端の休憩足場を、ポーズボタンの下に見せる。
+	return clampf(player.position.y - (120.0 if checkpoint_index == 3 else 80.0), -3920.0, 360.0)
 
 
 func _set_checkpoint(index: int) -> void:
@@ -83,11 +88,12 @@ func _draw_checkpoint(canvas: Node2D, index: int) -> void:
 
 
 func _on_respawned() -> void:
+	$Goal.reset_for_respawn()
 	for crystal in $Items.get_children():
 		if crystal.has_method("reset_for_respawn") and not crystal is Grabbable:
 			crystal.reset_for_respawn()
 	peak_y = player.position.y
-	camera.position = Vector2(640, clampf(player.position.y - 80.0, -3920.0, 360.0))
+	camera.position = Vector2(640, _camera_target_y())
 	camera.reset_smoothing()
 
 

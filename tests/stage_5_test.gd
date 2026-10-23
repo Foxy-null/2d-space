@@ -6,6 +6,7 @@ var failed := false
 var checks := 0
 var respawns := 0
 var total_bumpers := 0
+var visited_bumpers: Dictionary = {}
 var ceiling_reflected_down := false
 var wind_frames := 0
 var dash_count := 0
@@ -27,10 +28,12 @@ func _run() -> void:
 	_check(stage.get_meta("environment_theme") == 2, "Use the previously unused wild planet")
 	_check(player.move_speed == 360 and player.dash_speed == 900 and player.wall_actions_enabled, "Preserve the existing movement abilities")
 	_check(not paused and not stage.hints_visible, "Pause and route hints start hidden")
-	_check(stage.get_node("Rooms/Room1/EntryJumpPath").is_visible_in_tree() and stage.get_node("Rooms/Room1/EntryJumpHead").is_visible_in_tree() and not stage.get_node("Rooms/Room1/Route").visible, "The first jump cue is visible without detailed route hints")
+	_check(not stage.target_marker.visible and not stage.get_node("Rooms/Room1/Route").visible, "The first room leaves the route readable without persistent guides")
 	for room in stage.rooms.get_children():
 		_check(room.get_node("Winds").get_child_count() > 0, "Every room uses real wind areas")
 		total_bumpers += room.get_node("Bumpers").get_child_count()
+		for bumper in room.get_node("Bumpers").get_children():
+			bumper.launched.connect(func(_body): visited_bumpers[bumper.get_instance_id()] = true)
 	stage.get_node("Rooms/Room6/Bumpers/Bumper2").launched.connect(func(body): ceiling_reflected_down = body.velocity.y > 0)
 	player.respawned.connect(func(): respawns += 1)
 	player.movement_action.connect(func(action):
@@ -41,6 +44,7 @@ func _run() -> void:
 		_check(stage.room_index == index, "Traverse rooms in order")
 		_check_route_feedback()
 		await _screenshot(index + 1)
+		var started := Engine.get_physics_frames()
 		var before := respawns
 		var target_count: int = stage._bumpers().get_child_count()
 		var last_bumper: int = stage.next_bumper
@@ -65,8 +69,8 @@ func _run() -> void:
 			_check(stage.camera.position == Vector2((index + 1) * 1280 + 640, 360), "Camera settles on the new room")
 		else:
 			_check(stage.completed and stage.next_bumper == target_count, "All final-room bumpers precede completion")
-		print("STAGE_5_ROOM_%02d_OK" % (index + 1))
-	_check(total_bumpers == 43 and respawns == 11, "All 43 reflections are reachable without a death")
+		print("STAGE_5_ROOM_%02d_OK (%.2fs)" % [index + 1, (Engine.get_physics_frames() - started) / 60.0])
+	_check(total_bumpers == 43 and visited_bumpers.size() == 43 and respawns == 11, "All 43 reflections are reachable without a death")
 	_check(not stage.target_marker.visible, "Completion hides the target marker")
 	_check(ceiling_reflected_down, "Room 6 reflects off the underside of the ceiling bumper")
 	_check(wind_frames > 100 and dash_count > 12, "Traversal uses real wind and chained dashes")
@@ -78,12 +82,12 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.room_index == 0 and stage.next_bumper == 0 and not stage.completed, "Re-entry resets the course")
-	_check(not stage.get_node("Rooms/Room1/ExitLock/Collision").disabled, "The exit starts locked")
+	_check(not stage.get_node("Rooms/Room1").has_node("ExitLock"), "The first exit has no reflection-history lock")
 	# Isolated negative checks use positioning; the reachability proof above never does.
 	player.position = Vector2(820, 470)
 	player.velocity = Vector2(0, 400)
 	await _step(12)
-	_check(stage.next_bumper == 0, "An out-of-order bumper cannot unlock the room")
+	_check(stage.next_bumper == 0, "Optional route progress still records the demonstrated order")
 	_check_route_feedback()
 	player.respawn()
 	await _step(15)
@@ -96,11 +100,11 @@ func _run() -> void:
 	await _key(KEY_R)
 	_check(stage.next_bumper == 0 and _x() < 100 and player.is_dash_ready(), "R resets reflection progress and abilities")
 	_check_route_feedback()
-	_check(stage.get_node("Rooms/Room1/EntryJumpPath").is_visible_in_tree(), "Retry keeps the entry jump cue available")
-	for outside in [Vector2(400, -100), Vector2(400, 850), Vector2(1400, 550), Vector2(-100, 550)]:
+	_check(not stage.target_marker.visible, "Retry keeps optional guides hidden")
+	for outside in [Vector2(400, -100), Vector2(400, 850), Vector2(-100, 550)]:
 		player.position = outside
 		await _step(3)
-		_check(stage.room_index == 0 and _x() < 100, "All boundaries restore the current checkpoint")
+		_check(stage.room_index == 0 and _x() < 100, "The non-exit boundaries restore the current checkpoint")
 	player.position = Vector2(580, 100)
 	await _step(4)
 	_check(_x() < 100 and stage.next_bumper == 0, "The red obstacle resets the room")
@@ -114,7 +118,7 @@ func _run() -> void:
 	_check_route_feedback()
 	pause.menu.get_node("Hints").pressed.emit()
 	_check_route_feedback()
-	_check(not stage.hints_visible and not stage.get_node("Rooms/Room1/Route").visible and stage.get_node("Rooms/Room1/EntryJumpPath").is_visible_in_tree() and stage.get_node("Rooms/Room1/EntryJumpHead").is_visible_in_tree(), "Hiding detailed hints keeps the first upper-contact cue visible")
+	_check(not stage.hints_visible and not stage.get_node("Rooms/Room1/Route").visible and not stage.target_marker.visible, "Hiding hints restores the first room without route overlays")
 	pause.menu.get_node("Hints").pressed.emit()
 	pause.menu.get_node("Retry").pressed.emit()
 	await _step(3)
@@ -134,11 +138,13 @@ func _check_route_feedback() -> void:
 	var room: Node2D = stage.rooms.get_child(stage.room_index)
 	var unlocked: bool = stage.next_bumper == bumpers.get_child_count()
 	var target: Vector2 = room.get_node("Exit").global_position + Vector2(0, -55) if unlocked else bumpers.get_child(stage.next_bumper).global_position
-	_check(stage.target_marker.global_position == target and stage.target_marker.visible == not stage.completed, "A static diamond identifies the next bumper or unlocked exit independently of hints")
+	_check(stage.target_marker.global_position == target and stage.target_marker.visible == (not stage.completed and stage.hints_visible), "The route target follows optional hints in every room")
 	_check(stage.target_marker.closed or stage.target_marker.points[0] == stage.target_marker.points[-1], "The target has a complete outline, not only a color change")
 	for index in bumpers.get_child_count():
-		_check(bumpers.get_child(index).get_node("Number").text == ("✓" if index < stage.next_bumper else str(index + 1)), "Only actual completed reflections receive check marks")
-	_check(room.get_node("ExitLabel").text == ("→" if unlocked else "%d / %d" % [stage.next_bumper, bumpers.get_child_count()]), "Exit progress matches the route lock")
+		var number: Label = bumpers.get_child(index).get_node("Number")
+		_check(number.text == ("✓" if index < stage.next_bumper else str(index + 1)), "Only actual completed reflections receive check marks")
+		_check(number.visible == stage.hints_visible, "Bumper numbers follow optional hints in every room")
+	_check(room.get_node("ExitLabel").text == "→" and room.get_node("ExitLabel").visible == stage.hints_visible, "The optional exit arrow has no reflection-history counter")
 
 
 func _steer() -> void:
