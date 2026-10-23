@@ -280,8 +280,18 @@ func _test_backtrack() -> void:
 	_release()
 	await _step(4)
 	_check(tutorial.room_index == 12 and player.controls_enabled and player.is_on_floor(), "The safe entrance leads back into Room13")
+	var previous: Node2D = tutorial.rooms.get_child(12)
+	_drive(Vector2.LEFT)
+	for frame in 240:
+		if player.global_position.x - previous.global_position.x <= 230:
+			break
+		await _step()
+	_drive(Vector2.ZERO)
+	Input.action_press("wall_grab")
+	await _step(3)
+	_check(player.get_held_object() == previous.get_node("Creature"), "The neighboring-room bypass starts with a real acquired companion")
 	_drive(Vector2.RIGHT)
-	for frame in 180:
+	for frame in 300:
 		if tutorial.room_index == 13 and not tutorial.transitioning:
 			break
 		await _step()
