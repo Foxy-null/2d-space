@@ -1,4 +1,4 @@
-[gd_scene load_steps=44 format=3]
+[gd_scene load_steps=45 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_5.gd" id="stage"]
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
@@ -24,6 +24,9 @@ size = Vector2(140, 40)
 
 [sub_resource type="RectangleShape2D" id="Room9ExitShape"]
 size = Vector2(140, 16)
+
+[sub_resource type="RectangleShape2D" id="Room11RestShape"]
+size = Vector2(120, 16)
 
 [sub_resource type="RectangleShape2D" id="Hazard1_1"]
 size = Vector2(32, 280)
@@ -110,7 +113,7 @@ size = Vector2(28, 460)
 size = Vector2(28, 120)
 
 [sub_resource type="RectangleShape2D" id="Hazard11_4"]
-size = Vector2(28, 505)
+size = Vector2(28, 480)
 
 [sub_resource type="RectangleShape2D" id="Hazard12_1"]
 size = Vector2(28, 155)
@@ -1969,6 +1972,18 @@ points = PackedVector2Array(-90.0, -170.0, 90.0, -170.0, 90.0, 170.0, -90.0, 170
 width = 1.5
 default_color = Color(0.48, 0.4, 0.6, 0.55)
 
+[node name="Rest" type="StaticBody2D" parent="Rooms/Room11"]
+position = Vector2(780, 668)
+
+[node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/Rest"]
+shape = SubResource("Room11RestShape")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="Rooms/Room11/Rest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-60, -8, 60, -8, 60, 8, -60, 8)
+color = Color(0.16, 0.12, 0.24, 1)
+
 [node name="Bumpers" type="Node2D" parent="Rooms/Room11"]
 
 
@@ -2097,7 +2112,7 @@ width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
 [node name="Thorns4" type="Area2D" parent="Rooms/Room11/Hazards"]
-position = Vector2(950, 507.5)
+position = Vector2(950, 520)
 collision_layer = 0
 collision_mask = 1
 
@@ -2105,11 +2120,11 @@ collision_mask = 1
 shape = SubResource("Hazard11_4")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room11/Hazards/Thorns4"]
-polygon = PackedVector2Array(-14.0, -252.5, 14.0, -252.5, 14.0, 252.5, -14.0, 252.5)
+polygon = PackedVector2Array(-14, -240, 14, -240, 14, 240, -14, 240)
 color = Color(0.85, 0.25, 0.31, 1)
 
 [node name="Stripes" type="Line2D" parent="Rooms/Room11/Hazards/Thorns4"]
-points = PackedVector2Array(-14.0, -244, 14.0, -234, -14.0, -224, 14.0, -214, -14.0, -204, 14.0, -194, -14.0, -184, 14.0, -174, -14.0, -164, 14.0, -154, -14.0, -144, 14.0, -134, -14.0, -124, 14.0, -114, -14.0, -104, 14.0, -94, -14.0, -84, 14.0, -74, -14.0, -64, 14.0, -54, -14.0, -44, 14.0, -34, -14.0, -24, 14.0, -14, -14.0, -4, 14.0, 6, -14.0, 16, 14.0, 26, -14.0, 36, 14.0, 46, -14.0, 56, 14.0, 66, -14.0, 76, 14.0, 86, -14.0, 96, 14.0, 106, -14.0, 116, 14.0, 126, -14.0, 136, 14.0, 146, -14.0, 156, 14.0, 166, -14.0, 176, 14.0, 186, -14.0, 196, 14.0, 206, -14.0, 216, 14.0, 226, -14.0, 236, 14.0, 246)
+points = PackedVector2Array(-14, -232, 14, -222, -14, -212, 14, -202, -14, -192, 14, -182, -14, -172, 14, -162, -14, -152, 14, -142, -14, -132, 14, -122, -14, -112, 14, -102, -14, -92, 14, -82, -14, -72, 14, -62, -14, -52, 14, -42, -14, -32, 14, -22, -14, -12, 14, -2, -14, 8, 14, 18, -14, 28, 14, 38, -14, 48, 14, 58, -14, 68, 14, 78, -14, 88, 14, 98, -14, 108, 14, 118, -14, 128, 14, 138, -14, 148, 14, 158, -14, 168, 14, 178, -14, 188, 14, 198, -14, 208, 14, 218, -14, 228, 14, 238)
 width = 3.0
 default_color = Color(1, 0.82, 0.62, 1)
 
