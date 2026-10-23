@@ -100,10 +100,8 @@ func _spring_course() -> void:
 
 
 func _pinball_course() -> void:
-	await _walk_to(455)
-	await _pulse("jump")
-	await _step(9)
-	await _pulse("dash")
+	await _walk_to(800)
+	_check(tutorial.seen.has("pinball"), "Walking onto the bumper must reflect the player toward the landing")
 	await _walk_goal()
 
 
