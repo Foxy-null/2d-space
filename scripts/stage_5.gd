@@ -5,7 +5,7 @@ const TITLES := [
 	"吹き落とす風", "折り返す航路", "壁からの一撃", "暴走する追い風", "嵐の五連鎖", "暴風の最終試練",
 ]
 const HINTS := [
-	"①の上側へ飛び込み、反射後に右へ。細い隙間を越えて②を狙おう。",
+	"足場を右へ降りてバンパーの上側へ。反射後は右へ進み、隙間の先のバンパーを狙おう。",
 	"横風の流れ込みを読もう。反射後のダッシュは次のバンパーへの位置合わせに。",
 	"追い風から向かい風へ。風の境目でダッシュすると姿勢を立て直せる。",
 	"足場なしの三連反射。浅くかするだけでは跳ねないので、上側へしっかり当たろう。",
@@ -52,9 +52,10 @@ func _physics_process(_delta: float) -> void:
 	if transitioning:
 		return
 	var local_x := player.position.x - room_index * ROOM_WIDTH
+	var exit_unlocked := not rooms.get_child(room_index).has_node("ExitLock") or next_bumper == _bumpers().get_child_count()
 	if player.position.y < -52 or player.position.y > 772 or local_x < -24:
 		player.respawn()
-	elif room_index < rooms.get_child_count() - 1 and next_bumper == _bumpers().get_child_count() and (_landed_on_exit() or local_x >= ROOM_WIDTH):
+	elif room_index < rooms.get_child_count() - 1 and exit_unlocked and (_landed_on_exit() or local_x >= ROOM_WIDTH):
 		_transition_to_next()
 	elif local_x > ROOM_WIDTH + 24:
 		player.respawn()
@@ -115,15 +116,18 @@ func _on_bumper(_body: PlayerController, index: int, bumper_index: int) -> void:
 func _update_route() -> void:
 	var room := rooms.get_child(room_index)
 	var unlocked := next_bumper == _bumpers().get_child_count()
-	room.get_node("ExitLock/Collision").set_deferred("disabled", unlocked)
-	room.get_node("ExitLock").visible = not unlocked
-	room.get_node("ExitLabel").text = "→" if unlocked else "%d / %d" % [next_bumper, _bumpers().get_child_count()]
+	var lock := room.get_node_or_null("ExitLock")
+	if lock != null:
+		lock.get_node("Collision").set_deferred("disabled", unlocked)
+		lock.visible = not unlocked
+	room.get_node("ExitLabel").text = "→" if lock == null or unlocked else "%d / %d" % [next_bumper, _bumpers().get_child_count()]
 	target_marker.position = room.get_node("Exit").global_position + Vector2(0, -55) if unlocked else _bumpers().get_child(next_bumper).global_position
-	target_marker.visible = not completed
+	target_marker.visible = not completed and (lock != null or hints_visible)
 	for index in _bumpers().get_child_count():
 		var bumper := _bumpers().get_child(index)
-		bumper.modulate = Color(0.55, 0.7, 0.65) if index < next_bumper else Color.WHITE
+		bumper.modulate = Color(0.55, 0.7, 0.65) if index < next_bumper and (lock != null or hints_visible) else Color.WHITE
 		bumper.get_node("Number").text = "✓" if index < next_bumper else str(index + 1)
+		bumper.get_node("Number").visible = lock != null or hints_visible
 
 
 func _on_hazard(body: Node2D) -> void:
@@ -136,6 +140,7 @@ func set_hints_visible(value: bool) -> void:
 	$HUD/Hint.visible = value
 	for room in rooms.get_children():
 		room.get_node("Route").visible = value
+	_update_route()
 
 
 func _on_completed() -> void:
@@ -149,6 +154,7 @@ func _on_completed() -> void:
 
 func _update_hud() -> void:
 	$HUD/Info/Rows/Title.text = "暴風バンパー峡谷　%02d / 12　%s" % [room_index + 1, TITLES[room_index]]
-	$HUD/Info/Rows/Status.text = "反射 %d / %d　　ダッシュ %s" % [next_bumper, _bumpers().get_child_count(), "●" if player.is_dash_ready() else "○"]
+	var dash := "ダッシュ %s" % ("●" if player.is_dash_ready() else "○")
+	$HUD/Info/Rows/Status.text = dash if room_index == 0 else "反射 %d / %d　　%s" % [next_bumper, _bumpers().get_child_count(), dash]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
 	$HUD/Hint.text = HINTS[room_index]
