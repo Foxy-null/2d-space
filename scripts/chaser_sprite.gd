@@ -5,7 +5,7 @@ const DISPLAY_HEIGHT := 128.0
 const POSES := {
 	"idle": ["idle"], "idle_left": ["idle-left"], "walk": ["walk-a", "walk-b"],
 	"jump": ["jump"], "descend": ["descend"], "defeated": ["defeated"],
-	"carry_walk": ["carry-a", "carry-b"], "wall_climb": ["wall-climb"],
+	"carry_walk": ["carry-a", "carry-b"], "wall_climb": ["jump", "wall-climb"],
 	"dash": ["dash"], "superdash": ["superdash"], "throwback": ["throwback"],
 }
 var actor: PlayerController

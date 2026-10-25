@@ -172,7 +172,7 @@ func _poses() -> void:
 	sprite.superdash_left = 0.0
 	enemy._wall_grabbing = true
 	sprite._process(0.0)
-	_check(sprite.animation == &"wall_climb", "A wall grab uses sozai11")
+	_check(sprite.animation == &"wall_climb" and sprite.sprite_frames.get_frame_count("wall_climb") == 2 and sprite.sprite_frames.get_frame_texture("wall_climb", 0).atlas.resource_path.ends_with("jump.png") and sprite.sprite_frames.get_frame_texture("wall_climb", 1).atlas.resource_path.ends_with("wall-climb.png"), "Wall climbing alternates the supplied jump and climbing artwork")
 	enemy._wall_grabbing = false
 	enemy.throw_pose_left = 0.5
 	enemy.stun_left = 0.4

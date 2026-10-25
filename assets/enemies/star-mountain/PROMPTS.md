@@ -7,7 +7,7 @@
 | sozai15.png | 立ち | idle.png |
 | sozai22.png | 歩行A | walk-a.png |
 | sozai3.png | 歩行B | walk-b.png |
-| sozai4.png | ジャンプ | jump.png |
+| sozai4.png | ジャンプ・壁登りの交互表示 | jump.png |
 | sozai5.png | 下降 | descend.png |
 | sozai6.png | やられ | defeated.png（画素変更なし） |
 | sozai_a.png | 長針 | originals/sozai_a.png |

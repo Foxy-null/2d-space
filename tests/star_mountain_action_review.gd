@@ -56,7 +56,7 @@ func _tables() -> void:
 		["物運び・歩行A", "carry_walk", 0, "sozai7.png", "地上で荷物を持って歩く。Bと交互"],
 		["物運び・歩行B", "carry_walk", 1, "sozai8.png", "下降姿勢の固定を解消"],
 		["物運び・停止／空中", "descend", 0, "sozai5.png（共用）", "保持停止・保持ジャンプ・傘の滑空"],
-		["壁掴み・壁登り", "wall_climb", 0, "sozai11.png", "トゲ壁も登れる。現在は1枚の姿勢"],
+		["壁掴み・壁登り", "wall_climb", 0, "sozai4.png ⇄ sozai11.png", "ジャンプと壁登りを交互に表示。トゲ壁も登れる"],
 		["被弾・やられ", "defeated", 0, "sozai6.png", "怯み・決着で使用。落下には使わない"],
 	]
 	for i in rows.size():
@@ -66,8 +66,12 @@ func _tables() -> void:
 		_label(canvas, row[0], Rect2(at + Vector2(16, 12), Vector2(504, 42)), 28)
 		_label(canvas, row[3], Rect2(at + Vector2(16, 58), Vector2(504, 40)), 23)
 		var foot := at + Vector2(322, 310)
-		_ninja(canvas, at + Vector2(100, 310), 1.6)
-		_pose(canvas, row[1], row[2], foot, 1.6, -PI / 4.0 if i == 6 else 0.0)
+		_ninja(canvas, at + Vector2(70 if i == 10 else 100, 310), 1.6)
+		if i == 10:
+			_pose(canvas, row[1], 0, at + Vector2(225, 310), 1.6)
+			_pose(canvas, row[1], 1, at + Vector2(430, 310), 1.6)
+		else:
+			_pose(canvas, row[1], row[2], foot, 1.6, -PI / 4.0 if i == 6 else 0.0)
 		_label(canvas, row[4], Rect2(at + Vector2(16, 330), Vector2(504, 58)), 22)
 	await _capture("素材表-01-基本動作.png")
 	canvas.free()
