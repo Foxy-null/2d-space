@@ -2,7 +2,7 @@ extends Node2D
 
 const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
-const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ", "左へ渡り直す", "上層から二段跳び", "風の中で待つ", "上層から風へ", "左向きのSpring連携", "反発から反転へ", "風から二段下降", "左へ蹴り返す", "反転連鎖のまとめ"]
+const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ", "左へ渡り直す", "上層から二段跳び", "風の中で待つ", "上層から風へ", "左向きのSpring連携", "反発から反転へ", "風から二段下降", "左へ蹴り返す", "反転連鎖のまとめ", "天井の回復リレー", "深い下降をつなぐ", "逆風の左折り返し", "壁の上から角を回る", "左へ上昇して戻る", "上下の回復連鎖"]
 const HINTS := [
 	"Springと反転をキックでつなぐ。",
 	"天井の反発板から壁を掴む。",
@@ -18,7 +18,13 @@ const HINTS := [
 	"反発板から床で休み、二つのSpringと壁キックで反転しよう。",
 	"風の往復から上層へ。二つの靴を下ダッシュへつなごう。",
 	"左へ壁を渡り、深い下回りへ。下面には巻物の枝もある。",
-	"動くゲートと向かい風を越え、浮いたSpringから最後のDownへ。",
+	"動くゲートと向かい風を越え、浮いたSpringから床のDownへ。",
+	"天井で休んだら、横Dashを空中で回復して渡ろう。",
+	"反転した下面から下Dashをつなぎ、深いDownへ。",
+	"左への風渡りは、回復の後も高い天井を目指そう。",
+	"張り出しを蹴り替えて上がり、回復Dashで角の下を回ろう。",
+	"上Dashを回復して左上へ。天井から左のDownへ進もう。",
+	"上への回復から天井で休み、下への回復で最後の床へ。",
 ]
 
 var room_index := 0
@@ -38,6 +44,9 @@ func _ready() -> void:
 	player.use_default_respawn_bounds = false
 	player.respawned.connect(_on_respawned)
 	for room in rooms.get_children():
+		var boundary := room.get_node_or_null("RightBoundary/Collision")
+		if boundary != null and room.get_index() < rooms.get_child_count() - 1:
+			boundary.disabled = true
 		for hint in room.get_children():
 			if hint is Label:
 				hint.add_theme_color_override("font_outline_color", ArtDraw.INK)
