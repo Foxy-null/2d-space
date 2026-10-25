@@ -29,7 +29,7 @@ func _run() -> void:
 	player = stage.player
 	player.respawned.connect(func(): deaths += 1)
 	player.movement_action.connect(func(action): actions[action] = actions.get(action, 0) + 1)
-	check(stage.rooms.get_child_count() == 24 and player.is_on_floor(), "Twenty-four rooms and safe entrance")
+	check(stage.rooms.get_child_count() == 30 and player.is_on_floor(), "Thirty rooms and safe entrance")
 	for room in stage.rooms.get_children():
 		check(not room.has_node("Route"), "No speculative route arrows")
 		check(room.has_node("Items/JumpCreature"), "Every room supplies its own companion")
@@ -69,7 +69,7 @@ func _run() -> void:
 			break
 		print("STAGE_4_ROOM_%d_OK delay=%d actions=%s" % [section + 1, used_delay, actions])
 		check(not actions.has("climb"), "Carry route never climbs a wall")
-		if section in [1, 7, 13, 17, 22]:
+		if section in [1, 7, 13, 17, 22, 26]:
 			check(actions.get("wall_jump", 0) > 0, "The canyon uses real wall kicks while carrying its companion")
 		check(actions.has("dash") if section in [0, 4, 6, 8] else (section >= 9 or section in [1, 7] or not actions.has("dash")), "The high entrance and the long island leap use dash")
 		check(actions.get("creature_jump", 0) > 0, "Use the carried creature's additional jump")
@@ -191,9 +191,9 @@ func verify_carry_gate() -> void:
 			var case_collision: CollisionShape2D = room.get_node("Goal/Case/Collision")
 			var case_top := case_collision.to_global(case_collision.shape.get_rect().position).y - room.global_position.y
 			check(frame_bounds.end.y + 24 < case_top, "The final badge leaves space above the case for the goal artwork and opening animation")
-		check(room.get_node("ExitLabel").text == "○ →" and room.get_node("CarryHint").visible, "An empty delivery marker and nearby grab keys explain the initial task")
+		check(room.get_node("ExitLabel").text == ("○ →" if room.travel_direction==1 else "← ○") and room.get_node("CarryHint").visible, "An empty delivery marker and nearby grab keys explain the initial task")
 		if section < stage.rooms.get_child_count() - 1:
-			player.position = Vector2(room.position.x + room.room_width - 18, room.exit_top - 26)
+			player.position = Vector2(room.position.x + (room.room_width - 18 if room.travel_direction == 1 else 18), room.exit_top - 26)
 			await step(10)
 			check(stage.room_index == section, "Cannot leave any room empty-handed")
 		else:
@@ -201,7 +201,7 @@ func verify_carry_gate() -> void:
 			check(not stage.completed, "Cannot complete the last room empty-handed")
 		player.respawn()
 		await step(5)
-		Input.action_press("move_right")
+		Input.action_press("move_right" if room.travel_direction==1 else "move_left")
 		Input.action_press("wall_grab")
 		for frame in 30:
 			await step()
@@ -217,9 +217,9 @@ func verify_carry_gate() -> void:
 			var player_half_height: float = player.get_node("CollisionShape2D").shape.size.y * 0.5
 			check(badge_bottom + 8 < cap_top - player_half_height + carried_top, "The final badge stays above the companion held while standing on the goal cap")
 		stage._update_hud()
-		check(room.get_node("ExitLabel").text == "✓ →" and not room.get_node("CarryHint").visible, "Holding the companion ticks the delivery marker and removes grab keys")
+		check(room.get_node("ExitLabel").text == ("✓ →" if room.travel_direction==1 else "← ✓") and not room.get_node("CarryHint").visible, "Holding the companion ticks the delivery marker and removes grab keys")
 		await step(3)
-		check(not stage._carry_requirement_met() and room.get_node("ExitLabel").text == "○ →", "Dropping the companion restores the incomplete marker")
+		check(not stage._carry_requirement_met() and room.get_node("ExitLabel").text == ("○ →" if room.travel_direction==1 else "← ○"), "Dropping the companion restores the incomplete marker")
 	stage.room_index = stage.rooms.get_child_count() - 1
 	stage.completed = false
 	stage._set_checkpoint()
@@ -245,4 +245,4 @@ func verify_ceiling() -> void:
 			await step(2)
 			release()
 			check(deaths == before + 1, "Visible ceiling spikes stop upward movement inside the screen")
-			check(stage.room_index == section and absf(player.position.x - (room.position.x + 110)) < 2, "Ceiling death returns to the same entrance")
+			check(stage.room_index == section and absf(player.position.x - (room.position.x + room.entrance_x)) < 2, "Ceiling death returns to the same entrance")

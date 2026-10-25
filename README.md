@@ -61,11 +61,11 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ## ステージ4：星渡りの回廊
 
-全24面で緑の相棒を持ったまま出口へ運ぶステージです。運搬中は壁登りができないため、壁キックと追加ジャンプを使います。第1室は入口から420px上の広い片面足場へ、相棒の追加ジャンプとダッシュを組み合わせて上がります。第2室は相棒を保持し、縦に続く峡谷を壁キックで上がって広い足場で休みます。第2室と追加した第7〜9室ではカメラが縦に追従します。第5室は相棒の追加ジャンプと上ダッシュで高い横風へ入り、630px先の幅230pxの島で休めます。低い天井・峠の下り・折り返しの第3・4・6室は、ダッシュなしでも攻略できます。画面上端には危険が見える天井トゲを配置しています。部屋移動で復帰地点を更新し、落下・トゲへの接触・R / Startで現在の部屋から再開します。
+全30面で緑の相棒を持ったまま出口へ運ぶステージです。運搬中は壁登りができないため、壁キックと追加ジャンプを使います。第1室は入口から420px上の広い片面足場へ、相棒の追加ジャンプとダッシュを組み合わせて上がります。第2室は相棒を保持し、縦に続く峡谷を壁キックで上がって広い足場で休みます。第2室と追加した第7〜9室ではカメラが縦に追従します。第5室は相棒の追加ジャンプと上ダッシュで高い横風へ入り、630px先の幅230pxの島で休めます。低い天井・峠の下り・折り返しの第3・4・6室は、ダッシュなしでも攻略できます。画面上端には危険が見える天井トゲを配置しています。部屋移動で復帰地点を更新し、落下・トゲへの接触・R / Startで現在の部屋から再開します。
 
-第7室は二段の高い足場、第8室は壁キックの縦穴から左へ折り返す経路、第9室は高い風から左右へ渡る経路です。第10〜15室は、空中の靴・重力反転・Spring・高い風・対向壁・連続する高台と相棒のジャンプをつなぎます。第16〜18室は幅1920pxで、空中のDash回復から再Dash、二つの反転天井、高い風から対向壁へ登る運搬をつなぎます。第19〜24室はSpringと靴、反射、保持反転、風と壁キックを組み合わせます。最終の第24室は、緑を左上へ運ぶ経路と、赤い傘生物へ持ち替えてSpringと風を渡る経路を選べます。最終到着台は第24室にあります。第7・10・13・16・18・20・23室には左上や上層へ寄る巻物が計7個あり、相棒を持ったまま安全な棚から主経路へ戻れます。安全な着地で確定した巻物は途中帰還しても保存され、選択画面へ収集数を表示します。
+第7室は二段の高い足場、第8室は壁キックの縦穴から左へ折り返す経路、第9室は高い風から左右へ渡る経路です。第10〜15室は、空中の靴・重力反転・Spring・高い風・対向壁・連続する高台と相棒のジャンプをつなぎます。第16〜18室は幅1920pxで、空中のDash回復から再Dash、二つの反転天井、高い風から対向壁へ登る運搬をつなぎます。第19〜24室はSpringと靴、反射、保持反転、風と壁キックを組み合わせます。第24室は、緑を左上へ運ぶ経路と、赤い傘生物へ持ち替えてSpringと風を渡る経路を選べます。第25〜30室は回復・靴・Spring・反射・反転・風を二つ以上つなぎ、第26・29室は右入口から左出口へ運びます。最終到着台は第30室にあります。第7・10・13・16・18・20・23・25・28室には左上や上層へ寄る巻物が計9個あり、相棒を持ったまま安全な棚から主経路へ戻れます。安全な着地で確定した巻物は途中帰還しても保存され、選択画面へ収集数を表示します。
 
-ポーズメニューで操作のヒントを表示できます。配置・操作・テストは [第4ステージの仕様](docs/stage-4.md)、新6室と収集経路は [連携6室の記録](docs/companion-more.md)、広い3室は [幅を広げた運搬の記録](docs/companion-wide.md) を参照してください。
+ポーズメニューで操作のヒントを表示できます。配置・操作・テストは [第4ステージの仕様](docs/stage-4.md)、新6室と収集経路は [連携6室の記録](docs/companion-more.md)、広い3室は [幅を広げた運搬の記録](docs/companion-wide.md)、最新6室は [左右の運搬の記録](docs/corridor-fifth.md) を参照してください。
 
 全5ステージでクリア時に右上へ小さな通知と戻るボタンを表示します。Space・A/×で自由練習を続けられ、Enter（テンキーも可）、ボタンのクリック、Y/△でステージ選択へ戻れます。
 
@@ -286,7 +286,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜5の開始と環境プレビュー
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全19区間、連続カメラ、復帰地点
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力反転を組み合わせた25部屋の本編ステージ
-- `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全24部屋
+- `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全30部屋
 - `scenes/stage_5.tscn` / `scripts/stage_5.gd`：暴風バンパー峡谷の全27部屋
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
@@ -335,7 +335,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 
 `STAGE_2_TEST_OK` は、実入力による全区間の登頂、復帰地点の更新、落下・やり直し、頂上の到着台、カメラ、ポーズメニュー、再入場を確認します。`ASCENT_BACKDROP_TEST_OK` は背景の高度連動、地表が視界から離れること、区間境界の連続性、降下と復帰時の景色、既存の地形表現を確認します。
 
-`STAGE_4_TEST_OK` は、実入力で相棒を保持した全24室の攻略、手ぶらでの出口通過拒否、天井と巡回トゲ、部屋移動、落下・やり直し、クリアとメニュー、再入場を確認します。旧第7〜9室は`tests/corridor_expansion_test.gd`、第10〜15室は`tests/corridor_more_test.gd`、広い第16〜18室と新巻物は`tests/corridor_wide_route_test.gd`で確認します。第19〜24室と新2巻物は`tests/corridor_fourth_route_test.gd`・`tests/corridor_fourth_scroll_test.gd`、赤の最終経路は`tests/corridor_fourth_choice_test.gd`、再開は`tests/corridor_fourth_retry_test.gd`で確認します。省略経路は`tests/corridor_wide_required_test.gd`・`tests/corridor_fourth_required_test.gd`、投げて手ぶらで登る比較は`tests/corridor_throw_climb_test.gd --wide-shaft`・`--fourth-shaft`で確認します。[新6室の仕様と検証](docs/companion-fourth.md)を参照してください。
+`STAGE_4_TEST_OK` は、実入力で相棒を保持した全30室の攻略、手ぶらでの出口通過拒否、天井と巡回トゲ、部屋移動、落下・やり直し、クリアとメニュー、再入場を確認します。旧第7〜9室は`tests/corridor_expansion_test.gd`、第10〜15室は`tests/corridor_more_test.gd`、広い第16〜18室と新巻物は`tests/corridor_wide_route_test.gd`で確認します。第19〜24室と新2巻物は`tests/corridor_fourth_route_test.gd`・`tests/corridor_fourth_scroll_test.gd`、赤の選択経路は`tests/corridor_fourth_choice_test.gd`、再開は`tests/corridor_fourth_retry_test.gd`で確認します。省略経路は`tests/corridor_wide_required_test.gd`・`tests/corridor_fourth_required_test.gd`、投げて手ぶらで登る比較は`tests/corridor_throw_climb_test.gd --wide-shaft`・`--fourth-shaft`で確認します。[第19〜24室の仕様と検証](docs/companion-fourth.md)を参照してください。第25〜30室は`tests/corridor_fifth_route_test.gd`、新2巻物と別プロセス保存は`tests/corridor_fifth_scroll_test.gd`・`tests/corridor_fifth_reload_test.gd`、再開は`tests/corridor_fifth_retry_test.gd`、操作省略は`tests/corridor_fifth_required_test.gd`と`tests/corridor_throw_climb_test.gd -- --fifth-shaft`で確認し、[左右の運搬6室](docs/corridor-fifth.md)へ結果を記録します。
 
 `STAGE_5_ENTRY_ROUTE_TEST_OK` は、第1室を入口から歩いて降り、反射を使って10秒以内に渡れることと、バンパーを無効にした162通りのジャンプ・8方向Dashでは出口へ届かないことを確認します。
 

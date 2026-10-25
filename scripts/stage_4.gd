@@ -6,6 +6,7 @@ const TITLES := [
 	"反転して運ぶ", "バネから相棒へ", "風と空中の継ぎ足し", "壁の先で持ち直す", "運搬の長い折り返し",
 	"空中でダッシュを継ぐ", "反転中の二つの天井", "風から壁の頂へ",
 	"バネと靴", "靴からバネへ", "反射から靴へ", "天井からバネへ", "風から壁へ", "運ぶ相手を選ぶ",
+	"回復から靴へ", "左へ反転して運ぶ", "壁から風へ", "反射から天井へ", "左へ靴と反射", "回復からバネへ",
 ]
 const HINTS := [
 	"相棒の追加ジャンプと上向きダッシュで高い足場へ。広い足場で次の着地点を見よう。",
@@ -32,6 +33,12 @@ const HINTS := [
 	"天井からDownへ。バネから床側を運ぼう。",
 	"高い風と保持壁キックをつなぎ、壁の頂へ。",
 	"緑は靴の左上へ、赤はバネと右の風へ。どちらかを運ぼう。",
+	"空中の回復から再ダッシュ。棚で休み靴で左上へ。",
+	"右のバネから左へ。Upで天井へ運び、Downから床へ戻ろう。",
+	"対向壁を保持したまま蹴り、頂から高い風へ。",
+	"反射からUpへ。天井で休み、Downから床の左枝へ。",
+	"靴で左上へ。棚の左へ降りて丸い反射に乗ろう。",
+	"左上の回復から棚へ。バネと相棒をつなぎ、到着台へ運ぼう。",
 ]
 var room_index := 0
 var transitioning := false
@@ -61,9 +68,9 @@ func _physics_process(delta: float) -> void:
 		return
 	var room := rooms.get_child(room_index)
 	var local_x: float = player.position.x - room.position.x
-	if player.position.y < -52 or player.position.y > rooms.get_child(room_index).room_height + 52 or local_x < -24:
+	if player.position.y < -52 or player.position.y > rooms.get_child(room_index).room_height + 52 or local_x < -24 or (room.travel_direction == -1 and local_x > room.room_width + 24):
 		player.respawn()
-	elif local_x >= room.room_width - 20 and room_index < rooms.get_child_count() - 1 and player.is_on_floor() and _carry_requirement_met():
+	elif (local_x >= room.room_width - 20 if room.travel_direction == 1 else local_x <= 20) and room_index < rooms.get_child_count() - 1 and player.is_on_floor() and _carry_requirement_met():
 		_transition_to_next()
 	camera.position = camera.position.lerp(_camera_position(), 1.0 - exp(-8.0 * delta))
 	_update_hud()
@@ -71,7 +78,7 @@ func _physics_process(delta: float) -> void:
 
 func _set_checkpoint() -> void:
 	var room := rooms.get_child(room_index)
-	player.set_respawn_position(Vector2(room.position.x + 110, room.entrance_top - 26))
+	player.set_respawn_position(Vector2(room.position.x + room.entrance_x, room.entrance_top - 26))
 
 
 func _camera_position() -> Vector2:
@@ -83,8 +90,19 @@ func _camera_position() -> Vector2:
 		offset_y = -80.0 if player.position.y < 1000.0 else -300.0
 		if room_index == 20 and player.position.y > 1800.0: offset_y = -200.0
 		if room_index == 21 and (player.gravity_direction == -1 or player.position.y > 1400.0): offset_y = -80.0
+		if room_index == 26 and player.position.y < 1000 and player.position.x-room.position.x < 550: offset_y = -160.0
+		if room_index == 28 and player.position.y > 1000 and player.position.y < 1700: offset_y = -140.0
+		if room_index == 27 and player.position.y > 1700:
+			offset_y = -160.0
+			bottom += 80.0
 		if not player.is_on_floor(): offset_y = clampf(offset_y + maxf(0.0, player.velocity.y) * 0.25, -300.0, -80.0)
-	return Vector2(clampf(player.position.x, room.position.x + 640, room.position.x + room.room_width - (600 if room_index >= 18 else 640)), clampf(player.position.y + offset_y, 360.0, bottom))
+	var lead_x := 300.0 if room_index == 26 and player.position.y < 800 and player.position.x-room.position.x > 270 else 0.0
+	if room_index in [25, 28] and player.gravity_direction == 1 and player.position.y < 1000: lead_x = -160.0
+	if room_index == 27 and player.gravity_direction == 1 and player.position.y < 1000: lead_x = 160.0
+	var right_margin := 580 if room_index == 23 and player.position.y < room.exit_top + 30 else (600 if room_index >= 18 and room.travel_direction == 1 else 640)
+	var camera_x := clampf(player.position.x + lead_x, room.position.x + (600 if room.travel_direction == -1 else 640), room.position.x + room.room_width - right_margin)
+	if room_index == 26 and player.position.y < 800 and player.position.x-room.position.x > 270: camera_x = maxf(camera_x, room.position.x + 800)
+	return Vector2(camera_x, clampf(player.position.y + offset_y, 360.0, bottom))
 
 
 func _transition_to_next() -> void:
@@ -139,14 +157,23 @@ func _update_hud() -> void:
 		$HUD/Info.position = Vector2(24, 620)
 	if room_index == 23 and player.position.y < room.walls[0].position.y:
 		$HUD/Info.position = Vector2(24, 190)
+	if room_index >= 24:
+		$HUD/Info.position = Vector2(24 if room.travel_direction == -1 else 760, 620)
+	if room_index == 28 and player.position.y < 1700:
+		$HUD/Info.position = Vector2(760, 620)
+	if room_index == 27 and player.gravity_direction == 1 and player.position.x-room.position.x < 650 and player.position.y < 650:
+		$HUD/Info.position = Vector2(760, 110)
+	if room_index == 29:
+		$HUD/Info.position = Vector2(24, 64)
 	if room_index == 22:
 		$HUD/Info.position = Vector2(24, 40)
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
+	$HUD/Hint.position.y = 16 if room_index >= 24 else 155
 	$HUD/Hint.text = HINTS[room_index]
 	var carrying := _carry_requirement_met()
-	room.get_node("ExitLabel").text = "✓" if completed else ("✓ →" if carrying else "○ →")
+	room.get_node("ExitLabel").text = "✓" if completed else (("✓ →" if carrying else "○ →") if room.travel_direction == 1 else ("← ✓" if carrying else "← ○"))
 	room.get_node("DeliveryIcon").modulate = Color.WHITE if carrying or completed else Color(1, 1, 1, 0.45)
 	var creature: Grabbable = room.get_node("Items/JumpCreature")
 	if room_index == 23:

@@ -18,13 +18,14 @@ func _run() -> void:
 	if OS.get_cmdline_user_args().has("--new-shaft"): tested_room = 13
 	if OS.get_cmdline_user_args().has("--wide-shaft"): tested_room = 17
 	if OS.get_cmdline_user_args().has("--fourth-shaft"): tested_room = 22
+	if OS.get_cmdline_user_args().has("--fifth-shaft"): tested_room = 26
 	change_scene_to_file("res://scenes/stage_4.tscn")
 	await step(5)
 	stage = current_scene
 	player = stage.player
 	player.respawned.connect(func(): deaths += 1)
 	player.movement_action.connect(func(action): actions[action] = actions.get(action, 0) + 1)
-	for live in ([false] if tested_room in [13, 17, 22] else [false, true]):
+	for live in ([false] if tested_room in [13, 17, 22, 26] else [false, true]):
 		for stepped in [false, true]:
 			for side in [1, -1]:
 				for delay in [0, 4, 8]:

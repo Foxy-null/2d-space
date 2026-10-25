@@ -7,6 +7,7 @@ var deaths := 0
 var samples: Array[Vector2] = []
 var screenshot_mode := false
 var steering_strength := 1.0
+var fourth_delivered: Grabbable
 
 func step(count: int = 1) -> void:
 	for frame in count:
@@ -20,6 +21,8 @@ func release() -> void:
 		Input.action_release(action)
 
 func traverse(section: int, stop_at_rest := false) -> bool:
+	if section >= 24:
+		return await traverse_fifth(section, stop_at_rest)
 	if section >= 18:
 		return await traverse_fourth(section, stop_at_rest)
 	if section >= 15:
@@ -674,5 +677,133 @@ func fourth_right_finish(gap := 20, choose := true) -> bool:
 	Input.action_press("move_up")
 	await more_dash()
 	await step(15)
-	var target := Rect2(room.room_width - 110, room.exit_top - 80, 45, 24)
-	return await more_flight(target, false, true) and stage.completed and deaths == before
+	fourth_delivered = player.get_held_object()
+	var target := Rect2(room.room_width - 30, room.exit_top, 45, 24)
+	return await more_flight(target, false, true) and stage.room_index == 24 and not stage.completed and deaths == before + 1
+
+
+func traverse_fifth(section: int, stop_at_rest := false, gap := 20) -> bool:
+	var room: Node2D = stage.rooms.get_child(section)
+	var before := deaths
+	var waypoint := 0
+	for index in room.walls.size():
+		if _on_more_rest(room.walls[index]): waypoint = index + 1
+	if section in [25, 27] and _on_wide_ceiling(room.walls[1]): waypoint = 2
+	if waypoint == 0:
+		if not await more_walk(room.route_x(185)): return false
+		match section:
+			24, 29:
+				if not await wide_refill_rise(room.walls[0], gap): return false
+			25:
+				if not await fourth_spring(room.route_x(205), room.walls[0], gap): return false
+			26:
+				if not await more_shaft(room): return false
+			27:
+				if not await fourth_bumper(room.walls[0], gap): return false
+			28:
+				if not await more_combo(room.route_x(430), room.walls[0], gap): return false
+		waypoint = 1
+		if stop_at_rest: return true
+	if section == 24 and waypoint == 1:
+		if not await more_combo(700, room.walls[1], gap): return false
+		waypoint = 2
+	elif section in [25, 27]:
+		if waypoint == 1:
+			if not await fifth_invert(room): return false
+			waypoint = 2
+		if waypoint == 2:
+			if not await fifth_down(room): return false
+			waypoint = 3
+	elif section == 26 and waypoint == 1:
+		if not await fifth_wind(room, gap): return false
+		waypoint = 2
+	elif section == 28 and waypoint == 1:
+		if not await fifth_bumper(room, gap): return false
+		waypoint = 2
+	elif section == 29 and waypoint == 1:
+		if not await fourth_spring(900, room.walls[1], gap): return false
+		waypoint = 2
+	await _fifth_capture("room%d_upper" % (section+1))
+	for index in range(waypoint, room.walls.size()):
+		if not await more_transfer(room.walls[index]): return false
+	var final: bool = section == stage.rooms.get_child_count() - 1
+	var target: Rect2 = room.route_rect(Rect2(room.room_width - (110 if final else 30), room.exit_top - (80 if final else 0), 45, 24))
+	if not await fifth_finish(room, target): return false
+	return deaths == before + (0 if final else 1)
+
+
+func fifth_invert(room: Node2D) -> bool:
+	var before := deaths
+	var gate: Node2D = room.get_node("Items/UpGate")
+	if not await more_walk(gate.position.x): return false
+	more_drive(0)
+	await more_jump()
+	for frame in 420:
+		more_drive(room.walls[1].get_center().x - _more_x())
+		await step()
+		if deaths != before: return false
+		if _on_wide_ceiling(room.walls[1]):
+			more_drive(0)
+			await step(15)
+			await _fifth_capture("room%d_inverted" % (stage.room_index+1))
+			return true
+	return false
+
+
+func fifth_down(room: Node2D) -> bool:
+	var before := deaths
+	var gate: Node2D = room.get_node("Items/DownGate")
+	if not await more_walk(room.route_x(870 if stage.room_index == 25 else 920)): return false
+	more_drive(gate.position.x - _more_x())
+	await more_jump()
+	for frame in 240:
+		more_drive(gate.position.x - _more_x())
+		await step()
+		if deaths != before: return false
+		if player.gravity_direction == 1:
+			return await more_flight(room.walls[2], false)
+	return false
+
+
+func fifth_wind(room: Node2D, gap: int) -> bool:
+	if not await more_walk(480): return false
+	more_drive(1)
+	await more_jump()
+	await step(gap)
+	await more_jump()
+	await step(gap)
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	Input.action_press("move_right", steering_strength)
+	await more_dash()
+	return await more_flight(room.walls[1], false)
+
+
+func fifth_bumper(room: Node2D, gap: int) -> bool:
+	var before := deaths
+	if not await more_walk(room.route_x(1100)): return false
+	for frame in 180:
+		more_drive(room.get_node("Bumper").position.x - _more_x())
+		await step()
+		if deaths != before: return false
+		if player.velocity.y < -800: return await fourth_boost(room.walls[1], gap)
+	return false
+
+
+func fifth_finish(room: Node2D, target: Rect2) -> bool:
+	var floor: Rect2 = room.walls.back()
+	var gap := target.position.x - floor.end.x if room.travel_direction == 1 else floor.position.x-target.end.x
+	if target.position.y < floor.position.y or gap>240: return await more_transfer(target, true)
+	if not await more_walk(clampf(target.get_center().x, floor.position.x+30, floor.end.x-30)): return false
+	more_drive(target.get_center().x - _more_x())
+	await more_jump()
+	return await more_flight(target, false, true)
+
+
+func _fifth_capture(label: String) -> void:
+	if not screenshot_mode:return
+	await process_frame
+	RenderingServer.force_draw()
+	DirAccess.make_dir_recursive_absolute("res://docs/screenshots/corridor-fifth")
+	root.get_texture().get_image().save_png("res://docs/screenshots/corridor-fifth/%s.png"%label)

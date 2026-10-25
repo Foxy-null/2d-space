@@ -25,8 +25,8 @@ func _run() -> void:
 				_check(scroll.stage_id == "companion" and not ids.has(scroll.scroll_id), "Native optional scroll IDs belong to this stage and are unique")
 				ids.append(scroll.scroll_id)
 			if room.has_node("Goal"): goals += 1
-		_check(ids.size() == 7 and progress.TOTALS["companion"] == ids.size(), "The persisted selection total equals all seven actual native scrolls")
-		_check(stage.rooms.get_child_count() == 24 and goals == 1 and stage.goal.get_parent() == stage.rooms.get_child(23), "All twenty-four native rooms connect to one real final Goal")
+		_check(ids.size() == 9 and progress.TOTALS["companion"] == ids.size(), "The persisted selection total equals all nine actual native scrolls")
+		_check(stage.rooms.get_child_count() == 30 and goals == 1 and stage.goal.get_parent() == stage.rooms.get_child(29), "All thirty native rooms connect to one real final Goal")
 		for section in range(first,24):
 			if section == 23:
 				stage.set_hints_visible(true)
@@ -62,12 +62,12 @@ func _run() -> void:
 			_check(await traverse_fourth(section,false,profile[1]),"The actual new course reaches its exit and next checkpoint or real Goal")
 			var seconds:=float(Engine.get_physics_frames()-started)/60
 			print("FOURTH_MAIN room=",section+1," strength=",profile[0]," gap=",profile[1]," seconds=",seconds," actions=",actions)
-			_check(deaths==before+(0 if section==23 else 1) and seconds<30,"The successful course has only normal room transfer and stays below thirty seconds")
+			_check(deaths==before+1 and seconds<30,"The successful course has only normal room transfer and stays below thirty seconds")
 			_check(progress.get_count("companion")==0,"Ordinary traversal leaves the optional scrolls untouched")
 			if failed:return
 			_hold()
 			await step(25)
-		_check(stage.completed,"The six new rooms form a connected route to the real final Goal")
+		_check(not stage.completed and stage.room_index==24,"The six former final rooms now connect to the twenty-fifth checkpoint")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
 	await _fourth_cleanup()
 	print("CORRIDOR_FOURTH_ROUTE_TEST_OK checks=",checks)
