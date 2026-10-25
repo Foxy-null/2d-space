@@ -70,13 +70,14 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	player.respawned.connect(func(): respawns += 1)
-	_check(stage.checkpoints.get_child_count() == 25, "Twenty-five checkpoints")
+	_check(stage.checkpoints.get_child_count() == 31, "Thirty-one checkpoints")
 	_check(player.wall_actions_enabled and player.dash_enabled, "All movement abilities available")
 	await _step(20)
 	_check(player.is_on_floor(), "Spawn is on a safe platform")
 	_check_signage()
 	# テレポートなしで全区間を通過し、各区間で既習ギミックをつなぐ。
-	for section in 25:
+	var whole_started:=Engine.get_physics_frames()
+	for section in 31:
 		if section == 0:
 			await _wall_course()
 			_check(stage.checkpoint_index == 1, "The wall route reaches checkpoint 02")
@@ -111,17 +112,20 @@ func _run() -> void:
 			await _more_course(section)
 		elif section == 18:
 			await _parachute_course()
-		else:
+		elif section < 25:
 			await _fourth_course(section)
+		else:
+			await _fifth_course(section)
 		_check_signage()
 	_check(respawns == 0, "The entire tower is traversable without respawning")
+	print("TOWER_WHOLE_SECONDS=",float(Engine.get_physics_frames()-whole_started)/60)
 	await _step(90)
 	_check(stage.completed, "Summit arrival switch completes the stage")
 	_check(stage.camera.position.y < -3000, "Camera follows the ascent continuously")
 	# 落下・リトライで最新地点に復帰し、能力とクリスタルが回復する。
 	player.position.y = 1000
 	await _step(3)
-	_check(stage.checkpoint_index == 24 and player.position.y < -30000, "Fall returns to latest checkpoint")
+	_check(stage.checkpoint_index == 30 and player.position.y < -37000, "Fall returns to latest checkpoint")
 	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "Respawn restores movement resources")
 	var crystal := stage.get_node("Items/Item4")
 	var crystal_start: Vector2 = crystal.position
@@ -1040,16 +1044,12 @@ func _fourth_course(section: int) -> void:
 			await _fourth_view("25_refill")
 			await _more_refill("Fourth25Dash", -1450, Vector2(-1300, -32280))
 			await _more_walk(-1150)
-			for frame in 180:
-				_horizontal(-1050)
-				if player.is_on_floor() and player.is_on_wall(): await _upper_pulse("jump")
-				await _step()
-				if stage.completed: break
-	if section == 24: await _fourth_view("25_goal")
+			await _more_walk(-1050)
+	if section == 24: await _fourth_view("25_checkpoint")
 	_release()
 	if player.get_held_object() != null: Input.action_press("wall_grab")
 	var seconds := (Engine.get_physics_frames()-started)/60.0
-	_check(stage.completed if section == 24 else stage.checkpoint_index == section + 1, "The real fourth section reaches its next checkpoint or final Goal: %d" % (section+1))
+	_check(stage.checkpoint_index == section + 1 and not stage.completed, "The real fourth section reaches its next native checkpoint: %d" % (section+1))
 	_check(seconds < 30, "The new successful course remains below thirty seconds")
 	print("TOWER_FOURTH_SECONDS section=",section+1," axis=",upper_strength," gap=",upper_dash_delay," seconds=",seconds," p=",player.position)
 
@@ -1110,3 +1110,226 @@ func _fourth_put_aside() -> void:
 		await _step(2)
 	_release()
 	await _step(2)
+
+
+func _fifth_course(section: int) -> void:
+	var started := Engine.get_physics_frames()
+	match section:
+		25:await _fifth26()
+		26:await _fifth27()
+		27:await _fifth28()
+		28:await _fifth29()
+		29:await _fifth30()
+		30:await _fifth31()
+	_release()
+	if player.get_held_object()!=null:Input.action_press("wall_grab")
+	var seconds := float(Engine.get_physics_frames()-started)/60
+	_check(stage.completed if section==30 else stage.checkpoint_index==section+1,"The actual fifth section reaches its native destination: %d"%(section+1))
+	_check(seconds<30,"The actual fifth route stays below thirty seconds")
+	print("TOWER_FIFTH_SECONDS section=",section+1," axis=",upper_strength," delay=",upper_dash_delay," seconds=",seconds)
+
+
+func _fifth_view(_phase: String) -> void:
+	pass
+
+
+func _fifth26() -> void:
+	await _fifth26_reacquire()
+	_horizontal(200)
+	await _upper_pulse("jump")
+	await _step(18)
+	await _upper_pulse("jump")
+	await _step(upper_dash_delay)
+	await _upper_dash()
+	await _land_on(200,-33346,360)
+	await _more_walk(200)
+
+
+func _fifth26_reacquire(throw_frame: int=4) -> void:
+	var before:=respawns
+	await _fifth_view("26_entry")
+	await _fourth_put_aside()
+	await _more_walk(-900)
+	await _more_grab("Fifth26Companion")
+	await _more_walk(-1150)
+	var companion: Grabbable=player.get_held_object()
+	await _upper_pulse("jump")
+	await _step(20)
+	await _upper_pulse("jump")
+	await _step(20)
+	Input.action_press("move_right",upper_strength)
+	Input.action_press("move_up")
+	await _upper_pulse("dash")
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--throw-frame="):throw_frame=int(arg.trim_prefix("--throw-frame="))
+	await _step(throw_frame-1)
+	Input.action_release("wall_grab")
+	await _step()
+	_check(player.get_held_object()==null and companion.linear_velocity.x>900 and companion.linear_velocity.y< -900,"An actual diagonal Dash release throws the same companion across the wall")
+	print("FIFTH26_THROW p=",player.position," object=",companion.position," v=",companion.linear_velocity)
+	await _fifth_view("26_throw")
+	await _step(10)
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	for frame in 360:
+		_horizontal(-570)
+		await _step()
+		if player.is_on_floor() and player.position.y< -32880:break
+	_check(player.is_on_floor() and player.position.y< -32880 and player.get_held_object()==null and respawns==before,"Ordinary wall inputs climb while the same thrown companion remains free")
+	print("FIFTH26_WALL p=",player.position," object=",companion.position)
+	await _fifth_view("26_wall")
+	for frame in 360:
+		_horizontal(companion.position.x)
+		Input.action_release("move_up")
+		if frame%3==0:Input.action_release("wall_grab")
+		else:Input.action_press("wall_grab")
+		await _step()
+		if player.get_held_object()==companion:break
+	_check(player.get_held_object()==companion,"Actual controls reacquire the same native companion after the climb")
+	Input.action_press("wall_grab")
+	_horizontal(200)
+	await _upper_pulse("jump")
+	await _land_on(200,-32906,360)
+	_check(player.get_available_extra_jump_count()>0,"A real landing with the reacquired native companion refills its jump")
+	await _more_walk(200)
+	await _fifth_view("26_carry")
+
+
+func _fifth27() -> void:
+	await _fifth_view("27_entry")
+	await _fourth_put_aside()
+	await _more_walk(100)
+	await _upper_pulse("jump")
+	Input.action_press("move_left",upper_strength)
+	await _step(upper_jump_delay)
+	Input.action_press("move_up")
+	await _upper_pulse("dash")
+	for frame in 100:
+		_horizontal(-120)
+		await _step()
+		if not stage.get_node("Items/Fifth27Dash").visible:break
+	_check(not stage.get_node("Items/Fifth27Dash").visible and player.is_dash_ready(),"The leftward actual Dash collects and replenishes the native refill")
+	while player.is_dashing():await _step()
+	print("FIFTH27_REFILL p=",player.position," v=",player.velocity)
+	_horizontal(player.position.x)
+	Input.action_press("move_up")
+	await _upper_pulse("dash")
+	await _land_on(100,-33746,300)
+	await _more_walk(450)
+	await _fifth_view("27_wall")
+	await _more_climb("Fifth27Wall")
+	await _more_walk(900)
+
+
+func _fifth28() -> void:
+	await _fifth_view("28_entry")
+	await _fourth_put_aside()
+	await _fourth_spring(450,Vector2(100,-34820))
+	await _more_walk(100)
+	await _fifth_view("28_wall")
+	await _more_climb("Fifth28Wall",true)
+	await _more_walk(-400)
+
+
+func _fifth29() -> void:
+	await _fifth29_reflection()
+	await _fifth_view("29_boot")
+	await _boot_transfer(-450,"Fifth29Boot",-800,-36466)
+	await _more_walk(-800)
+
+
+func _fifth29_reflection() -> void:
+	await _fifth29_bounce()
+	_horizontal(-450)
+	await _step(upper_dash_delay+18)
+	await _upper_dash()
+	await _land_on(-450,-36026,360)
+	await _more_walk(-450)
+
+
+func _fifth29_bounce() -> void:
+	await _fifth_view("29_entry")
+	await _fourth_put_aside()
+	await _more_walk(-130)
+	upper_bounces=0
+	stage.get_node("Items/Fifth29Bumper").launched.connect(_on_upper_bounce)
+	await _upper_pulse("jump")
+	_horizontal(player.position.x)
+	await _step(upper_dash_delay)
+	await _upper_dash()
+	for frame in 240:
+		if not player.is_dashing():_horizontal(-50)
+		await _step()
+		if upper_bounces>0:break
+	_check(upper_bounces==1 and player.velocity.y< -900,"Jump and Dash approach the real bumper from its upper surface")
+	print("FIFTH29_BOUNCE p=",player.position," v=",player.velocity)
+
+
+func _fifth30() -> void:
+	await _fifth30_lower()
+	await _wind_rise(-2200,-37740)
+	print("FIFTH30_WIND_TOP p=",player.position)
+	await _fifth_view("30_wind")
+	_horizontal(-1500)
+	Input.action_press("move_up")
+	await _upper_pulse("dash")
+	await _land_on(-1450,-37426,600)
+	await _more_walk(-1000)
+
+
+func _fifth30_lower() -> void:
+	await _fourth_put_aside()
+	await _more_walk(-800)
+	await _more_grab("Fifth30Parachute")
+	await _more_walk(-1060)
+	await _fifth_view("30_glide")
+	await _upper_pulse("jump")
+	Input.action_press("move_left",upper_strength)
+	await _step(upper_dash_delay)
+	await _upper_pulse("dash")
+	await _land_on(-2050,-36146,500)
+	print("FIFTH30_LOWER p=",player.position)
+	await _fifth_view("30_lower")
+
+
+func _fifth31() -> void:
+	await _fifth31_reflection()
+	await _fifth_view("31_refill")
+	await _more_refill("Fifth31Dash",-650,Vector2(-400,-38860))
+	await _more_walk(-400)
+	await _fifth_view("31_goal")
+	for frame in 240:
+		_horizontal(-150)
+		if player.is_on_floor() and player.is_on_wall():await _upper_pulse("jump")
+		await _step()
+		if stage.completed:break
+	_check(stage.completed,"The actual final native Goal is activated after section31")
+	await _fifth_view("31_completed")
+
+
+func _fifth31_reflection() -> void:
+	await _fifth31_bounce()
+	_horizontal(-650)
+	await _step(upper_dash_delay+24)
+	await _upper_dash()
+	await _land_on(-650,-38466,400)
+
+
+func _fifth31_bounce() -> void:
+	await _fifth_view("31_entry")
+	await _fourth_put_aside()
+	await _more_walk(-1150)
+	upper_bounces=0
+	stage.get_node("Items/Fifth31Bumper").launched.connect(_on_upper_bounce)
+	await _upper_pulse("jump")
+	await _step(upper_jump_delay)
+	_check(not stage.get_node("Items/Fifth31Boot").visible and player.is_air_jump_ready(),"The real final route collects its native Boot")
+	await _upper_pulse("jump")
+	await _step(upper_dash_delay)
+	await _upper_dash()
+	for frame in 300:
+		if not player.is_dashing():_horizontal(-1300)
+		await _step()
+		if upper_bounces>0:break
+	_check(upper_bounces==1 and player.velocity.y< -1000,"The Boot and actual air Dash enter the final native reflection")
+	print("FIFTH31_BOUNCE p=",player.position," v=",player.velocity)

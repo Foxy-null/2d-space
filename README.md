@@ -39,9 +39,9 @@ F5で起動すると、宇宙背景の中央に「忍者ぶっとびくん Galax
 
 ## ステージ2：星のぼりの塔
 
-`sota_sodex_1st`から取り込んだ、上へ連続スクロールする全25区間・上昇32920pxのコースです。壁登り・壁キック、Spring、ダッシュ回復・追加ジャンプのクリスタル、生物をつないで頂上を目指します。第1区間は壁登りや壁キック、第2区間はバネ、第3区間は回復したダッシュの連鎖、第4区間は靴による追加ジャンプとダッシュ、第5区間は相棒を保持して使う追加ジャンプとダッシュを必要とする地形です。第6区間はバネから空中へ飛び、靴の追加ジャンプか回復したダッシュを選んで次の旗へ渡ります。後半には壁と回復ダッシュ、バネの左折り返し、靴と相棒を重ねる上昇、相棒との壁キック、横風と反射を加えました。上層の第13〜18区間では長い棚を左右に渡り、逆風の反射、相棒の運搬、対向壁、Springと回復ダッシュを組み合わせます。第19区間は傘で二つの上昇風を渡り、右の休憩棚とSpringを経て左のCP20へ滑空します。
+`sota_sodex_1st`から取り込んだ、上へ連続スクロールする全31区間・上昇39500pxのコースです。壁登り・壁キック、Spring、ダッシュ回復・追加ジャンプのクリスタル、生物をつないで頂上を目指します。第1区間は壁登りや壁キック、第2区間はバネ、第3区間は回復したダッシュの連鎖、第4区間は靴による追加ジャンプとダッシュ、第5区間は相棒を保持して使う追加ジャンプとダッシュを必要とする地形です。第6区間はバネから空中へ飛び、靴の追加ジャンプか回復したダッシュを選んで次の旗へ渡ります。後半には壁と回復ダッシュ、バネの左折り返し、靴と相棒を重ねる上昇、相棒との壁キック、横風と反射を加えました。上層の第13〜18区間では長い棚を左右に渡り、逆風の反射、相棒の運搬、対向壁、Springと回復ダッシュを組み合わせます。第19区間は傘で二つの上昇風を渡り、右の休憩棚とSpringを経て左のCP20へ滑空します。
 
-第20〜25区間は壁と空中回復、Springの左折り返し、反射から別のSpring、靴と相棒から対向壁、傘と風から下降して靴へ、最後の反射と回復Dashをつなぎます。側面に寄って戻る任意の巻物は全8本です。各区間の旗と足跡がある広い足場に着地すると復帰地点を更新し、落下やR / Startで最新の復帰地点へ戻ります。中空の旗は未到達、「↺」は現在の復帰地点、「✓」は到達済みを示します。追加区間の配置と検証は[塔の上層6区間](docs/tower-more.md)、[傘と上昇風](docs/tower-parachute.md)、[空中資源と風をつなぐ6区間](docs/tower-fourth.md)を参照してください。
+第20〜25区間は壁と空中回復、Springの左折り返し、反射から別のSpring、靴と相棒から対向壁、傘と風から下降して靴へ、最後の反射と回復Dashをつなぎます。第26〜31区間は相棒の投げ渡しと再取得、左の回復から右の壁、下降して入るSpring、風と反射、左下への滑空から上昇風、靴からの反射と回復をつなぎます。側面に寄って戻る任意の巻物は全8本です。各区間の旗と足跡がある広い足場に着地すると復帰地点を更新し、落下やR / Startで最新の復帰地点へ戻ります。中空の旗は未到達、「↺」は現在の復帰地点、「✓」は到達済みを示します。追加区間の配置と検証は[塔の上層6区間](docs/tower-more.md)、[傘と上昇風](docs/tower-parachute.md)、[空中資源と風をつなぐ6区間](docs/tower-fourth.md)、[運搬と折り返しをつなぐ6区間](docs/tower-fifth.md)を参照してください。
 
 生活圏の惑星のふもとから、雲の上、星が見える上空へ登ります。街と山は登るにつれて下へ遠ざかり、雲と星は足場よりゆっくり動きます。背景は高度に合わせて連続して変わり、降下ややり直しでも同じ高さの景色へ戻ります。
 
@@ -296,7 +296,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/hud.tscn` / `scripts/hud.gd`：操作説明と状態表示（Playerのsignal/getterを使用）
 - `scenes/main.tscn`：各Sceneのデモ配置
 - `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜5の開始と環境プレビュー
-- `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全25区間、連続カメラ、復帰地点
+- `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全31区間、連続カメラ、復帰地点
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力反転を組み合わせた31部屋の本編ステージ
 - `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全36部屋
 - `scenes/stage_5.tscn` / `scripts/stage_5.gd`：暴風バンパー峡谷の全33部屋
@@ -348,6 +348,8 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 `STAGE_2_TEST_OK` は、実入力による全区間の登頂、復帰地点の更新、落下・やり直し、頂上の到着台、カメラ、ポーズメニュー、再入場を確認します。`ASCENT_BACKDROP_TEST_OK` は背景の高度連動、地表が視界から離れること、区間境界の連続性、降下と復帰時の景色、既存の地形表現を確認します。
 
 塔の第20〜25区間は `tests/tower_fourth_route_test.gd -- --old19 --hints` で通常／実axis0.8×16/20/24fと旧19からの接続、全身・保持物・次の着地点の可視性を確認します。`tower_fourth_required_test.gd` は資源の省略と実物支持・投げ渡しの有限比較、`tower_fourth_retry_test.gd` はRと実落下からの再攻略、`tower_fourth_scroll_test.gd` と `tower_fourth_reload_test.gd` は新2巻物の往復・確定前後・別process保存を確認します。分割実行とnative画像は[検証記録](docs/tower-fourth.md)を参照してください。
+
+塔の第26〜31区間は `tests/tower_fifth_route_test.gd -- --six --old25 --hints` で旧頂上からの実接続と通常／実axis0.8の3時機を確認します。`tower_fifth_required_test.gd` は資源の省略、同一相棒・旧区間の傘の実運搬と支持、投げの時機とcoyoteを分割して比較します。`tower_fifth_retry_test.gd` はRと実落下からの再攻略、`tower_fifth_compatibility_test.gd` は旧8IDのserialized saveを別processで読み、選択の8 / 8と再訪を確認します。現物の巻物収集は既存の5系列の試験で別に確認します。[配置と検証](docs/tower-fifth.md)を参照してください。
 
 `STAGE_4_TEST_OK` は、実入力による全36室の運搬攻略（第31室は投げ渡しと手ぶらの壁登りを含む）、手ぶらでの出口通過拒否、天井と巡回トゲ、部屋移動、落下・やり直し、クリアとメニュー、再入場を確認します。旧第7〜9室は`tests/corridor_expansion_test.gd`、第10〜15室は`tests/corridor_more_test.gd`、広い第16〜18室と新巻物は`tests/corridor_wide_route_test.gd`で確認します。第19〜24室と新2巻物は`tests/corridor_fourth_route_test.gd`・`tests/corridor_fourth_scroll_test.gd`、赤の選択経路は`tests/corridor_fourth_choice_test.gd`、再開は`tests/corridor_fourth_retry_test.gd`で確認します。省略経路は`tests/corridor_wide_required_test.gd`・`tests/corridor_fourth_required_test.gd`、投げて手ぶらで登る比較は`tests/corridor_throw_climb_test.gd --wide-shaft`・`--fourth-shaft`で確認します。[第19〜24室の仕様と検証](docs/companion-fourth.md)を参照してください。第25〜30室は`tests/corridor_fifth_route_test.gd`、新2巻物と別プロセス保存は`tests/corridor_fifth_scroll_test.gd`・`tests/corridor_fifth_reload_test.gd`、再開は`tests/corridor_fifth_retry_test.gd`、操作省略は`tests/corridor_fifth_required_test.gd`と`tests/corridor_throw_climb_test.gd -- --fifth-shaft`で確認し、[左右の運搬6室](docs/corridor-fifth.md)へ結果を記録します。第31〜36室と新3巻物は`tests/corridor_sixth_route_test.gd`・`tests/corridor_sixth_scroll_test.gd`・`tests/corridor_sixth_reload_test.gd`、資源取得直後のRは`tests/corridor_sixth_resource_retry_test.gd`で確認し、[投げ渡しと折り返し六室](docs/corridor-sixth.md)へ結果と有限比較の限界を記録します。
 

@@ -32,7 +32,7 @@ func _run() -> void:
 		monitor_view=true
 		await _fourth_course(section)
 		_check(respawns==2 and root.get_node("CollectionProgress").get_count("tower")==0,"The restored native course can be replayed without a fall or optional collection")
-		if section==24:_check(stage.get_node("Goal").is_pressed() and stage.completed,"The replay physically presses the actual final Goal")
+		if section==24:_check(stage.checkpoint_index==25 and not stage.completed,"The replay physically reaches the new CP26 without completing the new summit")
 		print("FOURTH_RETRY_NATIVE section=",section+1," resets=1 falls=1 next_cp=",stage.checkpoint_index+1)
 	monitor_view=false
 	_release()
