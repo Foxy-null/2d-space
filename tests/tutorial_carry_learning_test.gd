@@ -18,6 +18,10 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	var progress := root.get_node("CollectionProgress")
+	progress.save_path = "user://tutorial_carry_learning_%d.cfg" % OS.get_process_id()
+	progress._collected.clear()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
 	await _new_world()
 	_check(tutorial.STEPS[13].is_empty() and not _room().get_node("Goal").locked, "The terrain-led arrival has no action-history lock")
 	_check(not _room().has_node("GlideHint") and not _room().has_node("ReleaseHint"), "The visible umbrella and landing replace duplicate action labels")
@@ -50,6 +54,7 @@ func _run() -> void:
 	print("TUTORIAL_CARRY_LEARNING_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	tutorial.queue_free()
 	await _step(3)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
 	quit(1 if failed else 0)
 
 
