@@ -197,7 +197,7 @@ func _pulse(action: String) -> void:
 
 
 func _until(condition: Callable, limit: int, message: String) -> void:
-	for frame in roundi(float(limit) * Engine.physics_ticks_per_second / 80):
+	for frame in roundi(float(limit) * Engine.physics_ticks_per_second / 60):
 		if condition.call():
 			return
 		if OS.get_cmdline_user_args().has("--trace") and frame % 30 == 0:
