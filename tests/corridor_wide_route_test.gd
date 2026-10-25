@@ -46,10 +46,10 @@ func _run() -> void:
 			_check(await traverse_wide(section, false, gap), "Actual input rejoins the main exit after resting")
 			var seconds := float(Engine.get_physics_frames() - started) / 60
 			print("CORRIDOR_WIDE_ROOM_%d strength=%.2f gap=%d %.2fs p=%s deaths=%d actions=%s" % [section+1, strength, gap, seconds, Vector2(_more_x(), player.position.y), deaths-before, actions])
-			_check(deaths == before + (0 if section == 17 else 1) and seconds < 30, "The successful retry including rest stays below thirty seconds")
+			_check(deaths == before + (0 if section == stage.rooms.get_child_count()-1 else 1) and seconds < 30, "The successful retry including rest stays below thirty seconds")
 			_check(progress.get_count("companion") == 0, "The main path leaves its optional scroll untouched")
 			if failed: return
-			if section == 17: await _wide_capture("room18_goal")
+			if stage.completed: await _wide_capture("room18_goal")
 	for strength in ([1.0] if screenshot_mode else [1.0, 0.8]):
 		steering_strength = strength
 		progress._collected.clear()
@@ -165,11 +165,14 @@ func _wide_scroll(section: int, progress: Node) -> void:
 	var return_floor := Rect2(root.get_canvas_transform() * room.to_global(room.walls[1].position), Vector2(100, 24))
 	_check(root.get_visible_rect().encloses(return_floor), "The main return landing is visible before leaving the scroll shelf")
 	_check(not stage.get_node("HUD/Info").get_global_rect().intersects(return_floor), "The HUD leaves the scroll return landing clear")
-	if section == 17:
-		_check(await more_walk(1120), "The upper branch reaches its real return edge")
-		more_drive(1178 - _more_x())
+	if room.has_node("ShaftLeft"):
+		var wall: StaticBody2D = room.get_node("ShaftLeft")
+		var wall_shape: CollisionShape2D = wall.get_node("Collision")
+		var wall_rect := Rect2(wall.position + wall_shape.shape.get_rect().position, wall_shape.shape.get_rect().size)
+		_check(await more_walk(wall_rect.position.x - 40), "The upper branch reaches its real return edge")
+		more_drive(wall_rect.get_center().x - _more_x())
 		await more_jump()
-		_check(await more_flight(Rect2(1160, 300, 36, 24), false), "A normal jump rests on the left wall without approaching the ceiling spikes")
+		_check(await more_flight(Rect2(wall_rect.position, Vector2(wall_rect.size.x, 24)), false), "A normal jump rests on the left wall without approaching the ceiling spikes")
 		more_drive(room.walls[1].get_center().x - _more_x())
 		await more_jump()
 		_check(await more_flight(room.walls[1], false), "The left wall returns to the main right wall")
@@ -180,7 +183,7 @@ func _wide_scroll(section: int, progress: Node) -> void:
 	var seconds := float(Engine.get_physics_frames() - started) / 60
 	print("CORRIDOR_WIDE_SCROLL_%d strength=%.2f %.2fs" % [section + 1, steering_strength, seconds])
 	_check(seconds < 30 and deaths == before, "The complete branch round trip stays below thirty seconds")
-	_check(await traverse_wide(section), "The branch rejoins the real exit and Goal")
+	_check(await traverse(section), "The branch rejoins the real exit and Goal")
 	await _new_stage()
 	await _enter(section)
 	_check(stage.rooms.get_child(section).get_node("Scroll").modulate.a < 1, "Saved collection remains as a faint revisit scroll")
@@ -193,7 +196,7 @@ func _wide_scroll(section: int, progress: Node) -> void:
 	await step(4)
 	var card: Button = current_scene.get_node("Margin/Content/Stages/Stage4")
 	await _wide_capture("room%d_selection" % (section + 1))
-	var expected := "%d / 5" % (count + 1)
+	var expected := "%d / 7" % (count + 1)
 	_check(card.get_node("Content/Collection/Count").text == expected and card.accessibility_name.contains("巻物 " + expected), "Selection displays and announces the saved count and actual total")
 	progress._collected.clear()
 	progress.load_progress()

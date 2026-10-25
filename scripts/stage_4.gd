@@ -5,6 +5,7 @@ const TITLES := [
 	"折り返しの頂", "二段の高台", "壁キックと折り返し", "折り返しの風橋", "相棒と空中の靴",
 	"反転して運ぶ", "バネから相棒へ", "風と空中の継ぎ足し", "壁の先で持ち直す", "運搬の長い折り返し",
 	"空中でダッシュを継ぐ", "反転中の二つの天井", "風から壁の頂へ",
+	"バネと靴", "靴からバネへ", "反射から靴へ", "天井からバネへ", "風から壁へ", "運ぶ相手を選ぶ",
 ]
 const HINTS := [
 	"相棒の追加ジャンプと上向きダッシュで高い足場へ。広い足場で次の着地点を見よう。",
@@ -25,6 +26,12 @@ const HINTS := [
 	"相棒と空中の回復をつなぎ、再ダッシュで高台へ。左上から右へ渡ろう。",
 	"反転した二つの天井を相棒と渡り、Downから床側へ戻ろう。",
 	"風で島へ渡り、壁の下から対向壁へ。相棒を持って頂へ登ろう。",
+	"バネの初速から相棒へ。靴で左上へ折り返そう。",
+	"相棒と靴で上がり、バネから左上へ戻ろう。",
+	"丸い反射から休憩台へ。相棒と靴で左上へ。",
+	"天井からDownへ。バネから床側を運ぼう。",
+	"高い風と保持壁キックをつなぎ、壁の頂へ。",
+	"緑は靴の左上へ、赤はバネと右の風へ。どちらかを運ぼう。",
 ]
 var room_index := 0
 var transitioning := false
@@ -72,7 +79,12 @@ func _camera_position() -> Vector2:
 	var bottom: float = room.room_height - 360.0
 	var offset_y: float = 120.0 if room_index == 16 and player.gravity_direction == -1 else room.camera_offset_y
 	if room_index == 15 and player.position.y < 1300.0: offset_y = -80.0
-	return Vector2(clampf(player.position.x, room.position.x + 640, room.position.x + room.room_width - 640), clampf(player.position.y + offset_y, 360.0, bottom))
+	if room_index >= 18:
+		offset_y = -80.0 if player.position.y < 1000.0 else -300.0
+		if room_index == 20 and player.position.y > 1800.0: offset_y = -200.0
+		if room_index == 21 and (player.gravity_direction == -1 or player.position.y > 1400.0): offset_y = -80.0
+		if not player.is_on_floor(): offset_y = clampf(offset_y + maxf(0.0, player.velocity.y) * 0.25, -300.0, -80.0)
+	return Vector2(clampf(player.position.x, room.position.x + 640, room.position.x + room.room_width - (600 if room_index >= 18 else 640)), clampf(player.position.y + offset_y, 360.0, bottom))
 
 
 func _transition_to_next() -> void:
@@ -99,6 +111,7 @@ func _on_respawned() -> void:
 	if not transitioning:
 		camera.position = _camera_position()
 		camera.reset_smoothing()
+		_update_hud()
 
 
 func set_hints_visible(value: bool) -> void:
@@ -115,18 +128,34 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
+	var room := rooms.get_child(room_index)
 	$HUD/Info.position = Vector2(580, 620) if room_index in [1, 4, 8, 12, 17] else Vector2(24, 620 if room_index == 0 else (100 if room_index == 11 else 40))
 	if room_index == 15: $HUD/Info.position = Vector2(24, 80)
 	if room_index == 16: $HUD/Info.position = Vector2(180, 620)
+	$HUD/Info.size.x = 436.0 if room_index >= 18 else 676.0
+	if room_index >= 18:
+		$HUD/Info.position = Vector2(760, 620)
+	if room_index == 19 and player.position.y > 1000 and player.position.y < room.walls[0].position.y:
+		$HUD/Info.position = Vector2(24, 620)
+	if room_index == 23 and player.position.y < room.walls[0].position.y:
+		$HUD/Info.position = Vector2(24, 190)
+	if room_index == 22:
+		$HUD/Info.position = Vector2(24, 40)
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
 	$HUD/Hint.text = HINTS[room_index]
-	var room := rooms.get_child(room_index)
 	var carrying := _carry_requirement_met()
 	room.get_node("ExitLabel").text = "✓" if completed else ("✓ →" if carrying else "○ →")
 	room.get_node("DeliveryIcon").modulate = Color.WHITE if carrying or completed else Color(1, 1, 1, 0.45)
 	var creature: Grabbable = room.get_node("Items/JumpCreature")
+	if room_index == 23:
+		var red: Grabbable = room.get_node("Items/ParachuteCreature")
+		if player.global_position.distance_to(red.global_position) < player.global_position.distance_to(creature.global_position): creature = red
+		var target: Grabbable = player.get_held_object() if carrying else room.get_node("Items/JumpCreature")
+		var icon: Sprite2D = room.get_node("DeliveryIcon")
+		icon.texture = target.get_node("Visuals/Body").sprite_frames.get_frame_texture("default", 0)
+		icon.scale = Vector2.ONE * (42.0 / icon.texture.get_width())
 	var prompt: Label = room.get_node("CarryHint")
 	prompt.visible = not completed and not carrying and player.global_position.distance_to(creature.global_position) < 140.0
 	prompt.position = creature.position + Vector2(-65, -85)
@@ -137,4 +166,6 @@ func _update_hud() -> void:
 
 
 func _carry_requirement_met() -> bool:
-	return player.get_held_object() == rooms.get_child(room_index).get_node("Items/JumpCreature")
+	var room := rooms.get_child(room_index)
+	var held := player.get_held_object()
+	return held == room.get_node("Items/JumpCreature") or (room_index == 23 and held == room.get_node("Items/ParachuteCreature"))
