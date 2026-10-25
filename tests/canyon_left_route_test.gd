@@ -92,7 +92,7 @@ func _scroll_branch(index: int, strength: float) -> void:
 	_check(progress.has_scroll("canyon", scroll_id) and stage.room_index == index and player.is_dash_ready(), "A confirmed scroll survives a real death and the room restores its own checkpoint")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
-	var expected := "%d / 9" % (before_count + 1)
+	var expected := "%d / 11" % (before_count + 1)
 	var card := current_scene.get_node("Margin/Content/Stages/Stage5")
 	_check(card.get_node("Content/Collection/Count").text == expected and card.accessibility_name.contains("巻物 " + expected), "Selection and its accessible name use the saved count and actual total")
 	progress._collected.clear()

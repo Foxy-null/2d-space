@@ -70,7 +70,7 @@ func _inverted_trip(index: int, strength: float) -> void:
 	_inverted_snapshot("room%d_scroll_return" % (index+1))
 	if failed: return
 	await _inverted_chain(strength)
-	_check((stage.completed and respawns==0) if index==29 else (stage.transitioning and stage.room_index==28 and respawns==1),"The confirmed optional detour rejoins its actual next exit")
+	_check((stage.completed and respawns==0) if index==stage.rooms.get_child_count()-1 else (stage.transitioning and stage.room_index==index+1 and respawns==1),"The confirmed optional detour rejoins its actual next exit")
 	if failed: return
 
 
