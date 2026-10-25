@@ -2,7 +2,7 @@ extends Node2D
 
 const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
-const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ", "左へ渡り直す", "上層から二段跳び", "風の中で待つ", "上層から風へ", "左向きのSpring連携", "反発から反転へ", "風から二段下降", "左へ蹴り返す", "反転連鎖のまとめ", "天井の回復リレー", "深い下降をつなぐ", "逆風の左折り返し", "壁の上から角を回る", "左へ上昇して戻る", "上下の回復連鎖"]
+const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ", "左へ渡り直す", "上層から二段跳び", "風の中で待つ", "上層から風へ", "左向きのSpring連携", "反発から反転へ", "風から二段下降", "左へ蹴り返す", "反転連鎖のまとめ", "天井の回復リレー", "深い下降をつなぐ", "逆風の左折り返し", "壁の上から角を回る", "左へ上昇して戻る", "上下の回復連鎖", "傘で風の上へ", "反転した上昇気流", "左へ上がって深く下る", "上下をつなぐ傘"]
 const HINTS := [
 	"Springと反転をキックでつなぐ。",
 	"天井の反発板から壁を掴む。",
@@ -25,6 +25,10 @@ const HINTS := [
 	"張り出しを蹴り替えて上がり、回復Dashで角の下を回ろう。",
 	"上Dashを回復して左上へ。天井から左のDownへ進もう。",
 	"上への回復から天井で休み、下への回復で最後の床へ。",
+	"傘で風に乗り、高い床から天井へ。",
+	"反転中は下向きの風が上昇気流。深い天井から左へ。",
+	"左の天井で休み、下Dashを回復して深いDownへ。",
+	"上昇と反転した上昇をつなぎ、下Dashの回復から最後の床へ。",
 ]
 
 var room_index := 0
@@ -32,6 +36,7 @@ var transitioning := false
 var completed := false
 var hints_visible := false
 var cleared: Dictionary = {}
+var parachute_camera_lead := -80.0
 
 @onready var rooms: Node2D = $Rooms
 @onready var player: PlayerController = $Player
@@ -47,6 +52,7 @@ func _ready() -> void:
 		var boundary := room.get_node_or_null("RightBoundary/Collision")
 		if boundary != null and room.get_index() < rooms.get_child_count() - 1:
 			boundary.disabled = true
+			boundary.get_parent().hide()
 		for hint in room.get_children():
 			if hint is Label:
 				hint.add_theme_color_override("font_outline_color", ArtDraw.INK)
@@ -66,7 +72,7 @@ func set_hints_visible(value: bool) -> void:
 	$HUD/Completion.text = "ステージ3クリア！\n左へ戻って、自由に練習できます" if value else "ステージ3クリア！"
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if transitioning:
 		return
 	var room := rooms.get_child(room_index)
@@ -80,6 +86,9 @@ func _physics_process(_delta: float) -> void:
 		_transition_to(room_index - 1)
 	elif player.global_position.y > float(rooms.get_child(room_index).get_meta("room_bottom", ROOM_SIZE.y)) + 52.0 or player.global_position.y < float(rooms.get_child(room_index).get_meta("room_top", 0.0)) - 52.0:
 		player.respawn()
+	if room.get_meta("parachute_room", false):
+		var look_down := player.gravity_direction < 0 and not player.is_dashing() and (player.is_on_floor() or player.velocity.y > 0)
+		parachute_camera_lead = move_toward(parachute_camera_lead, 240.0 if look_down else -80.0, delta * 480.0)
 	if not transitioning and (room.has_meta("room_top") or room.has_meta("room_bottom") or room.has_meta("room_width")):
 		camera.position = _camera_position()
 
@@ -111,10 +120,12 @@ func _camera_position() -> Vector2:
 	var room := rooms.get_child(room_index)
 	var left: float = room.global_position.x
 	var width := float(room.get_meta("room_width", ROOM_SIZE.x))
-	return Vector2(clampf(player.position.x, left + ROOM_SIZE.x * 0.5, left + width - ROOM_SIZE.x * 0.5), clampf(player.position.y - 80.0, top + ROOM_SIZE.y * 0.5, bottom - ROOM_SIZE.y * 0.5))
+	var margin := 72.0 if room.get_meta("parachute_room", false) else 0.0
+	return Vector2(clampf(player.position.x, left + ROOM_SIZE.x * 0.5 - margin, left + width - ROOM_SIZE.x * 0.5 + margin), clampf(player.position.y + (parachute_camera_lead if room.get_meta("parachute_room", false) else -80.0), top + ROOM_SIZE.y * 0.5, bottom - ROOM_SIZE.y * 0.5))
 
 
 func _on_respawned() -> void:
+	parachute_camera_lead = -80.0
 	for gate in rooms.get_child(room_index).find_children("*", "Area2D", true, false):
 		if gate.has_method("reset_for_respawn"):
 			gate.reset_for_respawn()
@@ -157,6 +168,8 @@ func _update_room() -> void:
 		elif obstacle is Area2D:
 			obstacle.set_deferred("monitoring", not done)
 	room.get_node("Goal").set_progress(0, 0, "", "", done)
-	room.get_node("ExitHint").text = ("クリア！　自由に練習できます" if room_index == rooms.get_child_count() - 1 else "次の部屋へ →") if done else "到着台に乗ると出口が開く"
-	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
+	var exit_hint := room.get_node_or_null("ExitHint")
+	if exit_hint != null:
+		exit_hint.text = ("クリア！　自由に練習できます" if room_index == rooms.get_child_count() - 1 else "次の部屋へ →") if done else "到着台に乗ると出口が開く"
+		exit_hint.modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
 	$HUD/Completion.visible = completed and room_index == rooms.get_child_count() - 1

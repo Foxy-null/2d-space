@@ -14,12 +14,12 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(4)
 	var card: Button = current_scene.get_node("Margin/Content/Stages/Stage3")
-	_check(card.get_node("Content/Collection/Count").text == "6 / 6" and card.accessibility_name.contains("巻物 6 / 6"), "A new process exposes six of six in visible and accessible stage selection")
+	_check(card.get_node("Content/Collection/Count").text == "6 / 8" and card.accessibility_name.contains("巻物 6 / 8"), "A new process exposes six of eight in visible and accessible stage selection")
 	await _fresh(17)
 	var faded := 0
 	for room in stage.rooms.get_children():
 		for node in room.find_children("*", "Area2D", true, false):
-			if node.get_script() != null and node.get_script().resource_path == "res://scripts/scroll_collectible.gd":
+			if node.get_script() != null and node.get_script().resource_path == "res://scripts/scroll_collectible.gd" and progress.has_scroll("gravity",node.scroll_id):
 				_check(node.modulate.a < 1 and progress.has_scroll("gravity",node.scroll_id), "Each actual native scroll is already faint in the restarted process")
 				faded += 1
 	_check(faded == 6, "The restarted scene has exactly six confirmed physical scroll nodes")
