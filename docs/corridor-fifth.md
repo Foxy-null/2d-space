@@ -55,6 +55,6 @@ Godot 4.7.2、物理更新60Hz・固定描画60fps。`Input.action_press` の直
 
 巻物棚のUIを調整した最終配置でも、両枝の通常/弱入力の往復と毎frame観測を41,924項目で再確認した。第28室は100pxだけ見えれば通っていた検査を220pxへ強め、HUDが帰還先を覆う実画像に合わせて修正した。
 
-native描画は `corridor_fifth_route_test.gd -- --screenshots` の本編21枚と、`corridor_fifth_scroll_test.gd -- --screenshots --stage-only --strong` の巻物8枚を `docs/screenshots/corridor-fifth/` へ保存する。入口・3秒静止棚・後半の足場に加え、第26/28室の反転天井、第30室の実Goal、巻物入口の印・仮取得・確定棚・自然帰路を原寸で確認する。選択画面2枚は最新main統合後に `--selection-only` で撮り、他ステージの分母もそろえる。
+native描画は `corridor_fifth_route_test.gd -- --screenshots` の本編21枚（53,123項目、下端調整後の第28室だけ7,365項目で更新）と、`corridor_fifth_scroll_test.gd -- --screenshots --stage-only --strong` の巻物8枚を `docs/screenshots/corridor-fifth/` へ保存する。入口・3秒静止棚・後半の足場に加え、第26/28室の反転天井、第30室の実Goal、巻物入口の印・仮取得・確定棚・自然帰路を原寸で確認した。最新main `6b3b1e7` へ統合後は `--selection-only --strong --keep-fixture` の20,541項目で通常の両枝を再攻略し、選択画面2枚を更新した。全31枚を目視し、チュートリアル8/塔6/重力8/回廊9/峡谷7を保ち、取得数の1 / 9・2 / 9とaccessible名を確認した。描画ジョブはすべて終了0、V-Sync切替不可というXvfbの環境警告だけだった。
 
-残りの最終確認：最新main統合後の選択表示。初見の総所要時間、任意の入力列の完全な不可能証明、実機ゲームパッドは引き続き未確認。
+統合後の別プロセス再読込5項目と、PID保存を隔離した `stage_select_test.gd` 144項目・`stage_clear_test.gd` 71項目でも成功した。いずれも終了0・警告なし。初見の総所要時間、任意の入力列の完全な不可能証明、実機ゲームパッドは引き続き未確認。
