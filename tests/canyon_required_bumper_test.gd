@@ -1,6 +1,7 @@
 extends "res://tests/stage_5_test.gd"
 
 var bounces := 0
+var jump_trials := 0
 
 
 func _run() -> void:
@@ -15,13 +16,14 @@ func _run() -> void:
 			bumper.launched.connect(func(_body): bounces += 1)
 			bumper.monitoring = false
 	await _step(2)
-	for index in stage.rooms.get_child_count():
+	for index in (range(15, stage.rooms.get_child_count()) if OS.get_cmdline_user_args().has("--left-only") else range(stage.rooms.get_child_count())):
 		stage.room_index = index
 		stage._set_checkpoint()
 		for launch_x in [90, 135, 170]:
 			for delay in [0, 12, 24, 36, 48, 60]:
 				for direction in [Vector2.ZERO, Vector2.RIGHT, Vector2(1, -1), Vector2.UP, Vector2(-1, -1), Vector2.LEFT, Vector2(-1, 1), Vector2.DOWN, Vector2(1, 1)]:
 					await _try_without_bumper(index, launch_x, delay, direction)
+					jump_trials += 1
 					if failed:
 						return
 		print("CANYON_NO_BUMPER_ROOM_%02d_OK" % (index + 1))
@@ -35,7 +37,7 @@ func _run() -> void:
 					return
 	_check(bounces == 0, "No negative traversal received a bumper launch")
 	_release_inputs()
-	print("CANYON_REQUIRED_BUMPER_TEST_%s (%d checks, 2430 jump/Dash routes and 45 wall routes)" % ["FAILED" if failed else "OK", checks])
+	print("CANYON_REQUIRED_BUMPER_TEST_%s (%d checks, %d jump/Dash routes and 45 wall routes)" % ["FAILED" if failed else "OK", checks, jump_trials])
 	quit(1 if failed else 0)
 
 
@@ -44,8 +46,10 @@ func _try_without_bumper(index: int, launch_x: int, delay: int, direction: Vecto
 	player.respawn()
 	await _step(3)
 	var before := respawns
-	Input.action_press("move_right")
-	while _x() < launch_x:
+	var left: bool = stage.rooms.get_child(index).get_meta("exit_left", false)
+	var forward := "move_left" if left else "move_right"
+	Input.action_press(forward)
+	while (1280 - _x() if left else _x()) < launch_x:
 		await _step()
 	Input.action_press("jump")
 	for frame in 300:
@@ -53,9 +57,10 @@ func _try_without_bumper(index: int, launch_x: int, delay: int, direction: Vecto
 		Input.action_release("move_up")
 		Input.action_release("move_down")
 		Input.action_release("move_left")
-		Input.action_press("move_right")
+		Input.action_release("move_right")
+		Input.action_press(forward)
 		if frame == delay and direction != Vector2.ZERO:
-			Input.action_release("move_right")
+			Input.action_release(forward)
 			if direction.x != 0:
 				Input.action_press("move_right" if direction.x > 0 else "move_left")
 			if direction.y != 0:

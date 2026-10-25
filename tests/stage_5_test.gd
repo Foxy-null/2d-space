@@ -25,7 +25,7 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.scene_file_path == "res://scenes/stage_5.tscn", "Stage 5 loads from selection")
-	_check(stage.rooms.get_child_count() == 15 and stage.TITLES.size() == 15, "Fifteen named rooms are available")
+	_check(stage.rooms.get_child_count() == 18 and stage.TITLES.size() == 18, "Eighteen named rooms are available")
 	_check(stage.get_meta("environment_theme") == 2, "Use the previously unused wild planet")
 	_check(player.move_speed == 360 and player.dash_speed == 900 and player.wall_actions_enabled, "Preserve the existing movement abilities")
 	_check(not paused and not stage.hints_visible, "Pause and route hints start hidden")
@@ -71,7 +71,7 @@ func _run() -> void:
 		else:
 			_check(stage.completed and stage.next_bumper == target_count, "All final-room bumpers precede completion")
 		print("STAGE_5_ROOM_%02d_OK (%.2fs)" % [index + 1, (Engine.get_physics_frames() - started) / 60.0])
-	_check(total_bumpers == 57 and visited_bumpers.size() == 57 and respawns == 14, "All 57 reflections are reachable without a death")
+	_check(total_bumpers == 72 and visited_bumpers.size() == 72 and respawns == 17, "All 72 reflections are reachable without a death")
 	_check(not stage.target_marker.visible, "Completion hides the target marker")
 	_check(ceiling_reflected_down, "Room 6 reflects off the underside of the ceiling bumper")
 	_check(wind_frames > 100 and dash_count > 12, "Traversal uses real wind and chained dashes")
@@ -146,7 +146,7 @@ func _check_route_feedback() -> void:
 		var number: Label = bumpers.get_child(index).get_node("Number")
 		_check(number.text == ("✓" if index < stage.next_bumper else str(index + 1)), "Only actual completed reflections receive check marks")
 		_check(number.visible == stage.hints_visible, "Bumper numbers follow optional hints in every room")
-	_check(room.get_node("ExitLabel").text == "→" and room.get_node("ExitLabel").visible == stage.hints_visible, "The optional exit arrow has no reflection-history counter")
+	_check(room.get_node("ExitLabel").text == ("←" if room.get_meta("exit_left", false) else "→") and room.get_node("ExitLabel").visible == stage.hints_visible, "The optional exit arrow follows its physical direction without a reflection-history counter")
 
 
 func _isolate_collection() -> void:
@@ -159,7 +159,8 @@ func _isolate_collection() -> void:
 func _steer(strength: float = 1.0) -> void:
 	var final: bool = stage.room_index == stage.rooms.get_child_count() - 1
 	var exit: Node2D = stage.rooms.get_child(stage.room_index).get_node("Exit")
-	var target := Vector2(1210 if final else 1268, exit.position.y - 70)
+	var left: bool = stage.rooms.get_child(stage.room_index).get_meta("exit_left", false)
+	var target := Vector2(exit.position.x if final else exit.position.x + (-58 if left else 58), exit.position.y - 70)
 	var ceiling := false
 	var bumps: Node2D = stage._bumpers()
 	if stage.next_bumper < bumps.get_child_count():
@@ -177,7 +178,7 @@ func _steer_to(target: Vector2, ceiling: bool = false, strength: float = 1.0) ->
 	var error := dx - stopping_distance
 	if absf(error) > 3:
 		Input.action_press("move_right" if error > 0 else "move_left", strength)
-	if player.is_on_floor() and stage.next_bumper == 0 and _x() > 135:
+	if player.is_on_floor() and stage.next_bumper == 0 and absf(_x() - stage.rooms.get_child(stage.room_index).get_node("Spawn").position.x) > 45:
 		Input.action_press("jump")
 	var needs_dash := player.position.y > target.y - 70 and player.velocity.y > 0 and absf(dx) > 75
 	if ceiling:

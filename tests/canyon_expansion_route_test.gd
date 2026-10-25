@@ -11,7 +11,7 @@ func _run() -> void:
 	var placed := 0
 	for area in stage.find_children("*", "Area2D", true, false):
 		if area.get_script() != null and area.get_script().resource_path == "res://scripts/scroll_collectible.gd": placed += 1
-	_check(placed == 1 and placed == progress.TOTALS.canyon, "The selection total matches the actual placed canyon scrolls")
+	_check(placed == 3 and placed == progress.TOTALS.canyon, "The selection total matches the actual placed canyon scrolls")
 	for strength in [1.0, 0.8]:
 		for index in [12, 13, 14]:
 			await _setup(index)
@@ -32,7 +32,7 @@ func _run() -> void:
 			_release_inputs()
 			var seconds := float(Engine.get_physics_frames() - started) / 60
 			_check(stage.transitioning or stage.completed, "The new room %d has a real input route at strength %.1f" % [index + 1, strength])
-			_check(respawns == (0 if index == 14 else 1) and bounces >= 4, "The new application uses real reflections without dying")
+			_check(respawns == 1 and bounces >= 4, "The new application uses real reflections without dying")
 			_check(seconds < 30, "Each new room keeps a short retry interval")
 			if index == 13:
 				_check(lowest > 1000 and highest < 300, "The tall room really climbs beyond a single screen")
@@ -82,7 +82,7 @@ func _run() -> void:
 	_check(progress.get_count("canyon") == 1 and _scroll().modulate.a < 1, "R keeps one saved collectible and its faint revisit marker")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(5)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage5/Content/Collection/Count").text == "1 / 1", "Stage selection displays the actual canyon scroll count")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage5/Content/Collection/Count").text == "1 / 3", "Stage selection displays the actual canyon scroll count")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.get_count("canyon") == 1, "The unfinished canyon's confirmed scroll survives reloading")
