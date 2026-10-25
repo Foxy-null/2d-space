@@ -28,7 +28,7 @@ func _run() -> void:
 		if area.get_script() != null and area.get_script().resource_path == "res://scripts/scroll_collectible.gd":
 			placements += 1
 			ids[area.scroll_id] = true
-	_check(placements == 6 and ids.size() == 6 and progress.TOTALS.tutorial == 6, "The six unique native placements match the actual selection total")
+	_check(placements == 8 and ids.size() == 8 and progress.TOTALS.tutorial == 8, "The eight unique native placements match the actual selection total")
 	_check(tutorial.rooms.get_child_count() == 17 and tutorial.MAIN_ROOM_COUNT == 16, "The main sixteen and optional seventeenth lesson remain unchanged")
 	if OS.get_cmdline_user_args().has("--lifecycle-only"):
 		await _launch_lifecycle()

@@ -27,7 +27,7 @@ func _run() -> void:
 		if area.get_script() != null and area.get_script().resource_path == "res://scripts/scroll_collectible.gd":
 			placed[area.scroll_id] = true
 			scroll_total += 1
-	_check(scroll_total == 6 and placed.size() == 6 and progress.TOTALS.tutorial == 6, "The six unique native placements match the selection total")
+	_check(scroll_total == 8 and placed.size() == 8 and progress.TOTALS.tutorial == 8, "The eight unique native placements match the selection total")
 	_check(tutorial.rooms.get_child_count() == 17 and tutorial.MAIN_ROOM_COUNT == 16, "The two new detours preserve sixteen main and one optional room")
 	await _normal_main_routes()
 	if not OS.get_cmdline_user_args().has("--routes-only"):
@@ -92,8 +92,8 @@ func _selection(count: int) -> void:
 	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(5)
 	var card := current_scene.get_node("Margin/Content/Stages/Stage1") as Button
-	_check(card.get_node("Content/Collection/Count").text == "%d / 6" % count, "Selection shows the collected tutorial total")
-	_check(card.accessibility_name.contains("巻物 %d / 6" % count), "Selection exposes the same total through its accessible name")
+	_check(card.get_node("Content/Collection/Count").text == "%d / 8" % count, "Selection shows the collected tutorial total")
+	_check(card.accessibility_name.contains("巻物 %d / 8" % count), "Selection exposes the same total through its accessible name")
 
 
 func _normal_main_routes() -> void:
