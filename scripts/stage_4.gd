@@ -117,6 +117,7 @@ func _on_completed() -> void:
 func _update_hud() -> void:
 	$HUD/Info.position = Vector2(580, 620) if room_index in [1, 4, 8, 12, 17] else Vector2(24, 620 if room_index == 0 else (100 if room_index == 11 else 40))
 	if room_index == 15: $HUD/Info.position = Vector2(24, 80)
+	if room_index == 16: $HUD/Info.position = Vector2(180, 620)
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()

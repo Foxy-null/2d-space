@@ -1,6 +1,9 @@
 extends "res://tests/corridor_more_test.gd"
 
+var observe_main_view := false
+
 func _run() -> void:
+	observe_main_view = true
 	screenshot_mode = OS.get_cmdline_user_args().has("--screenshots")
 	var progress := root.get_node("CollectionProgress")
 	progress.save_path = "user://corridor_wide_%d.cfg" % OS.get_process_id()
@@ -224,3 +227,16 @@ func _refill_retry() -> void:
 	release()
 	await step(6)
 	_check(crystal._available and player.get_held_object() == null and player.is_on_floor() and player.is_dash_ready() and player.position.distance_to(player._spawn_position) < 2, "R during the refill flight restores the crystal, companion and safe entrance")
+
+func step(count: int = 1) -> void:
+	for frame in count:
+		await super.step()
+		if observe_main_view and is_instance_valid(stage) and is_instance_valid(player) and stage.room_index == 16 and not stage.transitioning:
+			var shape: CollisionShape2D = player.get_node("CollisionShape2D")
+			var body := Rect2(shape.get_global_transform_with_canvas()*shape.shape.get_rect().position,shape.shape.get_rect().size)
+			var hud: Control = stage.get_node("HUD/Info")
+			_check(root.get_visible_rect().encloses(body) and not hud.get_global_rect().intersects(body),"The seventeenth room keeps the full player outside the HUD throughout the actual Up/Down route")
+			var held: Grabbable = player.get_held_object()
+			if held != null:
+				var object_bounds := Rect2(held.collider.get_global_transform_with_canvas()*held.collider.shape.get_rect().position,held.collider.shape.get_rect().size)
+				_check(not hud.get_global_rect().intersects(object_bounds),"The seventeenth room leaves the actual carried companion visible outside the HUD")
