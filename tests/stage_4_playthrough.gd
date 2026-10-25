@@ -21,6 +21,7 @@ func release() -> void:
 		Input.action_release(action)
 
 func traverse(section: int, stop_at_rest := false) -> bool:
+	if section >= 30: return await traverse_sixth(section, stop_at_rest)
 	if section >= 24:
 		return await traverse_fifth(section, stop_at_rest)
 	if section >= 18:
@@ -807,3 +808,246 @@ func _fifth_capture(label: String) -> void:
 	RenderingServer.force_draw()
 	DirAccess.make_dir_recursive_absolute("res://docs/screenshots/corridor-fifth")
 	root.get_texture().get_image().save_png("res://docs/screenshots/corridor-fifth/%s.png"%label)
+
+
+func traverse_sixth(section: int, stop_at_rest := false, gap := 20) -> bool:
+	var room: Node2D = stage.rooms.get_child(section)
+	var before := deaths
+	var waypoint := 0
+	for i in room.walls.size():
+		if _on_more_rest(room.walls[i]): waypoint = i+1
+	if section==33:
+		for i in [0,1]:
+			if _on_wide_ceiling(room.walls[i]): waypoint=i+1
+	if waypoint==0:
+		if not await more_walk(room.route_x(185)): return false
+		match section:
+			30:
+				if not await sixth_throw_wall(room,gap): return false
+				waypoint = 2
+			31,35:
+				if not await more_combo(room.route_x(430),room.walls[0],gap): return false
+			32:
+				if not await fourth_bumper(room.walls[0],gap): return false
+			33:
+				if not await sixth_invert(room): return false
+			34:
+				if not await fourth_spring(room.route_x(205),room.walls[0],gap): return false
+		if waypoint==0: waypoint=1
+		if section in [31,34] and not await more_walk(room.route_x(1040 if section==31 else 795)): return false
+		if section==32 and stop_at_rest and not await more_walk(maxf(_more_x(),room.walls[0].position.x+30)): return false
+		if stop_at_rest: return true
+	match section:
+		30:
+			if waypoint==2:
+				if not await fourth_spring(900,room.walls[2],gap): return false
+				waypoint=3
+		31:
+			if waypoint==1:
+				if not await sixth_wind(room,room.walls[1],gap): return false
+				waypoint=2
+		32:
+			if waypoint==1:
+				if not await sixth_refill(room.walls[1],gap): return false
+				waypoint=2
+		33:
+			if waypoint==1:
+				if not await sixth_ceiling(room,gap): return false
+				waypoint=2
+			if waypoint==2:
+				if not await more_walk(1450): return false
+				more_drive(1510-_more_x())
+				await more_jump()
+				for frame in 240:
+					more_drive(1510-_more_x())
+					await step()
+					if deaths!=before:return false
+					if player.gravity_direction==1: break
+				if player.gravity_direction!=1 or not await more_flight(room.walls[2],false): return false
+				waypoint=3
+		34:
+			if waypoint==1:
+				if not await more_walk(room.route_x(795)) or not await wide_shaft(room.walls[1]): return false
+				waypoint=2
+			if waypoint==2:
+				if not await sixth_wind(room,room.walls[2],gap): return false
+				waypoint=3
+		35:
+			if waypoint==1:
+				if not await sixth_spring_bumper(room,gap): return false
+				waypoint=2
+	await _sixth_view("room%d_upper"%(section+1))
+	for i in range(waypoint,room.walls.size()):
+		if not await more_transfer(room.walls[i]): return false
+	if section==35: return await sixth_goal(room) and deaths==before
+	var final: bool = section==stage.rooms.get_child_count()-1
+	var target: Rect2 = room.route_rect(Rect2(room.room_width-(110 if final else 30),room.exit_top-(80 if final else 0),45,24))
+	return await fifth_finish(room,target) and deaths==before+(0 if final else 1)
+
+
+func sixth_throw_wall(room: Node2D, gap: int) -> bool:
+	var before := deaths
+	var object: Grabbable = room.get_node("Items/JumpCreature")
+	if not await more_walk(350): return false
+	more_drive(0)
+	await more_jump()
+	await step(gap)
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	await more_dash()
+	await step(10)
+	Input.action_release("move_up")
+	Input.action_press("move_right",steering_strength)
+	await step(3)
+	Input.action_release("wall_grab")
+	await step()
+	print("SIXTH_THROW p=",Vector2(_more_x(),player.position.y)," object=",object.position," v=",object.linear_velocity)
+	await _sixth_view("room31_throw")
+	if player.get_held_object()!=null or object.carrier!=null or object.release_physics_frame<Engine.get_physics_frames()-2: return false
+	# Let the real throw leave grab range before climbing with the same key.
+	for frame in 20:
+		release()
+		Input.action_press("move_right",steering_strength)
+		await step()
+	var climbed := false
+	for frame in 600:
+		release()
+		Input.action_press("wall_grab")
+		Input.action_press("move_up")
+		steer_to(clampf(object.position.x,450,800)-_more_x() if player.position.y<1280 else 1)
+		if player.is_on_floor() and player.position.y>1300: await more_jump()
+		await step()
+		if deaths!=before:return false
+		if player.is_wall_grabbing() and player.velocity.y<0 and player.get_held_object()==null:
+			climbed = true
+			actions["bare_climb_frames"] = actions.get("bare_climb_frames",0)+1
+		if player.get_held_object()==object and _on_more_rest(room.walls[1]): return climbed
+	return false
+
+
+func sixth_invert(room: Node2D) -> bool:
+	var before := deaths
+	if not await more_walk(185): return false
+	more_drive(300-_more_x())
+	await more_jump()
+	for frame in 420:
+		more_drive((300 if player.gravity_direction==1 else room.walls[0].get_center().x)-_more_x())
+		if player.gravity_direction==1 and player.velocity.y>-40:
+			if player.get_available_extra_jump_count()>0: await more_jump()
+			elif player.is_dash_ready():
+				release()
+				Input.action_press("wall_grab")
+				Input.action_press("move_up")
+				await more_dash()
+		await step()
+		if deaths!=before:return false
+		if _on_wide_ceiling(room.walls[0]): return true
+	return false
+
+
+func sixth_ceiling(room: Node2D, gap: int) -> bool:
+	var before := deaths
+	var refilled: Array[bool] = []
+	room.get_node("Items/DashCrystal").collected.connect(func(_body):refilled.append(true),CONNECT_ONE_SHOT)
+	if not await more_walk(730): return false
+	more_drive(800-_more_x())
+	await more_jump()
+	for frame in gap:
+		more_drive(800-_more_x())
+		await step()
+	await more_jump()
+	for frame in gap:
+		more_drive(800-_more_x())
+		await step()
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_down")
+	await more_dash()
+	await step(10)
+	for frame in 18:
+		more_drive(room.walls[1].get_center().x-_more_x())
+		await step()
+	if refilled.is_empty() or not player.is_dash_ready(): return false
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_down")
+	Input.action_press("move_right",steering_strength)
+	await more_dash()
+	for frame in 600:
+		more_drive(room.walls[1].get_center().x-_more_x())
+		await step()
+		if OS.get_cmdline_user_args().has("--trace") and frame%15==0:print("SIXTH_CEILING p=",Vector2(_more_x(),player.position.y)," v=",player.velocity)
+		if deaths!=before:return false
+		if _on_wide_ceiling(room.walls[1]):return true
+	return false
+
+
+func sixth_wind(room: Node2D, target: Rect2, gap: int) -> bool:
+	var launch := 1040.0 if stage.room_index==31 else 1010.0
+	if not await more_walk(room.route_x(launch)): return false
+	await _sixth_view("room%d_wind"%(stage.room_index+1))
+	more_drive(target.get_center().x-_more_x())
+	await more_jump()
+	await step(gap)
+	await more_jump()
+	await step(gap)
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_right" if room.travel_direction==1 else "move_left",steering_strength)
+	Input.action_press("move_up")
+	await more_dash()
+	return await more_flight(target,false)
+
+
+func sixth_spring_bumper(room: Node2D, gap: int) -> bool:
+	var before := deaths
+	var reflected: Array[bool] = []
+	room.get_node("Bumper").launched.connect(func(_body):reflected.append(true),CONNECT_ONE_SHOT)
+	var over_bumper := false
+	for frame in 600:
+		over_bumper = over_bumper or player.position.y < 1350
+		more_drive((1300 if over_bumper else 1000)-_more_x())
+		await step()
+		if deaths!=before:return false
+		if not reflected.is_empty():return await fourth_boost(room.walls[1],gap)
+	return false
+
+
+func sixth_refill(target: Rect2, gap: int) -> bool:
+	if not await more_walk(1220): return false
+	more_drive(0)
+	await more_jump()
+	await step(gap)
+	await more_jump()
+	await step(gap)
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	await more_dash()
+	await step(10)
+	await _sixth_view("room33_refill")
+	for frame in 18:
+		more_drive(target.get_center().x-_more_x())
+		await step()
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	Input.action_press("move_right",steering_strength)
+	await more_dash()
+	return await more_flight(target,false)
+
+
+func sixth_goal(room: Node2D) -> bool:
+	if not await more_walk(room.walls.back().end.x-30): return false
+	more_drive(2350-_more_x())
+	await more_jump()
+	if not await more_flight(Rect2(2320,room.exit_top,240,24),false):return false
+	if not await more_walk(2360): return false
+	more_drive(room.get_node("Goal").position.x-_more_x())
+	await more_jump()
+	return await more_flight(Rect2(room.get_node("Goal").position.x-20,room.exit_top-80,45,24),false,true)
+
+
+func _sixth_view(_label: String) -> void:
+	pass

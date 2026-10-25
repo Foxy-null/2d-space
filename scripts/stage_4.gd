@@ -7,6 +7,7 @@ const TITLES := [
 	"空中でダッシュを継ぐ", "反転中の二つの天井", "風から壁の頂へ",
 	"バネと靴", "靴からバネへ", "反射から靴へ", "天井からバネへ", "風から壁へ", "運ぶ相手を選ぶ",
 	"回復から靴へ", "左へ反転して運ぶ", "壁から風へ", "反射から天井へ", "左へ靴と反射", "回復からバネへ",
+	"投げ渡して壁の上へ", "左へ風を渡って下る", "反射から空中回復へ", "天井を継いで運ぶ", "壁の頂から左の風へ", "相棒と最後の反射へ",
 ]
 const HINTS := [
 	"相棒の追加ジャンプと上向きダッシュで高い足場へ。広い足場で次の着地点を見よう。",
@@ -39,6 +40,12 @@ const HINTS := [
 	"反射からUpへ。天井で休み、Downから床の左枝へ。",
 	"靴で左上へ。棚の左へ降りて丸い反射に乗ろう。",
 	"左上の回復から棚へ。バネと相棒をつなぎ、到着台へ運ぼう。",
+	"相棒を上へ渡し、手ぶらで壁へ。同じ相棒を拾い、バネから右の棚へ。",
+	"靴と相棒で左上へ。高い風から遠い低い島へ下ろう。",
+	"反射で棚へ。相棒と空中回復をつなぎ、右上へ運ぼう。",
+	"Upで天井へ。回復ダッシュから次の天井、Downから床へ戻ろう。",
+	"バネから対向壁へ。相棒を持って頂へ登り、左の風へ。",
+	"靴と相棒で上の棚へ。バネと反射をつなぎ、到着台へ運ぼう。",
 ]
 var room_index := 0
 var transitioning := false
@@ -96,12 +103,21 @@ func _camera_position() -> Vector2:
 			offset_y = -160.0
 			bottom += 80.0
 		if not player.is_on_floor(): offset_y = clampf(offset_y + maxf(0.0, player.velocity.y) * 0.25, -300.0, -80.0)
+	if room_index == 30 and player.position.x-room.position.x < 700 and player.position.y < 1400: offset_y = 60.0
+	if room_index == 32 and player.position.x-room.position.x < 900 and player.position.y < 1400: offset_y = 80.0
+	if room_index == 32 and player.position.y > 1600: offset_y = -120.0
+	if room_index == 31 and player.position.y < 1600: offset_y = 0.0
+	if room_index == 33 and player.gravity_direction == -1: offset_y = 180.0 if player.is_on_floor() or player.velocity.y >= 0 else -80.0
+	if room_index == 35 and player.position.y > 1000: offset_y = -310.0 if player.is_on_floor() else -270.0
 	var lead_x := 300.0 if room_index == 26 and player.position.y < 800 and player.position.x-room.position.x > 270 else 0.0
 	if room_index in [25, 28] and player.gravity_direction == 1 and player.position.y < 1000: lead_x = -160.0
 	if room_index == 27 and player.gravity_direction == 1 and player.position.y < 1000: lead_x = 160.0
+	if room_index in [31, 34] and player.position.y < (1600 if room_index == 31 else 1000): lead_x = -300.0
+	if room_index == 35 and player.position.y > 1000 and player.position.x-room.position.x > 500: lead_x = 300.0
 	var right_margin := 580 if room_index == 23 and player.position.y < room.exit_top + 30 else (600 if room_index >= 18 and room.travel_direction == 1 else 640)
 	var camera_x := clampf(player.position.x + lead_x, room.position.x + (600 if room.travel_direction == -1 else 640), room.position.x + room.room_width - right_margin)
 	if room_index == 26 and player.position.y < 800 and player.position.x-room.position.x > 270: camera_x = maxf(camera_x, room.position.x + 800)
+	if room_index == 35 and player.position.y > 1000 and player.position.x-room.position.x > 600: camera_x = maxf(camera_x,room.position.x+960)
 	return Vector2(camera_x, clampf(player.position.y + offset_y, 360.0, bottom))
 
 
@@ -141,6 +157,7 @@ func _on_completed() -> void:
 	if not _carry_requirement_met():
 		return
 	completed = true
+	$HUD/Completion.card.position = Vector2(24, 180)
 	$HUD/Completion.show()
 	goal.set_progress(0, 0, "", "", true)
 
@@ -165,12 +182,21 @@ func _update_hud() -> void:
 		$HUD/Info.position = Vector2(760, 110)
 	if room_index == 29:
 		$HUD/Info.position = Vector2(24, 64)
+	if room_index == 30: $HUD/Info.position = Vector2(760, 620) if player.position.x-room.position.x < 700 and player.position.y < 1400 else Vector2(24,80)
+	if room_index in [31, 34] and player.position.y < (1600 if room_index == 31 else 1000): $HUD/Info.position = Vector2(760, 620)
+	if room_index == 34 and player.position.y < 500 and player.position.x-room.position.x > 1660: $HUD/Info.position = Vector2(24,620)
+	if room_index == 33: $HUD/Info.position = Vector2(760 if player.position.x-room.position.x < 450 and player.position.y > 1100 else 24, 620)
+	if room_index == 35 and player.position.y < 1000: $HUD/Info.position = Vector2(24, 64)
 	if room_index == 22:
 		$HUD/Info.position = Vector2(24, 40)
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
 	$HUD/Hint.position.y = 16 if room_index >= 24 else 155
+	if room_index >= 30: $HUD/Hint.position.y = 12
+	if room_index in [30,34]: $HUD/Hint.position.y = 560 if player.position.y < 520 else 12
+	if room_index == 35: $HUD/Hint.position.y = 560 if player.position.y < 1000 else 110
+	$HUD/PauseButton.position.y = 620 if room_index == 35 and player.position.y < 1000 else 44
 	$HUD/Hint.text = HINTS[room_index]
 	var carrying := _carry_requirement_met()
 	room.get_node("ExitLabel").text = "✓" if completed else (("✓ →" if carrying else "○ →") if room.travel_direction == 1 else ("← ✓" if carrying else "← ○"))
