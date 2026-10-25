@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
 
@@ -6,7 +6,6 @@
 
 [ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
 
-[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
 
 [sub_resource type="RectangleShape2D" id="Entrance"]
 size = Vector2(180, 40)
@@ -204,7 +203,3 @@ points = PackedVector2Array(90, 570, 270, 610, 500, 420, 740, 580, 930, 400, 780
 width = 2.0
 default_color = Color(0.75, 1, 0.85, 0.6)
 antialiased = true
-
-[node name="Goal" parent="." instance=ExtResource("goal")]
-position = Vector2(1210, 612)
-mission_required = false

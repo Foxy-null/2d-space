@@ -4,6 +4,7 @@ const TITLES := [
 	"針穴の反射", "横風の狙撃", "風の境目", "三連反射", "逆風を裂く", "天井返し",
 	"吹き落とす風", "折り返す航路", "壁からの一撃", "暴走する追い風", "嵐の五連鎖", "暴風の六連鎖",
 	"折り返す空と巻物", "縦に抜ける峡谷", "嵐の帰り道",
+	"左へ抜ける反射", "上層への五段", "深い谷の折り返し",
 ]
 const HINTS := [
 	"足場を右へ降りてバンパーの上側へ。反射後は右へ進み、隙間の先のバンパーを狙おう。",
@@ -21,6 +22,9 @@ const HINTS := [
 	"右の反射から左へ折り返し、休憩台へ。巻物へ寄るなら、さらに左上を回ろう。",
 	"下から反射をつないで登ろう。左への折り返しの後は、右上の切れ目へ向かおう。",
 	"横風と下向きの風を抜け、左へ折り返してから最後の反射へ向かおう。",
+	"右の入口から上へ戻り、左の出口へ反射をつなごう。",
+	"下層から反射をつなぐ。中間の台で休んでから上へ戻れます。",
+	"下向きの風に乗り、谷の奥から左上の到着台へ折り返そう。",
 ]
 const ROOM_WIDTH := 1280.0
 var room_index := 0
@@ -59,11 +63,12 @@ func _physics_process(delta: float) -> void:
 		return
 	var local_x := player.position.x - room_index * ROOM_WIDTH
 	var height := float(rooms.get_child(room_index).get_meta("room_height", 720.0))
-	if player.position.y < -52 or player.position.y > height + 52 or local_x < -24:
+	var exit_left := bool(rooms.get_child(room_index).get_meta("exit_left", false))
+	if player.position.y < -52 or player.position.y > height + 52:
 		player.respawn()
-	elif room_index < rooms.get_child_count() - 1 and (_landed_on_exit() or local_x >= ROOM_WIDTH):
+	elif room_index < rooms.get_child_count() - 1 and (_landed_on_exit() or (local_x <= 0 if exit_left else local_x >= ROOM_WIDTH)):
 		_transition_to_next()
-	elif local_x > ROOM_WIDTH + 24:
+	elif local_x < -24 or local_x > ROOM_WIDTH + 24:
 		player.respawn()
 	if height > 720:
 		camera.position.y = lerpf(camera.position.y, _camera_position().y, 1.0 - exp(-8.0 * delta))
@@ -87,8 +92,10 @@ func _set_checkpoint() -> void:
 
 
 func _camera_position() -> Vector2:
-	var height := float(rooms.get_child(room_index).get_meta("room_height", 720.0))
-	return Vector2(room_index * ROOM_WIDTH + 640, clampf(player.position.y - 80, 360, height - 360))
+	var room := rooms.get_child(room_index)
+	var height := float(room.get_meta("room_height", 720.0))
+	var offset_y := float(room.get_meta("camera_offset_y", -80.0))
+	return Vector2(room_index * ROOM_WIDTH + 640, clampf(player.position.y + offset_y, 360, height - 360))
 
 
 func _transition_to_next() -> void:
@@ -161,6 +168,7 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
+	$HUD/Info.position = Vector2(24, 620 if room_index == 16 else 16)
 	$HUD/Info/Rows/Title.text = "暴風バンパー峡谷　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s" % ("●" if player.is_dash_ready() else "○")
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
