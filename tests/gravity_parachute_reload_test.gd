@@ -14,7 +14,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(4)
 	var card: Button=current_scene.get_node("Margin/Content/Stages/Stage3")
-	_check(card.get_node("Content/Collection/Count").text=="2 / 8" and card.accessibility_name.contains("巻物 2 / 8"),"A separate process exposes two of eight visually and accessibly")
+	_check(card.get_node("Content/Collection/Count").text=="2 / 10" and card.accessibility_name.contains("巻物 2 / 10"),"A separate process exposes two of ten visually and accessibly")
 	for index in [21,23]:
 		await _fresh_para(index)
 		_check(stage.rooms.get_child(index).get_node("Scroll")._secured,"Both native nodes are secured after process restart")
@@ -25,7 +25,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(4)
 	card=current_scene.get_node("Margin/Content/Stages/Stage3")
-	_check(card.get_node("Content/Collection/Count").text=="8 / 8" and card.accessibility_name.contains("巻物 8 / 8"),"The combined eight-ID fixture uses the real total visually and accessibly")
+	_check(card.get_node("Content/Collection/Count").text=="8 / 10" and card.accessibility_name.contains("巻物 8 / 10"),"The retained eight-ID subset uses the current ten-scroll total visually and accessibly")
 	current_scene.queue_free()
 	await _step(5)
 	DirAccess.remove_absolute(path)

@@ -85,7 +85,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(4)
 	var card: Button=current_scene.get_node("Margin/Content/Stages/Stage3")
-	_check(card.get_node("Content/Collection/Count").text=="2 / 8" and card.accessibility_name.contains("巻物 2 / 8"),"Visible and accessible stage selection show two of eight")
+	_check(card.get_node("Content/Collection/Count").text=="2 / 10" and card.accessibility_name.contains("巻物 2 / 10"),"Visible and accessible stage selection show two of ten")
 	await _para_capture("selection")
 	print("GRAVITY_PARACHUTE_SAVE ",progress.save_path)
 	if not OS.get_cmdline_user_args().has("--keep-save"): DirAccess.remove_absolute(progress.save_path)

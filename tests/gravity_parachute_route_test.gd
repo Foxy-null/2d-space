@@ -29,6 +29,15 @@ func _run() -> void:
 			await _fresh_para(index)
 			await _para_course(index)
 			_check(progress.get_count("gravity")==0,"The main course leaves every optional scroll untouched")
+			if index == 24:
+				_check(not stage.completed, "The former twenty-fifth final is now intermediate")
+				monitor_view = false
+				await _para_walk(3040)
+				_para_drive(3120)
+				await _until(func(): return stage.room_index == 25, 160, "The actual old25 exit enters the new26 checkpoint")
+				_release_inputs()
+				await _step(25)
+				_check(not stage.transitioning and player.controls_enabled and player.position.distance_to(stage.rooms.get_child(25).get_node("Spawn").global_position)<5 and player.gravity_direction==1 and player.is_dash_ready() and player.get_held_object()==null, "The new26 native checkpoint restores normal input and resources after real transfer")
 			if failed: break
 		if failed: break
 	_release_inputs()
@@ -60,7 +69,7 @@ func _fresh_para(index: int) -> void:
 		if crystal.get_script() != null and crystal.get_script().resource_path == "res://scripts/refill_crystal.gd": crystal.collected.connect(func(_body): actions["crystal"] = actions.get("crystal",0)+1)
 	if OS.get_cmdline_user_args().has("--hints"): stage.set_hints_visible(true)
 	monitor_view = true
-	_check(stage.rooms.get_child_count() == 25 and not stage.completed, "Twenty-five native rooms begin without premature completion")
+	_check(stage.rooms.get_child_count() == 31 and not stage.completed, "Thirty-one native rooms begin without premature completion")
 	for room in stage.rooms.get_children():
 		var boundary:Node2D=room.get_node_or_null("RightBoundary")
 		if boundary!=null:
@@ -71,7 +80,7 @@ func _fresh_para(index: int) -> void:
 		if candidate.get_script()!=null and candidate.get_script().resource_path=="res://scripts/scroll_collectible.gd":
 			_check(candidate.stage_id=="gravity" and not ids.has(candidate.scroll_id),"Placed scrolls have unique stage-scoped IDs")
 			ids[candidate.scroll_id]=true
-	_check(ids.size()==8 and progress.TOTALS["gravity"]==8,"Eight native scrolls match the persisted selection total")
+	_check(ids.size()==10 and progress.TOTALS["gravity"]==10,"Ten native scrolls match the persisted selection total")
 	await _para_capture("room_%d_entrance"%(index+1))
 
 
