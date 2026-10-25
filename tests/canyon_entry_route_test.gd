@@ -51,7 +51,7 @@ func _course(index: int, strength: float, delay: int) -> void:
 	_release_inputs()
 	var seconds := float(Engine.get_physics_frames()-started)/60
 	print("CANYON_ENTRY_ROOM_",index+1," strength=",strength," delay=",delay," seconds=",seconds," next=",stage.next_bumper," p=",Vector2(_x(),player.position.y)," respawns=",respawns)
-	_check((stage.room_index==index+1 and stage.transitioning and respawns==1) if index<26 else (stage.completed and respawns==0),"The entire actual route reaches the exit without dying")
+	_check((stage.room_index==index+1 and stage.transitioning and respawns==1) if index<stage.rooms.get_child_count()-1 else (stage.completed and respawns==0),"The entire actual route reaches the exit without dying")
 	_check(seconds<30,"The successful retry remains below thirty seconds")
 	_check(progress.get_count("canyon")==0,"The actual main route leaves both optional scrolls untouched")
 	if index == 26: await _capture("room27_goal")
@@ -80,8 +80,7 @@ func _step(count: int = 1) -> void:
 		var card: Control = stage.get_node("HUD/Completion").card
 		if card.visible: panels.append(card)
 		for shape in bodies:
-			var bounds := shape.shape.get_rect()
-			bounds.position = shape.get_global_transform_with_canvas()*bounds.position
+			var bounds: Rect2 = shape.get_global_transform_with_canvas()*shape.shape.get_rect()
 			_check(root.get_visible_rect().encloses(bounds),"The entire native player and carried object stay inside the viewport")
 			for panel in panels:
 				_check(not panel.get_global_rect().intersects(bounds),"The moving body remains outside visible HUD panels: "+panel.name)

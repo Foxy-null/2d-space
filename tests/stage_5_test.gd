@@ -25,7 +25,7 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.scene_file_path == "res://scenes/stage_5.tscn", "Stage 5 loads from selection")
-	_check(stage.rooms.get_child_count() == 27 and stage.TITLES.size() == 27, "Twenty-seven named rooms are available")
+	_check(stage.rooms.get_child_count() == 30 and stage.TITLES.size() == 30, "Thirty named rooms are available")
 	_check(stage.get_meta("environment_theme") == 2, "Use the previously unused wild planet")
 	_check(player.move_speed == 360 and player.dash_speed == 900 and player.wall_actions_enabled, "Preserve the existing movement abilities")
 	_check(not paused and not stage.hints_visible, "Pause and route hints start hidden")
@@ -50,7 +50,10 @@ func _run() -> void:
 		var target_count: int = stage._bumpers().get_child_count()
 		var last_bumper: int = stage.next_bumper
 		var rested := false
-		if index >= 24:
+		if index >= 27:
+			await _inverted_main()
+			if failed: return
+		elif index >= 24:
 			await _entry_begin()
 			if failed: return
 		for frame in 1800:
@@ -84,7 +87,7 @@ func _run() -> void:
 		else:
 			_check(stage.completed and stage.next_bumper == target_count, "All final-room bumpers precede completion")
 		print("STAGE_5_ROOM_%02d_OK (%.2fs)" % [index + 1, (Engine.get_physics_frames() - started) / 60.0])
-	_check(total_bumpers == 144 and visited_bumpers.size() == 144 and respawns == 26, "All 144 reflections are reachable without a death")
+	_check(total_bumpers == 160 and visited_bumpers.size() == 160 and respawns == 29, "All 160 reflections are reachable without a death")
 	_check(not stage.target_marker.visible, "Completion hides the target marker")
 	_check(ceiling_reflected_down, "Room 6 reflects off the underside of the ceiling bumper")
 	_check(wind_frames > 100 and dash_count > 12, "Traversal uses real wind and chained dashes")
@@ -344,3 +347,207 @@ func _entry_finish(strength: float = 1.0) -> void:
 			late_rested = true
 		_steer(strength)
 		await _step()
+
+
+func _inverted_main(strength: float = 1.0, delay: int = 20) -> void:
+	await _inverted_begin(strength)
+	if failed: return
+	await _inverted_chain(strength,delay)
+
+
+func _inverted_chain(strength: float, delay: int = 20) -> void:
+	var before := respawns
+	for frame in 1200:
+		if stage.next_bumper >= 3 or respawns > before: break
+		_inverted_steer(strength)
+		await _step()
+		if frame % 120 == 0 and OS.get_cmdline_user_args().has("--trace"): print("INV_FIRST p=",Vector2(_x(),player.position.y)," v=",player.velocity," next=",stage.next_bumper)
+	_check(stage.next_bumper == 3 and respawns == before,"Inverted Spring reaches three actual reflections")
+	if failed: return
+	await _inverted_rest("Rest",strength)
+	if failed: return
+	await _inverted_observe("Rest")
+	await _inverted_repeat(2,strength,delay)
+	if failed: return
+	await _inverted_finish(strength,delay)
+
+
+func _inverted_finish(strength: float, delay: int = 20) -> void:
+	var before := respawns
+	var index: int = stage.room_index
+	var late_rested := false
+	var count: int = stage._bumpers().get_child_count()
+	var captured_down := false
+	for frame in 1800:
+		if stage.completed or stage.transitioning or respawns > before: break
+		if count > 4 and stage.next_bumper == 3 and player.is_on_floor():
+			await _inverted_repeat(3,strength,delay)
+			if failed: return
+		if count > 4 and stage.next_bumper == 4 and not late_rested:
+			await _inverted_rest("LateRest",strength)
+			if failed: return
+			await _inverted_observe("LateRest")
+			late_rested = true
+		if stage.next_bumper < count:
+			_inverted_steer(strength)
+		else:
+			var room: Node2D = stage.rooms.get_child(index)
+			var left: bool = room.get_meta("exit_left",false)
+			var gate: Node2D = room.get_node("Gates/Down")
+			var target := gate.position.x+(-70 if left else 70)
+			if player.gravity_direction > 0:
+				target = room.get_node("Goal").position.x if index==29 else room.get_node("Exit").position.x
+			_entry_horizontal(target,strength)
+			if index==29 and player.gravity_direction>0 and player.is_on_floor() and _x()>target-90 and _x()<target-70: Input.action_press("jump")
+		await _step()
+		if frame % 120 == 0 and OS.get_cmdline_user_args().has("--trace"): print("INV_LAST p=",Vector2(_x(),player.position.y)," v=",player.velocity," next=",stage.next_bumper," g=",player.gravity_direction)
+		if not captured_down and player.gravity_direction==1 and not stage.transitioning and respawns==before:
+			_inverted_snapshot("room%d_down" % (index+1))
+			captured_down = true
+	_release_inputs()
+
+
+func _inverted_begin(strength: float) -> void:
+	var before := respawns
+	var room: Node2D = stage.rooms.get_child(stage.room_index)
+	if stage.room_index == 29:
+		Input.action_press("wall_grab")
+		await _step()
+		_check(player.get_held_object()==room.get_node("Items/Parachute"),"The actual entrance parachute is grabbed")
+		var captured_wind := false
+		for frame in 900:
+			_entry_horizontal(room.get_node("Gates/Up").position.x,strength)
+			await _step()
+			if not captured_wind and player.position.y<1240 and player.gravity_direction==1:
+				_inverted_snapshot("room30_wind")
+				captured_wind = true
+			if player.gravity_direction < 0 or respawns > before: break
+		_check(player.gravity_direction<0 and player.get_held_object()==room.get_node("Items/Parachute") and respawns==before,"The real held parachute and wind reach the upper gate")
+		if failed: return
+		await _inverted_throw(strength)
+	for frame in 180:
+		if player.gravity_direction < 0: break
+		Input.action_press("move_left" if room.get_meta("exit_left",false) else "move_right",strength)
+		await _step()
+		if player.gravity_direction < 0: break
+	_release_inputs()
+	_check(player.gravity_direction == -1 and respawns == before,"The real entrance Up gate flips gravity")
+	await _inverted_launch(strength)
+
+
+func _inverted_throw(strength: float) -> void:
+	Input.action_press("move_left",strength)
+	await _step(2)
+	Input.action_release("wall_grab")
+	await _step()
+	_release_inputs()
+	_check(player.get_held_object()==null,"The actual parachute is thrown before the inverted reflections")
+
+
+func _inverted_launch(strength: float) -> void:
+	var before := respawns
+	var room: Node2D = stage.rooms.get_child(stage.room_index)
+	for frame in 240:
+		if stage.room_index == 29: _entry_horizontal(220 if player.position.y>=980 else 110,strength)
+		await _step()
+		if player.is_on_floor(): break
+	_check(player.is_on_floor() and absf(player.position.y-326)<2 and respawns==before,"The native entry reaches the actual inverted ceiling")
+	if failed: return
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		_release_inputs()
+		await _step(30)
+		_inverted_snapshot("room%d_ceiling" % (stage.room_index+1))
+	var launched: Array[bool] = []
+	room.get_node("Items/Spring").launched.connect(func(_body): launched.append(true),CONNECT_ONE_SHOT)
+	for frame in 180:
+		_entry_horizontal(room.get_node("Items/Spring").position.x,strength)
+		await _step()
+		if not launched.is_empty() or respawns > before: break
+	_release_inputs()
+	_check(not launched.is_empty() and player.velocity.y > 0 and respawns==before,"The real upside-down Spring launches downward")
+
+
+func _inverted_steer(strength: float) -> void:
+	var bumper: Node2D = stage._bumpers().get_child(stage.next_bumper)
+	_inverted_to(bumper.position+Vector2(0,62),strength)
+
+
+func _inverted_to(target: Vector2, strength: float, allow_dash := true) -> void:
+	_entry_horizontal(target.x,strength)
+	var dx := target.x-_x()
+	var needs_dash := (player.position.y-target.y)*player.gravity_direction > -70 and player.velocity.y*player.gravity_direction > 0 and absf(dx)>75
+	if allow_dash and needs_dash and player.is_dash_ready() and not player.is_dashing() and not player.is_on_floor():
+		Input.action_release("move_left")
+		Input.action_release("move_right")
+		if absf(dx)>40: Input.action_press("move_right" if dx>0 else "move_left",strength)
+		Input.action_press("move_down" if player.gravity_direction<0 else "move_up")
+		Input.action_press("dash")
+
+
+func _inverted_rest(name: String, strength: float) -> void:
+	var before := respawns
+	var rest: StaticBody2D = stage.rooms.get_child(stage.room_index).get_node(name)
+	for frame in 600:
+		_inverted_to(rest.position+Vector2(0,34),strength,false)
+		await _step()
+		if respawns > before: break
+		if player.is_on_floor() and absf(_x()-rest.position.x)<70 and absf(player.velocity.x)<60:
+			_release_inputs()
+			await _step(30)
+			break
+	print("INV_REST ",name," p=",Vector2(_x(),player.position.y)," v=",player.velocity)
+	_check(player.is_on_floor() and absf(player.position.y-rest.position.y-34)<2 and respawns==before,"Actual native inputs reach the inverted "+name)
+
+
+func _inverted_repeat(index: int, strength: float, delay: int) -> void:
+	var before := respawns
+	var bumper: Node2D = stage._bumpers().get_child(index)
+	var repeated: Array[bool] = []
+	bumper.launched.connect(func(_body): repeated.append(true),CONNECT_ONE_SHOT)
+	await _pulse("jump")
+	for frame in delay:
+		_inverted_to(bumper.position+Vector2(0,62),strength)
+		await _step()
+	_release_inputs()
+	Input.action_press("move_down")
+	await _pulse("dash")
+	await _step(10)
+	for frame in 300:
+		if not repeated.is_empty() or respawns > before: break
+		_inverted_to(bumper.position+Vector2(0,62),strength)
+		await _step()
+	_check(not repeated.is_empty() and respawns==before,"Actual Jump and downward Dash repeat the visible reflection")
+
+
+func _inverted_observe(name: String) -> void:
+	var stopped := player.position
+	await _step(180)
+	_check(player.is_on_floor() and player.position.distance_to(stopped)<2,"The native inverted rest stays safe for three seconds")
+	var room: Node2D = stage.rooms.get_child(stage.room_index)
+	var rest: StaticBody2D = room.get_node(name)
+	var supported := false
+	for index in player.get_slide_collision_count():
+		var contact := player.get_slide_collision(index)
+		if contact.get_collider()==rest and contact.get_normal().dot(Vector2.DOWN)>0.8: supported = true
+	_check(supported and player.gravity_direction==-1,"The actual intended ceiling supports the inverted player")
+	for shape in [rest.get_node("Collision"),stage._bumpers().get_child(stage.next_bumper).get_node("CollisionShape2D")]:
+		var bounds: Rect2 = shape.get_global_transform_with_canvas()*shape.shape.get_rect()
+		_check(root.get_visible_rect().encloses(bounds),"The rest and next actual reflection are fully visible: "+str(bounds))
+		for path in ["HUD/Info","HUD/Hint","HUD/PauseButton"]:
+			var panel: Control = stage.get_node(path)
+			_check(not panel.visible or not panel.get_global_rect().intersects(bounds),"The rest and next reflection are outside "+path+" "+str(bounds))
+	_inverted_snapshot("room%d_%s" % [stage.room_index+1,name.to_snake_case()])
+
+
+func _inverted_snapshot(label: String) -> void:
+	if not OS.get_cmdline_user_args().has("--screenshots"): return
+	RenderingServer.force_draw()
+	var directory := "res://docs/screenshots/canyon-inverted/"+("hints" if OS.get_cmdline_user_args().has("--hints") else "default")
+	DirAccess.make_dir_recursive_absolute(directory)
+	_check(root.get_texture().get_image().save_png(directory+"/"+label+".png")==OK,"The actual native inverted-course image is saved")
+
+
+func _pulse(action: String) -> void:
+	Input.action_press(action)
+	await _step()
+	Input.action_release(action)

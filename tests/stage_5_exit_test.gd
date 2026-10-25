@@ -9,6 +9,9 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	var progress := root.get_node("CollectionProgress")
+	progress.save_path = "user://canyon_exit_%d.cfg" % OS.get_process_id()
+	progress._collected.clear()
 	# Isolate exit behavior from the already-tested bumper traversal.
 	var first := await _room(0)
 	var final_index: int = first.rooms.get_child_count() - 1
@@ -24,6 +27,7 @@ func _run() -> void:
 			var room: Node2D = stage.rooms.get_child(index)
 			var edge_x: float = room.position.x + (15 if left else float(room.get_meta("room_width", 1280.0)) - 15)
 			player.global_position = Vector2(edge_x if airborne else exit.global_position.x, exit.global_position.y - 100 if airborne else top - 30)
+			if airborne and index >= 27: player.global_position.y = top-32
 			player.velocity = Vector2.ZERO
 			player._contacts_valid = false
 			if airborne:
@@ -49,6 +53,7 @@ func _run() -> void:
 	await _step(80)
 	_check(arrival.completed and arrival.next_bumper == 0, "The final switch accepts physical arrival without history")
 	print("STAGE_5_EXIT_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
 	quit(1 if failed else 0)
 
 
