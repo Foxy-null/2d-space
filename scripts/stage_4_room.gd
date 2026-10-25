@@ -30,8 +30,8 @@ func _ready() -> void:
 		entrance_top = 1220.0
 		room_height = 1320.0
 	elif room_number == 7:
-		entrance_top = 1400.0
-		room_height = 1500.0
+		entrance_top = 1800.0
+		room_height = 1900.0
 	elif room_number == 8:
 		entrance_top = 1000.0
 		room_height = 1100.0
@@ -63,7 +63,7 @@ func _ready() -> void:
 		6: # Recover the companion and Dash between two high transfers.
 			walls = [Rect2(370, 800, 220, 24), Rect2(760, 380, 250, 24), Rect2(1040, 470, 90, 24)]
 		7: # A wall-kick shaft opens into a leftward turn and a lower crossing.
-			walls = [Rect2(270, 500, 240, 1000), Rect2(70, 300, 130, 24), Rect2(550, 390, 180, 24), Rect2(930, 440, 130, 24)]
+			walls = [Rect2(270, 500, 240, 1400), Rect2(70, 300, 130, 24), Rect2(550, 390, 180, 24), Rect2(930, 440, 130, 24)]
 		8: # Enter the high wind, return left, then climb toward the final arrival.
 			walls = [Rect2(850, 860, 230, 28), Rect2(560, 680, 200, 28), Rect2(880, 480, 250, 28)]
 			var wind := WIND.instantiate()
