@@ -65,3 +65,7 @@ Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path . --scrip
 `STAGE_SELECT_TEST_OK` と終了コード0を成功条件とする。 画面内の配置と絵・見出しの重なりも確認する。描画ありで `-- --screenshots` を付けると、ステージ1と5の選択状態を撮影する。環境プレビューは `tests/environment_art_test.gd`、各攻略コースは対応するステージテストで確認する。
 
 共通クリア画面は `tests/stage_clear_test.gd`、共通ポーズは `tests/pause_menu_test.gd` で確認する。ステージ5の全12部屋は `tests/stage_5_test.gd`、各部屋を1回の攻略で退出できることは `tests/stage_5_exit_test.gd` で検証する。
+
+## 巻物の収集記録
+
+ステージカードに巻物の絵と「獲得数 / 実配置総数」を表示する。未クリアでも安全な着地で確定した巻物は保存し、部屋の途中進捗とは分ける。確定前に死亡・やり直し・帰還した巻物は保存しない。収集数でステージやゴールを制限せず、未配置のステージは0 / 0と表示する。

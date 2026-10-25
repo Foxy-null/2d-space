@@ -36,6 +36,27 @@ func _ready() -> void:
 		title.text = lines[1]
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		content.add_child(title)
+		var stage_id: String = CollectionProgress.STAGE_IDS[index]
+		var collected := CollectionProgress.get_count(stage_id)
+		var total: int = CollectionProgress.TOTALS[stage_id]
+		var collection := HBoxContainer.new()
+		collection.name = "Collection"
+		collection.alignment = BoxContainer.ALIGNMENT_CENTER
+		collection.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		content.add_child(collection)
+		var icon := Control.new()
+		icon.custom_minimum_size = Vector2(24, 28)
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.draw.connect(func():
+			icon.draw_set_transform(Vector2(12, 14), 0, Vector2.ONE * 0.55)
+			ArtDraw.scroll(icon)
+		)
+		collection.add_child(icon)
+		var count := Label.new()
+		count.name = "Count"
+		count.text = "%d / %d" % [collected, total]
+		collection.add_child(count)
+		card.accessibility_name += "、巻物 %d / %d" % [collected, total]
 	var first_stage: Button = $Margin/Content/Stages/Stage1
 	var launcher: Button = InputSettings.launcher
 	DisplaySettings.bind_button($Fullscreen)

@@ -56,7 +56,7 @@ func _run() -> void:
 		_check(pause.overlay.is_ancestor_of(root.gui_get_focus_owner()), "Focus stays inside the modal")
 		await _click(pause.menu.get_node("Return"))
 		_check(current_scene == stage and paused and pause.confirmation.visible, "Returning waits for confirmation")
-		_check(pause.confirmation.get_node("Message").text.replace("\n", "") == "現在の進み具合は保存されません。戻ってもよろしいですか？", "Confirmation uses the requested wording")
+		_check(pause.confirmation.get_node("Message").text.replace("\n", "") == "部屋の進み具合は保存されません。獲得が確定した巻物は残ります。戻ってもよろしいですか？", "Confirmation distinguishes temporary room progress from saved scrolls")
 		_check(root.gui_get_focus_owner() == pause.confirmation.get_node("Cancel"), "Cancel is initially selected")
 		if scene == "stage_3" and OS.get_cmdline_user_args().has("--screenshots"):
 			RenderingServer.force_draw()
