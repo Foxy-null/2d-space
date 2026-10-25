@@ -27,7 +27,7 @@ func _run() -> void:
 		_check(respawns==previous and stage.cleared.has(index),"The complete route remains playable after real death")
 		await _key(KEY_R)
 		_check(stage.cleared.has(index) and room.get_node("Goal").is_pressed(),"R preserves a physically pressed arrival")
-		_check(stage.completed==(index==24),"Only the new final arrival completes the stage")
+		_check(not stage.completed,"All four retained umbrella additions remain intermediate before room31")
 	await _seams()
 	monitor_view=false
 	_release_inputs()

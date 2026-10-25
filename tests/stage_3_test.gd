@@ -52,6 +52,7 @@ func _run() -> void:
 		)
 	for index in [23,24]:
 		stage.rooms.get_child(index).get_node("DashCrystal").collected.connect(func(_body): actions["crystal"] = actions.get("crystal",0)+1)
+	_fifth_connect()
 	_check_hints(false)
 	_check_help(false)
 	_check_status(false)
@@ -78,7 +79,7 @@ func _run() -> void:
 	_check_help(false)
 	await _toggle_hints()
 	_check_hints(true)
-	_check(stage.rooms.get_child_count() == 25, "Stage 3 has twenty-five rooms")
+	_check(stage.rooms.get_child_count() == 31, "Stage 3 has thirty-one native rooms")
 	_check(player.wall_actions_enabled and player.dash_enabled, "Walls and dash are available from the start")
 	for room in stage.rooms.get_children():
 		var goal: ArrivalSwitch = room.get_node("Goal")
@@ -176,7 +177,8 @@ func _run() -> void:
 			_:
 				if index < 15: await _composite_course(index)
 				elif index < 21: await _third_course(index)
-				else: await _para_course(index)
+				elif index < 25: await _para_course(index)
+				else: await _fifth_course(index)
 		if failed:
 			quit(1)
 			return
@@ -186,8 +188,8 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4, 5, 2, 7, 5, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
-		_check(actions.get("dash", 0) == ([0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 2, 0, 1, 1, 1, 2, 2, 2, 2, 3, 4, 0, 0, 2, 2][index]), "The crystal and floating-Spring courses each use one downward dash")
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4, 5, 2, 7, 5, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		_check(actions.get("dash", 0) == ([0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 2, 0, 1, 1, 1, 2, 2, 2, 2, 3, 4, 0, 0, 2, 2, 1, 2, 1, 1, 3, 2][index]), "The real inputs use each course's intended Dash resources")
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
 			_check(flips.count(-1) == 2 and flips.count(1) == 2, "Later rooms use two intended cycles without an accidental return flip")
@@ -229,21 +231,23 @@ func _run() -> void:
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://docs/screenshots/stage-3/clear.png")
 	await _retry()
-	_check(stage.completed and stage.rooms.get_child(24).get_node("Goal").is_pressed(), "Retry keeps cleared goals and completion")
+	var final_index: int = stage.rooms.get_child_count()-1
+	var final_room: Node2D = stage.rooms.get_child(final_index)
+	_check(stage.completed and final_room.get_node("Goal").is_pressed(), "Retry keeps the actual final goal and completion")
 	player.set_gravity_direction(-1)
 	player.global_position.y = -60
 	await _step(3)
 	_check(player.gravity_direction == 1 and player.position.y > 0, "Inverted falls reset to the current entrance")
-	player.global_position.y = 2160
+	player.global_position.y = float(final_room.get_meta("room_bottom"))+60
 	await _step(3)
-	_check(stage.room_index == 24 and player.global_position.y < 2100, "Falling below the screen retries the current room")
-	player.global_position.x = stage.rooms.get_child(24).global_position.x - 5
+	_check(stage.room_index == final_index and player.global_position.y < float(final_room.get_meta("room_bottom")), "Falling below the actual final room retries its entrance")
+	player.global_position.x = final_room.global_position.x - 5
 	await _step(25)
-	_check(stage.room_index == 23 and player.position.x > stage.rooms.get_child(23).global_position.x + 2200, "Backtracking uses the right entrance")
+	_check(stage.room_index == final_index-1 and player.position.distance_to(stage.rooms.get_child(final_index-1).get_node("Return").global_position)<5, "Backtracking uses the actual preceding room's right entrance")
 	_check(bridge.visible and not bridge.get_node("Collision").disabled, "Backtracking preserves the return bridge")
-	_check(stage.completed and stage.cleared.size() == 25 and not stage.get_node("HUD/Completion").visible, "Backtracking preserves cleared rooms without a completion overlay")
+	_check(stage.completed and stage.cleared.size() == 31 and not stage.get_node("HUD/Completion").visible, "Backtracking preserves all thirty-one cleared rooms without a completion overlay")
 	await _retry()
-	_check(player.position.x > stage.rooms.get_child(23).global_position.x + 2200, "Retry after backtracking keeps the right entrance")
+	_check(player.position.distance_to(stage.rooms.get_child(final_index-1).get_node("Return").global_position)<5, "Retry after backtracking keeps the preceding right entrance")
 	stage._set_room(4, true)
 	player.respawn()
 	await _step(3)
@@ -1205,3 +1209,243 @@ func _para_goal() -> void:
 
 func _para_capture(_name: String) -> void:
 	pass
+
+
+func _fifth_connect() -> void:
+	for index in range(25, 31):
+		var room: Node2D = stage.rooms.get_child(index)
+		for area in room.find_children("*", "Area2D", true, false):
+			if area.has_signal("launched"):
+				area.launched.connect(func(_body): actions["fifth_spring"] = actions.get("fifth_spring", 0)+1)
+			if area.has_signal("collected"):
+				var key := "fifth_crystal" if area.refill_kind == 0 else "fifth_boots"
+				area.collected.connect(func(_body): actions[key] = actions.get(key, 0)+1)
+
+
+func _fifth_floor(name: String) -> bool:
+	if not player.is_on_floor(): return false
+	for index in player.get_slide_collision_count():
+		if player.get_slide_collision(index).get_collider() == stage.rooms.get_child(stage.room_index).get_node(name): return true
+	return false
+
+
+func _fifth_rest(phase: String) -> void:
+	_release_inputs()
+	if player.get_held_object() != null: Input.action_press("wall_grab")
+	await _step(12)
+	var point := player.position
+	await _step(180)
+	_check(player.is_on_floor() and player.position.distance_to(point) < 2 and player.is_dash_ready(), "The actual intermediate surface allows three seconds of rest and a fresh departure")
+	if stage.room_index==30 and phase=="entry_rest":
+		var room: Node2D = stage.rooms.get_child(stage.room_index)
+		var arrow: Control = room.get_node("DownGate/Arrow")
+		_check(root.get_visible_rect().encloses(Rect2(arrow.get_global_transform_with_canvas()*Vector2.ZERO,arrow.size)),"The next left Down arrow is fully visible before the recovery jump")
+		var landing: CollisionShape2D = room.get_node("LandingCeiling/Collision")
+		var bounds := Rect2(landing.get_global_transform_with_canvas()*landing.shape.get_rect().position,landing.shape.get_rect().size)
+		_check(root.get_visible_rect().intersection(bounds).size.x>240 and bounds.position.y>0 and bounds.end.y<root.get_visible_rect().size.y,"More than 240 pixels of the next left static ceiling are visible from the actual rest")
+	if stage.room_index==28 and phase=="spring_rest":
+		var arrow: Control = stage.rooms.get_child(28).get_node("DownGate/Arrow")
+		var bounds := Rect2(arrow.get_global_transform_with_canvas()*Vector2.ZERO,arrow.size)
+		_check(root.get_visible_rect().encloses(bounds),"The deep Down arrow is visible from the actual pre-Spring rest")
+		for panel in [stage.get_node("HUD/Margin/Panel"),stage.get_node("HUD/PauseButton"),stage.get_node("HUD/Status")]:
+			_check(not panel.visible or not panel.get_global_rect().intersects(bounds),"The deep Down arrow stays clear of visible HUD")
+	await _fifth_capture("room_%d_%s" % [stage.room_index+1, phase])
+
+
+func _fifth_grip(target: float) -> void:
+	_para_drive(target, true)
+	Input.action_press("move_up")
+
+
+func _fifth_shaft(origin: float = 0) -> void:
+	_fifth_grip(origin+310)
+	await _until(func(): return player.is_wall_grabbing() and player.position.y < 1004, 180, "Climb below the actual lower projection")
+	_fifth_grip(origin+110)
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _para_x() < origin+170 and player.position.y < 850, 180, "Kick to the opposing native grip")
+	_fifth_grip(origin+310)
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _para_x() > origin+250 and player.position.y < 704, 180, "Kick above the lower projection")
+	_fifth_grip(origin+110)
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _para_x() < origin+170 and player.position.y < 490, 180, "Kick to the high grip above both projections")
+	_fifth_grip(origin+480)
+	await _jump()
+	await _until(func(): return player.gravity_direction == -1, 180, "The final real kick enters the native Up gate")
+	await _para_walk(origin+700)
+
+
+func _fifth_horizontal_left(takeoff: float, target: float) -> void:
+	await _para_walk(takeoff)
+	_para_drive(target)
+	await _jump()
+	await _step(para_gap)
+	var before := int(actions.get("fifth_crystal",0))
+	await _para_dash(Vector2.LEFT)
+	await _until(func(): return not player.is_dashing() and actions.get("fifth_crystal",0)>before, 60, "The first actual left Dash finishes and its real Crystal contact notification arrives")
+	_check(player.is_dash_ready() and actions.get("fifth_crystal",0)>before, "The native airborne Crystal actually refills the spent left Dash")
+	await _para_dash(Vector2.LEFT)
+	_para_drive(target)
+	await _until(func(): return _fifth_floor("LandingCeiling"), 180, "The second actual Dash lands under the left ceiling")
+	await _para_walk(target)
+
+
+func _fifth_release_toward(target: float) -> void:
+	var direction := signf(target-_para_x())
+	_para_drive(target)
+	await _step(8)
+	Input.action_release("wall_grab")
+	await _step()
+	_release_inputs()
+	_check(player.get_held_object() == null and stage.rooms.get_child(stage.room_index).get_node("Parachute").linear_velocity.x * direction > 300, "Moving release actually throws the real umbrella in the declared direction")
+
+
+func _fifth_entry(index: int) -> void:
+	match index:
+		25:
+			await _fifth_shaft()
+		26, 28:
+			await _para_walk(1800)
+			_check(player.gravity_direction == -1, "The right entrance enters Up and reaches its ceiling naturally")
+		27:
+			await _para_grab()
+			await _para_rise(450, 1060, 650)
+			await _fifth_rest("wind_rest")
+			await _fifth_after_wind(index)
+		29:
+			await _para_walk(300)
+			_check(player.is_air_jump_ready() and actions.get("fifth_boots",0)>0, "The real entrance boots supply an extra airborne Jump")
+			await _jump()
+			await _step(para_gap)
+			await _jump()
+			await _step(para_gap)
+			_check(actions.get("air_jump",0) == 1, "The second real Jump consumes the actual extra charge")
+			await _para_dash(Vector2.UP)
+			_release_inputs()
+			await _until(func(): return actions.get("fifth_crystal",0)>0 and not player.is_dashing(), 90, "The boosted ascent reaches the actual high recovery Crystal")
+			_check(player.is_dash_ready(), "The high Crystal restores a spent upward Dash")
+			await _fifth_capture("room_30_refill")
+			await _para_dash(Vector2.UP)
+			_para_drive(650)
+			await _until(func(): return player.gravity_direction == -1 and _fifth_floor("UpperRest"), 240, "The recovered upward Dash reaches Up and the real high ceiling")
+			await _para_walk(650)
+		30:
+			await _para_grab()
+			await _para_rise(1900, 620, 1550)
+			await _fifth_rest("wind_rest")
+			await _fifth_after_wind(index)
+	await _fifth_rest("entry_rest")
+
+
+func _fifth_after_wind(index: int) -> void:
+	if index == 27:
+		await _fifth_release_toward(600)
+		await _para_walk(820)
+		_check(player.get_held_object() == null, "Walk bare under the low projection before using Grab on the shaft")
+		await _fifth_shaft(600)
+	else:
+		await _fifth_release_toward(1250)
+		_para_drive(1250)
+		await _jump()
+		await _until(func(): return player.gravity_direction == -1, 180, "The leftward flight enters the real Up gate")
+		await _para_walk(1250)
+
+
+func _fifth_course(index: int, entered := false) -> void:
+	var start := Engine.get_physics_frames()
+	var before := respawns
+	if not entered: await _fifth_entry(index)
+	match index:
+		25,27:
+			await _para_walk(830 if index == 25 else 1430)
+			_para_drive(1200 if index == 25 else 1700)
+			await _jump()
+			await _step(para_gap)
+			await _para_dash(Vector2.RIGHT)
+			await _para_walk(1200 if index == 25 else 1800)
+			_check(player.gravity_direction == 1 and _fifth_floor("ExitFloor"), "The real ceiling departure enters Down and the original exit floor")
+		26:
+			await _fifth_horizontal_left(1664,1000)
+			await _fifth_rest("landing_rest")
+			_para_drive(804)
+			await _until(func(): return player.gravity_direction == 1, 180, "The left landing leads into the actual Down gate")
+			await _para_walk(700)
+		28:
+			await _para_walk(1664)
+			_para_drive(1200)
+			await _jump()
+			await _step(para_gap)
+			await _para_dash(Vector2.LEFT)
+			_para_drive(1200)
+			await _until(func(): return _fifth_floor("MiddleCeiling"), 180, "The left Dash crosses the real headwind into the middle ceiling")
+			await _para_walk(1200)
+			await _fifth_rest("spring_rest")
+			_para_drive(800)
+			await _until(func(): return actions.get("fifth_spring",0)>0, 180, "The inverted route contacts the real ceiling Spring")
+			await _fifth_capture("room_29_spring")
+			await _para_walk(800)
+			_check(player.gravity_direction == 1 and _fifth_floor("ExitFloor"), "The actual Spring reaches the deep Down and the left exit floor")
+		29:
+			await _para_walk(970)
+			_para_drive(1080)
+			await _jump()
+			await _step(para_gap)
+			await _para_dash(Vector2.DOWN)
+			await _para_walk(1200)
+			_check(player.gravity_direction == 1 and _fifth_floor("ExitFloor"), "The high ceiling's descending Dash enters Down above the right safe floor")
+		30:
+			await _fifth_horizontal_left(1150,550)
+			await _fifth_rest("landing_rest")
+			_para_drive(400)
+			await _jump()
+			await _until(func(): return player.gravity_direction == 1, 180, "The left ceiling's actual inverted Jump reaches Down")
+			await _para_walk(500)
+	if failed: return
+	if index == 30:
+		var creature: Node2D = stage.rooms.get_child(index).get_node("Parachute")
+		_check(player.get_held_object() == null and creature.global_position.distance_to(player.global_position) > 150, "The genuinely thrown umbrella stays clear of the actual final descent and landing")
+	await _fifth_capture("room_%d_exit_floor" % [index+1])
+	await _fifth_goal()
+	if failed: return
+	if index in [26,28,30]:
+		await _fifth_return_right()
+		await _fifth_capture("room_%d_right_return" % [index+1])
+	if failed: return
+	var seconds := float(Engine.get_physics_frames()-start)/60.0
+	_check(respawns == before and seconds < 30, "The complete real course and left-facing return finish without death within thirty seconds (%.2fs)" % seconds)
+	_check(flips.has(-1) and flips.has(1), "Each new main route physically uses both gravity directions")
+	print("GRAVITY_FIFTH_%d %.2fs axis=%.1f gap=%d dash=%d crystal=%d kicks=%d" % [index+1,seconds,para_strength,para_gap,actions.get("dash",0),actions.get("fifth_crystal",0),actions.get("wall_jump",0)])
+
+
+func _fifth_capture(_name: String) -> void:
+	pass
+
+
+func _fifth_return_right() -> void:
+	var target := 2240.0 if stage.room_index==30 else 2258.0
+	for frame in 650:
+		_para_drive(target,stage.room_index==30)
+		if absf(_para_x()-target)<4 and absf(player.velocity.x)<35 and player.is_on_floor():
+			_release_inputs()
+			if player.get_held_object()!=null: Input.action_press("wall_grab")
+			return
+		# The genuinely thrown umbrella may settle in the opened lane; actual Grab picks it up again.
+		if player.is_on_floor() and player.is_on_wall(): await _jump()
+		await _step()
+		if failed: return
+	_check(false,"The actual left-facing return crosses the opened bridge and any real thrown object")
+
+
+func _fifth_goal() -> void:
+	var goal: Node2D = stage.rooms.get_child(stage.room_index).get_node("Goal")
+	for frame in 360:
+		if stage.cleared.has(stage.room_index):
+			_release_inputs()
+			if player.get_held_object() != null: Input.action_press("wall_grab")
+			await _fifth_capture("room_%d_arrival" % [stage.room_index+1])
+			return
+		_para_drive(goal.position.x)
+		if player.is_on_floor() and player.is_on_wall(): await _jump()
+		await _step()
+		if failed: return
+	_check(false, "Physically press the new room's actual arrival")

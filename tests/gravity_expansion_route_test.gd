@@ -80,7 +80,7 @@ func _fresh(index: int) -> void:
 	for room in stage.rooms.get_children():
 		for node in room.find_children("*", "Area2D", true, false):
 			if node.get_script() != null and node.get_script().resource_path == "res://scripts/scroll_collectible.gd": actual_scrolls += 1
-	_check(actual_scrolls == progress.TOTALS["gravity"] and actual_scrolls == 8, "The placed scroll count matches the stage selection total")
+	_check(actual_scrolls == progress.TOTALS["gravity"] and actual_scrolls == 10, "The placed scroll count matches the stage selection total")
 
 
 func _course(index: int) -> void:
@@ -125,7 +125,7 @@ func _scroll_detour() -> void:
 	_check(progress.get_count("gravity") == 1, "Confirmed collection survives R")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage3/Content/Collection/Count").text == "1 / 8", "Stage selection includes the new actual total before clearing the stage")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage3/Content/Collection/Count").text == "1 / 10", "Stage selection includes the new actual total before clearing the stage")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.has_scroll("gravity", "inverted_return_02"), "An unfinished-stage detour remains saved after leaving")

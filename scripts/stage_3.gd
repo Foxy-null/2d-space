@@ -2,7 +2,7 @@ extends Node2D
 
 const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
-const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ", "左へ渡り直す", "上層から二段跳び", "風の中で待つ", "上層から風へ", "左向きのSpring連携", "反発から反転へ", "風から二段下降", "左へ蹴り返す", "反転連鎖のまとめ", "天井の回復リレー", "深い下降をつなぐ", "逆風の左折り返し", "壁の上から角を回る", "左へ上昇して戻る", "上下の回復連鎖", "傘で風の上へ", "反転した上昇気流", "左へ上がって深く下る", "上下をつなぐ傘"]
+const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ", "左へ渡り直す", "上層から二段跳び", "風の中で待つ", "上層から風へ", "左向きのSpring連携", "反発から反転へ", "風から二段下降", "左へ蹴り返す", "反転連鎖のまとめ", "天井の回復リレー", "深い下降をつなぐ", "逆風の左折り返し", "壁の上から角を回る", "左へ上昇して戻る", "上下の回復連鎖", "傘で風の上へ", "反転した上昇気流", "左へ上がって深く下る", "上下をつなぐ傘", "壁から天井へ抜ける", "左への天井回復", "風から壁の上へ", "逆風から左へ反発", "靴から二段上昇", "風から左へつなぐ"]
 const HINTS := [
 	"Springと反転をキックでつなぐ。",
 	"天井の反発板から壁を掴む。",
@@ -28,7 +28,13 @@ const HINTS := [
 	"傘で風に乗り、高い床から天井へ。",
 	"反転中は下向きの風が上昇気流。深い天井から左へ。",
 	"左の天井で休み、下Dashを回復して深いDownへ。",
-	"上昇と反転した上昇をつなぎ、下Dashの回復から最後の床へ。",
+	"上昇と反転した上昇をつなぎ、下Dashの回復から床へ。",
+	"張り出しを蹴り替え、反転した天井からDownへ。",
+	"右の入口から反転し、空中でDashを回復して左の到着台へ。",
+	"傘で風を上がり、壁を蹴り替えて上の天井へ。",
+	"左へのDashから休み、天井のSpringで深いDownへ。",
+	"靴の追加Jumpで回復へ届き、もう一度上Dashして天井へ。",
+	"傘で上がったら左へ反転し、回復Dashで最後の天井へ。",
 ]
 
 var room_index := 0
@@ -121,7 +127,7 @@ func _camera_position() -> Vector2:
 	var left: float = room.global_position.x
 	var width := float(room.get_meta("room_width", ROOM_SIZE.x))
 	var margin := 72.0 if room.get_meta("parachute_room", false) else 0.0
-	return Vector2(clampf(player.position.x, left + ROOM_SIZE.x * 0.5 - margin, left + width - ROOM_SIZE.x * 0.5 + margin), clampf(player.position.y + (parachute_camera_lead if room.get_meta("parachute_room", false) else -80.0), top + ROOM_SIZE.y * 0.5, bottom - ROOM_SIZE.y * 0.5))
+	return Vector2(clampf(player.position.x + float(room.get_meta("camera_offset_x", 0.0)), left + ROOM_SIZE.x * 0.5 - margin, left + width - ROOM_SIZE.x * 0.5 + margin), clampf(player.position.y + (parachute_camera_lead if room.get_meta("parachute_room", false) else -80.0), top + ROOM_SIZE.y * 0.5, bottom - ROOM_SIZE.y * 0.5))
 
 
 func _on_respawned() -> void:
