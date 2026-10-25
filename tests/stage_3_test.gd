@@ -67,7 +67,7 @@ func _run() -> void:
 	_check_help(false)
 	await _toggle_hints()
 	_check_hints(true)
-	_check(stage.rooms.get_child_count() == 6, "Stage 3 has six rooms")
+	_check(stage.rooms.get_child_count() == 9, "Stage 3 has nine rooms")
 	_check(player.wall_actions_enabled and player.dash_enabled, "Walls and dash are available from the start")
 	for room in stage.rooms.get_children():
 		var goal: ArrivalSwitch = room.get_node("Goal")
@@ -91,10 +91,10 @@ func _run() -> void:
 	stage._set_room(0, false)
 	player.respawn()
 	await _step(3)
-	for index in 6:
-		if index >= 2:
+	for index in stage.rooms.get_child_count():
+		if index >= 2 and index < 6:
 			await _fall_into_pit([0, 0, 350, 620, 470, 340][index])
-		if index > 0:
+		if index > 0 and index < 6:
 			await _fall_into_ceiling_pit([0, 460, 330, 320, 330, 530][index])
 			if index != 2:
 				await _fall_into_ceiling_pit([0, 950, 0, 850, 920, 950][index])
@@ -156,6 +156,12 @@ func _run() -> void:
 				await _cross_ceiling_pit(950, 1070)
 				_check(actions.has("exit_wind"), "The final ceiling pit is crossed against a headwind")
 				await _kick_gate(1110, 1, "DownGate")
+			6:
+				await _room_seven_course()
+			7:
+				await _room_eight_course()
+			8:
+				await _room_nine_course()
 		if failed:
 			quit(1)
 			return
@@ -165,8 +171,8 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
-		_check(actions.get("dash", 0) == (1 if index in [2, 4] else 0), "Only Room3 and Room5 use one downward dash")
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		_check(actions.get("dash", 0) == (1 if index in [2, 4, 7] else 0), "The crystal and floating-Spring courses each use one downward dash")
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
 			_check(flips.count(-1) == 2 and flips.count(1) == 2, "Later rooms use two intended cycles without an accidental return flip")
@@ -174,16 +180,21 @@ func _run() -> void:
 			quit(1)
 			return
 		print("STAGE_3_ROOM_%d_OK (wall kicks=%d, flips=%s)" % [index + 1, actions.get("wall_jump", 0), flips])
-		if index < 5:
+		if index < stage.rooms.get_child_count() - 1:
 			if index == 0:
 				await _toggle_hints()
+			if index == 6:
+				var before_return := respawns
+				await _return_seven_to_exit()
+				_check(respawns == before_return, "The left-folding course returns right without a retry")
+			_check(not stage.completed, "The former final room and intermediate additions never end the stage")
 			Input.action_press("move_right")
 			await _until(func(): return stage.room_index == index + 1, 150, "Cross the open exit")
 			_check(stage.transitioning and not player.controls_enabled, "Camera slides freeze controls")
 			_release_inputs()
 			await _step(25)
 			_check(not stage.transitioning and player.controls_enabled, "Controls resume after the camera slide")
-			_check(stage.camera.position == Vector2((index + 1) * 1280 + 640, 360), "Camera settles on the next room")
+			_check(stage.camera.position == stage._camera_position(), "Camera settles on the next room")
 			if index == 0:
 				_check_hints(true)
 				await _toggle_hints()
@@ -194,21 +205,24 @@ func _run() -> void:
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png("res://docs/screenshots/stage-3/clear.png")
 	await _retry()
-	_check(stage.completed and stage.rooms.get_child(5).get_node("Goal").is_pressed(), "Retry keeps cleared goals and completion")
+	_check(stage.completed and stage.rooms.get_child(8).get_node("Goal").is_pressed(), "Retry keeps cleared goals and completion")
 	player.set_gravity_direction(-1)
 	player.global_position.y = -60
 	await _step(3)
 	_check(player.gravity_direction == 1 and player.position.y > 0, "Inverted falls reset to the current entrance")
 	player.global_position.y = 800
 	await _step(3)
-	_check(stage.room_index == 5 and player.global_position.y < 720, "Falling below the screen retries the current room")
-	player.global_position.x = 5 * 1280 - 5
+	_check(stage.room_index == 8 and player.global_position.y < 720, "Falling below the screen retries the current room")
+	player.global_position.x = 8 * 1280 - 5
 	await _step(25)
-	_check(stage.room_index == 4 and player.position.x > 4 * 1280 + 1200, "Backtracking uses the right entrance")
+	_check(stage.room_index == 7 and player.position.x > 7 * 1280 + 1200, "Backtracking uses the right entrance")
 	_check(bridge.visible and not bridge.get_node("Collision").disabled, "Backtracking preserves the return bridge")
-	_check(stage.completed and stage.cleared.size() == 6 and not stage.get_node("HUD/Completion").visible, "Backtracking preserves cleared rooms without a completion overlay")
+	_check(stage.completed and stage.cleared.size() == 9 and not stage.get_node("HUD/Completion").visible, "Backtracking preserves cleared rooms without a completion overlay")
 	await _retry()
-	_check(player.position.x > 4 * 1280 + 1200, "Retry after backtracking keeps the right entrance")
+	_check(player.position.x > 7 * 1280 + 1200, "Retry after backtracking keeps the right entrance")
+	stage._set_room(4, true)
+	player.respawn()
+	await _step(3)
 	_check_hints(false)
 	var gate: Area2D = stage.rooms.get_child(4).get_node("UpGate")
 	await _step(30)
@@ -257,6 +271,66 @@ func _run() -> void:
 	_release_inputs()
 	print("STAGE_3_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
+
+
+func _room_seven_course() -> void:
+	await _room_two_wall_course()
+	_drive("move_right")
+	await _until(func(): return player.is_on_floor() and _x() > 665, 120, "Reach the safe underside takeoff before the bumper")
+	await _jump()
+	await _until(func(): return _x() > 960, 200, "The left-facing ceiling route crosses its real bumper")
+	await _kick_gate(1060, 1, "", true)
+
+
+func _return_seven_to_exit() -> void:
+	_drive("move_left", true)
+	await _until(func(): return (_x() < 470 and player.is_wall_grabbing()) or _x() < 90, 300, "Reach the return wall before its low overhang")
+	if _x() >= 90:
+		await _until(func(): return player.position.y < 360, 100, "Climb below the return overhang spikes")
+		_drive("move_right", true)
+		await _jump()
+		await _until(func(): return player.is_wall_grabbing() and _x() > 550, 100, "Kick onto the clear opposing return wall")
+		await _until(func(): return player.position.y < 140, 120, "Climb above the overhang before returning right")
+		_drive("move_left", true)
+		await _jump()
+	await _until(func(): return _x() < 90, 500, "The left-folding course returns along the restored floor and walls to its right-hand exit")
+	_release_inputs()
+
+
+func _room_eight_course(jump_delay: int = 20) -> void:
+	await _kick_gate(240, -1)
+	await _cross_ceiling_pit(330, 470)
+	_drive("move_right")
+	await _until(func(): return player.is_on_floor() and _x() >= 760 and _x() < 800, 180, "Reach the upper rest before the two-crystal descent")
+	_release_inputs()
+	await _step(30)
+	for crystal in ["ExitJumpCrystal", "SecondJumpCrystal"]:
+		await _jump()
+		await _step(jump_delay)
+		_check(not stage.rooms.get_child(7).get_node(crystal).visible and player.is_air_jump_ready(), "A real descending jump reaches " + crystal)
+	await _jump()
+	await _step(jump_delay)
+	Input.action_press("move_down")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	Input.action_release("move_down")
+	await _until(func(): return player.position.y >= 480, 90, "Two extra jumps and a downward Dash clear the deeper hanging wall")
+	_drive("move_right")
+	await _until(func(): return player.gravity_direction == 1 and _x() > 900, 110, "The extended descent reaches Down gravity")
+	_check(actions.get("air_jump", 0) == 2, "The upper course spends both separate crystal jumps")
+
+
+func _room_nine_course() -> void:
+	await _kick_gate(280, -1)
+	await _cross_ceiling_pit(320, 450)
+	await _kick_gate(580, 1)
+	_drive("move_right")
+	await _until(func(): return player.is_on_floor() and _x() > 580, 120, "Rest before the final floor crossing")
+	await _jump()
+	await _kick_gate(840, -1)
+	await _cross_ceiling_pit(850, 980)
+	await _kick_gate(1100, 1, "DownGate")
 
 
 func _verify_shortcuts() -> void:
@@ -454,7 +528,7 @@ func _kick_gate(wall_x: int, target: int, moving_gate: String = "", from_air := 
 	_drive("move_left", true, inverted)
 	var kick_y := 440 if wall_x >= 1000 else 280
 	var climb_y := 480
-	if stage.room_index == 3 and target < 0:
+	if stage.room_index in [3, 8] and target < 0:
 		climb_y = 540 if wall_x == 280 else 500
 	await _until(func(): return player.is_wall_grabbing() and (player.position.y > kick_y if inverted else player.position.y < climb_y), 110, "Climb to the gate's height at x=%d" % wall_x)
 	if not moving_gate.is_empty():
@@ -496,7 +570,7 @@ func _reach_goal() -> void:
 			break
 		Input.action_release("jump")
 		if _x() >= 1140:
-			Input.action_release("move_right")
+			Input.action_release("move_left" if stage.room_index == 6 else "move_right")
 		elif player.is_on_floor() and player.is_on_wall():
 			Input.action_press("jump")
 		await _step()
@@ -508,6 +582,8 @@ func _reach_goal() -> void:
 
 func _drive(direction: String, grab := false, inverted := false) -> void:
 	_release_inputs()
+	if stage.room_index == 6:
+		direction = "move_left" if direction == "move_right" else "move_right"
 	Input.action_press(direction)
 	if grab:
 		Input.action_press("wall_grab")
@@ -538,7 +614,8 @@ func _until(condition: Callable, limit: int, message: String) -> void:
 
 
 func _x() -> float:
-	return player.position.x - stage.room_index * 1280
+	var local_x: float = player.position.x - stage.room_index * 1280
+	return 1280.0 - local_x if stage.room_index == 6 else local_x
 
 
 func _key(code: Key) -> void:
@@ -620,7 +697,7 @@ func _gamepad_hints(button: JoyButton = JOY_BUTTON_BACK) -> void:
 
 func _screenshots() -> void:
 	DirAccess.make_dir_recursive_absolute("res://docs/screenshots/stage-3")
-	for index in 6:
+	for index in stage.rooms.get_child_count():
 		stage.call("_set_room", index, false)
 		player.respawn()
 		await _step(3)

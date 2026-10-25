@@ -1,4 +1,4 @@
-[gd_scene load_steps=85 format=3]
+[gd_scene load_steps=87 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -20,6 +20,12 @@
 
 [ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="spikes"]
 [ext_resource type="PackedScene" path="res://scenes/gravity_scroll_annex.tscn" id="scroll_annex"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_7.tscn" id="room_7"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_8.tscn" id="room_8"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_9.tscn" id="room_9"]
 
 [sub_resource type="RectangleShape2D" id="Room1Overhang"]
 size = Vector2(60, 28)
@@ -158,9 +164,6 @@ size = Vector2(48, 96)
 
 [sub_resource type="RectangleShape2D" id="Shape_51"]
 size = Vector2(28, 720)
-
-[sub_resource type="RectangleShape2D" id="Shape_52"]
-size = Vector2(40, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_ReturnBridge"]
 size = Vector2(560, 80)
@@ -2314,23 +2317,6 @@ width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
-[node name="RightBoundary" type="StaticBody2D" parent="Rooms/Room6"]
-position = Vector2(1300.0, 360.0)
-
-[node name="Collision" type="CollisionShape2D" parent="Rooms/Room6/RightBoundary"]
-shape = SubResource("Shape_52")
-
-[node name="Visual" type="Polygon2D" parent="Rooms/Room6/RightBoundary"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-20.0, -360.0, 20.0, -360.0, 20.0, 360.0, -20.0, 360.0)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="Edge" type="Line2D" parent="Rooms/Room6/RightBoundary"]
-points = PackedVector2Array(-20.0, -360.0, 20.0, -360.0)
-width = 2.0
-default_color = Color(0.4, 0.75, 0.9, 0.65)
-antialiased = true
-
 [node name="Goal" parent="Rooms/Room6" instance=ExtResource("6_goal")]
 position = Vector2(1150, 640)
 mission_required = false
@@ -2378,6 +2364,15 @@ wind_direction = Vector2(-1, 0)
 wind_acceleration = 300.0
 max_wind_speed = 100.0
 area_size = Vector2(240, 280)
+
+[node name="Room7" parent="Rooms" instance=ExtResource("room_7")]
+position = Vector2(7680, 0)
+
+[node name="Room8" parent="Rooms" instance=ExtResource("room_8")]
+position = Vector2(8960, 0)
+
+[node name="Room9" parent="Rooms" instance=ExtResource("room_9")]
+position = Vector2(10240, 0)
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector2(72, 614)

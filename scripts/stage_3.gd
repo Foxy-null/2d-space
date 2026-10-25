@@ -2,7 +2,7 @@ extends Node2D
 
 const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
-const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ"]
+const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ", "左へ渡り直す", "上層から二段跳び", "風の中で待つ"]
 const HINTS := [
 	"Springと反転をキックでつなぐ。",
 	"天井の反発板から壁を掴む。",
@@ -10,6 +10,9 @@ const HINTS := [
 	"縦風を越え、移動ゲートを待つ。",
 	"下ダッシュでSpringの下へ回り、床へ戻る。",
 	"向かい風と横移動ゲートを越す。",
+	"反転した壁の下を左へ渡る。戻りは壁を蹴り替えて右の出口へ。",
+	"上層の靴を二つつなぎ、下ダッシュで吊り壁の下へ。",
+	"二度の上下往復から風を越え、壁で待って移動ゲートへ。",
 ]
 
 var room_index := 0
@@ -58,9 +61,9 @@ func _physics_process(_delta: float) -> void:
 		_transition_to(room_index + 1)
 	elif player.global_position.x < left and room_index > 0:
 		_transition_to(room_index - 1)
-	elif player.global_position.y > ROOM_SIZE.y + 52.0 or player.global_position.y < float(rooms.get_child(room_index).get_meta("room_top", 0.0)) - 52.0:
+	elif player.global_position.y > float(rooms.get_child(room_index).get_meta("room_bottom", ROOM_SIZE.y)) + 52.0 or player.global_position.y < float(rooms.get_child(room_index).get_meta("room_top", 0.0)) - 52.0:
 		player.respawn()
-	if not transitioning and rooms.get_child(room_index).has_meta("room_top"):
+	if not transitioning and (rooms.get_child(room_index).has_meta("room_top") or rooms.get_child(room_index).has_meta("room_bottom")):
 		camera.position = _camera_position()
 
 
@@ -87,7 +90,8 @@ func _transition_to(index: int) -> void:
 
 func _camera_position() -> Vector2:
 	var top := float(rooms.get_child(room_index).get_meta("room_top", 0.0))
-	return Vector2(room_index * ROOM_SIZE.x + ROOM_SIZE.x * 0.5, clampf(player.position.y - 80.0, top + ROOM_SIZE.y * 0.5, ROOM_SIZE.y * 0.5))
+	var bottom := float(rooms.get_child(room_index).get_meta("room_bottom", ROOM_SIZE.y))
+	return Vector2(room_index * ROOM_SIZE.x + ROOM_SIZE.x * 0.5, clampf(player.position.y - 80.0, top + ROOM_SIZE.y * 0.5, bottom - ROOM_SIZE.y * 0.5))
 
 
 func _on_respawned() -> void:
@@ -120,6 +124,6 @@ func _update_room() -> void:
 		bridge.get_node("Collision").set_deferred("disabled", not done)
 		room.get_node("PitWarning").visible = not done
 	room.get_node("Goal").set_progress(0, 0, "", "", done)
-	room.get_node("ExitHint").text = ("クリア！　自由に練習できます" if room_index == 5 else "次の部屋へ →") if done else "到着台に乗ると出口が開く"
+	room.get_node("ExitHint").text = ("クリア！　自由に練習できます" if room_index == rooms.get_child_count() - 1 else "次の部屋へ →") if done else "到着台に乗ると出口が開く"
 	room.get_node("ExitHint").modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.8, 0.45)
 	$HUD/Completion.visible = completed and room_index == rooms.get_child_count() - 1
