@@ -184,7 +184,9 @@ func _run() -> void:
 			if index == 0:
 				await _toggle_hints()
 			if index == 6:
+				var before_return := respawns
 				await _return_seven_to_exit()
+				_check(respawns == before_return, "The left-folding course returns right without a retry")
 			_check(not stage.completed, "The former final room and intermediate additions never end the stage")
 			Input.action_press("move_right")
 			await _until(func(): return stage.room_index == index + 1, 150, "Cross the open exit")
@@ -282,6 +284,15 @@ func _room_seven_course() -> void:
 
 func _return_seven_to_exit() -> void:
 	_drive("move_left", true)
+	await _until(func(): return (_x() < 470 and player.is_wall_grabbing()) or _x() < 90, 300, "Reach the return wall before its low overhang")
+	if _x() >= 90:
+		await _until(func(): return player.position.y < 360, 100, "Climb below the return overhang spikes")
+		_drive("move_right", true)
+		await _jump()
+		await _until(func(): return player.is_wall_grabbing() and _x() > 550, 100, "Kick onto the clear opposing return wall")
+		await _until(func(): return player.position.y < 140, 120, "Climb above the overhang before returning right")
+		_drive("move_left", true)
+		await _jump()
 	await _until(func(): return _x() < 90, 500, "The left-folding course returns along the restored floor and walls to its right-hand exit")
 	_release_inputs()
 
@@ -559,7 +570,7 @@ func _reach_goal() -> void:
 			break
 		Input.action_release("jump")
 		if _x() >= 1140:
-			Input.action_release("move_right")
+			Input.action_release("move_left" if stage.room_index == 6 else "move_right")
 		elif player.is_on_floor() and player.is_on_wall():
 			Input.action_press("jump")
 		await _step()

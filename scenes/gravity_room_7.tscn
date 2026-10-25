@@ -30,7 +30,7 @@ size = Vector2(64, 560)
 size = Vector2(460, 40)
 
 [sub_resource type="RectangleShape2D" id="Shape_9"]
-size = Vector2(36, 580)
+size = Vector2(36, 740)
 
 [sub_resource type="RectangleShape2D" id="Shape_10"]
 size = Vector2(52, 28)
@@ -45,7 +45,7 @@ size = Vector2(240, 28)
 size = Vector2(48, 96)
 
 [sub_resource type="RectangleShape2D" id="Shape_14"]
-size = Vector2(28, 720)
+size = Vector2(28, 960)
 
 [sub_resource type="RectangleShape2D" id="Shape_ExitKickWall"]
 size = Vector2(36, 380)
@@ -104,7 +104,7 @@ polygon = PackedVector2Array(250, -40, -250, -40, -250, 40, 250, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="PitWarning" type="Line2D" parent="."]
-points = PackedVector2Array(904, 640, 880, 640, 880, 720, 380, 720, 380, 640, 356, 640)
+points = PackedVector2Array(904, 640, 880, 640, 880, 840, 380, 840, 380, 640, 356, 640)
 width = 2.0
 default_color = Color(1, 0.57, 0.3, 0.8)
 
@@ -145,13 +145,13 @@ antialiased = true
 [node name="ExitCeilingPitWarning" type="Node2D" parent="."]
 
 [node name="EntryLip" type="Line2D" parent="ExitCeilingPitWarning"]
-points = PackedVector2Array(-926, 80, -950, 80, -950, 0)
+points = PackedVector2Array(354, 80, 330, 80, 330, 0)
 width = 2.0
 default_color = Color(1, 0.57, 0.3, 0.8)
 antialiased = true
 
 [node name="ExitLip" type="Line2D" parent="ExitCeilingPitWarning"]
-points = PackedVector2Array(-1144, 80, -1120, 80, -1120, 0)
+points = PackedVector2Array(136, 80, 160, 80, 160, 0)
 width = 2.0
 default_color = Color(1, 0.57, 0.3, 0.8)
 antialiased = true
@@ -159,30 +159,30 @@ antialiased = true
 [node name="CeilingPitWarning" type="Node2D" parent="."]
 
 [node name="EntryLip" type="Line2D" parent="CeilingPitWarning"]
-points = PackedVector2Array(-436, 80, -460, 80, -460, 0)
+points = PackedVector2Array(844, 80, 820, 80, 820, 0)
 width = 2.0
 default_color = Color(1, 0.57, 0.3, 0.8)
 antialiased = true
 
 [node name="ExitLip" type="Line2D" parent="CeilingPitWarning"]
-points = PackedVector2Array(-584, 80, -560, 80, -560, 0)
+points = PackedVector2Array(696, 80, 720, 80, 720, 0)
 width = 2.0
 default_color = Color(1, 0.57, 0.3, 0.8)
 antialiased = true
 
 [node name="LeftKickWall" type="StaticBody2D" parent="."]
-position = Vector2(862, 510.0)
+position = Vector2(862, 590)
 
 [node name="Collision" type="CollisionShape2D" parent="LeftKickWall"]
 shape = SubResource("Shape_9")
 
 [node name="Visual" type="Polygon2D" parent="LeftKickWall"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(18, -290, -18, -290, -18, 290, 18, 290)
+polygon = PackedVector2Array(18, -370, -18, -370, -18, 370, 18, 370)
 color = Color(0.24, 0.38, 0.56, 1)
 
 [node name="Edge" type="Line2D" parent="LeftKickWall"]
-points = PackedVector2Array(18, -290, -18, -290)
+points = PackedVector2Array(18, -370, -18, -370)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
@@ -297,18 +297,18 @@ shape = SubResource("Shape_13")
 polygon = PackedVector2Array(24, -48, -24, -48, -24, 48, 24, 48)
 
 [node name="ExitBarrier" type="StaticBody2D" parent="."]
-position = Vector2(1266.0, 360.0)
+position = Vector2(1266, 480)
 
 [node name="Collision" type="CollisionShape2D" parent="ExitBarrier"]
 shape = SubResource("Shape_14")
 
 [node name="Visual" type="Polygon2D" parent="ExitBarrier"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+polygon = PackedVector2Array(-14, -480, 14, -480, 14, 480, -14, 480)
 color = Color(0.35, 0.92, 1, 0.2)
 
 [node name="Edge" type="Line2D" parent="ExitBarrier"]
-points = PackedVector2Array(-14.0, -360.0, 14.0, -360.0)
+points = PackedVector2Array(-14, -480, 14, -480)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true

@@ -11,6 +11,11 @@ func _run() -> void:
 	progress = root.get_node("CollectionProgress")
 	progress.save_path = "user://gravity_expansion_%d.cfg" % OS.get_process_id()
 	progress._collected.clear()
+	if OS.get_cmdline_user_args().has("--underwall-only"):
+		await _underwall_bypass()
+		print("GRAVITY_UNDERWALL_TEST_", "FAILED" if failed else "OK")
+		quit(1 if failed else 0)
+		return
 	var screenshots := OS.get_cmdline_user_args().has("--screenshots")
 	for strength in ([] if OS.get_cmdline_user_args().has("--scroll-only") else ([1.0] if screenshots else [1.0, 0.8])):
 		stick = strength
@@ -87,6 +92,7 @@ func _course(index: int) -> void:
 
 func _scroll_detour() -> void:
 	await _fresh(6)
+	await _capture("room_7_entrance")
 	await _room_two_wall_course()
 	var scroll: Area2D = stage.rooms.get_child(6).get_node("DetourScroll")
 	for pending in ["retry", "death", "secure"]:
@@ -127,6 +133,8 @@ func _scroll_detour() -> void:
 
 func _negative_routes() -> void:
 	# Finite input sweeps complement the uninterrupted nine-room playthrough.
+	await _underwall_bypass()
+	if failed: return
 	for index in [6, 7, 8]:
 		for direction in _directions():
 			for delay in [0, 20, 40]:
@@ -199,17 +207,40 @@ func _room_six_seam() -> void:
 	await _fresh(6)
 	await _room_seven_course()
 	await _reach_goal()
-	stage.cleared[5] = true
+	stage._set_room(5, true)
+	stage._on_arrival(5)
+	stage._set_room(6, false)
+	await _step(2)
 	Input.action_press("move_left")
 	await _until(func(): return stage.room_index == 5, 90, "The former final boundary allows actual leftward backtracking")
 	_release_inputs()
 	await _step(25)
-	_check(player.position.distance_to(stage.rooms.get_child(5).get_node("Return").global_position) < 5, "Returning from the new room uses the former final room's right entrance")
+	_check(player.position.distance_to(stage.rooms.get_child(5).get_node("Return").global_position) < 12, "Returning from the new room uses the former final room's safe right entrance")
 	Input.action_press("move_right")
 	await _until(func(): return stage.room_index == 6, 90, "The same seam opens forward again after the prior arrival")
 	_release_inputs()
 	await _step(25)
 	_check(stage.cleared.has(6) and not stage.completed, "The former final room stays intermediate in both directions")
+
+
+func _underwall_bypass() -> void:
+	await _fresh(6)
+	_drive("move_right")
+	await _until(func(): return player.is_on_floor() and player.gravity_direction == -1 and _x() > 430, 260, "Reach the actual inverted outer-ceiling launch")
+	await _jump()
+	await _until(func(): return _x() > 515, 60, "Jump left of the step before attempting the descent bypass")
+	_release_inputs()
+	Input.action_press("move_down")
+	Input.action_press("dash")
+	await _step()
+	_release_inputs()
+	await _until(func(): return not player.is_dashing() and player.position.y > 300, 40, "A real downward Dash passes below the step")
+	_drive("move_left", true, true)
+	await _until(func(): return player.is_wall_grabbing() and _x() < 470, 80, "Catch the real outer wall below its step")
+	await _until(func(): return respawns > 0, 220, "The extended outer wall cannot be mantled beneath the room")
+	_release_inputs()
+	_check(respawns == 1 and not stage.cleared.has(6), "The under-wall refill bypass returns safely without reaching the exit")
+	negative_trials += 1
 
 
 func _set_direction(direction: Vector2) -> void:

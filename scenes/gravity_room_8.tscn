@@ -23,7 +23,7 @@ size = Vector2(36, 220)
 size = Vector2(48, 96)
 
 [sub_resource type="RectangleShape2D" id="Shape_23"]
-size = Vector2(28, 720)
+size = Vector2(28, 1040)
 
 [sub_resource type="RectangleShape2D" id="Shape_ExitFloor_Room3"]
 size = Vector2(340, 80)
@@ -254,18 +254,18 @@ shape = SubResource("Shape_22")
 polygon = PackedVector2Array(-24, -48, 24, -48, 24, 48, -24, 48)
 
 [node name="ExitBarrier" type="StaticBody2D" parent="."]
-position = Vector2(1266.0, 360.0)
+position = Vector2(1266, 200)
 
 [node name="Collision" type="CollisionShape2D" parent="ExitBarrier"]
 shape = SubResource("Shape_23")
 
 [node name="Visual" type="Polygon2D" parent="ExitBarrier"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+polygon = PackedVector2Array(-14, -520, 14, -520, 14, 520, -14, 520)
 color = Color(0.35, 0.92, 1, 0.2)
 
 [node name="Edge" type="Line2D" parent="ExitBarrier"]
-points = PackedVector2Array(-14.0, -360.0, 14.0, -360.0)
+points = PackedVector2Array(-14, -520, 14, -520)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
