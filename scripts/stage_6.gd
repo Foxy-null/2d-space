@@ -7,6 +7,7 @@ const BACKDROP = preload("res://scripts/stage_backdrop.gd")
 const CLEAR = preload("res://scripts/stage_clear.gd")
 const HELP = preload("res://scenes/stage_help.tscn")
 const NEEDLE = preload("res://scripts/chaser_needle.gd")
+const ASH_CLOUD = preload("res://scripts/ash_cloud.gd")
 
 @export_range(4, 12) var defeat_hits_required := 6
 @export var escape_seconds := 20.0
@@ -67,6 +68,7 @@ func _ready() -> void:
 	_world.add_child(enemy)
 	enemy.set("target", player)
 	enemy.needle_attack.connect(_spawn_needles)
+	enemy.ash_attack.connect(_spawn_ash_cloud)
 	player.add_collision_exception_with(enemy)
 	enemy.add_collision_exception_with(player)
 	player.respawned.connect(_on_player_respawned)
@@ -135,6 +137,8 @@ func _physics_process(delta: float) -> void:
 		if _chase_delay <= 0.0:
 			enemy.set("active", true)
 	_update_needles(delta)
+	for cloud in room.get_node("AshClouds").get_children():
+		cloud.advance(delta)
 	_check_projectiles()
 	if _out_of_course(player) or _touches_hazard(player, _previous_player):
 		_keep_enemy_on_respawn = true
@@ -306,6 +310,8 @@ func _out_of_course(actor: PlayerController) -> bool:
 
 
 func _touches_hazard(actor: PlayerController, previous: Vector2) -> bool:
+	if actor.is_in_group("spike_immune"):
+		return false
 	var half := _actor_rect(actor).size * 0.5
 	for needle in room.needles.get_children():
 		if needle.stuck and needle.is_dangerous() and _segment_hits_rect(previous, actor.position, Rect2(needle.tip_position() - half - Vector2(3, 3), half * 2.0 + Vector2(6, 6))):
@@ -349,7 +355,7 @@ func _update_hud() -> void:
 
 func _help_text() -> String:
 	var text: String = "追跡者の終域\nUMA妖怪エイリアン　星間山荒・大赤斑\n"
-	text += "針の予告線が出たら横へかわします。長針の直線と短針の三方向を交互に使い、発射後には隙があります。\n刺さった針は先端だけが危険です。箱を投げて先端へ刺し込むと、その場に固定された安全な足場になります。ひびのある茶色い足場は長針で壊れます。\n\n"
+	text += "針の予告線が出たら横へかわします。直線・三方向・追尾トゲ・灰の雲の順に攻撃し、発射後には隙があります。追尾トゲは炎が付いてから曲がり、2.5秒で追尾を終えます。灰の雲は予告した場所に留まり、金色の合図の後に隙間を空けて固まった灰を降らせます。地形の下へ逃げても防げます。\n敵には全てのトゲが効かず、トゲの床を歩き壁を登ります。箱の投擲は有効です。\n刺さった針は先端だけが危険です。箱を投げて先端へ刺し込むと、その場に固定された安全な足場になります。ひびのある茶色い足場は長針で壊れます。\n\n"
 	if room_index == 11:
 		text += "二つの重量扉を開いた後、どれか一つでクリア。\n決着：怯んでいない敵に投擲を%d回当てる。怯み中の追撃は無効。\n封鎖：敵を檻へ入れ、自分は右外側へ出る。金の台へ箱を置く。\n逃走：敵と%d秒対峙し、檻の屋根の鍵を取って右上の到着台を押す。捕獲で時間を数え直す。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
 	text += "この部屋の進め方\n" + StageSixRoom.HINTS[room_index]
@@ -494,6 +500,12 @@ func _text(value: String, font_size: int) -> Label:
 
 
 func _spawn_needles(origin: Vector2, directions: Array[Vector2], variant: int) -> void:
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = origin
+	query.collision_mask = 1
+	query.exclude = [player.get_rid(), enemy.get_rid()]
+	if not get_world_2d().direct_space_state.intersect_point(query, 1).is_empty():
+		return
 	for direction in directions:
 		# shortcut: preserve up to 96 needles per room; batch geometry for longer battles.
 		if room.needles.get_child_count() >= 96:
@@ -503,8 +515,27 @@ func _spawn_needles(origin: Vector2, directions: Array[Vector2], variant: int) -
 		needle.course = room
 		needle.shooter = enemy
 		needle.variant = variant
-		needle.velocity = direction.normalized() * (720.0 if variant == 0 else 540.0)
+		needle.velocity = direction.normalized() * [720.0, 540.0, 380.0, 660.0][variant]
 		room.needles.add_child(needle)
+
+
+func _spawn_ash_cloud(origin: Vector2, target_at: Vector2, down: Vector2) -> void:
+	var clouds := room.get_node("AshClouds")
+	if clouds.get_child_count() > 0:
+		return
+	var cloud := ASH_CLOUD.new()
+	# A low ceiling limits the cloud's height; rain never starts through terrain.
+	var at := target_at - down * 260.0
+	var query := PhysicsRayQueryParameters2D.create(target_at - down * 30.0, at, 1, [player.get_rid(), enemy.get_rid()])
+	var hit := get_world_2d().direct_space_state.intersect_ray(query)
+	cloud.position = hit.position + down * 55.0 if not hit.is_empty() else at
+	cloud.smoke_origin = origin
+	cloud.down = down
+	cloud.rain.connect(func(point, direction):
+		var directions: Array[Vector2] = [direction]
+		_spawn_needles(point, directions, 3)
+	)
+	clouds.add_child(cloud)
 
 
 func _update_needles(delta: float) -> void:

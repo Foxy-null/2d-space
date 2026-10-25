@@ -69,6 +69,9 @@ func _ready() -> void:
 	needles = Node2D.new()
 	needles.name = "Needles"
 	add_child(needles)
+	var clouds := Node2D.new()
+	clouds.name = "AshClouds"
+	add_child(clouds)
 	match number:
 		0:
 			_floor(0, 550, 820)
@@ -370,6 +373,7 @@ func _physics_process(delta: float) -> void:
 		_set_door(entry.body, not entry.button.is_pressed() if not entry.closes else entry.button.is_pressed())
 	for entry in moving_hazards:
 		entry.current = Rect2(entry.rect.position + entry.travel * (0.5 - 0.5 * cos(_elapsed * TAU / entry.period)), entry.rect.size)
+		entry.surface.position = entry.current.get_center()
 	_supply_left -= delta
 	if _supply_left <= 0.0:
 		_supply_left = 0.75
@@ -403,12 +407,17 @@ func _restock() -> void:
 
 
 func reset_state() -> void:
+	for cloud in $AshClouds.get_children():
+		cloud.free()
 	for needle in needles.get_children():
 		needle.free()
 	for platform in brittle_platforms:
 		platform.collision_layer = 1
 		platform.show()
 	_elapsed = 0.0
+	for entry in moving_hazards:
+		entry.current = entry.rect
+		entry.surface.position = entry.rect.get_center()
 	exit_open = false
 	key_collected = false
 	escape_unlocked = false
@@ -435,6 +444,8 @@ func all_weight_doors_open() -> bool:
 
 
 func hazard_ahead(actor: PlayerController, direction: float) -> bool:
+	if actor.is_in_group("spike_immune"):
+		return false
 	var tangent := actor.get_walk_axis()
 	var down := actor.get_gravity_vector()
 	var rectangles: Array = hazards.duplicate()
@@ -570,10 +581,19 @@ func _crystal(at: Vector2, kind: int) -> void:
 
 
 func _hazard(rect: Rect2, travel := Vector2.ZERO, period := 4.0) -> void:
+	var surface := AnimatableBody2D.new()
+	surface.collision_layer = 2
+	surface.collision_mask = 0
+	surface.position = rect.get_center()
+	var collision := CollisionShape2D.new()
+	collision.shape = RectangleShape2D.new()
+	collision.shape.size = rect.size
+	surface.add_child(collision)
+	add_child(surface)
 	if travel.is_zero_approx():
 		hazards.append(rect)
 	else:
-		moving_hazards.append({"rect": rect, "current": rect, "travel": travel, "period": period})
+		moving_hazards.append({"rect": rect, "current": rect, "travel": travel, "period": period, "surface": surface})
 
 
 func _draw() -> void:

@@ -1,6 +1,12 @@
 extends Node2D
 
-const TEXTURES := [preload("res://assets/enemies/star-mountain/originals/sozai_a.png"), preload("res://assets/enemies/star-mountain/originals/sozai_b.png")]
+const TEXTURES := [
+	preload("res://assets/enemies/star-mountain/originals/sozai_a.png"),
+	preload("res://assets/enemies/star-mountain/originals/sozai_b.png"),
+	preload("res://assets/enemies/star-mountain/homing-neutral.png"),
+	preload("res://assets/enemies/star-mountain/ash-rain.png"),
+]
+const HOMING_FLIGHT := preload("res://assets/enemies/star-mountain/homing-flight.png")
 var course: StageSixRoom
 var shooter: PlayerController
 var variant := 0
@@ -15,21 +21,29 @@ var anchor: StaticBody2D
 var life := 3.0
 var length := 84.0
 var picture: Sprite2D
+var neutral_left := 0.65
+var tracking_left := 2.5
 
 
 func _ready() -> void:
-	length = 84.0 if variant == 0 else 48.0
+	length = [84.0, 48.0, 64.0, 54.0][variant]
+	life = 5.0 if variant == 2 else 3.0
 	picture = Sprite2D.new()
-	var texture := AtlasTexture.new()
-	texture.atlas = TEXTURES[variant]
-	texture.region = texture.atlas.get_image().get_used_rect()
-	picture.texture = texture
-	picture.scale = Vector2.ONE * length / texture.get_width()
-	picture.rotation = -0.17 if variant == 0 else 0.0
+	_set_picture(false)
 	picture.position.x = -length * 0.5
 	add_child(picture)
 	rotation = velocity.angle()
 	previous_tip = global_position
+
+
+func _set_picture(flying: bool) -> void:
+	var texture := AtlasTexture.new()
+	texture.atlas = HOMING_FLIGHT if variant == 2 and flying else TEXTURES[variant]
+	# The original c1/c2 canvases include isolated sketch marks outside the spine.
+	texture.region = (Rect2(728, 368, 92, 252) if flying else Rect2(744, 336, 54, 226)) if variant == 2 else Rect2(texture.atlas.get_image().get_used_rect())
+	picture.texture = texture
+	picture.scale = Vector2.ONE * length / (texture.get_height() if variant >= 2 else texture.get_width())
+	picture.rotation = PI / 2.0 if variant >= 2 else (-0.17 if variant == 0 else 0.0)
 
 
 func tip_position() -> Vector2:
@@ -47,6 +61,20 @@ func advance(delta: float, player: PlayerController) -> void:
 		if not is_instance_valid(anchor) or anchor.collision_layer == 0:
 			queue_free()
 		return
+	if variant == 2 and neutral_left > 0.0:
+		var waiting := minf(neutral_left, delta)
+		neutral_left -= waiting
+		delta -= waiting
+		if neutral_left <= 0.0:
+			_set_picture(true)
+		if delta <= 0.0:
+			return
+	if variant == 2 and tracking_left > 0.0:
+		var turn := velocity.angle_to(player.global_position - global_position)
+		var turn_limit := 2.3 * minf(delta, tracking_left)
+		velocity = velocity.rotated(clampf(turn, -turn_limit, turn_limit))
+		tracking_left = maxf(0.0, tracking_left - delta)
+		rotation = velocity.angle()
 	life -= delta
 	if life <= 0.0:
 		queue_free()
@@ -81,6 +109,17 @@ func stick(at: Vector2, normal: Vector2, body: StaticBody2D) -> void:
 	rotation = normal.angle()
 	velocity = Vector2.ZERO
 	picture.position.x = length * 0.5
+	if variant == 2:
+		_set_picture(false)
+	var surface := StaticBody2D.new()
+	surface.collision_layer = 2
+	surface.collision_mask = 0
+	surface.position.x = length * 0.5
+	var collision := CollisionShape2D.new()
+	collision.shape = RectangleShape2D.new()
+	collision.shape.size = Vector2(length, 6)
+	surface.add_child(collision)
+	add_child(surface)
 	previous_tip = tip_position()
 
 

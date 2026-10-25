@@ -115,7 +115,7 @@ func _poses() -> void:
 	sprite._process(0.0)
 	_check(sprite.animation == &"idle", "The enemy has its own standing artwork before the chase")
 	var height := sprite.sprite_frames.get_frame_texture(sprite.animation, 0).get_height() * sprite.scale.y
-	_check(is_equal_approx(height, 96.0) and height > 52.0, "Enemy artwork is larger than the ninja")
+	_check(is_equal_approx(height, 128.0) and height > 52.0, "Enemy artwork is larger than the ninja")
 	_check(sprite.sprite_frames.get_frame_count(&"walk") == 2, "Both supplied walking frames are assigned")
 	stage.enemy.active = true
 	stage.enemy.velocity = Vector2(0, 100)
