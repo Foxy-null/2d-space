@@ -70,13 +70,13 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	player.respawned.connect(func(): respawns += 1)
-	_check(stage.checkpoints.get_child_count() == 19, "Nineteen checkpoints")
+	_check(stage.checkpoints.get_child_count() == 25, "Twenty-five checkpoints")
 	_check(player.wall_actions_enabled and player.dash_enabled, "All movement abilities available")
 	await _step(20)
 	_check(player.is_on_floor(), "Spawn is on a safe platform")
 	_check_signage()
 	# テレポートなしで全区間を通過し、各区間で既習ギミックをつなぐ。
-	for section in 19:
+	for section in 25:
 		if section == 0:
 			await _wall_course()
 			_check(stage.checkpoint_index == 1, "The wall route reaches checkpoint 02")
@@ -109,8 +109,10 @@ func _run() -> void:
 			await _upper_course(section)
 		elif section < 18:
 			await _more_course(section)
-		else:
+		elif section == 18:
 			await _parachute_course()
+		else:
+			await _fourth_course(section)
 		_check_signage()
 	_check(respawns == 0, "The entire tower is traversable without respawning")
 	await _step(90)
@@ -119,7 +121,7 @@ func _run() -> void:
 	# 落下・リトライで最新地点に復帰し、能力とクリスタルが回復する。
 	player.position.y = 1000
 	await _step(3)
-	_check(stage.checkpoint_index == 18 and player.position.y < -20000, "Fall returns to latest checkpoint")
+	_check(stage.checkpoint_index == 24 and player.position.y < -30000, "Fall returns to latest checkpoint")
 	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "Respawn restores movement resources")
 	var crystal := stage.get_node("Items/Item4")
 	var crystal_start: Vector2 = crystal.position
@@ -132,7 +134,7 @@ func _run() -> void:
 	await _step(1)
 	Input.action_release("reset")
 	await _step(3)
-	_check(crystal.visible and player.position.y < -20000, "R restores crystals at the latest checkpoint")
+	_check(crystal.visible and player.position.y < -30000, "R restores crystals at the latest checkpoint")
 	var camera_before: float = stage.camera.position.y
 	Input.action_press("jump")
 	await _step(1)
@@ -971,18 +973,140 @@ func _parachute_finish() -> void:
 		_horizontal(-100)
 		if player.is_on_floor() and player.is_on_wall(): await _upper_pulse("jump")
 		await _step()
-		if stage.completed: break
+		if stage.checkpoint_index >= 19: break
 	await _parachute_view("goal")
 
 
 func _wind_rise(target_x: float, top: float) -> void:
+	var before := respawns
 	for frame in 900:
 		_horizontal(target_x)
 		await _step()
 		if player.position.y < top and absf(player.position.x-target_x) < 20: return
-		if respawns > 0: break
+		if respawns > before: break
 	_check(false,"The real parachute rides the native updraft to %s; actual=%s held=%s" % [top,player.position,player.get_held_object()])
 
 
 func _parachute_view(_phase: String) -> void:
 	pass
+
+
+func _fourth_course(section: int) -> void:
+	var started := Engine.get_physics_frames()
+	await _fourth_view("%02d_entry" % (section+1))
+	match section:
+		19:
+			await _fourth_put_aside()
+			await _more_climb("Fourth20Wall", true)
+			await _fourth_view("20_wall")
+			await _more_refill("Fourth20Dash", -380, Vector2(-350, -25060))
+			await _more_walk(90)
+			await _fourth_view("20_gap")
+			await _upper_pulse("jump")
+			Input.action_press("move_right", upper_strength)
+			await _step(upper_dash_delay + 8)
+			await _upper_pulse("dash")
+			await _land_on(620, -25086, 240)
+			await _more_walk(600)
+		20:
+			await _fourth_spring(700, Vector2(100, -25700))
+			await _fourth_view("21_rest")
+			await _boot_transfer(-150, "Fourth21Boot", 150, -26166)
+			await _more_walk(150)
+		21:
+			await _more_bounce(800, "Fourth22Bumper", Vector2(850, -27280))
+			await _more_walk(1320)
+			await _fourth_view("22_spring")
+			await _fourth_spring(1400, Vector2(1900, -27880))
+			await _more_walk(2000)
+		22:
+			await _more_grab("Fourth23Companion")
+			await _more_boot(1800, "Fourth23Boot", Vector2(1300, -28420))
+			await _fourth_view("23_rest")
+			await _more_walk(560)
+			await _fourth_view("23_wall")
+			await _fourth_wall_pair()
+			await _more_walk(560)
+		23:
+			await _fourth_updraft_rest()
+			await _fourth_down_rest()
+			await _fourth_view("24_lower")
+			await _boot_transfer(-930, "Fourth24Boot", -1350, -30666)
+			await _more_walk(-1500)
+		24:
+			await _fourth_put_aside()
+			await _more_bounce(-1700, "Fourth25Bumper", Vector2(-1550, -31780))
+			await _more_walk(-1450)
+			await _fourth_view("25_refill")
+			await _more_refill("Fourth25Dash", -1450, Vector2(-1300, -32280))
+			await _more_walk(-1150)
+			for frame in 180:
+				_horizontal(-1050)
+				if player.is_on_floor() and player.is_on_wall(): await _upper_pulse("jump")
+				await _step()
+				if stage.completed: break
+	if section == 24: await _fourth_view("25_goal")
+	_release()
+	if player.get_held_object() != null: Input.action_press("wall_grab")
+	var seconds := (Engine.get_physics_frames()-started)/60.0
+	_check(stage.completed if section == 24 else stage.checkpoint_index == section + 1, "The real fourth section reaches its next checkpoint or final Goal: %d" % (section+1))
+	_check(seconds < 30, "The new successful course remains below thirty seconds")
+	print("TOWER_FOURTH_SECONDS section=",section+1," axis=",upper_strength," gap=",upper_dash_delay," seconds=",seconds," p=",player.position)
+
+
+func _fourth_spring(launch: float, target: Vector2) -> void:
+	_horizontal(launch)
+	await _await_launch_long()
+	_horizontal(target.x)
+	await _step(24 + upper_dash_delay)
+	await _upper_dash()
+	await _land_on(target.x, target.y - 26, 300)
+
+
+func _fourth_wall_pair() -> void:
+	Input.action_press("wall_grab")
+	await _upper_pulse("jump")
+	Input.action_press("move_right", upper_strength)
+	for frame in 720:
+		if player.is_on_wall():
+			var side := player.get_wall_normal().x
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			Input.action_press("move_right" if side > 0 else "move_left", upper_strength)
+			await _upper_pulse("jump")
+		await _step()
+		if player.position.y < -29630: break
+	await _fourth_view("23_wall_top")
+	await _land_on(560, -29626, 240)
+
+
+func _fourth_updraft_rest() -> void:
+	await _fourth_put_aside()
+	await _more_walk(450)
+	await _more_grab("Fourth24Parachute")
+	_check(player.get_held_object() == stage.get_node("Items/Fourth24Parachute"), "The live fourth wind route actually holds its native parachute")
+	await _wind_rise(800, -30560)
+	await _step(upper_jump_delay)
+	await _fourth_view("24_wind_top")
+	_horizontal(-100)
+	await _land_on(-100, -30426, 500)
+
+
+func _fourth_down_rest() -> void:
+	await _more_walk(-350)
+	await _fourth_view("24_upper")
+	await _upper_pulse("jump")
+	_horizontal(-900)
+	await _land_on(-900, -30226, 500)
+
+
+func _fourth_view(_phase: String) -> void:
+	pass
+
+
+func _fourth_put_aside() -> void:
+	if player.get_held_object() != null:
+		_horizontal(player.position.x + 100)
+		await _step(2)
+	_release()
+	await _step(2)

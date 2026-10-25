@@ -95,7 +95,7 @@ func _probe(kind: String, direction: Vector2, timing: int) -> void:
 			await _upper_pulse("dash")
 		await _step()
 		if kind in ["spring","parachute_step","direct_wind_b"]: reached=reached or stage.get_node("Items/ParachuteWindB").overlaps_body(player)
-		elif kind=="wind_b": reached=reached or stage.completed
+		elif kind=="wind_b": reached=reached or stage.checkpoint_index>=19
 		else: reached=reached or (player.is_on_floor() and player.position.y<=-22923)
 		if respawns>before: break
 	_check(not reached and not stage.completed,"Omitting %s cannot reach its real next resource/landing: direction=%s timing=%d pos=%s" % [kind,direction,timing,player.position])

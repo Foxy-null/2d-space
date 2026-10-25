@@ -70,7 +70,7 @@ func _run() -> void:
 	_check(respawns == 0 and stage.checkpoint_index == 12 and not stage.completed, "The entire original tower remains playable after the optional return")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage2/Content/Collection/Count").text == "1 / 6", "Selection shows the collected and actual placed tower total")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage2/Content/Collection/Count").text == "1 / 8", "Selection shows the collected and actual placed tower total")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.has_scroll("tower", "left_balcony_01"), "Leaving the stage preserves its saved collection")
