@@ -60,7 +60,7 @@ func _wide_course(index: int, strength: float, dash_delay: int) -> void:
 	_release_inputs()
 	var seconds := float(Engine.get_physics_frames() - started) / 60
 	print("CANYON_WIDE_ROOM_%d strength=%.1f delay=%d %.2fs p=%s next=%d respawns=%d" % [index + 1, strength, dash_delay, seconds, Vector2(_x(),player.position.y),stage.next_bumper,respawns])
-	_check((stage.transitioning and stage.room_index == index + 1 and respawns == 1) if index < 23 else (stage.completed and respawns == 0), "The three challenges and rest reach the actual room exit without a death")
+	_check((stage.transitioning and stage.room_index == index + 1 and respawns == 1) if index < stage.rooms.get_child_count()-1 else (stage.completed and respawns == 0), "The three challenges and rest reach the actual room exit without a death")
 	_check(seconds < 30 and saw_horizontal, "A full retry stays below thirty seconds and really crosses the scrolling room")
 	_check(progress.get_count("canyon") == 0, "Main routes leave their optional scrolls untouched")
 
@@ -108,9 +108,9 @@ func _scroll_branch(index: int, strength: float) -> void:
 	_check(progress.has_scroll("canyon", scroll_id), "A real death preserves a confirmed scroll")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
-	var expected := "%d / 5" % (before_count + 1)
+	var expected := "%d / 7" % (before_count + 1)
 	var card := current_scene.get_node("Margin/Content/Stages/Stage5")
-	_check(card.get_node("Content/Collection/Count").text == expected and card.accessibility_name.contains("巻物 " + expected), "Selection and its accessible name use the actual five-scroll total")
+	_check(card.get_node("Content/Collection/Count").text == expected and card.accessibility_name.contains("巻物 " + expected), "Selection and its accessible name use the actual seven-scroll total")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.get_count("canyon") == before_count + 1 and progress.has_scroll("canyon", scroll_id), "Leaving and reloading retain the unfinished stage's confirmed collection")

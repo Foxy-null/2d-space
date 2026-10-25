@@ -1,4 +1,4 @@
-[gd_scene load_steps=56 format=3]
+[gd_scene load_steps=59 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_5.gd" id="stage"]
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
@@ -32,6 +32,12 @@
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_23.tscn" id="room23"]
 
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_24.tscn" id="room24"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_25.tscn" id="room25"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_26.tscn" id="room26"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_27.tscn" id="room27"]
 
 [sub_resource type="RectangleShape2D" id="EntranceShape"]
 size = Vector2(180, 40)
@@ -2451,6 +2457,15 @@ position = Vector2(38400, 0)
 
 [node name="Room24" parent="Rooms" instance=ExtResource("room24")]
 position = Vector2(42240, 0)
+
+[node name="Room25" parent="Rooms" instance=ExtResource("room25")]
+position = Vector2(44800, 0)
+
+[node name="Room26" parent="Rooms" instance=ExtResource("room26")]
+position = Vector2(48000, 0)
+
+[node name="Room27" parent="Rooms" instance=ExtResource("room27")]
+position = Vector2(51200, 0)
 
 [node name="Player" parent="." instance=ExtResource("player")]
 position = Vector2(90, 570)
