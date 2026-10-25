@@ -67,7 +67,7 @@ func _run() -> void:
 		change_scene_to_file("res://scenes/stage_select.tscn")
 		await _step(4)
 		var card: Button = current_scene.get_node("Margin/Content/Stages/Stage3")
-		_check(card.get_node("Content/Collection/Count").text == "4 / 4" and card.accessibility_name.contains("巻物 4 / 4") and not card.disabled, "All four persisted scrolls appear in visible and accessible selection text")
+		_check(card.get_node("Content/Collection/Count").text == "4 / 6" and card.accessibility_name.contains("巻物 4 / 6") and not card.disabled, "All four persisted scrolls appear in visible and accessible selection text")
 		progress._collected.clear()
 		progress.load_progress()
 		_check(progress.get_count("gravity") == 4, "All four IDs survive reloading the save file")
@@ -121,7 +121,7 @@ func _fresh(index: int) -> void:
 	for room in stage.rooms.get_children():
 		for node in room.find_children("*", "Area2D", true, false):
 			if node.get_script() != null and node.get_script().resource_path == "res://scripts/scroll_collectible.gd": total += 1
-	_check(total == 4 and progress.TOTALS["gravity"] == total, "All four native scrolls match the stage-selection total")
+	_check(total == 6 and progress.TOTALS["gravity"] == total, "All six native scrolls match the stage-selection total")
 	await _check_return_state(index, false)
 
 
@@ -254,7 +254,7 @@ func _scroll_branch(index: int) -> void:
 		if failed: return
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage3/Content/Collection/Count").text == "%d / 4" % (before + 1), "Selection displays the persisted native total")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage3/Content/Collection/Count").text == "%d / 6" % (before + 1), "Selection displays the persisted native total")
 	_check(current_scene.get_node("Margin/Content/Stages/Stage3").is_visible_in_tree(), "The stage remains accessible before completion")
 	progress._collected.clear()
 	progress.load_progress()

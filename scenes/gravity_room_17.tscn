@@ -1,0 +1,179 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="gate"]
+
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
+
+[ext_resource type="PackedScene" path="res://scenes/refill_crystal.tscn" id="refill"]
+
+[ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="spike"]
+
+[sub_resource type="RectangleShape2D" id="EntryFloorShape"]
+size = Vector2(350, 40)
+
+[sub_resource type="RectangleShape2D" id="EntryCeilingShape"]
+size = Vector2(920, 40)
+
+[sub_resource type="RectangleShape2D" id="ExitFloorShape"]
+size = Vector2(1654, 40)
+
+[sub_resource type="RectangleShape2D" id="UpGateShape"]
+size = Vector2(96, 1100)
+
+[sub_resource type="RectangleShape2D" id="DownGateShape"]
+size = Vector2(110, 80)
+
+[sub_resource type="RectangleShape2D" id="ReturnBridgeShape"]
+size = Vector2(2304, 40)
+
+[sub_resource type="RectangleShape2D" id="ExitBarrierShape"]
+size = Vector2(28, 1400)
+
+[node name="Room17" type="Node2D"]
+metadata/room_width = 2304.0
+metadata/room_bottom = 1400.0
+metadata/third_mirror = false
+metadata/return_retract = PackedStringArray("UpGate", "DownGate")
+
+[node name="EntryFloor" type="StaticBody2D" parent="."]
+position = Vector2(175.0, 1320.0)
+
+
+[node name="Collision" type="CollisionShape2D" parent="EntryFloor"]
+shape = SubResource("EntryFloorShape")
+
+
+[node name="Visual" type="Polygon2D" parent="EntryFloor"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-175.0, -20.0, 175.0, -20.0, 175.0, 20.0, -175.0, 20.0)
+
+
+[node name="EntryCeiling" type="StaticBody2D" parent="."]
+position = Vector2(540.0, 580.0)
+
+
+[node name="Collision" type="CollisionShape2D" parent="EntryCeiling"]
+shape = SubResource("EntryCeilingShape")
+
+
+[node name="Visual" type="Polygon2D" parent="EntryCeiling"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-460.0, -20.0, 460.0, -20.0, 460.0, 20.0, -460.0, 20.0)
+
+
+[node name="ExitFloor" type="StaticBody2D" parent="."]
+position = Vector2(1477.0, 1320.0)
+
+
+[node name="Collision" type="CollisionShape2D" parent="ExitFloor"]
+shape = SubResource("ExitFloorShape")
+
+
+[node name="Visual" type="Polygon2D" parent="ExitFloor"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-827.0, -20.0, 827.0, -20.0, 827.0, 20.0, -827.0, 20.0)
+
+
+[node name="UpGate" parent="." instance=ExtResource("gate")]
+position = Vector2(260, 750.0)
+target_gravity = -1
+
+
+[node name="CollisionShape2D" parent="UpGate" index="0"]
+shape = SubResource("UpGateShape")
+
+
+[node name="Arrow" parent="UpGate" index="2"]
+offset_top = 166.0
+offset_bottom = 234.0
+
+
+[node name="DashCrystal" parent="." instance=ExtResource("refill")]
+position = Vector2(800, 850)
+
+
+[node name="DownGate" parent="." instance=ExtResource("gate")]
+position = Vector2(800, 1100)
+target_gravity = 1
+
+
+[node name="CollisionShape2D" parent="DownGate" index="0"]
+shape = SubResource("DownGateShape")
+
+
+[node name="Spawn" type="Marker2D" parent="."]
+position = Vector2(72, 1274)
+
+
+[node name="Return" type="Marker2D" parent="."]
+position = Vector2(2232, 1274)
+
+
+[node name="ReturnBridge" type="StaticBody2D" parent="."]
+position = Vector2(1152.0, 1320.0)
+visible = false
+
+
+[node name="Collision" type="CollisionShape2D" parent="ReturnBridge"]
+shape = SubResource("ReturnBridgeShape")
+disabled = true
+
+
+[node name="Visual" type="Polygon2D" parent="ReturnBridge"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-1152.0, -20.0, 1152.0, -20.0, 1152.0, 20.0, -1152.0, 20.0)
+
+
+[node name="PitWarning" type="Node2D" parent="."]
+
+
+[node name="EntryLip" type="Line2D" parent="PitWarning"]
+points = PackedVector2Array(326, 1300, 350, 1300, 350, 1356)
+width = 2.0
+default_color = Color(1, 0.57, 0.3, 0.8)
+
+
+[node name="Goal" parent="." instance=ExtResource("goal")]
+position = Vector2(2200, 1300)
+mission_required = false
+
+
+[node name="ExitBarrier" type="StaticBody2D" parent="."]
+position = Vector2(2290.0, 700.0)
+
+
+[node name="Collision" type="CollisionShape2D" parent="ExitBarrier"]
+shape = SubResource("ExitBarrierShape")
+
+
+[node name="Visual" type="Polygon2D" parent="ExitBarrier"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-14.0, -700.0, 14.0, -700.0, 14.0, 700.0, -14.0, 700.0)
+
+
+[node name="ExitHint" type="Label" parent="."]
+visible = false
+text = "到着台に乗ると出口が開く"
+mouse_filter = 2
+
+
+[node name="PitSpikes" parent="." instance=ExtResource("spike")]
+position = Vector2(1152.0, 1384)
+rotation = 3.141592654
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 1152.0
+stage_group = &"stage_three"
+room_number = 16
+
+
+[node name="TopSpikes" parent="." instance=ExtResource("spike")]
+position = Vector2(1152.0, 16)
+rotation = 0
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 1152.0
+stage_group = &"stage_three"
+room_number = 16
