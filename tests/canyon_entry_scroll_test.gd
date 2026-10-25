@@ -55,6 +55,14 @@ func _entry_scroll_lifecycle(index: int, strength: float) -> void:
 	var stopped := player.position
 	await _step(180)
 	_check(player.is_on_floor() and player.position.distance_to(stopped) < 2 and respawns == 0, "The scroll shelf permits three seconds of safe observation")
+	if index == 24:
+		var landing: CollisionShape2D = stage.rooms.get_child(index).get_node("Rest/Collision")
+		var landing_bounds: Rect2 = landing.get_global_transform_with_canvas() * landing.shape.get_rect()
+		_check(root.get_visible_rect().encloses(landing_bounds),"The next actual return floor is fully visible while resting on the scroll shelf")
+		for path in ["HUD/Info","HUD/Hint"]:
+			var panel: Control = stage.get_node(path)
+			_check(not panel.visible or not panel.get_global_rect().intersects(landing_bounds),"The visible return floor remains outside the actual HUD and optional hint")
+		print("CANYON_ENTRY_RETURN_PREVIEW ",landing_bounds)
 	await _capture("room%d_scroll_rest" % (index + 1))
 	if index == 24:
 		await _land_at_wide_rest(strength)

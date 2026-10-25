@@ -114,8 +114,12 @@ func _camera_position() -> Vector2:
 		offset_y = clampf(target.global_position.y - player.global_position.y, -80, 80)
 	if room_index >= 24 and next_bumper == 0 and (player.is_on_floor() or player.position.distance_to(room.get_node("Spawn").global_position) < 8):
 		offset_y = -160.0
+	var lead_x := 0.0
+	if room_index == 24 and player.is_on_floor() and player.position.y < 600:
+		offset_y = 240.0
+		lead_x = 160.0
 	var margin := 72.0 if room_index >= 24 else 0.0
-	return Vector2(clampf(player.position.x, room.position.x + 640 - margin, room.position.x + width - 640 + margin), clampf(player.position.y + offset_y, 360, height - 360))
+	return Vector2(clampf(player.position.x + lead_x, room.position.x + 640 - margin, room.position.x + width - 640 + margin), clampf(player.position.y + offset_y, 360, height - 360))
 
 
 func _transition_to_next() -> void:
@@ -193,5 +197,5 @@ func _update_hud() -> void:
 	$HUD/Info/Rows/Title.text = "暴風バンパー峡谷　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s" % ("●" if player.is_dash_ready() else "○")
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
-	$HUD/Hint.position.y = 16 if room_index == 26 else 110
+	$HUD/Hint.position.y = 16 if room_index == 26 else (570 if room_index == 24 and player.position.y - camera.position.y + 360 < 220 else 110)
 	$HUD/Hint.text = HINTS[room_index]
