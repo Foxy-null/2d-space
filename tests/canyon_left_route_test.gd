@@ -19,7 +19,7 @@ func _run() -> void:
 			_release_inputs()
 			var seconds := float(Engine.get_physics_frames() - started) / 60
 			print("CANYON_LEFT_ROOM_%d strength=%.1f %.2fs position=%s bumper=%d" % [index + 1, strength, seconds, player.position - Vector2(index * 1280, 0), stage.next_bumper])
-			_check((stage.room_index == index + 1 and stage.transitioning and respawns == 1) if index < 17 else (stage.completed and respawns == 0), "New rooms are reached by actual reflection inputs without a death")
+			_check((stage.room_index == index + 1 and stage.transitioning and respawns == 1) if index < stage.rooms.get_child_count() - 1 else (stage.completed and respawns == 0), "New rooms are reached by actual reflection inputs without a death")
 			_check(seconds < 30, "A retry never repeats more than thirty seconds of successful traversal")
 			_check(index == 15 or saw_vertical_camera, "The vertical camera reveals the actual upper or lower course")
 			_check(progress.get_count("canyon") == 0, "The main course leaves its optional scrolls untouched")
@@ -78,7 +78,7 @@ func _scroll_branch(index: int, strength: float) -> void:
 		_steer(strength)
 		await _step()
 	_release_inputs()
-	_check((stage.transitioning and respawns == 1) if index == 15 else (stage.completed and respawns == 0), "A normal jump and the remaining reflections rejoin the main route after resting")
+	_check((stage.transitioning and respawns == 1) if index < stage.rooms.get_child_count() - 1 else (stage.completed and respawns == 0), "A normal jump and the remaining reflections rejoin the main route after resting")
 	if failed:
 		print("REJOIN_FAILED room=", index + 1, " position=", Vector2(_x(), player.position.y), " next=", stage.next_bumper, " respawns=", respawns)
 		return
@@ -92,7 +92,7 @@ func _scroll_branch(index: int, strength: float) -> void:
 	_check(progress.has_scroll("canyon", scroll_id) and stage.room_index == index and player.is_dash_ready(), "A confirmed scroll survives a real death and the room restores its own checkpoint")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
-	var expected := "%d / 3" % (before_count + 1)
+	var expected := "%d / 5" % (before_count + 1)
 	var card := current_scene.get_node("Margin/Content/Stages/Stage5")
 	_check(card.get_node("Content/Collection/Count").text == expected and card.accessibility_name.contains("巻物 " + expected), "Selection and its accessible name use the saved count and actual total")
 	progress._collected.clear()

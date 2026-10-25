@@ -21,7 +21,9 @@ func _run() -> void:
 			var top := collider.to_global(collider.shape.get_rect().position).y
 			var left: bool = stage.rooms.get_child(index).get_meta("exit_left", false)
 			var direction := "move_left" if left else "move_right"
-			player.global_position = Vector2(exit.global_position.x + ((-55 if left else 55) if airborne else 0), exit.global_position.y - 100 if airborne else top - 30)
+			var room: Node2D = stage.rooms.get_child(index)
+			var edge_x: float = room.position.x + (15 if left else float(room.get_meta("room_width", 1280.0)) - 15)
+			player.global_position = Vector2(edge_x if airborne else exit.global_position.x, exit.global_position.y - 100 if airborne else top - 30)
 			player.velocity = Vector2.ZERO
 			player._contacts_valid = false
 			if airborne:
@@ -38,7 +40,7 @@ func _run() -> void:
 	await _step(8)
 	_check(entrance.room_index == 0, "The entrance platform cannot clear a room")
 	var final_room := await _room(final_index)
-	final_room.player.position = Vector2(-15, 900) + Vector2(final_index * 1280, 0)
+	final_room.player.position = Vector2(-15, 900) + final_room.rooms.get_child(final_index).position
 	final_room.player.velocity = Vector2(-900, 0)
 	await _step(8)
 	_check(final_room.room_index == final_index and not final_room.completed, "The final room still requires the actual arrival switch")

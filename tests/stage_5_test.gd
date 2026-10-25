@@ -25,7 +25,7 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.scene_file_path == "res://scenes/stage_5.tscn", "Stage 5 loads from selection")
-	_check(stage.rooms.get_child_count() == 18 and stage.TITLES.size() == 18, "Eighteen named rooms are available")
+	_check(stage.rooms.get_child_count() == 24 and stage.TITLES.size() == 24, "Twenty-four named rooms are available")
 	_check(stage.get_meta("environment_theme") == 2, "Use the previously unused wild planet")
 	_check(player.move_speed == 360 and player.dash_speed == 900 and player.wall_actions_enabled, "Preserve the existing movement abilities")
 	_check(not paused and not stage.hints_visible, "Pause and route hints start hidden")
@@ -49,8 +49,15 @@ func _run() -> void:
 		var before := respawns
 		var target_count: int = stage._bumpers().get_child_count()
 		var last_bumper: int = stage.next_bumper
-		for frame in 1000:
+		var rested := false
+		for frame in 1800:
 			if stage.transitioning or stage.completed: break
+			if index >= 18 and not rested and stage.next_bumper == 3:
+				await _land_at_wide_rest()
+				await _step(180)
+				await _repeat_wide_third(1.0, 20)
+				rested = true
+				if failed: return
 			if not player._winds.is_empty(): wind_frames += 1
 			_check(index >= 12 or not (player.is_on_floor() and _x() > 210 and _x() < 1100), "The original twelve-room route needs no intermediate rest")
 			_steer()
@@ -71,7 +78,7 @@ func _run() -> void:
 		else:
 			_check(stage.completed and stage.next_bumper == target_count, "All final-room bumpers precede completion")
 		print("STAGE_5_ROOM_%02d_OK (%.2fs)" % [index + 1, (Engine.get_physics_frames() - started) / 60.0])
-	_check(total_bumpers == 72 and visited_bumpers.size() == 72 and respawns == 17, "All 72 reflections are reachable without a death")
+	_check(total_bumpers == 128 and visited_bumpers.size() == 128 and respawns == 23, "All 128 reflections are reachable without a death")
 	_check(not stage.target_marker.visible, "Completion hides the target marker")
 	_check(ceiling_reflected_down, "Room 6 reflects off the underside of the ceiling bumper")
 	_check(wind_frames > 100 and dash_count > 12, "Traversal uses real wind and chained dashes")
@@ -207,7 +214,7 @@ func _check(condition: bool, message: String) -> void:
 
 
 func _x() -> float:
-	return player.position.x - stage.room_index * 1280
+	return player.position.x - stage.rooms.get_child(stage.room_index).position.x
 
 
 func _release_inputs() -> void:
@@ -232,3 +239,41 @@ func _key(code: Key) -> void:
 	event.pressed = false
 	Input.parse_input_event(event)
 	await _step(3)
+
+
+func _land_at_wide_rest(strength: float = 1.0) -> void:
+	var before := respawns
+	var rest: Node2D = stage.rooms.get_child(stage.room_index).get_node("Rest")
+	for frame in 600:
+		_steer_to(rest.position - Vector2(0, 34), false, strength)
+		await _step()
+		if player.is_on_floor() and not player.is_dashing() and absf(player.velocity.x) < 60 and absf(_x() - rest.position.x) < 70:
+			_release_inputs()
+			await _step(30)
+			_check(player.is_on_floor() and respawns == before, "The detour lands and stops its actual dash on the real observation rest")
+			return
+	_check(false, "The real flight reaches its safe intermediate rest")
+
+
+func _repeat_wide_third(strength: float, dash_delay: int) -> void:
+	var bumper: Node2D = stage._bumpers().get_child(2)
+	var before := respawns
+	var repeated: Array[bool] = []
+	bumper.launched.connect(func(_body): repeated.append(true), CONNECT_ONE_SHOT)
+	Input.action_press("jump")
+	await _step()
+	Input.action_release("jump")
+	for frame in dash_delay:
+		_steer_to(bumper.position - Vector2(0,62), false, strength)
+		await _step()
+	_release_inputs()
+	Input.action_press("move_up")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	await _step(10)
+	for frame in 300:
+		if not repeated.is_empty() or respawns > before: break
+		_steer_to(bumper.position - Vector2(0,62), false, strength)
+		await _step()
+	_check(not repeated.is_empty() and respawns == before, "A normal jump and upward dash return from the rest to the visible third reflection")

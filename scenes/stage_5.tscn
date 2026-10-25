@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3]
+[gd_scene load_steps=56 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_5.gd" id="stage"]
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
@@ -20,6 +20,18 @@
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_16.tscn" id="room16"]
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_17.tscn" id="room17"]
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_18.tscn" id="room18"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_19.tscn" id="room19"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_20.tscn" id="room20"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_21.tscn" id="room21"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_22.tscn" id="room22"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_23.tscn" id="room23"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_24.tscn" id="room24"]
 
 [sub_resource type="RectangleShape2D" id="EntranceShape"]
 size = Vector2(180, 40)
@@ -126,7 +138,7 @@ size = Vector2(28, 155)
 [sub_resource type="RectangleShape2D" id="Hazard12_2"]
 size = Vector2(28, 480)
 
-[node name="Stage5" type="Node2D"]
+[node name="Stage5" type="Node2D" groups=["stage_five"]]
 metadata/environment_theme = 2
 script = ExtResource("stage")
 
@@ -2421,6 +2433,24 @@ position = Vector2(20480, 0)
 
 [node name="Room18" parent="Rooms" instance=ExtResource("room18")]
 position = Vector2(21760, 0)
+
+[node name="Room19" parent="Rooms" instance=ExtResource("room19")]
+position = Vector2(23040, 0)
+
+[node name="Room20" parent="Rooms" instance=ExtResource("room20")]
+position = Vector2(26880, 0)
+
+[node name="Room21" parent="Rooms" instance=ExtResource("room21")]
+position = Vector2(30720, 0)
+
+[node name="Room22" parent="Rooms" instance=ExtResource("room22")]
+position = Vector2(34560, 0)
+
+[node name="Room23" parent="Rooms" instance=ExtResource("room23")]
+position = Vector2(38400, 0)
+
+[node name="Room24" parent="Rooms" instance=ExtResource("room24")]
+position = Vector2(42240, 0)
 
 [node name="Player" parent="." instance=ExtResource("player")]
 position = Vector2(90, 570)
