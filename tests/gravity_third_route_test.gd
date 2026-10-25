@@ -95,8 +95,8 @@ func _fresh(index: int) -> void:
 	for room in stage.rooms.get_children():
 		for node in room.find_children("*", "Area2D", true, false):
 			if node.get_script() != null and node.get_script().resource_path == "res://scripts/scroll_collectible.gd": total += 1
-	_check(total == 6 and progress.TOTALS["gravity"] == total, "The six actual scroll nodes match the stage-selection total")
-	_check(stage.rooms.get_child_count() == 21 and not stage.completed, "Twenty-one native rooms begin without a premature completion")
+	_check(total == 8 and progress.TOTALS["gravity"] == total, "The eight actual scroll nodes match the stage-selection total")
+	_check(stage.rooms.get_child_count() == 25 and not stage.completed, "Twenty-five native rooms begin without a premature completion")
 	await _third_capture("room_%d_entrance" % (index+1))
 
 
@@ -162,7 +162,7 @@ func _scroll_routes() -> void:
 	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(4)
 	var card: Button = current_scene.get_node("Margin/Content/Stages/Stage3")
-	_check(card.get_node("Content/Collection/Count").text == "6 / 6" and card.accessibility_name.contains("巻物 6 / 6") and not card.disabled, "Visible and accessible stage selection show the real six-scroll total")
+	_check(card.get_node("Content/Collection/Count").text == "6 / 8" and card.accessibility_name.contains("巻物 6 / 8") and not card.disabled, "Visible and accessible stage selection show six retained scrolls of eight")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.get_count("gravity") == 6, "Six unique IDs survive a fresh file reload")
@@ -233,7 +233,7 @@ func _confirm_branch(index: int, after: bool) -> void:
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
 	var card: Button = current_scene.get_node("Margin/Content/Stages/Stage3")
-	var expected := "%d / 6" % (previous+1)
+	var expected := "%d / 8" % (previous+1)
 	_check(card.get_node("Content/Collection/Count").text == expected and card.accessibility_name.contains("巻物 "+expected), "An unfinished return preserves the record in visible and accessible stage selection")
 	progress._collected.clear()
 	progress.load_progress()

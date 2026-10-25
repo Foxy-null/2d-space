@@ -50,8 +50,8 @@ func _run() -> void:
 	_check(progress.get_count("gravity") == 1 and player.position.distance_to(Vector2(72, 614)) < 5, "R preserves the confirmed scroll and original checkpoint")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage3/Content/Collection/Count").text == "1 / 6", "Stage selection shows the actual collected and placed total")
-	_check(current_scene.get_node("Margin/Content/Stages/Stage3").accessibility_name.contains("巻物 1 / 6"), "The collection count is available to assistive technology")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage3/Content/Collection/Count").text == "1 / 8", "Stage selection shows the actual collected and placed total")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage3").accessibility_name.contains("巻物 1 / 8"), "The collection count is available to assistive technology")
 	if OS.get_cmdline_user_args().has("--screenshots"):
 		await _capture_scroll("selection")
 	progress._collected.clear()
