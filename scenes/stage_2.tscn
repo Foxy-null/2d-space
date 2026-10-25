@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=28 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -14,6 +14,8 @@
 [ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/jump_creature.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/scroll_collectible.tscn" id="scroll"]
+[ext_resource type="Script" path="res://scripts/scroll_marker.gd" id="scroll_marker"]
 
 [sub_resource type="RectangleShape2D" id="Shape_StartFloor"]
 size = Vector2(1040, 70)
@@ -53,6 +55,9 @@ size = Vector2(360, 32)
 
 [sub_resource type="RectangleShape2D" id="Shape_LowerBoundary"]
 size = Vector2(28, 900)
+
+[sub_resource type="RectangleShape2D" id="Shape_ScrollBalcony"]
+size = Vector2(260, 32)
 
 [node name="Stage2" type="Node2D"]
 metadata/environment_theme = 1
@@ -196,6 +201,26 @@ one_way_collision = true
 script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-180, -16, 180, -16, 180, 16, -180, 16)
 color = Color(0.10, 0.29, 0.32, 1)
+
+[node name="ScrollBalcony" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-230, -784)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/ScrollBalcony"]
+shape = SubResource("Shape_ScrollBalcony")
+[node name="Body" type="Polygon2D" parent="Terrain/ScrollBalcony"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130, -16, 130, -16, 130, 16, -130, 16)
+color = Color(0.10, 0.16, 0.29, 1)
+
+[node name="ScrollBranch" type="Node2D" parent="."]
+[node name="EntranceMark" type="Node2D" parent="ScrollBranch"]
+position = Vector2(210, -824)
+scale = Vector2(0.45, 0.45)
+modulate = Color(1, 1, 1, 0.75)
+script = ExtResource("scroll_marker")
+[node name="Scroll" parent="ScrollBranch" instance=ExtResource("scroll")]
+position = Vector2(-60, -920)
+stage_id = "tower"
+scroll_id = "left_balcony_01"
 
 [node name="Checkpoints" type="Node2D" parent="."]
 [node name="Checkpoint0" type="Marker2D" parent="Checkpoints"]
