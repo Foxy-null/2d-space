@@ -174,7 +174,7 @@ func _camera_position() -> Vector2:
 	var width := float(room.get_meta("room_width", ROOM_SIZE.x))
 	var center := clampf(player.position.x - room.position.x, ROOM_SIZE.x * 0.5, width - ROOM_SIZE.x * 0.5)
 	var top := _room_top(room)
-	var center_y := clampf(player.position.y, top + ROOM_SIZE.y * 0.5, ROOM_SIZE.y * 0.5)
+	var center_y := clampf(player.position.y + float(room.get_meta("camera_offset_y", 0.0)), top + ROOM_SIZE.y * 0.5, ROOM_SIZE.y * 0.5)
 	return room.position + Vector2(center, center_y)
 
 
