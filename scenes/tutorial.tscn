@@ -1,4 +1,4 @@
-[gd_scene load_steps=105 format=3]
+[gd_scene load_steps=107 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/tutorial_jump_scroll.tscn" id="jump_scroll"]
 [ext_resource type="PackedScene" path="res://scenes/tutorial_wall_scroll.tscn" id="wall_scroll"]
@@ -41,6 +41,9 @@
 [ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="14_arrival"]
 
 [ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="ext_spike"]
+
+[ext_resource type="PackedScene" path="res://scenes/tutorial_refill_scroll.tscn" id="refill_scroll"]
+[ext_resource type="PackedScene" path="res://scenes/tutorial_box_scroll.tscn" id="box_scroll"]
 
 [sub_resource type="RectangleShape2D" id="Shape_1_EntryFloor"]
 size = Vector2(750, 80)
@@ -121,7 +124,7 @@ size = Vector2(28, 720)
 size = Vector2(28, 720)
 
 [sub_resource type="RectangleShape2D" id="Shape_5_ExitBarrier"]
-size = Vector2(28, 720)
+size = Vector2(28, 1040)
 
 [sub_resource type="RectangleShape2D" id="Shape_5_EntryFloor"]
 size = Vector2(240, 28)
@@ -187,7 +190,7 @@ size = Vector2(880, 40)
 size = Vector2(180, 80)
 
 [sub_resource type="RectangleShape2D" id="Shape_11_ExitBarrier"]
-size = Vector2(28, 720)
+size = Vector2(28, 1040)
 
 [sub_resource type="RectangleShape2D" id="Shape_11_Floor"]
 size = Vector2(1280, 80)
@@ -823,6 +826,10 @@ mouse_filter = 2
 
 [node name="Room5" type="Node2D" parent="Rooms"]
 position = Vector2(5120, 0)
+metadata/room_top = -240.0
+metadata/camera_offset_y = 135.0
+
+[node name="ScrollDetour" parent="Rooms/Room5" instance=ExtResource("refill_scroll")]
 
 [node name="Spawn" type="Marker2D" parent="Rooms/Room5"]
 position = Vector2(72, 614)
@@ -853,7 +860,7 @@ text = "到着台"
 mouse_filter = 2
 
 [node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room5"]
-position = Vector2(1266.0, 360.0)
+position = Vector2(1266.0, 200.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room5/ExitBarrier"]
@@ -861,7 +868,7 @@ shape = SubResource("Shape_5_ExitBarrier")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room5/ExitBarrier"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+polygon = PackedVector2Array(-14.0, -520.0, 14.0, -520.0, 14.0, 520.0, -14.0, 520.0)
 color = Color(1, 0.75, 0.3, 0.35)
 
 [node name="ExitHint" type="Label" parent="Rooms/Room5"]
@@ -1385,6 +1392,10 @@ target_gravity = 1
 
 [node name="Room11" type="Node2D" parent="Rooms"]
 position = Vector2(12800, 0)
+metadata/room_top = -240.0
+metadata/camera_offset_y = 160.0
+
+[node name="ScrollDetour" parent="Rooms/Room11" instance=ExtResource("box_scroll")]
 
 [node name="Spawn" type="Marker2D" parent="Rooms/Room11"]
 position = Vector2(72, 614)
@@ -1414,7 +1425,7 @@ text = "到着台"
 mouse_filter = 2
 
 [node name="ExitBarrier" type="StaticBody2D" parent="Rooms/Room11"]
-position = Vector2(1266.0, 360.0)
+position = Vector2(1266.0, 200.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room11/ExitBarrier"]
@@ -1422,7 +1433,7 @@ shape = SubResource("Shape_11_ExitBarrier")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room11/ExitBarrier"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-14.0, -360.0, 14.0, -360.0, 14.0, 360.0, -14.0, 360.0)
+polygon = PackedVector2Array(-14.0, -520.0, 14.0, -520.0, 14.0, 520.0, -14.0, 520.0)
 color = Color(1, 0.75, 0.3, 0.35)
 
 [node name="ExitHint" type="Label" parent="Rooms/Room11"]

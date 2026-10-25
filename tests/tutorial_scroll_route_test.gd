@@ -81,7 +81,7 @@ func _run() -> void:
 	_check(progress.get_count("tutorial") == 2, "Confirmed scrolls survive death independently of main progress")
 	tutorial.get_node("PauseMenu").return_to_select()
 	await _step(5)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage1/Content/Collection/Count").text == "2 / 6", "Stage selection shows the two collected scrolls out of six actual tutorial collectibles")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage1/Content/Collection/Count").text == "2 / 8", "Stage selection shows the two collected scrolls out of eight actual tutorial collectibles")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.get_count("tutorial") == 2, "Leaving the unfinished tutorial keeps its saved scrolls")
@@ -197,7 +197,7 @@ func _pulse(action: String) -> void:
 
 
 func _until(condition: Callable, limit: int, message: String) -> void:
-	for frame in roundi(float(limit) * Engine.physics_ticks_per_second / 60):
+	for frame in roundi(float(limit) * Engine.physics_ticks_per_second / 80):
 		if condition.call():
 			return
 		if OS.get_cmdline_user_args().has("--trace") and frame % 30 == 0:
