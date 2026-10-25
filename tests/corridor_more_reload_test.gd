@@ -18,7 +18,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	var card:=current_scene.get_node("Margin/Content/Stages/Stage4")
-	assert(card.get_node("Content/Collection/Count").text=="3 / 3" and card.accessibility_name.contains("巻物 3 / 3"),"The fresh selection displays and announces three out of three")
+	assert(card.get_node("Content/Collection/Count").text=="3 / 5" and card.accessibility_name.contains("巻物 3 / 5"),"The fresh selection displays and announces three out of five")
 	change_scene_to_file("res://scenes/stage_4.tscn")
 	await process_frame
 	await process_frame

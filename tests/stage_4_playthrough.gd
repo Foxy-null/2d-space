@@ -20,6 +20,8 @@ func release() -> void:
 		Input.action_release(action)
 
 func traverse(section: int, stop_at_rest := false) -> bool:
+	if section >= 15:
+		return await traverse_wide(section, stop_at_rest)
 	if section >= 9:
 		return await traverse_more(section, stop_at_rest)
 	var before := deaths
@@ -45,7 +47,7 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 			return true
 		if deaths != before:
 			return false
-		var x: float = player.position.x - section * 1280
+		var x: float = player.position.x - stage.rooms.get_child(section).position.x
 		Input.action_press("wall_grab")
 		if player.get_held_object() == null:
 			if x >= 240:
@@ -240,9 +242,9 @@ func traverse_more(section: int, stop_at_rest := false, gap := 20) -> bool:
 		waypoint = 2
 	for index in range(waypoint, room.walls.size()):
 		if not await more_transfer(room.walls[index]): return false
-	var target := Rect2(1180 if section == 14 else 1250, room.exit_top - (80 if section == 14 else 0), 45, 24)
+	var target := Rect2(1180 if section == stage.rooms.get_child_count() - 1 else 1250, room.exit_top - (80 if section == stage.rooms.get_child_count() - 1 else 0), 45, 24)
 	if not await more_transfer(target, true): return false
-	return deaths == before + (0 if section == 14 else 1)
+	return deaths == before + (0 if section == stage.rooms.get_child_count() - 1 else 1)
 
 
 func more_drive(dx: float) -> void:
@@ -252,7 +254,7 @@ func more_drive(dx: float) -> void:
 
 
 func _more_x() -> float:
-	return player.position.x - stage.room_index * 1280
+	return player.position.x - stage.rooms.get_child(stage.room_index).position.x
 
 
 func _on_more_rest(rect: Rect2) -> bool:
@@ -306,8 +308,8 @@ func more_transfer(target: Rect2, finishing := false) -> bool:
 		if floor_body == null: continue
 		var shape: CollisionShape2D = floor_body.get_node("Collision")
 		var bounds: Rect2 = shape.shape.get_rect()
-		var start: float = shape.to_global(bounds.position).x - stage.room_index * 1280
-		var end: float = shape.to_global(bounds.end).x - stage.room_index * 1280
+		var start: float = shape.to_global(bounds.position).x - stage.rooms.get_child(stage.room_index).position.x
+		var end: float = shape.to_global(bounds.end).x - stage.rooms.get_child(stage.room_index).position.x
 		if absf(target.get_center().x - _more_x()) > 200:
 			if not await more_walk(clampf(target.get_center().x, start + 30, end - 30)): return false
 		break
@@ -413,3 +415,126 @@ func _more_capture(label: String) -> void:
 	DirAccess.make_dir_recursive_absolute("res://docs/screenshots/corridor-more")
 	RenderingServer.force_draw()
 	root.get_texture().get_image().save_png("res://docs/screenshots/corridor-more/%s.png"%label)
+
+
+func traverse_wide(section: int, stop_at_rest := false, gap := 20) -> bool:
+	var room: Node2D = stage.rooms.get_child(section)
+	var before := deaths
+	var waypoint := 0
+	for index in room.walls.size():
+		if _on_more_rest(room.walls[index]): waypoint = index + 1
+	if section == 16 and player.gravity_direction == -1:
+		for index in 2:
+			if _on_wide_ceiling(room.walls[index]): waypoint = index + 1
+	if waypoint == 0:
+		if not await more_walk(185): return false
+		if section == 15:
+			if not await wide_refill_rise(room.walls[0], gap): return false
+		elif section == 16:
+			if not await more_inverted_rest(): return false
+		else:
+			if not await island_leap(gap, gap, steering_strength, section): return false
+		waypoint = 1
+		if stop_at_rest: return true
+	if section == 16:
+		if waypoint == 1:
+			if not await wide_ceiling_transfer(room.walls[1], gap): return false
+			waypoint = 2
+		if waypoint == 2:
+			if not await more_walk(1240): return false
+			more_drive(1260 - _more_x())
+			await more_jump()
+			for frame in 180:
+				more_drive(1260 - _more_x())
+				await step()
+				if player.gravity_direction == 1: break
+			if player.gravity_direction != 1 or deaths != before: return false
+			if not await more_flight(room.walls[2]): return false
+			waypoint = 3
+	elif section == 17 and waypoint == 1:
+		if not await more_walk(1310): return false
+		if not await wide_shaft(room.walls[1]): return false
+		waypoint = 2
+	for index in range(waypoint, room.walls.size()):
+		if not await more_transfer(room.walls[index]): return false
+	var final: bool = section == stage.rooms.get_child_count() - 1
+	var target := Rect2(room.room_width - (110 if final else 30), room.exit_top - (80 if final else 0), 45, 24)
+	if not await more_transfer(target, true): return false
+	return deaths == before + (0 if final else 1)
+
+
+func wide_refill_rise(target: Rect2, gap: int) -> bool:
+	if not await more_walk(430): return false
+	more_drive(0)
+	await more_jump()
+	await step(gap)
+	await more_jump()
+	await step(gap)
+	for dash in 2:
+		release()
+		Input.action_press("wall_grab")
+		Input.action_press("move_up")
+		Input.action_press("dash")
+		await step()
+		Input.action_release("dash")
+		await step(28 if dash == 0 else 12)
+	return await more_flight(target, false)
+
+
+func _on_wide_ceiling(rect: Rect2) -> bool:
+	return player.gravity_direction == -1 and player.is_on_floor() and _more_x() >= rect.position.x - 8 and _more_x() <= rect.end.x + 8 and absf(player.position.y - 26 - rect.end.y) < 5
+
+
+func wide_ceiling_transfer(target: Rect2, gap: int) -> bool:
+	var before := deaths
+	if not await more_walk(650): return false
+	more_drive(target.get_center().x - _more_x())
+	await more_jump()
+	await step(gap)
+	await more_jump()
+	await step(gap)
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_down")
+	Input.action_press("dash")
+	await step()
+	Input.action_release("dash")
+	for frame in 600:
+		more_drive(target.get_center().x - _more_x())
+		await step()
+		if deaths != before: return false
+		if _on_wide_ceiling(target):
+			more_drive(0)
+			await step(15)
+			return true
+	return false
+
+
+func wide_shaft(target: Rect2) -> bool:
+	var before := deaths
+	var cooldown := 0
+	var direction := 1
+	for frame in 1500:
+		release()
+		Input.action_press("wall_grab")
+		if deaths != before: return false
+		if _on_more_rest(target): return true
+		if player.position.y < target.position.y - 55:
+			steer_to(target.position.x + 50 - _more_x())
+		else:
+			cooldown = maxi(0, cooldown - 1)
+			if player.is_on_wall() and cooldown == 0:
+				direction = int(player.get_wall_normal().x)
+				Input.action_press("jump")
+				cooldown = 10
+			Input.action_press("move_right" if direction == 1 else "move_left", steering_strength)
+			if player.is_on_floor() and cooldown == 0:
+				Input.action_press("jump")
+				cooldown = 10
+			elif player.is_dash_ready() and _more_x() > target.position.x - 40 and player.position.y < target.position.y + 180:
+				Input.action_release("move_left")
+				Input.action_release("move_right")
+				Input.action_press("move_up")
+				Input.action_press("dash")
+		await step()
+	return false
