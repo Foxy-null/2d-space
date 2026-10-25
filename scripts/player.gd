@@ -77,6 +77,7 @@ var _winds: Dictionary = {}
 const HORIZONTAL_WIND_RESPONSE_TIME := 0.36
 const MIN_HEADWIND_SPEED_RATIO := 0.1
 var controls_enabled := true
+var room_transfer_in_progress := false
 
 @onready var visuals: Node2D = $Visuals
 
@@ -461,7 +462,8 @@ func set_respawn_position(location: Vector2) -> void:
 	_spawn_position = location
 
 
-func respawn() -> void:
+func respawn(room_transfer: bool = false) -> void:
+	room_transfer_in_progress = room_transfer
 	for object in _separating_objects.duplicate():
 		_clear_object_separation(object)
 	var carried := get_held_object()
@@ -495,6 +497,7 @@ func respawn() -> void:
 	_refill_on_landing()
 	_notify_resources()
 	respawned.emit()
+	room_transfer_in_progress = false
 
 
 func is_wall_grabbing() -> bool:

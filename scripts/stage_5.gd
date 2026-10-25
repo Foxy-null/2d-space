@@ -83,7 +83,7 @@ func _transition_to_next() -> void:
 	player.controls_enabled = false
 	room_index += 1
 	_set_checkpoint()
-	player.respawn()
+	player.respawn(true)
 	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_property(camera, "position", Vector2(room_index * ROOM_WIDTH + 640, 360), 0.28)
 	await tween.finished

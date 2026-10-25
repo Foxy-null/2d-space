@@ -77,7 +77,7 @@ func _transition_to(index: int) -> void:
 	transitioning = true
 	player.controls_enabled = false
 	_set_room(index, index < room_index)
-	player.respawn()
+	player.respawn(true)
 	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_property(camera, "position", _camera_position(), TRANSITION_TIME)
 	await tween.finished

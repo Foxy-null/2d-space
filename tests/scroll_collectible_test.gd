@@ -13,7 +13,7 @@ class LandingHazard extends Node:
 				player.respawn.call_deferred()
 
 
-const TEST_SAVE := "user://scroll_collectible_test.cfg"
+var test_save := "user://scroll_collectible_test_%d.cfg" % OS.get_process_id()
 var world: Node2D
 var player: PlayerController
 var scroll: Area2D
@@ -30,7 +30,7 @@ func _run() -> void:
 	progress = root.get_node("CollectionProgress")
 	var original_path: String = progress.save_path
 	var original_records: Dictionary = progress._collected.duplicate(true)
-	progress.save_path = TEST_SAVE
+	progress.save_path = test_save
 	progress._collected.clear()
 	await _airborne_and_secured()
 	await _retry(false)
@@ -38,6 +38,7 @@ func _run() -> void:
 	await _deferred_death()
 	await _gravity_change()
 	await _transition()
+	await _room_transfer()
 	await _dash()
 	await _wall_hold()
 	await _spring()
@@ -46,8 +47,8 @@ func _run() -> void:
 	_clear()
 	progress.save_path = original_path
 	progress._collected = original_records
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE + ".tmp"))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(test_save))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(test_save + ".tmp"))
 	print("SCROLL_COLLECTIBLE_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
 
@@ -146,6 +147,28 @@ func _dash() -> void:
 	_check(_has("dash"), "A normal landing after the dash secures the scroll")
 
 
+func _room_transfer() -> void:
+	_fixture("room_transfer")
+	await _step(6)
+	player.controls_enabled = false
+	player.set_respawn_position(Vector2(600, 274))
+	player.respawn(true)
+	await _step(20)
+	_check(scroll._follower == player and not _has("room_transfer"), "Normal room transfer preserves the follower without securing during its input lock")
+	_check(not player.room_transfer_in_progress, "The transfer reason lasts only during synchronous reset callbacks")
+	player.controls_enabled = true
+	await _step(8)
+	_check(not _has("room_transfer"), "The new room requires a fresh safe landing duration")
+	await _step(10)
+	_check(_has("room_transfer"), "A safe landing after transfer secures the carried scroll")
+	_fixture("locked_retry")
+	await _step(6)
+	player.controls_enabled = false
+	player.respawn()
+	await _step(20)
+	_check(scroll._follower == null and not _has("locked_retry"), "Retry during a transition still returns an unsecured scroll")
+
+
 func _wall_hold() -> void:
 	_fixture("wall_hold", 274)
 	_support(Vector2(215, 150), Vector2(20, 300))
@@ -185,7 +208,7 @@ func _save_failure() -> void:
 	progress.save_path = "user://scroll_missing_%d/collection.cfg" % Time.get_ticks_usec()
 	await _step(70)
 	_check(not _has("save_failure") and not scroll._secured and scroll._follower == player, "A failed save leaves the scroll pending and the collectible available")
-	progress.save_path = TEST_SAVE
+	progress.save_path = test_save
 	await _step(20)
 	_check(_has("save_failure") and scroll._secured, "A successful save retry secures the scroll")
 
