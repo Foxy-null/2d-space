@@ -81,7 +81,7 @@ func _run() -> void:
 	_check(progress.get_count("tutorial") == 2, "Confirmed scrolls survive death independently of main progress")
 	tutorial.get_node("PauseMenu").return_to_select()
 	await _step(5)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage1/Content/Collection/Count").text == "2 / 4", "Stage selection shows the two collected scrolls out of four actual tutorial collectibles")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage1/Content/Collection/Count").text == "2 / 6", "Stage selection shows the two collected scrolls out of six actual tutorial collectibles")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.get_count("tutorial") == 2, "Leaving the unfinished tutorial keeps its saved scrolls")
