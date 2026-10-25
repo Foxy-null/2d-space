@@ -15,7 +15,7 @@ func _run() -> void:
 			bumper.launched.connect(func(_body): bounces += 1)
 			bumper.monitoring = false
 	await _step(2)
-	for index in 12:
+	for index in stage.rooms.get_child_count():
 		stage.room_index = index
 		stage._set_checkpoint()
 		for launch_x in [90, 135, 170]:
@@ -35,7 +35,7 @@ func _run() -> void:
 					return
 	_check(bounces == 0, "No negative traversal received a bumper launch")
 	_release_inputs()
-	print("CANYON_REQUIRED_BUMPER_TEST_%s (%d checks, 1944 jump/Dash routes and 45 wall routes)" % ["FAILED" if failed else "OK", checks])
+	print("CANYON_REQUIRED_BUMPER_TEST_%s (%d checks, 2430 jump/Dash routes and 45 wall routes)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
 
 

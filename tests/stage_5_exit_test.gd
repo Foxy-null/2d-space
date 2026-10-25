@@ -10,12 +10,16 @@ func _initialize() -> void:
 
 func _run() -> void:
 	# Isolate exit behavior from the already-tested bumper traversal.
-	for index in 11:
+	for index in 14:
 		for airborne in [false, true]:
 			var stage := await _room(index)
 			var player: PlayerController = stage.player
-			player.position = Vector2(index * 1280 + (1265 if airborne else 1210), 520 if airborne else 570)
+			var exit: Node2D = stage.rooms.get_child(index).get_node("Exit")
+			var collider: CollisionShape2D = exit.get_node("Collision")
+			var top := collider.to_global(collider.shape.get_rect().position).y
+			player.global_position = Vector2(exit.global_position.x + (55 if airborne else 0), exit.global_position.y - 100 if airborne else top - 30)
 			player.velocity = Vector2.ZERO
+			player._contacts_valid = false
 			if airborne:
 				Input.action_press("move_right")
 				Input.action_press("dash")
@@ -29,13 +33,13 @@ func _run() -> void:
 	var entrance := await _room(0)
 	await _step(8)
 	_check(entrance.room_index == 0, "The entrance platform cannot clear a room")
-	var final_room := await _room(11)
-	final_room.player.position = Vector2(1295, 520) + Vector2(11 * 1280, 0)
+	var final_room := await _room(14)
+	final_room.player.position = Vector2(1295, 520) + Vector2(14 * 1280, 0)
 	final_room.player.velocity = Vector2(900, 0)
 	await _step(8)
-	_check(final_room.room_index == 11 and not final_room.completed, "The final room still requires the actual arrival switch")
-	var arrival := await _room(11)
-	arrival.player.position = arrival.get_node("Rooms/Room12/Goal").global_position - Vector2(0, 100)
+	_check(final_room.room_index == 14 and not final_room.completed, "The final room still requires the actual arrival switch")
+	var arrival := await _room(14)
+	arrival.player.position = arrival.goal.global_position - Vector2(0, 100)
 	await _step(80)
 	_check(arrival.completed and arrival.next_bumper == 0, "The final switch accepts physical arrival without history")
 	print("STAGE_5_EXIT_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])

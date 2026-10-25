@@ -35,9 +35,9 @@ func _run() -> void:
 				stage._set_checkpoint()
 				goal = stage.get_node("Rooms/Room6/Goal")
 			"stage_5":
-				stage.room_index = 11
+				stage.room_index = stage.rooms.get_child_count() - 1
 				stage._set_checkpoint()
-				goal = stage.get_node("Rooms/Room12/Goal")
+				goal = stage.goal
 		player.respawn()
 		await _step(4)
 		var checkpoint: Vector2 = player._spawn_position
