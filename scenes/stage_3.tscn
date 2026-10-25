@@ -1,4 +1,4 @@
-[gd_scene load_steps=84 format=3]
+[gd_scene load_steps=85 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://scenes/jump_crystal.tscn" id="10_jump_crystal"]
 
 [ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="spikes"]
+[ext_resource type="PackedScene" path="res://scenes/gravity_scroll_annex.tscn" id="scroll_annex"]
 
 [sub_resource type="RectangleShape2D" id="Room1Overhang"]
 size = Vector2(60, 28)
@@ -242,6 +243,9 @@ script = ExtResource("4_stars")
 
 [node name="Room1" type="Node2D" parent="Rooms"]
 position = Vector2(0, 0)
+metadata/room_top = -560.0
+
+[node name="ScrollAnnex" parent="Rooms/Room1" instance=ExtResource("scroll_annex")]
 
 [node name="Spawn" type="Marker2D" parent="Rooms/Room1"]
 position = Vector2(72, 614)

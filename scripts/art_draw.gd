@@ -68,6 +68,14 @@ static func footprints(canvas: CanvasItem, center: Vector2, scale: float = 1.0) 
 		canvas.draw_circle(p + Vector2(-side, 6) * scale, 3 * scale, INK)
 
 
+static func scroll(canvas: CanvasItem) -> void:
+	box(canvas, Rect2(-11, -16, 22, 32), CREAM, 1)
+	for y in [-19, 13]:
+		box(canvas, Rect2(-16, y, 32, 6), GOLD, 2)
+	for y in [-7, 0, 7]:
+		canvas.draw_line(Vector2(-5, y), Vector2(5, y), INK, 1.5, true)
+
+
 static func cube_mark(canvas: CanvasItem, center: Vector2, scale: float = 1.0) -> void:
 	var points := PackedVector2Array()
 	for p in [Vector2(0, -6), Vector2(7, -2), Vector2(7, 6), Vector2(0, 10), Vector2(-7, 6), Vector2(-7, -2)]:

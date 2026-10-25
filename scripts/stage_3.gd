@@ -26,6 +26,7 @@ var cleared: Dictionary = {}
 
 func _ready() -> void:
 	player.get_node("Camera2D").enabled = false
+	player.use_default_respawn_bounds = false
 	player.respawned.connect(_on_respawned)
 	for room in rooms.get_children():
 		for hint in room.get_children():
@@ -57,8 +58,10 @@ func _physics_process(_delta: float) -> void:
 		_transition_to(room_index + 1)
 	elif player.global_position.x < left and room_index > 0:
 		_transition_to(room_index - 1)
-	elif player.global_position.y > ROOM_SIZE.y + 52.0 or player.global_position.y < -52.0:
+	elif player.global_position.y > ROOM_SIZE.y + 52.0 or player.global_position.y < float(rooms.get_child(room_index).get_meta("room_top", 0.0)) - 52.0:
 		player.respawn()
+	if not transitioning and rooms.get_child(room_index).has_meta("room_top"):
+		camera.position = _camera_position()
 
 
 func _set_room(index: int, from_right: bool) -> void:
@@ -83,7 +86,8 @@ func _transition_to(index: int) -> void:
 
 
 func _camera_position() -> Vector2:
-	return Vector2(room_index * ROOM_SIZE.x, 0) + ROOM_SIZE * 0.5
+	var top := float(rooms.get_child(room_index).get_meta("room_top", 0.0))
+	return Vector2(room_index * ROOM_SIZE.x + ROOM_SIZE.x * 0.5, clampf(player.position.y - 80.0, top + ROOM_SIZE.y * 0.5, ROOM_SIZE.y * 0.5))
 
 
 func _on_respawned() -> void:
