@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -19,9 +19,6 @@ size = Vector2(400, 80)
 
 [sub_resource type="RectangleShape2D" id="Room2ExitFloor"]
 size = Vector2(380, 80)
-
-[sub_resource type="RectangleShape2D" id="Room2ReturnBridge"]
-size = Vector2(500, 80)
 
 [sub_resource type="RectangleShape2D" id="Room2UpGate"]
 size = Vector2(64, 560)
@@ -55,6 +52,7 @@ size = Vector2(390, 40)
 
 [node name="Room7" type="Node2D"]
 metadata/room_bottom = 840.0
+metadata/return_retract = PackedStringArray("WallTip")
 
 [node name="Spawn" type="Marker2D" parent="."]
 position = Vector2(1208, 614)
@@ -94,13 +92,13 @@ color = Color(0.12, 0.19, 0.34, 1)
 visible = false
 position = Vector2(630, 680)
 
-[node name="Collision" type="CollisionShape2D" parent="ReturnBridge"]
-shape = SubResource("Room2ReturnBridge")
+[node name="Collision" type="CollisionPolygon2D" parent="ReturnBridge"]
+polygon = PackedVector2Array(-250, -40, -90, -40, -90, 20, -60, 20, -60, 100, 0, 100, 0, 20, 30, 20, 30, -40, 250, -40, 250, 140, -250, 140)
 disabled = true
 
 [node name="Visual" type="Polygon2D" parent="ReturnBridge"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(250, -40, -250, -40, -250, 40, 250, 40)
+polygon = PackedVector2Array(-250, -40, -90, -40, -90, 20, -60, 20, -60, 100, 0, 100, 0, 20, 30, 20, 30, -40, 250, -40, 250, 140, -250, 140)
 color = Color(0.12, 0.19, 0.34, 1)
 
 [node name="PitWarning" type="Line2D" parent="."]
