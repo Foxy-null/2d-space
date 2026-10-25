@@ -17,7 +17,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	var card: Button=current_scene.get_node("Margin/Content/Stages/Stage2")
-	if not _check(card.get_node("Content/Collection/Count").text=="1 / 6" and card.accessibility_name.contains("巻物 1 / 6"),"Fresh selection displays and announces one out of six"): return
+	if not _check(card.get_node("Content/Collection/Count").text=="1 / 8" and card.accessibility_name.contains("巻物 1 / 8"),"Fresh selection displays and announces one out of eight"): return
 	change_scene_to_file("res://scenes/stage_2.tscn")
 	await process_frame
 	await process_frame

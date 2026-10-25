@@ -2,7 +2,7 @@ extends Node2D
 
 const SECTION_HEIGHT := 720.0
 const START_Y := 640.0
-const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "空中の分かれ道", "壁から空中のつなぎ", "バネの左折り返し", "靴と相棒でジグザグ", "相棒と壁キック", "横風と反射", "大きな折り返し", "壁から長い回廊へ", "逆風の反射と左折り返し", "運んで横断し壁へ", "壁から二段の空中資源へ", "反射と追加ジャンプの横断", "左の壁から風の入口へ", "傘で風を渡る"]
+const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "空中の分かれ道", "壁から空中のつなぎ", "バネの左折り返し", "靴と相棒でジグザグ", "相棒と壁キック", "横風と反射", "大きな折り返し", "壁から長い回廊へ", "逆風の反射と左折り返し", "運んで横断し壁へ", "壁から二段の空中資源へ", "反射と追加ジャンプの横断", "左の壁から風の入口へ", "傘で風を渡る", "壁の上から空中を継ぐ", "バネと靴で左へ", "反射から次のバネへ", "相棒と靴から壁へ", "風の上から下を回る", "反射から最後の空中資源へ"]
 const HINTS := [
 	"Shiftで目の前の壁を掴んで上へ。広い足場で休み、ジャンプと上ダッシュで次の旗へ。",
 	"バネで上昇。空中で左右を調整し、次の足場へ着地しよう。",
@@ -22,7 +22,13 @@ const HINTS := [
 	"相棒を持って壁キック。上の棚から相棒ジャンプと回復ダッシュへ。",
 	"反射で左の棚へ。相棒と靴を重ねて右のバネへ渡ろう。",
 	"靴と相棒で左の棚へ。相棒を置いて壁を登り、バネと回復ダッシュで次の旗へ。",
-	"傘で上昇風へ入り、右の棚で休む。バネから次の風へ入り、左の頂上へ滑空しよう。",
+	"傘で上昇風へ入り、右の棚で休む。バネから次の風へ入り、左の旗へ滑空しよう。",
+	"壁を登って回復ダッシュへ。広い棚から右の旗へ渡ろう。",
+	"バネで左上へ。靴のジャンプで上の旗へ。",
+	"バネで丸い反射の上へ。右の棚に着地して次のバネへ。",
+	"相棒と靴で左の棚へ。対向壁を登り、上の旗へ。",
+	"傘で風へ。左上で休み、左下の棚から靴で折り返そう。",
+	"バネと反射で上の棚へ。回復ダッシュから最後の到着台へ。",
 ]
 
 var checkpoint_index := 0
@@ -45,7 +51,7 @@ func _ready() -> void:
 		sign.name = "Sign"
 		point.add_child(sign)
 		sign.draw.connect(_draw_checkpoint.bind(sign, point.get_index()))
-		point.get_node("Label").add_theme_color_override("font_color", ArtDraw.INK)
+		point.get_node("Label").add_theme_color_override("font_color", ArtDraw.CREAM if point.get_index() >= 19 else ArtDraw.INK)
 	_set_checkpoint(0)
 	player.respawn()
 	camera.make_current()
@@ -71,6 +77,12 @@ func _physics_process(delta: float) -> void:
 
 
 func _camera_target_x() -> float:
+	if checkpoint_index >= 19:
+		var lead := -340.0 if checkpoint_index == 20 else (-200.0 if checkpoint_index in [22, 23] else 100.0)
+		if checkpoint_index == 20 and player.position.y < -25680.0: lead = 100.0
+		if checkpoint_index == 21 and player.position.y < -27200.0 and player.position.x > 1000.0: lead = 400.0
+		if checkpoint_index == 23 and player.position.y > -30350.0: lead = 0.0
+		return clampf(player.position.x + lead, -2000.0, 2400.0)
 	if checkpoint_index == 18:
 		var lead := 0.0
 		if player.position.y < -24000.0:
@@ -89,13 +101,17 @@ func _camera_target_x() -> float:
 
 
 func _camera_target_y() -> float:
+	if checkpoint_index >= 19:
+		var upper_glide := checkpoint_index == 23 and player.position.y < -30350.0
+		var offset := 0.0 if upper_glide else -300.0 + maxf(player.velocity.y, 0.0) * 0.2
+		return clampf(player.position.y + offset, $Goal.position.y - 280.0, 360.0)
 	if checkpoint_index == 18:
 		var offset := -80.0
 		if player.position.y < -23150.0 and (player.position.x < 500.0 or player.position.y < -24280.0):
 			offset = 100.0
 		elif player.position.y > -23050.0 and player.position.y < -22800.0:
 			offset = -260.0
-		return clampf(player.position.y + offset, $Goal.position.y - 280.0, 360.0)
+		return clampf(player.position.y + offset, checkpoints.get_child(19).position.y - 280.0, 360.0)
 	# 左上の任意枝では床と帰路を残し、主経路の上段棚では再び追従する。
 	if checkpoint_index == 16 and player.position.x < 100.0 and player.position.y > checkpoints.get_child(16).position.y - 640.0:
 		return clampf(checkpoints.get_child(16).position.y - 300.0, $Goal.position.y - 240.0, 360.0)
@@ -156,7 +172,11 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
+	$HUD/Info.position = Vector2(24, 620) if checkpoint_index >= 19 else Vector2(24, 16)
+	if checkpoint_index == 22 or (checkpoint_index == 21 and player.position.y < -27200.0):
+		$HUD/Info.position.y = 16
 	$HUD/Info/Rows/Title.text = "星のぼりの塔　%02d / %02d" % [checkpoint_index + 1, checkpoints.get_child_count()]
 	$HUD/Info/Rows/Status.text = "高度 %dm　ダッシュ %s　追加ジャンプ %d" % [maxi(0, int((START_Y - player.position.y) / 10.0)), "●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
+	$HUD/Hint.position.y = 16 if checkpoint_index == 19 or (checkpoint_index == 24 and player.position.y < -31700.0) else 110
 	$HUD/Hint.text = TITLES[checkpoint_index] + "：" + HINTS[checkpoint_index]

@@ -19,7 +19,7 @@ func _run() -> void:
 		await _parachute_course()
 		var seconds := (Engine.get_physics_frames()-started)/60.0
 		print("TOWER_PARACHUTE_SECONDS ",seconds," axis=",upper_strength," wait=",parachute_delay," respawns=",respawns)
-		_check(stage.completed and respawns == 0 and seconds < 30,"The real wind and glide course reaches Goal within thirty seconds without a fall")
+		_check(stage.checkpoint_index == 19 and not stage.completed and respawns == 0 and seconds < 30,"The real wind and glide course reaches CP20 within thirty seconds without a fall")
 		_check(progress.get_count("tower") == 0,"The main course leaves the optional scroll untouched")
 		if failed: return
 	for strength in ([1.0] if capture else [1.0,0.8]):
@@ -57,7 +57,7 @@ func _run() -> void:
 		_check(respawns == 0 and stage.checkpoint_index == 18 and seconds < 30,"The optional branch naturally returns to the same main wind within thirty seconds")
 		print("TOWER_PARACHUTE_BRANCH_SECONDS ",seconds," axis=",upper_strength)
 		await _parachute_finish()
-		_check(stage.completed and progress.get_count("tower")==1,"The confirmed branch rejoins the main course and real Goal")
+		_check(stage.checkpoint_index == 19 and not stage.completed and progress.get_count("tower")==1,"The confirmed branch rejoins the main course and CP20")
 		await _upper_pulse("reset")
 		await _step(6)
 		await _fall_away()
@@ -68,7 +68,7 @@ func _run() -> void:
 		stage.get_node("PauseMenu").return_to_select()
 		await _step(5)
 		var card: Button = current_scene.get_node("Margin/Content/Stages/Stage2")
-		_check(card.get_node("Content/Collection/Count").text=="1 / 6" and card.accessibility_name.contains("巻物 1 / 6"),"Selection displays and announces the real collection count")
+		_check(card.get_node("Content/Collection/Count").text=="1 / 8" and card.accessibility_name.contains("巻物 1 / 8"),"Selection displays and announces the real collection count")
 		await _fresh_para()
 		_check(stage.get_node("ScrollBranch/ParachuteScroll")._secured,"A confirmed scroll is faint on re-entry")
 	if OS.get_cmdline_user_args().has("--keep-fixture"): print("TOWER_PARACHUTE_SAVED_PATH ",progress.save_path)
@@ -98,7 +98,7 @@ func _fresh_para() -> void:
 		if node is Area2D:
 			_check(not ids.has(node.scroll_id),"Every tower collectible has a unique ID")
 			ids[node.scroll_id]=true
-	_check(ids.size()==6 and progress.TOTALS["tower"]==6,"The selection total matches six actual unique placements")
+	_check(ids.size()==8 and progress.TOTALS["tower"]==8,"The selection total matches eight actual unique placements")
 
 func _branch_touch() -> void:
 	await _parachute_begin()
@@ -117,13 +117,14 @@ func _branch_touch() -> void:
 func _fall_away() -> void:
 	monitor_view = false
 	var before := respawns
+	var checkpoint: int = stage.checkpoint_index
 	for frame in 600:
-		_horizontal(-1400)
+		_horizontal(1400 if checkpoint == 19 else -1400)
 		await _step()
 		if respawns > before: break
 	_horizontal(player.position.x)
 	await _step(8)
-	_check(respawns==before+1 and player.is_on_floor() and stage.checkpoint_index==18 and player.is_dash_ready(),"An actual off-edge fall restores CP19 and its resources")
+	_check(respawns==before+1 and player.is_on_floor() and stage.checkpoint_index==checkpoint and player.is_dash_ready(),"An actual off-edge fall restores the current native checkpoint and its resources")
 	monitor_view = true
 
 func _parachute_view(phase: String) -> void:
@@ -140,10 +141,9 @@ func _parachute_view(phase: String) -> void:
 		landing.position=collision.get_global_transform_with_canvas()*landing.position
 		_check(root.get_visible_rect().encloses(landing) and not hud.get_global_rect().intersects(landing),"The next real landing is visible before gliding at "+phase)
 	if phase == "wind_b":
-		for path in ["Case/Collision","Cap/Collision","Base/Collision"]:
-			var goal_shape: CollisionShape2D = stage.get_node("Goal/"+path)
-			var goal_bounds := Rect2(goal_shape.get_global_transform_with_canvas()*goal_shape.shape.get_rect().position,goal_shape.shape.get_rect().size)
-			_check(root.get_visible_rect().encloses(goal_bounds) and not hud.get_global_rect().intersects(goal_bounds),"The actual Goal body is fully visible from the last wind before gliding")
+		var point: Marker2D = stage.checkpoints.get_child(19)
+		var flag := point.get_global_transform_with_canvas() * Rect2(-108, -52, 48, 56)
+		_check(root.get_visible_rect().encloses(flag) and not hud.get_global_rect().intersects(flag), "The actual next checkpoint flag is visible from the final old wind")
 	if phase == "rest":
 		var wind: Area2D = stage.get_node("Items/ParachuteWindB")
 		var fan_center: Vector2 = wind.get_global_transform_with_canvas()*Vector2(0,wind.area_size.y/2-16)
