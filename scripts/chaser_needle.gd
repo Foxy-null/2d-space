@@ -75,6 +75,8 @@ func advance(delta: float, player: PlayerController) -> void:
 		velocity = velocity.rotated(clampf(turn, -turn_limit, turn_limit))
 		tracking_left = maxf(0.0, tracking_left - delta)
 		rotation = velocity.angle()
+		if tracking_left <= 0.0:
+			picture.modulate = Color("a9ddff")
 	life -= delta
 	if life <= 0.0:
 		queue_free()
@@ -103,6 +105,12 @@ func advance(delta: float, player: PlayerController) -> void:
 
 
 func stick(at: Vector2, normal: Vector2, body: StaticBody2D) -> void:
+	# Preserve existing footholds; identical impacts do not stack redundant hazards.
+	var tip := at + normal * length
+	for needle in course.needles.get_children():
+		if needle != self and needle.stuck and needle.anchor == body and needle.tip_position().distance_to(tip) < 3.0:
+			queue_free()
+			return
 	stuck = true
 	anchor = body
 	global_position = at

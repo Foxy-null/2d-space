@@ -10,12 +10,14 @@ signal player_hit
 @export var room_number := 0
 @export var half_size := 20.0
 @export var ceiling_strip := false
+@export var external_collision := false
 
 var elapsed := 0.0
 var origin := Vector2.ZERO
 var previous_player := Vector2.ZERO
 var tracking := false
 var pending_hit := false
+var previous_position := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -25,12 +27,22 @@ func _ready() -> void:
 	collision_layer = 0
 	collision_mask = 0
 	monitoring = false
+	if external_collision:
+		var surface := AnimatableBody2D.new()
+		surface.collision_layer = 2
+		surface.collision_mask = 0
+		var shape := CollisionShape2D.new()
+		shape.shape = RectangleShape2D.new()
+		shape.shape.size = hit_extent() * 2.0
+		surface.add_child(shape)
+		add_child(surface)
 	reset_for_respawn()
 
 
 func reset_for_respawn() -> void:
 	elapsed = 0.0
 	position = origin + travel * _progress()
+	previous_position = global_position
 	tracking = false
 	pending_hit = false
 	queue_redraw()
@@ -41,6 +53,8 @@ func _progress() -> float:
 
 
 func _physics_process(delta: float) -> void:
+	if external_collision:
+		return
 	var stage := get_tree().get_first_node_in_group("stage_four")
 	if stage == null or stage.room_index != room_number or stage.transitioning:
 		tracking = false
@@ -50,9 +64,7 @@ func _physics_process(delta: float) -> void:
 		tracking = false
 		return
 	var before := global_position
-	elapsed += delta
-	position = origin + travel * _progress()
-	queue_redraw()
+	advance(delta)
 	var player_shape := player.get_node("CollisionShape2D") as CollisionShape2D
 	var extent := (player_shape.shape as RectangleShape2D).size * 0.5 + hit_extent()
 	var end := player.global_position - global_position
@@ -64,6 +76,13 @@ func _physics_process(delta: float) -> void:
 	if not pending_hit and segment_hits_box(start, end, extent):
 		pending_hit = true
 		_hit.call_deferred(player)
+
+
+func advance(delta: float) -> void:
+	previous_position = global_position
+	elapsed += delta
+	position = origin + travel * _progress()
+	queue_redraw()
 
 
 static func segment_hits_box(start: Vector2, end: Vector2, extent: Vector2) -> bool:

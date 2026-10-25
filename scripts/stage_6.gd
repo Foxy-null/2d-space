@@ -42,6 +42,7 @@ var _player_arrived := false
 var defeat_hits := 0
 var escape_elapsed := 0.0
 var _keep_enemy_on_respawn := false
+var _enemy_indicator: Label
 
 
 func _ready() -> void:
@@ -80,6 +81,9 @@ func _ready() -> void:
 	_world.add_child(camera)
 	camera.make_current()
 	_build_hud()
+	_enemy_indicator = _text("", 18)
+	_enemy_indicator.position = Vector2(25, 610)
+	$HUD.add_child(_enemy_indicator)
 	_load_room(0)
 
 
@@ -102,9 +106,9 @@ func _load_room(index: int) -> void:
 	player.set_respawn_position(room.spawn)
 	enemy.set_respawn_position(room.enemy_spawn)
 	player.respawn()
-	enemy.call("reset_pursuit")
 	enemy.set("course", room)
 	enemy.set("preferred_item", room.preferred_item)
+	enemy.call("reset_pursuit")
 	enemy.set("active", false)
 	_chase_delay = -1.0 if room.prepared else room.chase_delay
 	_player_arrived = false
@@ -147,18 +151,17 @@ func _physics_process(delta: float) -> void:
 		return
 	if _out_of_course(enemy) or _touches_hazard(enemy, _previous_enemy):
 		enemy.call("reset_pursuit", true)
-	if not _capture_pending and _immunity_left <= 0.0 and enemy.get("active") and enemy.stun_left <= 0.0 and enemy.get_held_object() == null and _actor_rect(enemy).grow(2).intersects(_actor_rect(player)):
-		_capture()
+	_update_capture(delta)
 	if _game_over_pending:
 		return
-	if room_index == 11:
+	if room_index == ROOM.FINAL_ROOM:
 		if enemy.get("active") and room.battle_arena.has_point(player.position) and room.battle_arena.has_point(enemy.position):
 			escape_elapsed = minf(escape_seconds, escape_elapsed + delta)
 		room.update_escape(escape_elapsed >= escape_seconds)
-	if room_index == 11 and room.seal_enemy(enemy, player):
+	if room_index == ROOM.FINAL_ROOM and room.seal_enemy(enemy, player):
 		_complete("封じ込め成功")
-	elif room.exit_open and (_player_arrived or room.exit_rect.has_point(player.position)) and (room_index != 11 or (room.all_weight_doors_open() and room.escape_unlocked)):
-		if room_index == 11:
+	elif room.exit_open and (_player_arrived or room.exit_rect.has_point(player.position)) and (room_index != ROOM.FINAL_ROOM or (room.all_weight_doors_open() and room.escape_unlocked)):
+		if room_index == ROOM.FINAL_ROOM:
 			_complete("逃走成功")
 		else:
 			transitioning = true
@@ -174,6 +177,10 @@ func _on_player_respawned() -> void:
 		return
 	_generation += 1
 	_capture_pending = false
+	_game_over_pending = false
+	player.controls_enabled = not help_visible and not completed
+	enemy.controls_enabled = not help_visible and not completed
+	enemy.capture_windup = -1.0
 	_hit_grace = 0.0
 	_message.hide()
 	_player_arrived = false
@@ -222,9 +229,10 @@ func _capture() -> void:
 		if distance < closest:
 			closest = distance
 			back = room.spawn if index == 0 else room.route[index - 1]
-	var direction := (back - player.position).normalized()
-	if direction.is_zero_approx():
-		direction = -player.get_walk_axis()
+	# Route points can be far overhead: a surviving grab must not launch into ceiling spikes.
+	var tangent := player.get_walk_axis()
+	var side := signf((back - player.position).dot(tangent))
+	var direction: Vector2 = tangent * (side if side != 0.0 else -player.facing_direction)
 	player.apply_stun(0.3, direction * 650.0 - player.get_gravity_vector() * 220.0)
 	_immunity_left = 2.0
 	_capture_pending = false
@@ -233,14 +241,37 @@ func _capture() -> void:
 		_message.hide()
 
 
+func _update_capture(delta: float) -> void:
+	if _capture_pending or _immunity_left > 0.0 or _hit_grace > 0.0 or player.stun_left > 0.0 or not enemy.can_capture():
+		enemy.capture_windup = -1.0
+		return
+	var nearby := _actor_rect(enemy).grow(18).intersects(_actor_rect(player))
+	if enemy.capture_windup < 0.0:
+		if nearby:
+			enemy.capture_windup = 0.25
+		return
+	enemy.capture_windup -= delta
+	if not nearby or enemy.capture_windup <= 0.0:
+		enemy.capture_windup = -1.0
+		enemy.capture_recovery = 0.35
+		if _actor_rect(enemy).grow(2).intersects(_actor_rect(player)):
+			_capture()
+
+
 func _game_over() -> void:
+	var generation := _generation
 	_game_over_pending = true
 	player.controls_enabled = false
 	enemy.controls_enabled = false
-	_message.text = "ゲームオーバー\n捕獲されました — ステージ選択へ戻ります"
+	_message.text = "捕獲されました\nこの部屋から、もう一度！"
 	_message.show()
 	await get_tree().create_timer(1.2, false).timeout
-	_return_to_select()
+	if not is_inside_tree() or completed or generation != _generation:
+		return
+	_game_over_pending = false
+	player.controls_enabled = true
+	enemy.controls_enabled = true
+	player.respawn()
 
 
 func _on_release(object: Grabbable, thrown: bool, source: PlayerController) -> void:
@@ -274,7 +305,7 @@ func _check_projectiles() -> void:
 		var from: Vector2 = entry.previous + target.position - previous_target
 		if _segment_hits_rect(from, object.position, rect):
 			if target == enemy:
-				if room_index == 11 and enemy.stun_left <= 0.0 and room.all_weight_doors_open() and room.battle_arena.has_point(enemy.position) and room.battle_arena.has_point(player.position):
+				if room_index == ROOM.FINAL_ROOM and enemy.stun_left <= 0.0 and room.all_weight_doors_open() and room.battle_arena.has_point(enemy.position) and room.battle_arena.has_point(player.position):
 					defeat_hits += 1
 					if defeat_hits >= defeat_hits_required:
 						_complete("決着成功")
@@ -313,6 +344,9 @@ func _touches_hazard(actor: PlayerController, previous: Vector2) -> bool:
 	if actor.is_in_group("spike_immune"):
 		return false
 	var half := _actor_rect(actor).size * 0.5
+	for spike in room.spike_blocks:
+		if SpikeBlock.segment_hits_box(previous - spike.previous_position, actor.position - spike.global_position, half + spike.hit_extent()):
+			return true
 	for needle in room.needles.get_children():
 		if needle.stuck and needle.is_dangerous() and _segment_hits_rect(previous, actor.position, Rect2(needle.tip_position() - half - Vector2(3, 3), half * 2.0 + Vector2(6, 6))):
 			return true
@@ -340,27 +374,32 @@ func _complete(result: String) -> void:
 
 func _update_camera() -> void:
 	camera.position = player.position.clamp(Vector2(640, 360), room.size - Vector2(640, 360))
+	room.visible_area = Rect2(camera.position - Vector2(640, 360), Vector2(1280, 720))
 
 
 func _update_hud() -> void:
 	var chance := roundi(capture_probability(player.get_wall_stamina(), player.wall_stamina_max) * 100)
 	var direction: String = {1: "↓", -1: "↑", 2: "→", -2: "←"}[player.gravity_direction]
-	_status.text = "部屋 %02d/12　重力 %s　 捕獲時の失敗率 %3d%%　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [room_index + 1, direction, chance, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), "追跡中" if enemy.get("active") else ("追跡まで %.1f秒" % _chase_delay if _chase_delay >= 0 else "準備中")]
+	var pursuit: String = {"pursuit": "追跡中", "search": "探索中", "patrol": "見失った"}[enemy.get("awareness")] if enemy.get("active") else ("追跡まで %.1f秒" % _chase_delay if _chase_delay >= 0 else "準備中")
+	_status.text = "部屋 %02d/%02d　重力 %s　 捕獲時の失敗率 %3d%%　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [room_index + 1, ROOM.ROOM_COUNT, direction, chance, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), pursuit]
 	_stamina.max_value = player.wall_stamina_max
 	_stamina.value = player.get_wall_stamina()
-	$HUD/Progress.visible = completed or room_index == 11
-	if not completed and room_index == 11:
-		_hint.text = "決着 %d / %d　　逃走封印 あと%d秒　　鍵 %s" % [defeat_hits, defeat_hits_required, ceili(maxf(0.0, escape_seconds - escape_elapsed)), "取得済" if room.key_collected else "未取得"]
+	$HUD/Progress.visible = completed or room_index == ROOM.FINAL_ROOM
+	if not completed and room_index == ROOM.FINAL_ROOM:
+		_hint.text = "決着 %d/%d　 対峙あと%d秒　 鍵 %d/2　 封鎖 %s" % [defeat_hits, defeat_hits_required, ceili(maxf(0.0, escape_seconds - escape_elapsed)), room.keys_collected, "通電済→檻で敵を怯ませる→制御盤" if room.seal_button.is_pressed() else "左の金の台へ重箱"]
+	_enemy_indicator.visible = enemy.get("active") and not room.visible_area.grow(80).has_point(enemy.position) and not completed
+	var offset := enemy.position - camera.position
+	_enemy_indicator.text = "追跡者 %s　%s" % [("→" if offset.x > 0 else "←") if absf(offset.x) > absf(offset.y) else ("↓" if offset.y > 0 else "↑"), pursuit]
 
 
 func _help_text() -> String:
-	var text: String = "追跡者の終域\nUMA妖怪エイリアン　星間山荒・大赤斑\n"
-	text += "針の予告線が出たら横へかわします。直線・三方向・追尾トゲ・灰の雲の順に攻撃し、発射後には隙があります。追尾トゲは炎が付いてから曲がり、2.5秒で追尾を終えます。灰の雲は予告した場所に留まり、金色の合図の後に隙間を空けて固まった灰を降らせます。地形の下へ逃げても防げます。\n敵には全てのトゲが効かず、トゲの床を歩き壁を登ります。箱の投擲は有効です。\n刺さった針は先端だけが危険です。箱を投げて先端へ刺し込むと、その場に固定された安全な足場になります。ひびのある茶色い足場は長針で壊れます。\n\n"
-	if room_index == 11:
-		text += "二つの重量扉を開いた後、どれか一つでクリア。\n決着：怯んでいない敵に投擲を%d回当てる。怯み中の追撃は無効。\n封鎖：敵を檻へ入れ、自分は右外側へ出る。金の台へ箱を置く。\n逃走：敵と%d秒対峙し、檻の屋根の鍵を取って右上の到着台を押す。捕獲で時間を数え直す。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
-	text += "この部屋の進め方\n" + StageSixRoom.HINTS[room_index]
-	text += "\n\n追跡・投擲\n金の輪が物体の供給場所です。敵へ投げる箱と、扉を開くために置く箱を使い分けてください。敵の投擲前には予告が出ます。当たるとスタミナが3分の1減り、短く怯みます。こちらの投擲は敵を2秒止められます。\n敵は物を持っている間はプレイヤーを掴めません。捕獲時の失敗率はスタミナ満タン0%、半分50%、空100%。失敗するとステージ選択へ戻ります。"
-	text += "\n\n復帰と操作\n落下・トゲでは自分だけ入口へ戻ります。敵、箱、開いた扉、最後の目標の進捗は継続します。部屋全体を初期化したいときだけR / Startか下のやり直しを使ってください。\n横重力では↑↓で壁に沿って歩きます。Space / A・×で重力に逆らって跳び、箱を手放せばShiftで壁を登れます。"
+	var text := "追跡者の終域 — 全13部屋\nUMA妖怪エイリアン　星間山荒・大赤斑\n"
+	text += "長針は3連射、扇形は5本、追尾トゲは時間差で2本。灰の雲は予定地に留まり、金の合図の列から雨を降らせます。予告の狙いは固定され、発射後の『隙！』中は掴まれません。追尾は2.5秒で終わり、青みがかった弾は直進します。\n雲は開けた場所へ誘い、別の屋根へ退くと雨を防げます。敵は壁越しに忍者の位置を知りません。視線を切ると最後に見た場所を探し、『見失った』になると追跡を休みます。\n全てのトゲは敵に無効。箱の投擲は有効です。刺さった針の先端へ箱を投げると固定足場になります。ひびのある足場は長針で壊れます。\n\n"
+	if room_index == ROOM.FINAL_ROOM:
+		text += "どれか一つでクリア。\n決着：怯んでいない敵へ箱を%d回当てる。\n封鎖：重箱を左のくぼみの金の台へ置いて通電→敵を檻へ誘い箱を当てる→怯んでいる間に右の高台の足跡を自分で踏む。箱を置くだけ・制御盤に先に乗って待つだけでは封鎖しません。\n逃走：同じ区画の敵と%d秒対峙し、左右の高所の鍵を2つ取って最も右上の到着台へ。見失わせても解除は進み、捕獲では時間を数え直します。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
+	text += "この部屋の進め方\n" + ROOM.HINTS[room_index]
+	text += "\n\n物体と捕獲\n金の輪が供給場所です。スイッチに置いた箱と固定した箱を敵は取りません。敵が物を持つ間も掴まれません。投擲・飛行弾はスタミナを3分の1減らし、こちらの箱は敵を2秒止めます。\n掴む予告から離れると避けられます。捕獲時の失敗率はスタミナ満タン0%、半分50%、空100%。失敗しても現在の部屋から再挑戦します。"
+	text += "\n\n復帰と操作\n落下・トゲでは自分だけ入口へ戻り、敵・箱・残る針・雲・目標の進捗を維持します。R / Startか下のやり直しでは部屋全体を初期化します。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
 	return text
 
 
@@ -387,7 +426,7 @@ func set_help_visible(value: bool) -> void:
 	enemy.controls_enabled = not value
 	get_tree().paused = value
 	if value:
-		_help.call("show_hint", "ステージ6　%02d / 12　%s" % [room_index + 1, StageSixRoom.TITLES[room_index]], _help_text())
+		_help.call("show_hint", "ステージ6　%02d / %02d　%s" % [room_index + 1, ROOM.ROOM_COUNT, StageSixRoom.TITLES[room_index]], _help_text())
 		_help.get_node("Rows/Actions/Resume").grab_focus()
 	else:
 		get_viewport().gui_release_focus()
@@ -506,9 +545,13 @@ func _spawn_needles(origin: Vector2, directions: Array[Vector2], variant: int) -
 	query.exclude = [player.get_rid(), enemy.get_rid()]
 	if not get_world_2d().direct_space_state.intersect_point(query, 1).is_empty():
 		return
+	var flying := 0
+	for existing in room.needles.get_children():
+		if not existing.stuck and not existing.is_queued_for_deletion():
+			flying += 1
 	for direction in directions:
-		# shortcut: preserve up to 96 needles per room; batch geometry for longer battles.
-		if room.needles.get_child_count() >= 96:
+		# shortcut: bounded retained geometry; merge identical impacts and preserve pinned footholds.
+		if room.needles.get_child_count() >= ROOM.MAX_NEEDLES or flying >= ROOM.MAX_FLYING_NEEDLES:
 			break
 		var needle := NEEDLE.new()
 		needle.position = origin
@@ -517,6 +560,7 @@ func _spawn_needles(origin: Vector2, directions: Array[Vector2], variant: int) -
 		needle.variant = variant
 		needle.velocity = direction.normalized() * [720.0, 540.0, 380.0, 660.0][variant]
 		room.needles.add_child(needle)
+		flying += 1
 
 
 func _spawn_ash_cloud(origin: Vector2, target_at: Vector2, down: Vector2) -> void:

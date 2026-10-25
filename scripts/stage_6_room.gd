@@ -14,21 +14,27 @@ const CRYSTAL = preload("res://scenes/refill_crystal.tscn")
 const BUTTON = preload("res://scenes/pressure_button.tscn")
 const KEY = preload("res://scripts/escape_key.gd")
 const ARRIVAL = preload("res://scenes/arrival_switch.tscn")
+const SPIKE_BLOCK = preload("res://scenes/spike_block.tscn")
+const ROOM_COUNT := 13
+const FINAL_ROOM := ROOM_COUNT - 1
+const MAX_NEEDLES := 384
+const MAX_FLYING_NEEDLES := 32
 
-const TITLES := ["追跡者との投げ合い", "奪い合う開門スイッチ", "重荷を先へ送れ", "暴風の傘渡り", "逆さまの逃走路", "反発と空中ダッシュ", "横向きの重力迷宮", "重力を渡る縦の塔", "相棒と越える断崖", "二つの重量扉", "封鎖装置の予行", "追跡者との最終決着"]
+const TITLES := ["針を道へ変える", "開門と予備の箱", "重荷を先へ送れ", "灰雲と傘渡り", "逆さまの逃走路", "反発と空中ダッシュ", "横向きの重力迷宮", "重力を渡る縦の塔", "相棒と越える断崖", "二つの重量扉", "封鎖装置の予行", "棘の振り子と誘導路", "追跡者との最終決着"]
 const HINTS := [
-	"先の足場へ渡る前に、金の輪から軽い箱を取れます。敵へ投げて2秒止め、その間に次の足場へ移ってください。\n動きながらShiftを離すと投擲、止まって離すと置く操作です。投げた後は緑の速度マークでダッシュを戻し、紫の追加ジャンプを上昇が弱まるころに使います。",
-	"手前の軽い箱をShiftで持ち、開門スイッチの上で止まってから離してください。箱が台に残ると縞の扉が開きます。\n敵が近づいたら、開門用の箱は台に残し、別の箱を投げて怯ませます。扉の先は高い足場、床ばね、丸いバンパーを使うとトゲを避けて進めます。入口で準備してから進めば、追跡開始まで猶予があります。",
+	"長針は狙いの線へ3連射します。狙われた場所を離れて壁へ刺し、露出した先端へ箱を投げると安全な足場になります。最初の穴には普通の足場の道もあります。\n動きながらShiftを離すと投擲、止まって離すと置く操作です。敵に箱を当てると2秒止まります。緑でダッシュを戻し、紫の追加ジャンプを一つずつつなぎます。",
+	"手前の軽い箱をShiftで持ち、開門スイッチの上で止まってから離してください。箱が台に残ると縞の扉が開きます。\n敵が近づいたら、開門用の箱は台に残し、別の箱を投げて怯ませます。扉の先は高い足場、床ばね、丸いバンパーを使うとトゲを避けて進めます。入口で準備してから進めば、追跡開始まで短い猶予があります。",
 	"この扉には重い箱が必要です。軽い箱では重量が足りません。手前の重い箱を段差の先へ投げて追い、奥の重量スイッチまで運んで置いてください。\n持っている間は移動が遅く、壁も登れません。段差で詰まったら安全な足場で箱を先へ送り、自分は空身で追うと安定します。箱を敵への攻撃に使った場合も、金の輪で補充できます。",
 	"赤い和傘を持って最初の上昇気流へ入ります。足場の真下で上昇が止まったら、横へ出て端を抜け、上へ回り込んでください。\n途中の足場で着地してから、横風に乗って次の上昇気流へ渡ります。後半の動くトゲには突っ込まず、上下する位置を見て外側を回ります。傘を失った場合は途中の金の輪でも取り直せます。",
 	"最初の↑ゲートで天井を床にします。天井の障害物を避け、壁を掴むときは↓入力で重力に逆らって登ってください。\n途中は障害物の下へ離れ、緑で補充したダッシュをつなぎます。最後の↓ゲートを通って通常の床へ戻り、右の足跡の到着台へ着地します。荷物があると壁を掴めないので、必要なら置いて進みましょう。",
 	"床のばねで上昇し、空中の緑を取ってダッシュを補充します。丸いバンパーへ入る角度で飛び出す方向を調整し、次の足場へ向かってください。\n紫を取ったら、落ち始める前に追加ジャンプで高さを戻します。ダッシュ・追加ジャンプを全部同時に使わず、一つずつ上昇の終わりにつなぐと最後の床まで届きます。",
-	"最初の→ゲートを通ると右の壁が床になります。↑で一枚目の壁の上端を越え、次の壁では↓で下端を回り込んでから通常重力へ戻ってください。\n後半は床ばねと空中回復で高い壁の上を越え、←ゲートへ入ります。左向き重力で壁に付いた横ばねへ戻り、右へ跳び返した勢いにダッシュと追加ジャンプを足して、最後の↓ゲートと出口へ進みます。",
+	"最初の→ゲートで右の壁を床にし、一枚目は上端、次の壁は下端を回って↓ゲートから戻ります。\n後半の通常路は低い足場を右へ渡る道です。上には左重力と横ばねを使う近道も残っています。追尾トゲは曲がり角や受け壁へ誘導し、刺した先端へ箱を固定する道も試せます。",
 	"下側の→ゲートを通り、まず右壁へ渡ります。右壁に着いたら↑で登り、←ゲートで反対の壁へ移ってください。\n左壁でも↑へ進み、次の→ゲートから右壁へ渡ってさらに登ります。塔の中央のトゲには近づかず、緑と紫を取るときだけ壁から跳び出すと安定します。頂上の↓ゲートを通った後は、右の到着台へ着地してください。",
 	"緑の相棒を持ち、最初の足場へ通常ジャンプと相棒の追加ジャンプで渡ります。相棒の力は保持したままの着地で回復します。\n紫による追加ジャンプは相棒とは別です。上昇の終わりに一つずつ使い、緑のダッシュ回復もつないでください。動くトゲが近い足場では、一度着地して動きを見てから次へ跳びます。",
 	"手前の扉は軽い箱、奥の扉は重い箱をそれぞれのスイッチへ置いて開きます。一つの箱を先へ持ち去ると開門条件を失うので、台に置いた箱は残してください。\n追ってきた敵には予備の箱を投げ、高い足場へ逃げて運搬する時間を作れます。二つ目の扉の先は床ばねで上がり、緑と紫をつないで動くトゲの上を渡ります。",
 	"金の重量スイッチは「開門」ではなく「封鎖」です。箱を載せると対応する縞の扉が閉まるので、進路と敵の位置を確かめて使ってください。箱を外せば開け直せます。\n先へ進むときは傘を持って斜めの上昇気流へ入り、足場の横から上へ回り込みます。↑ゲートで天井側へ移り、最後の↓ゲートから出口へ着地してください。",
-	"最初の二つの扉は、手前を軽い箱、奥を重い箱で開きます。台に置いた箱を残して階段を登ると、檻がある最後の区画です。\n決着を狙うなら予備の箱を使って攻撃をかわしながら投げ返します。封鎖なら敵を檻へ入れてから右外側の金の台へ箱を置きます。逃走なら緑の相棒と回復を使って檻の屋根の鍵を取り、右側の足場と→ゲートから高い出口へ向かってください。"
+	"ステージ4と同じ四面の棘ブロックです。点線の端で折り返すので、広い踊り場で動きを見てから渡ります。\n敵は棘を歩けます。追尾トゲは受け壁へ誘い、刺さった先端を箱で覆うと近道になります。壁の裏へ回り込むと、敵は最後に見た場所を探します。",
+	"3通りの決着を選べます。前座の重量扉はありません。\n決着：敵の予告をかわし、隙に箱を6回当てます。封鎖：左の金の台へ重箱を置いて通電し、敵を檻へ誘導。箱で怯ませてから離れた高台の足跡の制御盤へ移り、自分で踏みます。先に乗ったまま待っても作動しません。\n逃走：左右の高所にある鍵を2つ取り、敵と20秒対峙してから最も右上の出口へ。檻と出口は離れています。"
 ]
 
 var number := 0
@@ -58,6 +64,14 @@ var _elapsed := 0.0
 var _supply_left := 0.0
 var needles: Node2D
 var brittle_platforms: Array[StaticBody2D] = []
+var spike_blocks: Array[SpikeBlock] = []
+var attack_patterns: Array[int] = [0, 1, 2, 3]
+var visible_area := Rect2()
+var escape_keys: Array[Area2D] = []
+var keys_collected := 0
+var seal_console := Vector2.ZERO
+var _console_occupied := false
+var _seal_triggered := false
 
 
 func _ready() -> void:
@@ -72,6 +86,7 @@ func _ready() -> void:
 	var clouds := Node2D.new()
 	clouds.name = "AshClouds"
 	add_child(clouds)
+	attack_patterns.assign([[0], [0, 1], [0, 1], [3], [0, 2], [0, 1], [2], [0, 2], [1, 2], [0, 2], [0, 3], [1, 2], [0, 1, 2, 3]][number])
 	match number:
 		0:
 			_floor(0, 550, 820)
@@ -80,13 +95,15 @@ func _ready() -> void:
 			_platforms([Rect2(580, 650, 110, 28), Rect2(1000, 650, 140, 28), Rect2(1280, 540, 130, 28)])
 			_supply(LIGHT, Vector2(260, 780))
 			_supply(LIGHT, Vector2(930, 780))
-			_hazard(Rect2(1170, 650, 70, 170), Vector2(0, -150), 3.0)
+			# The gap's receiving wall accepts needles without blocking the normal route.
+			_block(Rect2(760, 740, 28, 80))
+			_hazard(Rect2(1170, 750, 70, 70), Vector2(0, -100), 3.0)
 			route.assign([Vector2(460, 790), Vector2(630, 620), Vector2(880, 790), Vector2(1060, 620), Vector2(1340, 510), Vector2(1600, 670)])
 		1:
 			size.x = 3000
 			spawn.x = 600
-			enemy_spawn.x = 80
-			chase_delay = 4.0
+			enemy_spawn.x = 320
+			chase_delay = 1.5
 			_floor(0, 3000, 820)
 			_supply(LIGHT, Vector2(700, 780))
 			_supply(LIGHT, Vector2(1650, 780))
@@ -104,12 +121,13 @@ func _ready() -> void:
 		2:
 			size.x = 3200
 			spawn.x = 600
-			enemy_spawn.x = 80
+			enemy_spawn.x = 320
 			prepared = true
-			chase_delay = 4.0
+			chase_delay = 1.5
 			_floor(0, 1250, 820)
 			_floor(1250, 900, 730)
 			_floor(2150, 1050, 640)
+			_platforms([Rect2(1140, 775, 110, 45), Rect2(2040, 685, 110, 45)])
 			_supply(HEAVY, Vector2(710, 780))
 			_supply(LIGHT, Vector2(1640, 690))
 			_weight_door(Vector2(1930, 730), Rect2(2190, 0, 38, 960), 8.0)
@@ -130,13 +148,14 @@ func _ready() -> void:
 			_floor(0, 750, 1540)
 			_floor(2520, 360, 620)
 			_platforms([Rect2(900, 1200, 260, 32), Rect2(1340, 1000, 220, 32), Rect2(1700, 750, 220, 32), Rect2(2190, 550, 180, 32)])
+			_platforms([Rect2(940, 990, 170, 24), Rect2(1730, 530, 160, 24)])
 			_supply(UMBRELLA, Vector2(610, 1500))
 			_supply(UMBRELLA, Vector2(1450, 960))
 			_wind(Rect2(710, 450, 620, 1110), Vector2.UP, 2600.0, 500.0)
 			_wind(Rect2(1410, 280, 1130, 850), Vector2.UP, 2600.0, 500.0)
 			_wind(Rect2(1100, 760, 620, 220), Vector2.RIGHT, 850.0, 260.0)
 			_hazard(Rect2(1240, 1260, 70, 420))
-			_hazard(Rect2(2030, 690, 65, 200), Vector2(0, -190), 5.0)
+			_hazard(Rect2(2030, 690, 65, 200), Vector2(0, -100), 5.0)
 			_crystal(Vector2(820, 1080), 0)
 			_crystal(Vector2(1270, 880), 1)
 			_crystal(Vector2(1620, 660), 0)
@@ -193,14 +212,14 @@ func _ready() -> void:
 			_block(Rect2(970, 320, 40, 500))
 			_block(Rect2(1320, 0, 40, 390))
 			_gate(Vector2(470, 670), 2)
-			_gate(Vector2(940, 400), 2)
-			_gate(Vector2(1260, 220), 2)
 			_gate(Vector2(1430, 400), 1)
 			_supply(LIGHT, Vector2(250, 780))
 			_crystal(Vector2(1150, 400), 0)
 			_hazard(Rect2(1010, 630, 70, 190))
 			exit_position = Vector2(2740, 500)
-			route.assign([Vector2(470, 670), Vector2(944, 400), Vector2(944, 220), Vector2(1294, 250), Vector2(1294, 490), Vector2(1440, 440), Vector2(1640, 470), Vector2(1810, 470), Vector2(2030, 300), Vector2(2060, 100), Vector2(2270, 100), Vector2(2270, 290), Vector2(2152, 290), Vector2(2410, 290), Vector2(2580, 290), Vector2(2690, 390)])
+			_platforms([Rect2(2160, 600, 150, 30)])
+			_crystal(Vector2(2230, 500), 0)
+			route.assign([Vector2(470, 670), Vector2(944, 220), Vector2(1294, 250), Vector2(1294, 490), Vector2(1440, 440), Vector2(1640, 470), Vector2(1810, 470), Vector2(2050, 550), Vector2(2230, 570), Vector2(2470, 510), Vector2(2690, 390)])
 		7:
 			size = Vector2(1280, 2160)
 			spawn = Vector2(180, 1974)
@@ -226,6 +245,9 @@ func _ready() -> void:
 			_floor(1500, 420, 620)
 			_platforms([Rect2(630, 620, 100, 30), Rect2(1030, 410, 100, 30)])
 			_supply(CREATURE, Vector2(260, 780))
+			_supply(CREATURE, Vector2(1090, 370))
+			_supply(LIGHT, Vector2(430, 780))
+			_platforms([Rect2(400, 820, 150, 30), Rect2(850, 780, 160, 30), Rect2(1300, 760, 160, 30)])
 			_crystal(Vector2(520, 570), 1)
 			_crystal(Vector2(870, 390), 0)
 			_crystal(Vector2(1320, 360), 1)
@@ -237,9 +259,9 @@ func _ready() -> void:
 		9:
 			size.x = 3200
 			spawn.x = 600
-			enemy_spawn.x = 80
+			enemy_spawn.x = 320
 			prepared = true
-			chase_delay = 4.0
+			chase_delay = 1.5
 			_floor(0, 3200, 820)
 			_supply(LIGHT, Vector2(710, 780))
 			_supply(HEAVY, Vector2(1730, 780))
@@ -269,6 +291,8 @@ func _ready() -> void:
 			preferred_item = "PARACHUTE"
 			route.assign([Vector2(590, 790), Vector2(900, 640), Vector2(1160, 440), Vector2(1170, 300), Vector2(1380, 160), Vector2(1450, 300), Vector2(1660, 510)])
 		11:
+			_build_spike_corridor()
+		12:
 			_build_final()
 	if number in [0, 5, 9]:
 		var platform := _block(Rect2(size.x * 0.55, spawn.y - 260.0, 160, 22))
@@ -280,7 +304,7 @@ func _ready() -> void:
 		crack.default_color = Color("592e35")
 		crack.points = PackedVector2Array([Vector2(-20, -11), Vector2(-5, -2), Vector2(-15, 5), Vector2(8, 11)])
 		platform.add_child(crack)
-	if number != 11:
+	if number != FINAL_ROOM:
 		for index in range(1, route.size(), 3):
 			_crystal(route[index] - Vector2(0, 40), 0)
 		for index in range(2, route.size(), 3):
@@ -289,64 +313,97 @@ func _ready() -> void:
 	_block(Rect2(size.x - 28, 0, 28, size.y + 200))
 	if number == 7:
 		_floor(1120, 160, exit_position.y)
-	elif number != 11:
+	elif number != FINAL_ROOM:
 		_floor(exit_position.x - 120, size.x - exit_position.x + 120, exit_position.y)
 	exit_rect = Rect2(exit_position + Vector2(-58, -185), Vector2(116, 180))
 	arrival = ARRIVAL.instantiate()
 	arrival.name = "Arrival"
-	arrival.mission_required = number == 11
+	arrival.mission_required = number == FINAL_ROOM
 	arrival.position = exit_position
 	add_child(arrival)
 	arrival.get_node("Bubble").hide()
 	arrival.activated.connect(func(): exit_open = true)
-	if number == 11:
+	if number == FINAL_ROOM:
 		update_escape(false)
 
 
-func _build_final() -> void:
-	size = Vector2(3840, 1680)
-	spawn = Vector2(600, 1454)
-	enemy_spawn = Vector2(80, 1454)
+func _build_spike_corridor() -> void:
+	size = Vector2(2880, 1200)
+	spawn = Vector2(220, 1014)
+	enemy_spawn = Vector2(70, 1014)
 	prepared = true
-	chase_delay = 4.0
-	_floor(0, 2300, 1480)
-	_floor(2300, 190, 1390)
-	_floor(2490, 190, 1300)
-	_floor(2680, 190, 1210)
-	_floor(2870, 970, 1120)
-	# Broad steps let both actors reach the arena with the shared jump/climb physics.
-	battle_arena = Rect2(2290, 150, 1522, 1330)
-	_supply(LIGHT, Vector2(710, 1440))
-	_supply(HEAVY, Vector2(1670, 1440))
-	_weight_door(Vector2(1120, 1480), Rect2(1400, 0, 36, 1680), 2.0)
-	_weight_door(Vector2(1970, 1480), Rect2(2200, 0, 36, 1680), 8.0)
-	_platforms([Rect2(690, 1280, 240, 32), Rect2(1030, 1180, 220, 32), Rect2(1550, 1280, 240, 32), Rect2(1870, 1180, 220, 32)])
-	_supply(CREATURE, Vector2(2760, 1170))
-	_supply(LIGHT, Vector2(3250, 1080))
-	_supply(LIGHT, Vector2(3670, 1080))
-	cage = Rect2(2950, 880, 300, 240)
-	_block(Rect2(2950, 850, 300, 30))
-	cage_doors.append(_block(Rect2(2918, 880, 30, 240)))
-	cage_doors.append(_block(Rect2(3252, 880, 30, 240)))
+	chase_delay = 1.5
+	_floor(0, 720, 1040)
+	_floor(980, 640, 940)
+	_floor(1920, 960, 840)
+	_platforms([Rect2(470, 850, 130, 30), Rect2(740, 880, 180, 30), Rect2(1650, 790, 180, 30), Rect2(2250, 660, 210, 30)])
+	_block(Rect2(1280, 680, 40, 180))
+	_supply(LIGHT, Vector2(400, 1000))
+	_supply(LIGHT, Vector2(1430, 900))
+	_crystal(Vector2(820, 750), 0)
+	_crystal(Vector2(1730, 650), 1)
+	_spike_block(Vector2(650, 650), Vector2(0, 320), 4.4, 0.0)
+	_spike_block(Vector2(1120, 620), Vector2(260, 0), 4.8, 0.5)
+	_spike_block(Vector2(1860, 520), Vector2(0, 330), 4.6, 0.2)
+	_spike_block(Vector2(2480, 570), Vector2(110, 150), 5.2, 0.5)
+	exit_position = Vector2(2720, 840)
+	route.assign([Vector2(530, 820), Vector2(810, 850), Vector2(1120, 910), Vector2(1450, 910), Vector2(1730, 760), Vector2(2070, 810), Vector2(2350, 630), Vector2(2730, 720)])
+
+
+func _build_final() -> void:
+	size = Vector2(4480, 1680)
+	spawn = Vector2(350, 1294)
+	enemy_spawn = Vector2(70, 1294)
+	prepared = true
+	chase_delay = 2.5
+	preferred_item = "JUMP"
+	_floor(0, 640, 1320)
+	_floor(640, 120, 1400)
+	_floor(760, 3720, 1320)
+	battle_arena = Rect2(28, 180, 4424, 1200)
+	_supply(LIGHT, Vector2(900, 1280))
+	_supply(HEAVY, Vector2(250, 1280))
+	_supply(LIGHT, Vector2(2250, 1280))
+	_supply(LIGHT, Vector2(2540, 1280))
+	_supply(LIGHT, Vector2(3750, 1280))
+	_supply(CREATURE, Vector2(520, 1130))
+	# Preparing power does not close the cage. The player must reach the remote console.
+	cage = Rect2(1100, 1020, 360, 300)
+	_block(Rect2(1100, 990, 360, 30))
+	cage_doors.append(_block(Rect2(1068, 1020, 30, 300)))
+	cage_doors.append(_block(Rect2(1462, 1020, 30, 300)))
 	for door in cage_doors:
 		_set_door(door, false)
-	seal_button = _button(Vector2(3500, 1120), 2.0)
-	_platforms([Rect2(3350, 940, 170, 32), Rect2(3510, 780, 150, 32)])
-	_gate(Vector2(3590, 660), 2)
-	_block(Rect2(3650, 430, 36, 660))
-	_gate(Vector2(3720, 330), 1)
-	_floor(3686, 154, 480)
-	_crystal(Vector2(2860, 1000), 0)
-	_crystal(Vector2(3310, 840), 1)
-	_crystal(Vector2(3530, 680), 0)
-	_crystal(Vector2(3610, 550), 1)
-	_hazard(Rect2(3380, 1060, 65, 60), Vector2(110, 0), 4.5)
-	escape_key = KEY.new()
-	escape_key.position = Vector2(3100, 800)
-	add_child(escape_key)
-	escape_key.collected.connect(func(): key_collected = true)
-	exit_position = Vector2(3750, 480)
-	route.assign([Vector2(1120, 1450), Vector2(1970, 1450), Vector2(2340, 1360), Vector2(2540, 1270), Vector2(2740, 1180), Vector2(2910, 1090), Vector2(2900, 800), Vector2(3100, 824), Vector2(3430, 910), Vector2(3580, 750), Vector2(3590, 660), Vector2(3624, 380), Vector2(3720, 330), Vector2(3750, 350)])
+	# A recessed tray keeps passing actors from pushing the prepared weight off its switch.
+	seal_button = _button(Vector2(700, 1400), 8.0)
+	seal_button.pressed_changed.connect(func(_pressed): queue_redraw())
+	seal_console = Vector2(1900, 1180)
+	_platforms([Rect2(1560, 1240, 220, 30), Rect2(1870, 1180, 300, 30)])
+	# Separate left and right escape keys require crossing the arena, not waiting by the cage.
+	_platforms([Rect2(430, 1160, 230, 30), Rect2(690, 1020, 220, 30), Rect2(1030, 860, 220, 30), Rect2(620, 700, 250, 30), Rect2(1170, 780, 230, 30), Rect2(1530, 700, 230, 30), Rect2(1910, 710, 230, 30), Rect2(2310, 860, 230, 30), Rect2(2740, 710, 230, 30), Rect2(3150, 580, 260, 30), Rect2(3420, 680, 380, 30), Rect2(3910, 530, 220, 30)])
+	_floor(4180, 300, 420)
+	_supply(CREATURE, Vector2(2390, 820))
+	_supply(LIGHT, Vector2(1970, 1140))
+	_crystal(Vector2(900, 780), 1)
+	_crystal(Vector2(1450, 660), 0)
+	_crystal(Vector2(2240, 650), 1)
+	_crystal(Vector2(2680, 660), 0)
+	_crystal(Vector2(3510, 540), 1)
+	_crystal(Vector2(4010, 420), 0)
+	_spike_block(Vector2(2470, 660), Vector2(0, 240), 4.6, 0.0)
+	_spike_block(Vector2(3650, 470), Vector2(0, 260), 5.2, 0.5)
+	for at in [Vector2(740, 640), Vector2(3280, 520)]:
+		var key := KEY.new()
+		key.position = at
+		add_child(key)
+		key.collected.connect(func():
+			keys_collected += 1
+			key_collected = keys_collected == escape_keys.size()
+		)
+		escape_keys.append(key)
+	escape_key = escape_keys[0]
+	exit_position = Vector2(4330, 420)
+	route.assign([Vector2(530, 1130), Vector2(780, 990), Vector2(1140, 830), Vector2(740, 670), Vector2(1280, 750), Vector2(1650, 670), Vector2(2030, 680), Vector2(2370, 830), Vector2(2860, 680), Vector2(3280, 550), Vector2(3500, 650), Vector2(4020, 500), Vector2(4310, 310)])
 
 
 func update_escape(time_ready: bool) -> void:
@@ -355,7 +412,7 @@ func update_escape(time_ready: bool) -> void:
 		return
 	escape_unlocked = unlocked
 	arrival.set_meta("escape_initialized", true)
-	arrival.set_progress(0 if unlocked else 1, 1, "escape", "対峙して封印を解除\n檻の上の鍵も必要")
+	arrival.set_progress(0 if unlocked else 1, 1, "escape", "20秒の対峙と\n左右の鍵2つが必要")
 
 
 func item_on_switch(item: Grabbable) -> bool:
@@ -369,6 +426,8 @@ func item_on_switch(item: Grabbable) -> bool:
 
 func _physics_process(delta: float) -> void:
 	_elapsed += delta
+	for spike in spike_blocks:
+		spike.advance(delta)
 	for entry in doors:
 		_set_door(entry.body, not entry.button.is_pressed() if not entry.closes else entry.button.is_pressed())
 	for entry in moving_hazards:
@@ -420,9 +479,12 @@ func reset_state() -> void:
 		entry.surface.position = entry.rect.get_center()
 	exit_open = false
 	key_collected = false
+	keys_collected = 0
+	_console_occupied = false
+	_seal_triggered = false
 	escape_unlocked = false
 	arrival.reset_for_respawn()
-	if number == 11:
+	if number == FINAL_ROOM:
 		arrival.set_meta("escape_initialized", false)
 		update_escape(false)
 	for child in get_children():
@@ -454,6 +516,8 @@ func hazard_ahead(actor: PlayerController, direction: float) -> bool:
 			rectangles.append(Rect2(needle.tip_position() - Vector2(4, 4), Vector2(8, 8)))
 	for entry in moving_hazards:
 		rectangles.append(entry.current)
+	for spike in spike_blocks:
+		rectangles.append(Rect2(spike.global_position - spike.hit_extent(), spike.hit_extent() * 2.0))
 	for rect: Rect2 in rectangles:
 		var half_along := (absf(tangent.x) * rect.size.x + absf(tangent.y) * rect.size.y) * 0.5
 		var half_down := (absf(down.x) * rect.size.x + absf(down.y) * rect.size.y) * 0.5
@@ -461,19 +525,54 @@ func hazard_ahead(actor: PlayerController, direction: float) -> bool:
 		var top := rect.get_center().dot(down) - half_down
 		if actor.is_on_floor() and top > actor.position.dot(down) + 32:
 			continue
+		if actor.is_on_floor() and top + half_down * 2.0 < actor.position.dot(down) - 26.0:
+			continue
 		if ahead > -30 and ahead < 210 and actor.position.dot(down) > top - 120 and actor.position.dot(down) < top + half_down * 2 + 100:
 			return true
 	return false
 
 
 func seal_enemy(enemy: PlayerController, player: PlayerController) -> bool:
-	if seal_button == null or not seal_button.is_pressed() or not all_weight_doors_open():
+	if seal_button == null:
 		return false
-	if not cage.encloses(Rect2(enemy.position - Vector2(26, 26), Vector2(52, 52))) or cage.grow(30).has_point(player.position) or player.position.x <= cage.end.x or player.position.y >= cage.end.y:
+	var occupied := player.gravity_direction == 1 and player.is_on_floor() and Rect2(seal_console - Vector2(65, 45), Vector2(130, 50)).has_point(player.position)
+	var stepped := occupied and not _console_occupied
+	_console_occupied = occupied
+	if not stepped or not seal_button.is_pressed() or not all_weight_doors_open():
+		return false
+	if enemy.stun_left <= 0.0 or not cage.encloses(Rect2(enemy.position - Vector2(26, 26), Vector2(52, 52))):
 		return false
 	for door in cage_doors:
 		_set_door(door, true)
+	_seal_triggered = true
 	return true
+
+
+func can_launch_projectiles(origin: Vector2, excluded: Array[RID], count: int) -> bool:
+	if needles.get_child_count() + count > MAX_NEEDLES:
+		return false
+	var flying := 0
+	for needle in needles.get_children():
+		if not needle.stuck and not needle.is_queued_for_deletion():
+			flying += 1
+	if flying + count > MAX_FLYING_NEEDLES:
+		return false
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = origin
+	query.collision_mask = 1
+	query.exclude = excluded
+	return get_world_2d().direct_space_state.intersect_point(query, 1).is_empty()
+
+
+func _spike_block(at: Vector2, travel: Vector2, period: float, phase: float) -> void:
+	var spike: SpikeBlock = SPIKE_BLOCK.instantiate()
+	spike.position = at
+	spike.travel = travel
+	spike.period = period
+	spike.phase = phase
+	spike.external_collision = true
+	add_child(spike)
+	spike_blocks.append(spike)
 
 
 func _block(rect: Rect2) -> StaticBody2D:
@@ -610,6 +709,9 @@ func _draw() -> void:
 		draw_polyline(PackedVector2Array([wire_start, Vector2(wire_start.x, wire_end.y), wire_end]), Color(1, 0.8, 0.3, 0.65), 4)
 		for x in range(int(cage.position.x), int(cage.end.x), 24):
 			draw_line(Vector2(x, cage.position.y), Vector2(x, cage.end.y), Color(1, 0.8, 0.3, 0.25), 3)
+		ArtDraw.ellipse(self, seal_console, Vector2(60, 9), Color("86e7a4") if seal_button.is_pressed() else Color("9b9baa"), 3)
+		ArtDraw.footprints(self, seal_console - Vector2(0, 3), 0.8)
+		draw_polyline(PackedVector2Array([wire_end, Vector2(seal_console.x, wire_end.y), seal_console]), Color("ffdc7888"), 3)
 	for entry in doors:
 		var from: Vector2 = entry.button.position + Vector2(0, 25)
 		var to: Vector2 = entry.body.position

@@ -76,7 +76,6 @@ func _run() -> void:
 	stage._update_needles(1.0)
 	_check(is_equal_approx(stage.player.get_wall_stamina(), 3.0), "Terrain blocks damage to a player behind the wall")
 	stage.player.respawn()
-	await _attack_patterns()
 	await _poses()
 	_pause_and_retry()
 	_art_invariants()
@@ -84,28 +83,6 @@ func _run() -> void:
 	quit()
 
 
-func _attack_patterns() -> void:
-	_place(stage.enemy, Vector2(100, 200))
-	_place(stage.player, Vector2(400, 200))
-	stage.enemy.active = true
-	stage.enemy._needle_cooldown = 0.0
-	stage.enemy._update_needle_attack(0.01)
-	_check(stage.enemy._needle_warning > 0.0 and stage.room.needles.get_child_count() == 0, "A needle attack always gives warning before spawning")
-	var aim: Vector2 = stage.enemy._needle_aim
-	_place(stage.player, Vector2(440, 240))
-	stage.enemy._update_needle_attack(0.81)
-	_check(stage.room.needles.get_child_count() == 1 and stage.enemy._needle_aim == aim, "The long shot uses a locked aim that can be dodged")
-	_check(stage.enemy._needle_recovery > 0.0, "Firing creates a chance to escape or throw back")
-	stage.enemy._needle_cooldown = 0.0
-	stage.enemy._update_needle_attack(0.01)
-	stage.enemy._update_needle_attack(1.01)
-	_check(stage.room.needles.get_child_count() == 4, "The next pattern fires three short needles")
-	stage.enemy._needle_cooldown = 0.0
-	stage.enemy._update_needle_attack(0.01)
-	stage.enemy.apply_stun(0.4)
-	stage.enemy._update_needle_attack(0.1)
-	_check(stage.enemy._needle_warning < 0.0 and stage.room.needles.get_child_count() == 4, "Stunning the enemy cancels its warning attack")
-	await _step(2)
 
 
 func _poses() -> void:

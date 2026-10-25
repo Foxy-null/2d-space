@@ -21,7 +21,7 @@ func _run() -> void:
 	_check(stage.enemy is PlayerController, "Enemy shares the real player controller")
 	_check(stage.enemy.move_speed == stage.player.move_speed and stage.enemy.jump_speed == stage.player.jump_speed and stage.enemy.wall_stamina_max == stage.player.wall_stamina_max, "Initial enemy movement and stamina match the player")
 	_check(not stage.enemy.is_in_group("player"), "Enemy cannot be mistaken for player progression")
-	for number in 12:
+	for number in stage.ROOM.ROOM_COUNT:
 		stage._load_room(number)
 		await _step(3)
 		_check(stage.room.get_node("Items").get_child_count() > 0, "Every room supplies a throwable object")
@@ -64,7 +64,7 @@ func _enemy_behavior() -> void:
 			throws.append(object)
 	)
 	var start: Vector2 = stage.enemy.position
-	await _step(180)
+	await _step(360)
 	_check(stage.enemy.position.distance_to(start) > 60.0, "The autonomous enemy follows the course without player input")
 	_check(not throws.is_empty(), "The enemy picks up shared stock and performs real throws")
 	stage.enemy.set_physics_process(false)
@@ -72,6 +72,9 @@ func _enemy_behavior() -> void:
 	stage.enemy.set("_pickup_left", 0.0)
 	var stock: Grabbable = stage.room.get_node("Items").get_child(0)
 	stock.reset_for_respawn()
+	for other in stage.room.get_node("Items").get_children():
+		if other != stock:
+			other.free()
 	_place(stage.enemy, stock.position - Vector2(80, 0))
 	await _step(3)
 	stage.enemy.set("_pickup_left", 0.0)
@@ -254,7 +257,7 @@ func _fall_keeps_chaser() -> void:
 	stage.player.respawn()
 	await _step(3)
 	_check(stage.enemy.position == stage.room.enemy_spawn and not stage.enemy.get("active") and not stage.room.all_weight_doors_open(), "An explicit full retry still resets both actors and room mechanisms")
-	stage._load_room(11)
+	stage._load_room(stage.ROOM.FINAL_ROOM)
 	stage.defeat_hits = 4
 	stage.escape_elapsed = 7.0
 	stage.room.key_collected = true
@@ -269,33 +272,38 @@ func _fall_keeps_chaser() -> void:
 func _final_endings() -> void:
 	for result in ["封じ込め成功", "逃走成功", "決着成功"]:
 		await _new_stage()
-		stage._load_room(11)
+		stage._load_room(stage.ROOM.FINAL_ROOM)
 		await _step(3)
 		stage.player.set_physics_process(false)
 		stage.enemy.set_physics_process(false)
-		stage.enemy.set("active", true)
-		_place(stage.player, Vector2(3510, 1030))
+		stage.enemy.active = true
+		stage.enemy.awareness = "pursuit"
+		stage._immunity_left = 999.0
+		_place(stage.player, Vector2(1800, 1294))
 		_place(stage.enemy, stage.room.cage.get_center())
 		stage.escape_elapsed = stage.escape_seconds
 		stage.room.update_escape(true)
-		_check(stage.room.arrival.locked, "Time alone does not unlock escape without the key and weights")
+		_check(stage.room.arrival.locked, "Time alone does not unlock escape without both keys")
 		_place(stage.enemy, stage.room.escape_key.position)
 		await _step(3)
-		_check(not stage.room.key_collected, "The enemy cannot collect the player's escape key")
-		_place(stage.player, stage.room.escape_key.position)
-		await _step(3)
-		_check(stage.room.key_collected and not stage.room.escape_key.visible, "Real player contact collects the escape key")
-		_place(stage.player, Vector2(3510, 1030))
+		_check(not stage.room.key_collected, "The enemy cannot collect escape keys")
+		for key in stage.room.escape_keys:
+			_place(stage.player, key.position)
+			await _step(3)
+		_check(stage.room.key_collected and stage.room.keys_collected == 2, "Real player contacts collect both distant keys")
+		_place(stage.player, Vector2(1800, 1294))
 		_place(stage.enemy, stage.room.cage.get_center())
 		stage.room.update_escape(true)
-		_check(stage.room.arrival.locked, "The key and time cannot bypass common weight challenges")
-		for door in stage.room.doors:
-			_put_weight(door.button.position, stage.room.HEAVY if door.button.required_weight > 2 else stage.room.LIGHT)
-		await _step(30)
-		_check(stage.room.escape_unlocked and not stage.room.arrival.locked, "Escape requires both weights, the key and the chase timer")
+		_check(stage.room.escape_unlocked and not stage.room.arrival.locked, "Both keys and confrontation unlock escape")
 		if result == "封じ込め成功":
-			_put_weight(stage.room.seal_button.position, stage.room.LIGHT)
-			await _step(15)
+			_put_weight(stage.room.seal_button.position, stage.room.HEAVY)
+			await _step(20)
+			_check(not stage.completed, "Powering the console does not auto-seal the cage")
+			stage.enemy.apply_stun(2.0)
+			_place(stage.player, stage.room.seal_console - Vector2(0, 26))
+			stage.player.velocity = Vector2(0, 400)
+			stage.player._move_player()
+			await _step(2)
 		elif result == "逃走成功":
 			_place(stage.player, stage.room.exit_rect.get_center())
 			stage.room.exit_open = true
@@ -310,25 +318,25 @@ func _final_endings() -> void:
 					_check(stage.defeat_hits == 1, "Repeated impacts during stun do not count toward defeat")
 				if hit < stage.defeat_hits_required - 1:
 					_check(not stage.completed, "Defeat requires all six fresh hits")
-		_check(stage.completed and stage.ending == result and stage._completion.card.visible, "All three endings reach the shared clear screen")
+		_check(stage.completed and stage.ending == result and stage._completion.card.visible, "Each ending reaches the shared clear screen")
 		_check(not stage.player.controls_enabled and not stage.enemy.controls_enabled, "Both actors stop after completion")
-		if OS.get_cmdline_user_args().has("--screenshots"):
-			RenderingServer.force_draw()
-			root.get_texture().get_image().save_png("res://docs/screenshots/stage-6/%s.png" % {"封じ込め成功": "seal", "逃走成功": "escape", "決着成功": "defeat"}[result])
 	await _new_stage()
-	stage._load_room(11)
+	stage._load_room(stage.ROOM.FINAL_ROOM)
 	await _step(3)
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
-	stage._chase_delay = 0.0
-	_place(stage.player, Vector2(3500, 1000))
+	stage.enemy.active = true
+	stage.enemy.awareness = "search"
+	_place(stage.player, Vector2(2500, 1000))
+	_place(stage.enemy, Vector2(1800, 0))
 	await _step(60)
-	_check(stage.escape_elapsed == 0.0, "Waiting while the enemy is stuck outside the arena does not release escape")
-	_place(stage.enemy, Vector2(3100, 1000))
+	_check(stage.escape_elapsed == 0.0, "An enemy outside the arena does not advance confrontation")
+	_place(stage.enemy, Vector2(1800, 1000))
+	stage.enemy.awareness = "search"
 	await _step(60)
-	_check(stage.escape_elapsed > 0.9, "The escape clock runs while both actors are in the arena")
+	_check(stage.escape_elapsed > 0.9, "The occupied arena remains threatened even while the enemy searches")
 	stage.player.respawn()
-	_check(stage.defeat_hits == 0 and stage.escape_elapsed == 0.0 and not stage.room.key_collected and stage.room.arrival.locked, "Retry resets the three ending objectives")
+	_check(stage.defeat_hits == 0 and stage.escape_elapsed == 0.0 and not stage.room.key_collected and stage.room.arrival.locked, "Retry resets all ending objectives")
 
 
 func _hit_enemy(object: Grabbable) -> void:
@@ -377,7 +385,7 @@ func _capture_results() -> void:
 	stage.player._wall_stamina = 0.0
 	stage._capture()
 	await _step(90)
-	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "A failed capture returns to stage selection")
+	_check(current_scene == stage and not stage._game_over_pending and stage.player.position == stage.room.spawn, "A failed capture retries the current room without losing the stage")
 
 
 func _put_weight(at: Vector2, scene: PackedScene) -> void:

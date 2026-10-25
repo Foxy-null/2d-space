@@ -31,11 +31,11 @@ func _ready() -> void:
 
 func advance(delta: float) -> void:
 	elapsed += delta
-	# Six alternating rows leave 160px lanes and do not follow a dodging player.
+	# Wider rows keep the 160px lanes while increasing each wave to three/four shards.
 	while waves < 6 and elapsed >= 1.8 + waves * 0.48:
-		for slot in 5:
+		for slot in 7:
 			if slot % 2 == waves % 2:
-				rain.emit(to_global(Vector2((slot - 2) * 80, 24)), down)
+				rain.emit(to_global(Vector2((slot - 3) * 80, 24)), down)
 		waves += 1
 	_update_picture()
 	queue_redraw()
@@ -45,7 +45,7 @@ func advance(delta: float) -> void:
 
 func _update_picture() -> void:
 	var forming := smoothstep(0.35, 1.5, elapsed)
-	picture.scale = Vector2.ONE * 440.0 / picture.texture.get_width() * lerpf(0.12, 1.0, forming)
+	picture.scale = Vector2.ONE * 600.0 / picture.texture.get_width() * lerpf(0.12, 1.0, forming)
 	picture.modulate.a = forming * (1.0 - smoothstep(4.7, 5.3, elapsed))
 	picture.material.set_shader_parameter("phase", fposmod(elapsed, 4.0) * TAU / 4.0)
 
@@ -59,6 +59,6 @@ func _draw() -> void:
 			draw_circle(at, 10 + progress * 17, Color(0.42, 0.4, 0.37, sin(progress * PI) * 0.6))
 	# Gold seeds signal the next row before it drops, rather than marking a hitbox.
 	if waves < 6 and elapsed > 1.2:
-		for slot in 5:
+		for slot in 7:
 			if slot % 2 == waves % 2:
-				draw_line(Vector2((slot - 2) * 80, 40), Vector2((slot - 2) * 80, 66), Color("ffdf70"), 3, true)
+				draw_line(Vector2((slot - 3) * 80, 40), Vector2((slot - 3) * 80, 66), Color("ffdf70"), 3, true)

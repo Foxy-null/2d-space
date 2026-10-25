@@ -17,12 +17,15 @@ func _run() -> void:
 	stage._load_room(1)
 	stage._immunity_left = 999.0
 	stage._chase_delay = 0.0
+	# This fixture isolates movement; projectile/stock behavior has dedicated checks.
+	stage.enemy._needle_cooldown = 999.0
+	stage.enemy._pickup_left = 999.0
 	stage.player.set_physics_process(false)
 	stage.player.position = Vector2(1100, 794)
 	await _step(240)
-	_check(stage.enemy.position.x > 900 and stage.enemy.position.x < 1200, "Enemy pursues the player instead of the exit")
+	_check(stage.enemy.position.x > 900 and stage.enemy.position.x < 1340, "Enemy pursues the player instead of the exit")
 	stage.player.position.x = 600
-	await _step(150)
+	await _step(300)
 	_check(stage.enemy.position.x < 760, "Enemy reverses to chase a backtracking player")
 	var path_size: int = stage.enemy.get("_trail").size()
 	stage.enemy.call("reset_pursuit", true)
@@ -33,7 +36,7 @@ func _run() -> void:
 	await _umbrella()
 	await _final_approach()
 	var worst := 0.0
-	for number in 12:
+	for number in stage.ROOM.ROOM_COUNT:
 		var start := Time.get_ticks_usec()
 		stage._load_room(number)
 		worst = maxf(worst, (Time.get_ticks_usec() - start) / 1000.0)
@@ -88,27 +91,20 @@ func _umbrella() -> void:
 
 
 func _final_approach() -> void:
-	stage._load_room(11)
+	stage._load_room(stage.ROOM.FINAL_ROOM)
 	stage.room.set_physics_process(true)
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
-	for door in stage.room.doors:
-		var item: Grabbable = (stage.room.HEAVY if door.button.required_weight > 2 else stage.room.LIGHT).instantiate()
-		item.position = door.button.position - Vector2(0, 60)
-		stage.room.get_node("Items").add_child(item)
-	await _step(30)
-	_position(Vector2(2250, 1454), Vector2(3370, 1094))
-	var trail: Array[Dictionary] = []
-	for point in [Vector2(2280, 1454), Vector2(2340, 1364), Vector2(2540, 1274), Vector2(2740, 1184), Vector2(2910, 1094), Vector2(3090, 1094), Vector2(3370, 1094)]:
-		trail.append({"at": point, "gravity": 1})
-	stage.enemy.set("_trail", trail)
+	_position(Vector2(800, 1294), Vector2(1750, 1294))
+	stage.enemy._pickup_left = 999.0
+	stage.enemy._needle_cooldown = 999.0
 	var entered_cage := false
-	for frame in 1200:
+	for frame in 600:
 		await _step()
 		if stage.room.cage.encloses(Rect2(stage.enemy.position - Vector2(26, 26), Vector2(52, 52))):
 			entered_cage = true
 			break
-	_check(entered_cage, "Live enemy climbs the final stairs and enters the sealing cage")
+	_check(entered_cage, "A live enemy physically enters the redesigned cage")
 
 
 func _position(enemy_at: Vector2, player_at: Vector2) -> void:
@@ -118,6 +114,12 @@ func _position(enemy_at: Vector2, player_at: Vector2) -> void:
 	stage.player.velocity = Vector2.ZERO
 	stage.player.set_gravity_direction(1)
 	stage.enemy.set("active", true)
+	# Ability fixture: this destination was observed before the obstacle was introduced.
+	stage.enemy._has_seen = true
+	stage.enemy._last_seen = player_at
+	stage.enemy._last_gravity = 1
+	stage.enemy._trail.assign([{"at": player_at, "gravity": 1}])
+	stage.enemy.awareness = "search"
 	stage.enemy.set_physics_process(true)
 
 

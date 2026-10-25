@@ -75,11 +75,11 @@ func _cloud() -> void:
 	_check(points.is_empty(), "Smoke gathers into a cloud before any damaging rain appears")
 	stage.player.position.x += 250
 	cloud.advance(0.02)
-	_check(points.size() == 3 and cloud.position == locked, "The first rain row has three shards and does not follow a dodging player")
+	_check(points.size() == 4 and cloud.position == locked, "The first rain row has four shards and does not follow a dodging player")
 	_check(is_equal_approx(points[1].x - points[0].x, 160.0), "Rain leaves wide escape lanes")
 	cloud.advance(2.5)
-	_check(points.size() == 15 and cloud.waves == 6, "Six alternating rain rows emit fifteen actual shards")
-	_check(stage.room.needles.get_child_count() == 15, "Ash rain uses the shared swept projectile and embedded-tip rules")
+	_check(points.size() == 21 and cloud.waves == 6, "Six alternating rain rows emit twenty-one actual shards")
+	_check(stage.room.needles.get_child_count() == 21, "Ash rain uses the shared swept projectile and embedded-tip rules")
 	for needle in stage.room.needles.get_children():
 		_check(needle.variant == 3 and needle.velocity == Vector2.DOWN * 660.0, "Solid ash falls along the cast gravity")
 	var rain = stage.room.needles.get_child(0)
@@ -118,11 +118,16 @@ func _cloud() -> void:
 		var directions: Array[Vector2] = []
 		cloud.rain.connect(func(at, direction): points.append(at); directions.append(direction))
 		cloud.advance(1.81)
-		_check(directions.size() == 3 and directions[0] == gravity and absf((points[1] - points[0]).dot(gravity)) < 0.01, "Clouds and their escape lanes rotate with gravity")
+		_check(directions.size() == 4 and directions[0] == gravity and absf((points[1] - points[0]).dot(gravity)) < 0.01, "Clouds and their escape lanes rotate with gravity")
 		stage.player.respawn()
 	await _step(2)
-	stage.enemy.position = Vector2(150, 200)
-	stage.player.position = Vector2(400, 200)
+	stage.room._block(Rect2(50, -2000, 1000, 30))
+	await _step(2)
+	stage.enemy.position = Vector2(150, -2026)
+	stage.player.position = Vector2(400, -2026)
+	stage.enemy.velocity = Vector2(0, 400)
+	stage.enemy._move_player()
+	stage.room.visible_area = Rect2()
 	stage.enemy.active = true
 	stage.enemy.stun_left = 0.0
 	stage.enemy._needle_variant = 3
@@ -219,6 +224,10 @@ func _spikes() -> void:
 		await _step()
 		walked = walked or (stage.enemy.is_on_floor() and stage.enemy.position.x > 450)
 	stage.player.position = Vector2(800, -1326)
+	# The movement fixture supplies a previously observed destination behind the wall.
+	stage.enemy._last_seen = stage.player.position
+	stage.enemy._trail.assign([{"at": stage.player.position, "gravity": 1}])
+	stage.enemy._trail_index = 0
 	for frame in 240:
 		await _step()
 		walked = walked or (stage.enemy.is_on_floor() and stage.enemy.position.x > 450)
