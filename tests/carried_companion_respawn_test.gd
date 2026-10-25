@@ -22,6 +22,10 @@ func _run() -> void:
 	# Initial fixture: Room2's normal checkpoint. All movement below uses input.
 	stage.room_index = 1
 	stage._set_checkpoint()
+	# Keep the contact fixture near the entrance after the canyon became taller.
+	var spike: SpikeBlock = stage.rooms.get_child(1).get_node("Hazards/Spike1")
+	spike.origin.y += stage.rooms.get_child(1).entrance_top - 620
+	spike.reset_for_respawn()
 	player = stage.player
 	player.respawn()
 	creature = stage.rooms.get_child(1).get_node("Items/JumpCreature")
@@ -39,7 +43,7 @@ func _run() -> void:
 	await _command(["Shift"], 15)
 	await _command([], 60)
 	_check(stayed_in_room and peak_speed < 1000, "The restored rigid body never receives a teleport impulse or leaves the room")
-	_check(creature.position.y > 530 and creature.position.y < 620 and creature.position.x > 35 and creature.position.x < 250, "After a full second the companion remains on the safe entrance floor")
+	_check(creature.position.y > stage.rooms.get_child(1).entrance_top - 90 and creature.position.y < stage.rooms.get_child(1).entrance_top and creature.position.x > 35 and creature.position.x < 250, "After a full second the companion remains on the safe entrance floor")
 	_check(not player.get_collision_exceptions().has(creature) and not creature.get_collision_exceptions().has(player), "The temporary pair exception is removed after the restored bodies separate")
 	var other: Grabbable = stage.rooms.get_child(0).get_node("Items/JumpCreature")
 	_check(not player.get_collision_exceptions().has(other) and not other.get_collision_exceptions().has(player) and other.collision_layer == 1 and other.collision_mask == 1, "An unrelated free object keeps its ordinary collision settings")
@@ -57,7 +61,7 @@ func _run() -> void:
 	# R without a held object must retain the original reset behavior.
 	await _command(["R"], 1)
 	await _command([], 6)
-	_check(player.position.distance_to(Vector2(1390, 594)) < 2 and player.get_held_object() == null and player.is_dash_ready(), "An unheld retry still returns to the safe current checkpoint")
+	_check(player.position.distance_to(player._spawn_position) < 2 and player.get_held_object() == null and player.is_dash_ready(), "An unheld retry still returns to the safe current checkpoint")
 	_check(player._separating_objects.is_empty(), "An unheld retry does not register unrelated bodies for separation")
 	print("CARRIED_COMPANION_RESPAWN_TEST_%s (%d checks, peak speed %.1f)" % ["FAILED" if failed else "OK", checks, peak_speed])
 	stage.queue_free()
@@ -91,7 +95,7 @@ func _step(frames: int) -> void:
 		await process_frame
 		if deaths > 0 and is_instance_valid(creature):
 			peak_speed = maxf(peak_speed, creature.linear_velocity.length())
-			stayed_in_room = stayed_in_room and Rect2(0, 32, 1280, 688).has_point(creature.position)
+			stayed_in_room = stayed_in_room and Rect2(0, 32, 1280, stage.rooms.get_child(1).room_height - 32).has_point(creature.position)
 
 
 func _check(value: bool, message: String) -> void:

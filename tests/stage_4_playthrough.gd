@@ -6,6 +6,7 @@ var actions := {}
 var deaths := 0
 var samples: Array[Vector2] = []
 var screenshot_mode := false
+var steering_strength := 1.0
 
 func step(count: int = 1) -> void:
 	for frame in count:
@@ -25,14 +26,18 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 	var cooldown := 0
 	var direction := 1
 	var landing_first := false
-	if section == 4:
+	if section in [1, 7] and player.is_on_floor() and absf(player.position.y + 26 - room.walls[0].position.y) < 5 and player.position.x - room.position.x > room.walls[0].position.x:
+		waypoint = 1
+	if section in [4, 8]:
 		if not (player.is_on_floor() and player.position.x > room.position.x + room.walls[0].position.x):
-			if not await island_leap():
+			if not await island_leap(20, 20, steering_strength, section):
 				return false
 		if stop_at_rest:
 			return true
 		waypoint = 1
 	for frame in 1800:
+		if section >= 6 and OS.get_cmdline_user_args().has("--trace") and frame % 30 == 0:
+			print("EXPANSION room=%d frame=%d waypoint=%d pos=%s velocity=%s actions=%s" % [section+1, frame, waypoint, player.position - room.position, player.velocity, actions])
 		release()
 		if stage.room_index != section or stage.completed:
 			return true
@@ -69,7 +74,7 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 						Input.action_release("move_left")
 						Input.action_press("move_up")
 						Input.action_press("dash")
-		elif section == 1 and waypoint == 0:
+		elif section in [1, 7] and waypoint == 0:
 			if player.position.y < room.walls[0].position.y - 55 and x > room.walls[0].position.x - 50:
 				landing_first = true
 			if landing_first and player.is_on_floor() and x > 250:
@@ -79,7 +84,7 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 			elif landing_first:
 				steer_to(290 - x)
 			else:
-				if player.is_dash_ready() and x > 230 and player.position.y < 480 and not player.is_on_floor():
+				if player.is_dash_ready() and x > 230 and player.position.y < room.walls[0].position.y + 180 and not player.is_on_floor():
 					Input.action_release("move_right")
 					Input.action_release("move_left")
 					Input.action_press("move_up")
@@ -94,27 +99,35 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 						cooldown = 10
 					else:
 						direction = -kick
-				Input.action_press("move_right" if direction == 1 else "move_left")
+				Input.action_press("move_right" if direction == 1 else "move_left", steering_strength)
 				if player.is_on_floor() and cooldown == 0:
 					Input.action_press("jump")
 					cooldown = 10
 		else:
-			var target: Rect2 = room.walls[waypoint] if waypoint < room.walls.size() else Rect2(1200 if section == 5 else 1240, 420 if section == 5 else room.exit_top, 40, 30)
+			var target: Rect2 = room.walls[waypoint] if waypoint < room.walls.size() else Rect2(1200 if section == stage.rooms.get_child_count() - 1 else 1250, 420 if section == stage.rooms.get_child_count() - 1 else room.exit_top, 40, 30)
 			if waypoint < room.walls.size() and player.is_on_floor() and x > target.position.x - 8 and x < target.end.x + 8 and absf(player.position.y + 26 - target.position.y) < 5:
 				waypoint += 1
-				target = room.walls[waypoint] if waypoint < room.walls.size() else Rect2(1200 if section == 5 else 1240, 420 if section == 5 else room.exit_top, 40, 30)
+				if stop_at_rest and waypoint == 1:
+					return true
+				target = room.walls[waypoint] if waypoint < room.walls.size() else Rect2(1200 if section == stage.rooms.get_child_count() - 1 else 1250, 420 if section == stage.rooms.get_child_count() - 1 else room.exit_top, 40, 30)
 			var dx: float = target.get_center().x - x
 			steer_to(dx)
-			if player.is_on_floor() and cooldown == 0 and absf(dx) > 35 and not (section == 0 and waypoint == 1) and (waypoint < room.walls.size() or (section == 4 and x < room.walls[0].end.x + 20) or player.position.y + 26 > target.position.y + 5):
+			var exiting: bool = waypoint >= room.walls.size() and section < stage.rooms.get_child_count() - 1 and x > 1200
+			if not exiting and player.is_on_floor() and cooldown == 0 and absf(dx) > 35 and not (section == 0 and waypoint == 1) and (waypoint < room.walls.size() or (section == 4 and x < room.walls[0].end.x + 20) or player.position.y + 26 > target.position.y + 5):
 				if safe_launch(room, Vector2(player.velocity.x, -650), int(signf(dx)), 48 if section == 4 or (section == 1 and waypoint == 1) else 32):
 					Input.action_press("jump")
 					cooldown = 10
 				else:
 					Input.action_release("move_left")
 					Input.action_release("move_right")
-			elif not player.is_on_floor() and player.velocity.y > -40 and cooldown == 0 and player.get_available_extra_jump_count() > 0 and player.position.y + 26 > target.position.y - 35:
+			elif not exiting and not player.is_on_floor() and player.velocity.y > -40 and cooldown == 0 and player.get_available_extra_jump_count() > 0 and (player.position.y + 26 > target.position.y - 35 or (section == 7 and waypoint == 3)):
 				Input.action_press("jump")
 				cooldown = 12
+			elif section == 6 and not player.is_on_floor() and player.velocity.y > -40 and cooldown == 0 and player.is_dash_ready() and player.position.y + 26 > target.position.y + 200:
+				Input.action_release("move_right")
+				Input.action_release("move_left")
+				Input.action_press("move_up")
+				Input.action_press("dash")
 		if screenshot_mode and frame in [70, 180]:
 			DirAccess.make_dir_recursive_absolute("res://docs/screenshots/stage-4")
 			RenderingServer.force_draw()
@@ -125,7 +138,7 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 func steer_to(dx: float) -> void:
 	var steer: float = dx * 6 - player.velocity.x * 0.5
 	if absf(steer) > 20:
-		Input.action_press("move_right" if steer > 0 else "move_left")
+		Input.action_press("move_right" if steer > 0 else "move_left", steering_strength)
 
 func safe_launch(room: Node2D, velocity: Vector2, direction: int, frames: int) -> bool:
 	var at := player.global_position
@@ -137,14 +150,15 @@ func safe_launch(room: Node2D, velocity: Vector2, direction: int, frames: int) -
 		for hazard in room.get_node("Hazards").get_children():
 			var progress: float = (1.0 - cos(TAU * ((hazard.elapsed + (frame + 1.0) / 60) / hazard.period + hazard.phase))) * 0.5
 			var spike: Vector2 = room.position + hazard.origin + hazard.travel * progress
-			var extent: Vector2 = hazard.hit_extent() + Vector2(22, 30)
+			var local_extent: Vector2 = hazard.hit_extent()
+			var extent: Vector2 = hazard.transform.x.abs() * local_extent.x + hazard.transform.y.abs() * local_extent.y + Vector2(22, 30)
 			if absf(at.x - spike.x) < extent.x and absf(at.y - spike.y) < extent.y:
 				return false
 	return true
 
 
-func island_leap(extra_delay := 20, dash_delay := 20, strength := 1.0) -> bool:
-	var room: Node2D = stage.rooms.get_child(4)
+func island_leap(extra_delay := 20, dash_delay := 20, strength := 1.0, section := 4) -> bool:
+	var room: Node2D = stage.rooms.get_child(section)
 	var before := deaths
 	Input.action_press("wall_grab")
 	Input.action_press("move_right", strength)

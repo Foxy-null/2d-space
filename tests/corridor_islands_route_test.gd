@@ -219,6 +219,15 @@ func _footstool(walk: int, place := 145, coyote := false) -> void:
 		supported = supported or player.get_slide_collision(index).get_collider() == creature
 	_check(player.is_on_floor() and supported and player.position.y < 550, "The player physically stands on the free companion")
 	if failed: return
+	# Brake on the intended back step before measuring the delayed takeoff.
+	for frame in 120:
+		var offset := creature.position.x - 10 - _x()
+		_move(Vector2(signf(offset), 0), false, minf(absf(offset) / 40, 1))
+		await step()
+		if absf(offset) < 2 and absf(player.velocity.x) < 10:
+			break
+	_move(Vector2.ZERO, false)
+	_check(player.is_on_floor(), "The measured back step starts with real support after braking")
 	_move(Vector2.RIGHT, false)
 	await step(walk)
 	if coyote:

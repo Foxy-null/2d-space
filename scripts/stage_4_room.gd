@@ -1,13 +1,15 @@
 extends Node2D
-## Six distinct carry routes in room-local coordinates.
+## Carry routes in room-local coordinates.
 
 const TERRAIN = preload("res://scripts/terrain_art.gd")
 const SPIKE = preload("res://scenes/spike_block.tscn")
 const CREATURE = preload("res://scenes/jump_creature.tscn")
 const WIND = preload("res://scenes/wind_area.tscn")
 const GOAL = preload("res://scenes/arrival_switch.tscn")
+const SCROLL = preload("res://scenes/scroll_collectible.tscn")
+const SCROLL_MARK = preload("res://scripts/scroll_marker.gd")
 
-@export_range(0, 5) var room_number := 0
+@export_range(0, 8) var room_number := 0
 var walls: Array[Rect2] = []
 var exit_top := 500.0
 var entrance_top := 620.0
@@ -24,6 +26,15 @@ func _ready() -> void:
 	if room_number == 1:
 		entrance_top = 1700.0
 		room_height = 1800.0
+	elif room_number == 6:
+		entrance_top = 1220.0
+		room_height = 1320.0
+	elif room_number == 7:
+		entrance_top = 1400.0
+		room_height = 1500.0
+	elif room_number == 8:
+		entrance_top = 1000.0
+		room_height = 1100.0
 	_block("LeftWall", Rect2(0, 100, 36, room_height - 100))
 	_block("Entrance", Rect2(36, entrance_top, 184, 40))
 	# Each route has its own silhouette and movement problem.
@@ -49,13 +60,42 @@ func _ready() -> void:
 			add_child(wind)
 		5: # Right, back left, then a long jump to the right.
 			walls = [Rect2(300, 510, 120, 32), Rect2(560, 390, 120, 32), Rect2(340, 270, 130, 32), Rect2(790, 360, 130, 32), Rect2(1040, 450, 90, 32)]
+		6: # Recover the companion and Dash between two high transfers.
+			walls = [Rect2(370, 800, 220, 24), Rect2(760, 380, 250, 24), Rect2(1040, 470, 90, 24)]
+		7: # A wall-kick shaft opens into a leftward turn and a lower crossing.
+			walls = [Rect2(270, 500, 240, 1000), Rect2(70, 300, 130, 24), Rect2(550, 390, 180, 24), Rect2(930, 440, 130, 24)]
+		8: # Enter the high wind, return left, then climb toward the final arrival.
+			walls = [Rect2(850, 860, 230, 28), Rect2(560, 680, 200, 28), Rect2(880, 480, 250, 28)]
+			var wind := WIND.instantiate()
+			wind.name = "HighTailwind"
+			wind.position = Vector2(500, 500)
+			wind.area_size = Vector2(300, 40)
+			wind.wind_direction = Vector2.RIGHT
+			wind.wind_acceleration = 2000.0
+			wind.max_wind_speed = 650.0
+			add_child(wind)
 	for rect in walls:
-		_block("Platform%d" % get_child_count(), rect, room_number == 0)
+		_block("Platform%d" % get_child_count(), rect, room_number in [0, 6, 8] or (room_number == 7 and rect != walls[0]))
+	if room_number == 6:
+		_block("ScrollRest", Rect2(50, 600, 220, 24), true)
+		var marker := Node2D.new()
+		marker.name = "ScrollMark"
+		marker.position = Vector2(395, 740)
+		marker.scale = Vector2.ONE * 0.4
+		marker.modulate.a = 0.75
+		marker.set_script(SCROLL_MARK)
+		add_child(marker)
+		var scroll := SCROLL.instantiate()
+		scroll.name = "Scroll"
+		scroll.position = Vector2(180, 530)
+		scroll.stage_id = "companion"
+		scroll.scroll_id = "relay_left_01"
+		add_child(scroll)
 	exit_top = 500.0
 	_block("Exit", Rect2(1160, exit_top, 120, 40))
 	_block("ExitBarrier", Rect2(1280, 100, 24, room_height - 100))
 	if room_number != 0:
-		_label("Checkpoint", Vector2(45, entrance_top + 47), "↺ %02d / 06" % (room_number + 1), Color("81f6c2"), 16)
+		_label("Checkpoint", Vector2(45, entrance_top + 47), "↺ %02d / %02d" % [room_number + 1, get_parent().get_child_count()], Color("81f6c2"), 16)
 	_label("ExitLabel", Vector2(1180, exit_top + 48), "○ →", Color.WHITE, 22)
 	var ceiling := SPIKE.instantiate()
 	ceiling.name = "CeilingSpikes"
@@ -93,14 +133,20 @@ func _ready() -> void:
 			_spike(Vector2(960, 250), Vector2(0, 290), 3.8, 0.0)
 			_spike(Vector2(250, 200), Vector2(0, 400), 4.3, 0.5)
 			_spike(Vector2(710, 180), Vector2(0, 300), 4.5, 0.4)
-	if room_number == 4:
+		6:
+			_spike(Vector2(650, 420), Vector2(0, 160), 4.0, 0.5)
+		7:
+			_spike(Vector2(780, 240), Vector2(0, 180), 4.2, 0.5)
+		8:
+			_spike(Vector2(810, 700), Vector2(0, 160), 4.0, 0.0)
+	if room_number in [4, 6, 8]:
 		var edge := SPIKE.instantiate()
 		edge.name = "LeftEdgeSpikes"
-		edge.position = Vector2(36, 350)
+		edge.position = Vector2(36, 630 if room_number == 6 else (350 if room_number == 4 else 730))
 		edge.rotation = -PI / 2
 		edge.travel = Vector2.ZERO
 		edge.ceiling_strip = true
-		edge.strip_half_width = 250.0
+		edge.strip_half_width = 590.0 if room_number == 6 else 250.0
 		edge.room_number = room_number
 		$Hazards.add_child(edge)
 	var creature := CREATURE.instantiate()
@@ -112,7 +158,10 @@ func _ready() -> void:
 	delivery_icon.name = "DeliveryIcon"
 	delivery_icon.texture = creature.get_node("Visuals/Body").sprite_frames.get_frame_texture("default", 0)
 	# Keep the final badge clear of the goal and a companion held on its cap.
-	delivery_icon.position = Vector2(1220, exit_top - (250 if room_number == 5 else 65))
+	delivery_icon.position = Vector2(1220, exit_top - (250 if room_number == 8 else 65))
+	if room_number == 6:
+		# The upper rest's camera would place an overhead badge under the pause button.
+		delivery_icon.position.y = exit_top + 90
 	delivery_icon.scale = Vector2.ONE * (42.0 / delivery_icon.texture.get_width())
 	add_child(delivery_icon)
 	var delivery_frame := Line2D.new()
@@ -123,7 +172,7 @@ func _ready() -> void:
 	delivery_frame.width = 3.0
 	delivery_frame.default_color = Color("a7f5ac")
 	add_child(delivery_frame)
-	if room_number == 5:
+	if room_number == 8:
 		var goal := GOAL.instantiate()
 		goal.name = "Goal"
 		goal.position = Vector2(1220, exit_top)
