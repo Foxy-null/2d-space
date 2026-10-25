@@ -1,4 +1,4 @@
-[gd_scene load_steps=45 format=3]
+[gd_scene load_steps=47 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_5.gd" id="stage"]
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
@@ -14,7 +14,9 @@
 
 [ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
 
-[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_13.tscn" id="room13"]
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_14.tscn" id="room14"]
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_15.tscn" id="room15"]
 
 [sub_resource type="RectangleShape2D" id="EntranceShape"]
 size = Vector2(180, 40)
@@ -2399,9 +2401,14 @@ width = 2.0
 default_color = Color(0.75, 1, 0.85, 0.6)
 antialiased = true
 
-[node name="Goal" parent="Rooms/Room12" instance=ExtResource("goal")]
-position = Vector2(1210, 600)
-mission_required = false
+[node name="Room13" parent="Rooms" instance=ExtResource("room13")]
+position = Vector2(15360, 0)
+
+[node name="Room14" parent="Rooms" instance=ExtResource("room14")]
+position = Vector2(16640, 0)
+
+[node name="Room15" parent="Rooms" instance=ExtResource("room15")]
+position = Vector2(17920, 0)
 
 [node name="Player" parent="." instance=ExtResource("player")]
 position = Vector2(90, 570)

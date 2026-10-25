@@ -1,0 +1,190 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
+
+[ext_resource type="PackedScene" path="res://scenes/pinball_spring.tscn" id="bumper"]
+
+[ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
+
+[sub_resource type="RectangleShape2D" id="Entrance"]
+size = Vector2(180, 40)
+
+[sub_resource type="RectangleShape2D" id="Exit"]
+size = Vector2(140, 16)
+
+[sub_resource type="RectangleShape2D" id="Rest"]
+size = Vector2(160, 16)
+
+[sub_resource type="RectangleShape2D" id="Hazard1"]
+size = Vector2(28, 100)
+
+[sub_resource type="RectangleShape2D" id="Hazard2"]
+size = Vector2(28, 640)
+
+[node name="Room14" type="Node2D"]
+
+metadata/room_height = 1280.0
+
+[node name="Entrance" type="StaticBody2D" parent="."]
+position = Vector2(90, 1120)
+
+[node name="Collision" type="CollisionShape2D" parent="Entrance"]
+shape = SubResource("Entrance")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-90.0, -20.0, 90.0, -20.0, 90.0, 20.0, -90.0, 20.0)
+
+[node name="Exit" type="StaticBody2D" parent="."]
+position = Vector2(1210, 380)
+
+[node name="Collision" type="CollisionShape2D" parent="Exit"]
+shape = SubResource("Exit")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-70.0, -8.0, 70.0, -8.0, 70.0, 8.0, -70.0, 8.0)
+
+[node name="Rest" type="StaticBody2D" parent="."]
+position = Vector2(700, 950)
+
+[node name="Collision" type="CollisionShape2D" parent="Rest"]
+shape = SubResource("Rest")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="Rest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-80.0, -8.0, 80.0, -8.0, 80.0, 8.0, -80.0, 8.0)
+
+[node name="Spawn" type="Marker2D" parent="."]
+position = Vector2(90, 1070)
+
+[node name="ExitLabel" type="Label" parent="."]
+visible = false
+offset_left = 1138.0
+offset_top = 410.0
+text = "→"
+mouse_filter = 2
+
+[node name="Winds" type="Node2D" parent="."]
+
+[node name="Wind1" parent="Winds" instance=ExtResource("wind")]
+position = Vector2(460, 870)
+wind_direction = Vector2(-1, 0)
+wind_acceleration = 400.0
+max_wind_speed = 200.0
+area_size = Vector2(240, 300)
+
+[node name="Wind2" parent="Winds" instance=ExtResource("wind")]
+position = Vector2(840, 470)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 500.0
+max_wind_speed = 260.0
+area_size = Vector2(260, 300)
+
+[node name="Bumpers" type="Node2D" parent="."]
+
+[node name="Bumper1" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(300, 1110)
+minimum_bounce_speed = 1070.0
+maximum_bounce_speed = 1130.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper1"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(650, 820)
+minimum_bounce_speed = 970.0
+maximum_bounce_speed = 1030.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper2"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(430, 590)
+minimum_bounce_speed = 1100.0
+maximum_bounce_speed = 1160.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper3"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper4" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(960, 410)
+minimum_bounce_speed = 970.0
+maximum_bounce_speed = 1030.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper4"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "4"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="."]
+
+[node name="Thorns1" type="Area2D" parent="Hazards"]
+position = Vector2(810, 50)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Hazards/Thorns1"]
+shape = SubResource("Hazard1")
+
+[node name="Visual" type="Polygon2D" parent="Hazards/Thorns1"]
+polygon = PackedVector2Array(-14.0, -50.0, 14.0, -50.0, 14.0, 50.0, -14.0, 50.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Hazards/Thorns1"]
+points = PackedVector2Array(-14.0, -42.0, 14.0, -32.0, -14.0, -22.0, 14.0, -12.0, -14.0, -2.0, 14.0, 8.0, -14.0, 18.0, 14.0, 28.0, -14.0, 38.0)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Thorns2" type="Area2D" parent="Hazards"]
+position = Vector2(810, 960)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Collision" type="CollisionShape2D" parent="Hazards/Thorns2"]
+shape = SubResource("Hazard2")
+
+[node name="Visual" type="Polygon2D" parent="Hazards/Thorns2"]
+polygon = PackedVector2Array(-14.0, -320.0, 14.0, -320.0, 14.0, 320.0, -14.0, 320.0)
+color = Color(0.85, 0.25, 0.31, 1)
+
+[node name="Stripes" type="Line2D" parent="Hazards/Thorns2"]
+points = PackedVector2Array(-14.0, -312.0, 14.0, -302.0, -14.0, -292.0, 14.0, -282.0, -14.0, -272.0, 14.0, -262.0, -14.0, -252.0, 14.0, -242.0, -14.0, -232.0, 14.0, -222.0, -14.0, -212.0, 14.0, -202.0, -14.0, -192.0, 14.0, -182.0, -14.0, -172.0, 14.0, -162.0, -14.0, -152.0, 14.0, -142.0, -14.0, -132.0, 14.0, -122.0, -14.0, -112.0, 14.0, -102.0, -14.0, -92.0, 14.0, -82.0, -14.0, -72.0, 14.0, -62.0, -14.0, -52.0, 14.0, -42.0, -14.0, -32.0, 14.0, -22.0, -14.0, -12.0, 14.0, -2.0, -14.0, 8.0, 14.0, 18.0, -14.0, 28.0, 14.0, 38.0, -14.0, 48.0, 14.0, 58.0, -14.0, 68.0, 14.0, 78.0, -14.0, 88.0, 14.0, 98.0, -14.0, 108.0, 14.0, 118.0, -14.0, 128.0, 14.0, 138.0, -14.0, 148.0, 14.0, 158.0, -14.0, 168.0, 14.0, 178.0, -14.0, 188.0, 14.0, 198.0, -14.0, 208.0, 14.0, 218.0, -14.0, 228.0, 14.0, 238.0, -14.0, 248.0, 14.0, 258.0, -14.0, 268.0, 14.0, 278.0, -14.0, 288.0, 14.0, 298.0, -14.0, 308.0)
+width = 3.0
+default_color = Color(1, 0.82, 0.62, 1)
+
+[node name="Route" type="Line2D" parent="."]
+visible = false
+points = PackedVector2Array(90, 1070, 300, 1110, 650, 820, 430, 590, 960, 410, 1210, 330)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true

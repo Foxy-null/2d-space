@@ -2,7 +2,8 @@ extends Node2D
 
 const TITLES := [
 	"針穴の反射", "横風の狙撃", "風の境目", "三連反射", "逆風を裂く", "天井返し",
-	"吹き落とす風", "折り返す航路", "壁からの一撃", "暴走する追い風", "嵐の五連鎖", "暴風の最終試練",
+	"吹き落とす風", "折り返す航路", "壁からの一撃", "暴走する追い風", "嵐の五連鎖", "暴風の六連鎖",
+	"折り返す空と巻物", "縦に抜ける峡谷", "嵐の帰り道",
 ]
 const HINTS := [
 	"足場を右へ降りてバンパーの上側へ。反射後は右へ進み、隙間の先のバンパーを狙おう。",
@@ -16,7 +17,10 @@ const HINTS := [
 	"岩壁は掴める。壁キックで②の上へ回り、反射で③へのダッシュを回復。",
 	"追い風では進みすぎに注意。逆入力で調整し、真上からの反射も使おう。",
 	"五つの反射をつなごう。中央下の足場で休み、ジャンプと上ダッシュで次の反射へ戻れます。",
-	"六つの反射と風の総合試練。最後のダッシュを残し、旗のある小さな台へ！",
+	"六つの反射と風の総合試練。最後のダッシュで右の足場へ着地しよう。",
+	"右の反射から左へ折り返し、休憩台へ。巻物へ寄るなら、さらに左上を回ろう。",
+	"下から反射をつないで登ろう。左への折り返しの後は、右上の切れ目へ向かおう。",
+	"横風と下向きの風を抜け、左へ折り返してから最後の反射へ向かおう。",
 ]
 const ROOM_WIDTH := 1280.0
 var room_index := 0
@@ -29,13 +33,14 @@ var next_bumper := 0
 @onready var camera: Camera2D = $Camera2D
 @onready var rooms: Node2D = $Rooms
 @onready var target_marker: Line2D = $TargetMarker
+@onready var goal: ArrivalSwitch = rooms.get_child(rooms.get_child_count() - 1).get_node("Goal")
 
 
 func _ready() -> void:
 	player.get_node("Camera2D").enabled = false
 	player.respawned.connect(_on_respawned)
-	$Rooms/Room12/Goal.activated.connect(_on_completed)
-	$Rooms/Room12/Goal.set_progress(0, 0, "", "", false)
+	goal.activated.connect(_on_completed)
+	goal.set_progress(0, 0, "", "", false)
 	for index in rooms.get_child_count():
 		var room := rooms.get_child(index)
 		for bumper_index in room.get_node("Bumpers").get_child_count():
@@ -49,16 +54,19 @@ func _ready() -> void:
 	_update_hud()
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if transitioning:
 		return
 	var local_x := player.position.x - room_index * ROOM_WIDTH
-	if player.position.y < -52 or player.position.y > 772 or local_x < -24:
+	var height := float(rooms.get_child(room_index).get_meta("room_height", 720.0))
+	if player.position.y < -52 or player.position.y > height + 52 or local_x < -24:
 		player.respawn()
 	elif room_index < rooms.get_child_count() - 1 and (_landed_on_exit() or local_x >= ROOM_WIDTH):
 		_transition_to_next()
 	elif local_x > ROOM_WIDTH + 24:
 		player.respawn()
+	if height > 720:
+		camera.position.y = lerpf(camera.position.y, _camera_position().y, 1.0 - exp(-8.0 * delta))
 	_update_hud()
 
 
@@ -78,6 +86,11 @@ func _set_checkpoint() -> void:
 	player.set_respawn_position(entrance.global_position)
 
 
+func _camera_position() -> Vector2:
+	var height := float(rooms.get_child(room_index).get_meta("room_height", 720.0))
+	return Vector2(room_index * ROOM_WIDTH + 640, clampf(player.position.y - 80, 360, height - 360))
+
+
 func _transition_to_next() -> void:
 	transitioning = true
 	player.controls_enabled = false
@@ -85,7 +98,7 @@ func _transition_to_next() -> void:
 	_set_checkpoint()
 	player.respawn(true)
 	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(camera, "position", Vector2(room_index * ROOM_WIDTH + 640, 360), 0.28)
+	tween.tween_property(camera, "position", _camera_position(), 0.28)
 	await tween.finished
 	transitioning = false
 	player.controls_enabled = true
@@ -93,12 +106,12 @@ func _transition_to_next() -> void:
 
 
 func _on_respawned() -> void:
-	$Rooms/Room12/Goal.reset_for_respawn()
+	goal.reset_for_respawn()
 	if not completed:
 		next_bumper = 0
 	_update_route()
 	if not transitioning:
-		camera.position = Vector2(room_index * ROOM_WIDTH + 640, 360)
+		camera.position = _camera_position()
 		camera.reset_smoothing()
 
 
@@ -144,11 +157,11 @@ func _on_completed() -> void:
 	completed = true
 	target_marker.hide()
 	$HUD/Completion.show()
-	$Rooms/Room12/Goal.set_progress(0, 0, "", "", true)
+	goal.set_progress(0, 0, "", "", true)
 
 
 func _update_hud() -> void:
-	$HUD/Info/Rows/Title.text = "暴風バンパー峡谷　%02d / 12　%s" % [room_index + 1, TITLES[room_index]]
+	$HUD/Info/Rows/Title.text = "暴風バンパー峡谷　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s" % ("●" if player.is_dash_ready() else "○")
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
 	$HUD/Hint.text = HINTS[room_index]
