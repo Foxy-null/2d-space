@@ -8,6 +8,7 @@ var upper_bounces := 0
 var upper_strength := 1.0
 var upper_jump_delay := 20
 var upper_dash_delay := 20
+var parachute_delay := 20
 
 
 func _initialize() -> void:
@@ -20,6 +21,7 @@ func _start() -> void:
 	collection.save_path = test_path
 	collection._collected.clear()
 	await _run()
+	if OS.get_cmdline_user_args().has("--keep-fixture"): return
 	for path in [test_path, test_path + ".tmp"]:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
@@ -68,13 +70,13 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	player.respawned.connect(func(): respawns += 1)
-	_check(stage.checkpoints.get_child_count() == 18, "Eighteen checkpoints")
+	_check(stage.checkpoints.get_child_count() == 19, "Nineteen checkpoints")
 	_check(player.wall_actions_enabled and player.dash_enabled, "All movement abilities available")
 	await _step(20)
 	_check(player.is_on_floor(), "Spawn is on a safe platform")
 	_check_signage()
 	# テレポートなしで全区間を通過し、各区間で既習ギミックをつなぐ。
-	for section in 18:
+	for section in 19:
 		if section == 0:
 			await _wall_course()
 			_check(stage.checkpoint_index == 1, "The wall route reaches checkpoint 02")
@@ -105,8 +107,10 @@ func _run() -> void:
 			continue
 		if section < 12:
 			await _upper_course(section)
-		else:
+		elif section < 18:
 			await _more_course(section)
+		else:
+			await _parachute_course()
 		_check_signage()
 	_check(respawns == 0, "The entire tower is traversable without respawning")
 	await _step(90)
@@ -115,7 +119,7 @@ func _run() -> void:
 	# 落下・リトライで最新地点に復帰し、能力とクリスタルが回復する。
 	player.position.y = 1000
 	await _step(3)
-	_check(stage.checkpoint_index == 17 and player.position.y < -20000, "Fall returns to latest checkpoint")
+	_check(stage.checkpoint_index == 18 and player.position.y < -20000, "Fall returns to latest checkpoint")
 	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "Respawn restores movement resources")
 	var crystal := stage.get_node("Items/Item4")
 	var crystal_start: Vector2 = crystal.position
@@ -892,10 +896,10 @@ func _more_course(section: int) -> void:
 				if player.is_on_floor() and player.is_on_wall(): Input.action_press("jump")
 				if player.position.x < -345: _horizontal(player.position.x)
 				await _step()
-				if stage.completed: break
+				if stage.checkpoint_index == 18: break
 	_release()
 	var seconds := (Engine.get_physics_frames() - started) / 60.0
-	_check(stage.completed if section == 17 else stage.checkpoint_index == section + 1, "The live new section reaches its next checkpoint: %d" % (section + 1))
+	_check(stage.checkpoint_index == section + 1, "The live new section reaches its next checkpoint: %d" % (section + 1))
 	_check(seconds < 30, "Each new checkpoint remains within thirty seconds")
 	print("TOWER_MORE_%02d seconds=%.2f position=%s respawns=%d" % [section + 1, seconds, player.position, respawns])
 
@@ -928,3 +932,57 @@ func _more_air_rest() -> void:
 	await _step(upper_dash_delay)
 	await _upper_dash()
 	await _land_on(1050, -17606, 240)
+
+
+func _parachute_course() -> void:
+	await _parachute_begin()
+	if not failed: await _parachute_finish()
+
+
+func _parachute_begin() -> void:
+	_release()
+	await _step(2)
+	await _more_walk(-550)
+	await _more_grab("Parachute19")
+	if failed: return
+	await _wind_rise(-200, -23280)
+	await _step(parachute_delay)
+	await _parachute_view("wind_a")
+
+
+func _parachute_finish() -> void:
+	_horizontal(700)
+	await _land_on(700, -22926, 400)
+	if failed: return
+	_horizontal(player.position.x)
+	await _step(180)
+	_check(player.is_on_floor() and player.get_held_object() == stage.get_node("Items/Parachute19"), "The native shelf supports a three-second rest with the parachute")
+	await _parachute_view("rest")
+	_horizontal(900)
+	await _await_launch_long()
+	if failed: return
+	await _wind_rise(900, -24350)
+	await _step(parachute_delay)
+	await _parachute_view("wind_b")
+	_horizontal(-100)
+	await _land_on(-100,-24026,500)
+	if failed: return
+	for frame in 240:
+		_horizontal(-100)
+		if player.is_on_floor() and player.is_on_wall(): await _upper_pulse("jump")
+		await _step()
+		if stage.completed: break
+	await _parachute_view("goal")
+
+
+func _wind_rise(target_x: float, top: float) -> void:
+	for frame in 900:
+		_horizontal(target_x)
+		await _step()
+		if player.position.y < top and absf(player.position.x-target_x) < 20: return
+		if respawns > 0: break
+	_check(false,"The real parachute rides the native updraft to %s; actual=%s held=%s" % [top,player.position,player.get_held_object()])
+
+
+func _parachute_view(_phase: String) -> void:
+	pass

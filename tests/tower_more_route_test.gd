@@ -29,7 +29,7 @@ func _run() -> void:
 		for section in range(first, 18):
 			await _more_course(section)
 			if failed or respawns > 0:break
-		_check(stage.completed and respawns == 0, "All six new sections form a continuous physical route")
+		_check(stage.checkpoint_index == 18 and not stage.completed and respawns == 0, "The six preceding sections form a continuous physical route to CP19")
 		if failed:break
 		current_scene.queue_free()
 		await _step(3)

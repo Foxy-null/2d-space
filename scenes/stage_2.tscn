@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=3]
+[gd_scene load_steps=65 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -18,6 +18,8 @@
 [ext_resource type="Script" path="res://scripts/scroll_marker.gd" id="scroll_marker"]
 [ext_resource type="PackedScene" path="res://scenes/pinball_spring.tscn" id="bumper"]
 [ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
+
+[ext_resource type="PackedScene" path="res://scenes/parachute_creature.tscn" id="parachute"]
 
 [sub_resource type="RectangleShape2D" id="Shape_StartFloor"]
 size = Vector2(1040, 70)
@@ -153,6 +155,15 @@ size = Vector2(260, 32)
 
 [sub_resource type="RectangleShape2D" id="Shape_More14"]
 size = Vector2(260, 470)
+
+[sub_resource type="RectangleShape2D" id="Shape_ParachuteRest"]
+size = Vector2(640, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_ParachuteSummit"]
+size = Vector2(720, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_ParachuteBranch"]
+size = Vector2(260, 32)
 
 [node name="Stage2" type="Node2D"]
 metadata/environment_theme = 1
@@ -650,6 +661,33 @@ shape = SubResource("Shape_More14")
 script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-130, -235, 130, -235, 130, 235, -130, 235)
 
+[node name="ParachuteRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(700, -22884)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/ParachuteRest"]
+shape = SubResource("Shape_ParachuteRest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/ParachuteRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-320, -16, 320, -16, 320, 16, -320, 16)
+
+[node name="ParachuteSummit" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-100, -23984)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/ParachuteSummit"]
+shape = SubResource("Shape_ParachuteSummit")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/ParachuteSummit"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-360, -16, 360, -16, 360, 16, -360, 16)
+
+[node name="ParachuteBranch" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-650, -23134)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/ParachuteBranch"]
+shape = SubResource("Shape_ParachuteBranch")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/ParachuteBranch"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130, -16, 130, -16, 130, 16, -130, 16)
+
 [node name="Checkpoints" type="Node2D" parent="."]
 [node name="Checkpoint0" type="Marker2D" parent="Checkpoints"]
 position = Vector2(360, 640)
@@ -823,6 +861,16 @@ offset_left = -116.0
 offset_top = 12.0
 offset_right = 116.0
 text = "18"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Checkpoint18" type="Marker2D" parent="Checkpoints"]
+position = Vector2(-400, -22320)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint18"]
+offset_left = -116.0
+offset_top = 12.0
+offset_right = 116.0
+text = "19"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
 
@@ -1094,8 +1142,40 @@ text = "↑ 壁とアイテムをつないで上へ"
 theme_override_font_sizes/font_size = 17
 modulate = Color(0.8, 0.95, 0.6, 1)
 
+[node name="Parachute19" parent="Items" instance=ExtResource("parachute")]
+position = Vector2(-550, -22353)
+
+[node name="ParachuteWindA" parent="Items" instance=ExtResource("wind")]
+position = Vector2(-200, -22750)
+wind_direction = Vector2(0, -1)
+wind_acceleration = 2400.0
+max_wind_speed = 600.0
+area_size = Vector2(240, 1100)
+
+[node name="ParachuteSpring" parent="Items" instance=ExtResource("6")]
+position = Vector2(900, -22900)
+spring_speed = 1450.0
+
+[node name="ParachuteWindB" parent="Items" instance=ExtResource("wind")]
+position = Vector2(900, -23910)
+wind_direction = Vector2(0, -1)
+wind_acceleration = 2400.0
+max_wind_speed = 600.0
+area_size = Vector2(220, 980)
+
+[node name="ParachuteScroll" parent="ScrollBranch" instance=ExtResource("scroll")]
+position = Vector2(-650, -23260)
+stage_id = "tower"
+scroll_id = "wind_glide_06"
+
+[node name="ParachuteScrollMark" type="Node2D" parent="ScrollBranch"]
+position = Vector2(-300, -23270)
+scale = Vector2(0.45, 0.45)
+modulate = Color(1, 1, 1, 0.75)
+script = ExtResource("scroll_marker")
+
 [node name="Goal" parent="." instance=ExtResource("8")]
-position = Vector2(-400, -22320)
+position = Vector2(-100, -24000)
 
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(360, 612)

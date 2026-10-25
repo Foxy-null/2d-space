@@ -17,7 +17,7 @@ func _run() -> void:
 			if placed is Area2D:
 				_check(placed.stage_id == "tower" and not ids.has(placed.scroll_id), "All actual tower scrolls have unique stage-scoped IDs")
 				ids[placed.scroll_id] = true
-		_check(ids.size() == 5, "The reported total corresponds to five actual collectibles")
+		_check(ids.size() == 6, "The reported total corresponds to six actual collectibles")
 		for manual in [true, false]:
 			await _pickup(high)
 			var before := respawns
@@ -89,7 +89,7 @@ func _run() -> void:
 		_check(respawns == before + 1 and player.is_on_floor() and scroll._secured, "An actual fall also preserves the confirmed scroll at the same flag")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(5)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage2/Content/Collection/Count").text == "2 / 5", "Selection counts both new scrolls against all five placements")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage2/Content/Collection/Count").text == "2 / 6", "Selection counts both new scrolls against all six placements")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.has_scroll("tower", "left_return_04") and progress.has_scroll("tower", "upper_wall_05"), "Both unique scroll IDs survive a disk reload")

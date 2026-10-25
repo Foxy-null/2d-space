@@ -2,7 +2,7 @@ extends Node2D
 
 const SECTION_HEIGHT := 720.0
 const START_Y := 640.0
-const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "空中の分かれ道", "壁から空中のつなぎ", "バネの左折り返し", "靴と相棒でジグザグ", "相棒と壁キック", "横風と反射", "大きな折り返し", "壁から長い回廊へ", "逆風の反射と左折り返し", "運んで横断し壁へ", "壁から二段の空中資源へ", "反射と追加ジャンプの横断", "左の壁から頂上へ"]
+const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "空中の分かれ道", "壁から空中のつなぎ", "バネの左折り返し", "靴と相棒でジグザグ", "相棒と壁キック", "横風と反射", "大きな折り返し", "壁から長い回廊へ", "逆風の反射と左折り返し", "運んで横断し壁へ", "壁から二段の空中資源へ", "反射と追加ジャンプの横断", "左の壁から風の入口へ", "傘で風を渡る"]
 const HINTS := [
 	"Shiftで目の前の壁を掴んで上へ。広い足場で休み、ジャンプと上ダッシュで次の旗へ。",
 	"バネで上昇。空中で左右を調整し、次の足場へ着地しよう。",
@@ -21,7 +21,8 @@ const HINTS := [
 	"相棒と靴の追加ジャンプで二度渡り、相棒を置いて左の壁を登ろう。",
 	"相棒を持って壁キック。上の棚から相棒ジャンプと回復ダッシュへ。",
 	"反射で左の棚へ。相棒と靴を重ねて右のバネへ渡ろう。",
-	"靴と相棒で左の棚へ。相棒を置いて壁を登り、バネと回復ダッシュで頂上へ。",
+	"靴と相棒で左の棚へ。相棒を置いて壁を登り、バネと回復ダッシュで次の旗へ。",
+	"傘で上昇風へ入り、右の棚で休む。バネから次の風へ入り、左の頂上へ滑空しよう。",
 ]
 
 var checkpoint_index := 0
@@ -70,6 +71,13 @@ func _physics_process(delta: float) -> void:
 
 
 func _camera_target_x() -> float:
+	if checkpoint_index == 18:
+		var lead := 0.0
+		if player.position.y < -24000.0:
+			if player.position.x > 400.0: lead = -450.0
+		elif player.position.y < -23100.0 and player.position.x < 400.0:
+			lead = 100.0
+		return clampf(player.position.x + lead, -800.0, 1400.0)
 	if checkpoint_index >= 12:
 		var lead := 240.0 if checkpoint_index == 17 or (checkpoint_index in [13, 16] and player.position.x >= 100.0) else 0.0
 		return clampf(player.position.x - lead, -800.0, 1400.0)
@@ -81,6 +89,13 @@ func _camera_target_x() -> float:
 
 
 func _camera_target_y() -> float:
+	if checkpoint_index == 18:
+		var offset := -80.0
+		if player.position.y < -23150.0 and (player.position.x < 500.0 or player.position.y < -24280.0):
+			offset = 100.0
+		elif player.position.y > -23050.0 and player.position.y < -22800.0:
+			offset = -260.0
+		return clampf(player.position.y + offset, $Goal.position.y - 280.0, 360.0)
 	# 左上の任意枝では床と帰路を残し、主経路の上段棚では再び追従する。
 	if checkpoint_index == 16 and player.position.x < 100.0 and player.position.y > checkpoints.get_child(16).position.y - 640.0:
 		return clampf(checkpoints.get_child(16).position.y - 300.0, $Goal.position.y - 240.0, 360.0)
