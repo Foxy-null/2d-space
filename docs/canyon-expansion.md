@@ -30,6 +30,8 @@
 
 Xvfb / Mesaの描画では追加3室を通常入力・0.8入力で通過し、巻物の最終配置も描画付きの21項目で確認した。縦カメラの上層も別の成功入力で撮影した。
 
+独立レビューでも追加43項目・全15室5956項目・出口87項目が通過した。追加の実入力8項目では、第14室の中間休憩に着地して3秒止まり、ジャンプと上Dashから2個目の反射へ戻り、3・4個目へつないで死亡せず出口へ到達した。Rと下端落下による下層の復帰地点・カメラも確認した。
+
 - [第13室の入口・印・目的地](screenshots/canyon-expansion/room13_entrance.png)
 - [巻物への接触](screenshots/canyon-expansion/scroll.png)
 - [巻物を確定して休憩する主経路](screenshots/canyon-expansion/rest.png)
