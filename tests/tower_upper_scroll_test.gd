@@ -112,7 +112,7 @@ func _run() -> void:
 	_check(stage.checkpoint_index == 12 and not stage.completed, "All original twelve sections and both detours reach CP13")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(5)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage2/Content/Collection/Count").text == "2 / 5", "Selection counts the two new scrolls against all five actual tower placements")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage2/Content/Collection/Count").text == "2 / 6", "Selection counts the two new scrolls against all six actual tower placements")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.has_scroll("tower", "spring_turn_02") and progress.has_scroll("tower", "wind_rest_03"), "Returning from the expanded tower preserves both confirmed scrolls")
