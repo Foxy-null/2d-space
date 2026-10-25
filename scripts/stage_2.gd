@@ -2,14 +2,20 @@ extends Node2D
 
 const SECTION_HEIGHT := 720.0
 const START_Y := 640.0
-const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "頂上への連携"]
+const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "空中の分かれ道", "壁から空中のつなぎ", "バネの左折り返し", "靴と相棒でジグザグ", "相棒と壁キック", "横風と反射", "最後の大きな折り返し"]
 const HINTS := [
 	"Shiftで目の前の壁を掴んで上へ。広い足場で休み、ジャンプと上ダッシュで次の旗へ。",
 	"バネで上昇。空中で左右を調整し、次の足場へ着地しよう。",
 	"空中の緑のクリスタルでダッシュ回復。上へのダッシュをつなごう。",
 	"紫の靴で追加ジャンプ。上昇が止まるころにもう一度跳び、上ダッシュで足場へ。",
 	"緑の生物をShiftで保持すると追加ジャンプ。追加ジャンプと上ダッシュで足場へ。",
-	"入口のバネから上ダッシュ。緑のダッシュ回復か紫の追加ジャンプをつないで到着台へ。",
+	"入口のバネから上ダッシュ。緑のダッシュ回復か紫の追加ジャンプをつないで次の旗へ。",
+	"広い入口から壁を登り、休憩から回復ダッシュへ。運んだ相棒も使える。",
+	"右のバネで左の休憩へ。小さなバネから次の旗を目指そう。",
+	"靴と相棒の追加ジャンプを重ね、右上の棚から左へ折り返そう。",
+	"相棒を持って壁から壁へ。上の休憩から追加ジャンプとダッシュをつなごう。",
+	"バネで反射板の上へ回り込み、反射後は横風を見て左の旗へ。",
+	"靴で右へ渡り、バネから回復ダッシュや相棒の追加ジャンプで左の頂上へ。",
 ]
 
 var checkpoint_index := 0
@@ -58,15 +64,19 @@ func _physics_process(delta: float) -> void:
 
 
 func _camera_target_x() -> float:
-	if checkpoint_index != 2:
+	if checkpoint_index not in [2, 7, 11]:
 		return 640.0
-	# Show the destination before jumping from CP03's left edge.
-	return clampf(640.0 + (player.position.x - 360.0) * 3.0, 0.0, 640.0)
+	# 寄り道の着地点を、踏切やバネに触れる前に見せる。
+	var follow_from := 600.0 if checkpoint_index == 7 else 360.0
+	return clampf(640.0 + (player.position.x - follow_from) * 3.0, 0.0, 640.0)
 
 
 func _camera_target_y() -> float:
-	# 右端の休憩足場を、ポーズボタンの下に見せる。
-	return clampf(player.position.y - (120.0 if checkpoint_index == 3 else 80.0), -3920.0, 360.0)
+	var look_up := 260.0 if checkpoint_index == 8 else (160.0 if checkpoint_index == 11 else (120.0 if checkpoint_index == 3 else 80.0))
+	# バネに乗る前に、反射板と最初の着地点を見せる。
+	if checkpoint_index in [7, 10] or (checkpoint_index == 11 and player.position.y < -9920.0):
+		look_up = 300.0
+	return clampf(player.position.y - look_up, $Goal.position.y - 240.0, 360.0)
 
 
 func _set_checkpoint(index: int) -> void:
@@ -119,7 +129,7 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
-	$HUD/Info/Rows/Title.text = "星のぼりの塔　%02d / 06" % (checkpoint_index + 1)
+	$HUD/Info/Rows/Title.text = "星のぼりの塔　%02d / %02d" % [checkpoint_index + 1, checkpoints.get_child_count()]
 	$HUD/Info/Rows/Status.text = "高度 %dm　ダッシュ %s　追加ジャンプ %d" % [maxi(0, int((START_Y - player.position.y) / 10.0)), "●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
 	$HUD/Hint.text = TITLES[checkpoint_index] + "：" + HINTS[checkpoint_index]

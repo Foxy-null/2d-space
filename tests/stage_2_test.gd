@@ -4,10 +4,24 @@ var failed := false
 var stage: Node2D
 var player: PlayerController
 var respawns := 0
+var upper_bounces := 0
+var upper_strength := 1.0
+var upper_jump_delay := 20
+var upper_dash_delay := 20
 
 
 func _initialize() -> void:
-	_run.call_deferred()
+	_start.call_deferred()
+
+
+func _start() -> void:
+	var collection := root.get_node("CollectionProgress")
+	var test_path := "user://tower_route_%d.cfg" % OS.get_process_id()
+	collection.save_path = test_path
+	collection._collected.clear()
+	await _run()
+	for path in [test_path, test_path + ".tmp"]:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func _step(count: int = 1) -> void:
@@ -23,7 +37,7 @@ func _check(ok: bool, message: String) -> void:
 
 
 func _release() -> void:
-	for action in ["move_left", "move_right", "move_up", "wall_grab", "jump", "dash"]:
+	for action in ["move_left", "move_right", "move_up", "move_down", "wall_grab", "jump", "dash"]:
 		Input.action_release(action)
 
 
@@ -54,13 +68,13 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	player.respawned.connect(func(): respawns += 1)
-	_check(stage.checkpoints.get_child_count() == 6, "Six checkpoints")
+	_check(stage.checkpoints.get_child_count() == 12, "Twelve checkpoints")
 	_check(player.wall_actions_enabled and player.dash_enabled, "All movement abilities available")
 	await _step(20)
 	_check(player.is_on_floor(), "Spawn is on a safe platform")
 	_check_signage()
 	# テレポートなしで全区間を通過し、各区間で既習ギミックをつなぐ。
-	for section in 6:
+	for section in 12:
 		if section == 0:
 			await _wall_course()
 			_check(stage.checkpoint_index == 1, "The wall route reaches checkpoint 02")
@@ -89,6 +103,8 @@ func _run() -> void:
 		if section == 5:
 			await _finale_course()
 			continue
+		await _upper_course(section)
+		_check_signage()
 	_check(respawns == 0, "The entire tower is traversable without respawning")
 	await _step(90)
 	_check(stage.completed, "Summit arrival switch completes the stage")
@@ -96,7 +112,7 @@ func _run() -> void:
 	# 落下・リトライで最新地点に復帰し、能力とクリスタルが回復する。
 	player.position.y = 1000
 	await _step(3)
-	_check(stage.checkpoint_index == 5 and player.position.y < -2900, "Fall returns to latest checkpoint")
+	_check(stage.checkpoint_index == 11 and player.position.y < -9260, "Fall returns to latest checkpoint")
 	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "Respawn restores movement resources")
 	var crystal := stage.get_node("Items/Item4")
 	var crystal_start: Vector2 = crystal.position
@@ -109,7 +125,7 @@ func _run() -> void:
 	await _step(1)
 	Input.action_release("reset")
 	await _step(3)
-	_check(crystal.visible and player.position.y < -2900, "R restores crystals at the latest checkpoint")
+	_check(crystal.visible and player.position.y < -9260, "R restores crystals at the latest checkpoint")
 	var camera_before: float = stage.camera.position.y
 	Input.action_press("jump")
 	await _step(1)
@@ -471,18 +487,259 @@ func _finale_course(spring_delay: int = 40, jump_delay: int = 20, route: String 
 			Input.action_release("move_right")
 			if absf(player.position.x - 360) > 10:
 				Input.action_press("move_left" if player.position.x > 360 else "move_right")
-			if player.is_on_floor() and player.position.y > -3740:
-				Input.action_press("jump")
-			else:
-				Input.action_release("jump")
+			Input.action_release("jump")
 		await _step()
-		if stage.completed:
+		if stage.checkpoint_index == 6:
 			break
 	_release()
 	if carried != null:
 		Input.action_press("wall_grab")
-	_check(stage.completed and stage.get_node("Goal").is_pressed(), "The crystal chain lands on and presses the final arrival switch")
+	_check(stage.checkpoint_index == 6 and player.is_on_floor(), "The original crystal chain reaches checkpoint 07")
 	_check(carried == null or player.get_held_object() == carried, "The finale preserves a companion carried from the previous section")
 	var seconds := (Engine.get_physics_frames() - started) / 60.0
 	_check(seconds <= 30, "The finale stays below thirty seconds")
 	print("TOWER_FINALE_SECONDS %.2f delays=%d/%d route=%s respawns=%d" % [seconds, spring_delay, jump_delay, route, respawns])
+
+
+func _upper_course(section: int) -> void:
+	var started := Engine.get_physics_frames()
+	match section:
+		6:
+			await _upper_wall_rest()
+			await _upper_pulse("jump")
+			await _step(upper_jump_delay)
+			await _upper_dash()
+			for frame in 40:
+				await _step()
+				if not player.is_dashing() and not stage.get_node("Items/UpperDash").visible:
+					break
+			_check(not stage.get_node("Items/UpperDash").visible, "The wall's upper flight really refills its dash")
+			await _upper_dash()
+			await _land_on(900, -4666)
+		7:
+			var keep_companion := player.get_held_object() != null
+			_release()
+			if keep_companion:
+				Input.action_press("wall_grab")
+			Input.action_press("move_right", upper_strength)
+			await _await_launch()
+			_horizontal(420)
+			await _step(upper_jump_delay + 26)
+			await _upper_pulse("dash")
+			await _land_on(420, -5226)
+			Input.action_press("move_left", upper_strength)
+			await _await_launch()
+			_release()
+			if keep_companion:
+				Input.action_press("wall_grab")
+			await _step(upper_jump_delay + 10)
+			await _upper_dash()
+			await _land_on(360, -5626)
+		8:
+			await _grab_boot_companion()
+			await _boot_transfer(480, "BootRight", 800, -6166)
+			await _boot_transfer(790, "BootLeft", 450, -6706)
+			await _walk_to(360)
+		9:
+			if player.get_held_object() == null:
+				_release()
+				Input.action_press("wall_grab")
+				Input.action_press("move_right", upper_strength)
+				for frame in 90:
+					await _step()
+					if player.get_held_object() != null:
+						break
+				_check(player.get_held_object() == stage.get_node("Items/UpperCompanion"), "The upper entrance provides its real retry companion")
+			else:
+				_check(player.get_held_object().extra_jump_count() == 1, "The preceding boots preserve the real companion")
+			await _upper_companion_rest()
+			_check(player.get_held_object() != null, "The wall kicks keep the companion through the midway rest")
+			await _walk_to(690)
+			await _upper_pulse("jump")
+			_horizontal(900)
+			await _step(upper_jump_delay)
+			await _upper_pulse("jump")
+			await _step(upper_dash_delay)
+			await _upper_dash()
+			await _land_on(900, -8426)
+		10:
+			upper_bounces = 0
+			var bumper: Area2D = stage.get_node("Items/WindBumper")
+			if not bumper.launched.is_connected(_on_upper_bounce):
+				bumper.launched.connect(_on_upper_bounce)
+			_horizontal(780)
+			await _await_launch()
+			for frame in 160:
+				_horizontal(560)
+				await _step()
+				if upper_bounces > 0:
+					break
+			_check(upper_bounces == 1 and player.velocity.y < -1000, "The live descent hits the upper face of the suspended bumper")
+			_horizontal(360)
+			await _step(upper_jump_delay + 5)
+			await _upper_dash()
+			await _land_on(360, -9566)
+		11:
+			await _boot_transfer(460, "SummitBoot", 800, -10006)
+			_horizontal(1080)
+			await _await_launch()
+			_horizontal(760)
+			await _step(upper_jump_delay + 28)
+			await _upper_dash()
+			for frame in 90:
+				if not player.is_dashing():
+					_horizontal(760)
+				await _step()
+				if not stage.get_node("Items/SummitDash").visible and not player.is_dashing():
+					break
+			_check(not stage.get_node("Items/SummitDash").visible, "The last flight uses the visible dash crystal")
+			await _upper_dash()
+			await _land_on(500, -10726, 240)
+			await _walk_to(500)
+			_release()
+			for frame in 120:
+				if stage.completed:
+					break
+				if player.is_on_floor() and player.position.y > stage.get_node("Goal").position.y - 100 and not stage.get_node("Goal").pressing:
+					Input.action_press("jump")
+				else:
+					Input.action_release("jump")
+				_horizontal(360)
+				await _step()
+	_check(stage.completed if section == 11 else stage.checkpoint_index == section + 1, "Upper section %d reaches its actual arrival" % (section + 1))
+	var seconds := float(Engine.get_physics_frames() - started) / 60.0
+	_check(seconds < 30, "Each upper section keeps a short retry interval")
+	print("TOWER_UPPER_%d_SECONDS %.2f at=%s respawns=%d" % [section + 1, seconds, player.position, respawns])
+
+
+func _horizontal(target: float) -> void:
+	Input.action_release("move_left")
+	Input.action_release("move_right")
+	var offset := target - player.position.x
+	if absf(offset) > 3:
+		Input.action_press("move_right" if offset > 0 else "move_left", minf(absf(offset) / 45.0, 1.0) * upper_strength)
+
+
+func _walk_to(target: float) -> void:
+	for frame in 150:
+		_horizontal(target)
+		await _step()
+		if absf(target - player.position.x) < 3 and absf(player.velocity.x) < 15:
+			break
+	_horizontal(player.position.x)
+	await _step(6)
+	_check(absf(player.position.x - target) < 5 and player.is_on_floor(), "Live walking reaches the upper launch position")
+
+
+func _land_on(target_x: float, target_y: float, limit: int = 180) -> void:
+	for frame in limit:
+		if not player.is_dashing():
+			Input.action_release("move_up")
+			_horizontal(target_x)
+		await _step()
+		if player.is_on_floor() and absf(player.position.y - target_y) < 3:
+			_horizontal(player.position.x)
+			await _step(8)
+			if player.is_on_floor() and absf(player.position.y - target_y) < 3:
+				return
+	_check(false, "A real upper flight lands at %s from %s" % [Vector2(target_x, target_y), player.position])
+
+
+func _upper_pulse(action: String) -> void:
+	Input.action_press(action)
+	await _step()
+	Input.action_release(action)
+
+
+func _upper_dash() -> void:
+	_horizontal(player.position.x)
+	Input.action_press("move_up")
+	await _upper_pulse("dash")
+
+
+func _await_launch() -> void:
+	for frame in 150:
+		await _step()
+		if player.velocity.y < -900:
+			return
+	_check(false, "Walking reaches the actual upper spring")
+
+
+func _boot_transfer(launch_x: float, boot_name: String, target_x: float, target_y: float) -> void:
+	await _walk_to(launch_x)
+	await _upper_pulse("jump")
+	_horizontal(target_x)
+	await _step(upper_jump_delay)
+	_check(not stage.get_node("Items/" + boot_name).visible and player.is_air_jump_ready(), "An upper jump really collects " + boot_name)
+	await _upper_pulse("jump")
+	await _step(upper_dash_delay)
+	if boot_name in ["BootRight", "BootLeft"]:
+		_check(player.get_held_object() != null, "The upper boots combine with a genuinely held companion")
+		await _upper_pulse("jump")
+		await _step(upper_dash_delay)
+	await _upper_dash()
+	await _land_on(target_x, target_y)
+
+
+func _on_upper_bounce(_body: PlayerController) -> void:
+	upper_bounces += 1
+
+
+func _upper_wall_rest() -> void:
+	_release()
+	await _step(8)
+	Input.action_press("move_right", upper_strength)
+	for frame in 180:
+		await _step()
+		if player.is_on_wall():
+			break
+	_check(player.is_on_floor() and player.is_on_wall(), "Walk away from the dropped companion before grabbing the upper wall")
+	Input.action_press("move_up")
+	Input.action_press("wall_grab")
+	for frame in 240:
+		await _step()
+		if player.is_on_floor() and player.position.y < -4250:
+			break
+	_release()
+	_check(player.is_on_floor() and absf(player.position.y + 4306) < 3, "The upper wall has a real broad rest")
+	await _walk_to(1030)
+
+
+func _upper_capture(label: String) -> void:
+	if not OS.get_cmdline_user_args().has("--screenshots"):
+		return
+	await _step(20)
+	var folder := "res://docs/screenshots/tower-expansion"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(folder))
+	var captured := root.get_viewport().get_texture().get_image()
+	_check(captured.save_png(folder + "/" + label + ".png") == OK, "The tower expansion screenshot saves")
+
+
+func _upper_companion_rest() -> void:
+	await _walk_to(610)
+	await _upper_pulse("jump")
+	Input.action_press("move_right", upper_strength)
+	for frame in 600:
+		if player.is_on_wall():
+			var side := player.get_wall_normal().x
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			Input.action_press("move_right" if side > 0 else "move_left", upper_strength)
+			await _upper_pulse("jump")
+		await _step()
+		if player.position.y < -8000:
+			break
+	await _land_on(620, -7986)
+
+
+func _grab_boot_companion() -> void:
+	if player.get_held_object() != null:
+		return
+	_release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_right", upper_strength)
+	for frame in 90:
+		await _step()
+		if player.get_held_object() != null:
+			break
+	_check(player.get_held_object() == stage.get_node("Items/BootCompanion"), "The zigzag provides its real companion on the safe entrance")

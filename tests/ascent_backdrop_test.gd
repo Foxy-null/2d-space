@@ -20,7 +20,7 @@ func _run() -> void:
 	for art in stage.get_node("Terrain").find_children("*", "Polygon2D", true, false):
 		_check(art is TerrainArt and art.environment_theme == 1, "Tower terrain uses the current inhabited art")
 	var snapshots: Dictionary = {}
-	for camera_y in [360.0, -80.0, -800.0, -1520.0, -2240.0, -2960.0, -3920.0]:
+	for camera_y in [360.0, -80.0, -800.0, -1520.0, -2240.0, -2960.0, -3920.0, backdrop.camera_top]:
 		stage.camera.position.y = camera_y
 		await _step(2)
 		var ground_y: float = backdrop._picture.position.y
@@ -30,14 +30,14 @@ func _run() -> void:
 		if camera_y < 360:
 			_check(ground_y > 0 and ground_y < backdrop.rise, "The ground recedes more slowly than terrain")
 		if OS.get_cmdline_user_args().has("--screenshots"):
-			stage._set_checkpoint(clampi(int(backdrop.rise / 720), 0, 5))
+			stage._set_checkpoint(clampi(int(backdrop.rise / 720), 0, stage.checkpoints.get_child_count() - 1))
 			stage.player.position = Vector2(640, camera_y + 100)
 			stage._update_hud()
 			DirAccess.make_dir_recursive_absolute("res://docs/screenshots/stage-2")
 			await RenderingServer.frame_post_draw
 			root.get_texture().get_image().save_png("res://docs/screenshots/stage-2/height_%d.png" % int(360 - camera_y))
 	_check(snapshots[-1520.0][0] > 720, "Ground leaves the view in the middle of the climb")
-	_check(snapshots[-3920.0][1].get_luminance() < snapshots[360.0][1].get_luminance(), "The upper sky becomes deep enough to see stars")
+	_check(snapshots[backdrop.camera_top][1].get_luminance() < snapshots[-3920.0][1].get_luminance(), "The expanded tower keeps darkening all the way to the actual summit")
 	# Crossing a checkpoint boundary must not switch scenery or reset its position.
 	stage.camera.position.y = -800.0
 	await _step(2)

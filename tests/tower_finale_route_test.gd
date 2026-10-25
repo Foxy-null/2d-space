@@ -28,7 +28,7 @@ func _run() -> void:
 			_capture("arrival")
 			await _pulse("reset")
 			await _step(6)
-			_check(stage.checkpoint_index == 5 and player.position.distance_to(Vector2(900, -2986)) < 2, "R after final arrival retains CP06")
+			_check(stage.checkpoint_index == 6 and player.position.distance_to(Vector2(360, -3706)) < 2, "R after the original finale retains CP07")
 			_check(stage.get_node("Items/Item12").visible and stage.get_node("Items/Item13").visible, "R restores the finale crystals")
 			await _remove_stage()
 	if not screenshots:
