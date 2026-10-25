@@ -68,13 +68,13 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	player.respawned.connect(func(): respawns += 1)
-	_check(stage.checkpoints.get_child_count() == 12, "Twelve checkpoints")
+	_check(stage.checkpoints.get_child_count() == 18, "Eighteen checkpoints")
 	_check(player.wall_actions_enabled and player.dash_enabled, "All movement abilities available")
 	await _step(20)
 	_check(player.is_on_floor(), "Spawn is on a safe platform")
 	_check_signage()
 	# テレポートなしで全区間を通過し、各区間で既習ギミックをつなぐ。
-	for section in 12:
+	for section in 18:
 		if section == 0:
 			await _wall_course()
 			_check(stage.checkpoint_index == 1, "The wall route reaches checkpoint 02")
@@ -103,7 +103,10 @@ func _run() -> void:
 		if section == 5:
 			await _finale_course()
 			continue
-		await _upper_course(section)
+		if section < 12:
+			await _upper_course(section)
+		else:
+			await _more_course(section)
 		_check_signage()
 	_check(respawns == 0, "The entire tower is traversable without respawning")
 	await _step(90)
@@ -112,7 +115,7 @@ func _run() -> void:
 	# 落下・リトライで最新地点に復帰し、能力とクリスタルが回復する。
 	player.position.y = 1000
 	await _step(3)
-	_check(stage.checkpoint_index == 11 and player.position.y < -9260, "Fall returns to latest checkpoint")
+	_check(stage.checkpoint_index == 17 and player.position.y < -20000, "Fall returns to latest checkpoint")
 	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "Respawn restores movement resources")
 	var crystal := stage.get_node("Items/Item4")
 	var crystal_start: Vector2 = crystal.position
@@ -125,7 +128,7 @@ func _run() -> void:
 	await _step(1)
 	Input.action_release("reset")
 	await _step(3)
-	_check(crystal.visible and player.position.y < -9260, "R restores crystals at the latest checkpoint")
+	_check(crystal.visible and player.position.y < -20000, "R restores crystals at the latest checkpoint")
 	var camera_before: float = stage.camera.position.y
 	Input.action_press("jump")
 	await _step(1)
@@ -595,18 +598,8 @@ func _upper_course(section: int) -> void:
 			_check(not stage.get_node("Items/SummitDash").visible, "The last flight uses the visible dash crystal")
 			await _upper_dash()
 			await _land_on(500, -10726, 240)
-			await _walk_to(500)
-			_release()
-			for frame in 120:
-				if stage.completed:
-					break
-				if player.is_on_floor() and player.position.y > stage.get_node("Goal").position.y - 100 and not stage.get_node("Goal").pressing:
-					Input.action_press("jump")
-				else:
-					Input.action_release("jump")
-				_horizontal(360)
-				await _step()
-	_check(stage.completed if section == 11 else stage.checkpoint_index == section + 1, "Upper section %d reaches its actual arrival" % (section + 1))
+			await _walk_to(420)
+	_check(stage.checkpoint_index == section + 1, "Upper section %d reaches its actual arrival" % (section + 1))
 	var seconds := float(Engine.get_physics_frames() - started) / 60.0
 	_check(seconds < 30, "Each upper section keeps a short retry interval")
 	print("TOWER_UPPER_%d_SECONDS %.2f at=%s respawns=%d" % [section + 1, seconds, player.position, respawns])
@@ -743,3 +736,195 @@ func _grab_boot_companion() -> void:
 		if player.get_held_object() != null:
 			break
 	_check(player.get_held_object() == stage.get_node("Items/BootCompanion"), "The zigzag provides its real companion on the safe entrance")
+
+
+func _more_walk(target: float) -> void:
+	for frame in 500:
+		_horizontal(target)
+		await _step()
+		if absf(target - player.position.x) < 3 and absf(player.velocity.x) < 15: break
+	_horizontal(player.position.x)
+	await _step(6)
+	_check(absf(player.position.x - target) < 5 and player.is_on_floor(), "Walking reaches the new launch at %s" % target)
+
+
+func _more_climb(wall_name: String, from_right: bool = false) -> void:
+	var wall: StaticBody2D = stage.get_node("Terrain/" + wall_name)
+	var collision: CollisionShape2D = wall.get_node("Collision")
+	var top: float = collision.to_global(collision.shape.get_rect().position).y
+	_release()
+	Input.action_press("move_left" if from_right else "move_right", upper_strength)
+	if wall_name == "More13Wall":
+		await _more_walk(380)
+		Input.action_press("move_right", upper_strength)
+		await _upper_pulse("jump")
+	for frame in 180:
+		await _step()
+		if player.is_on_wall(): break
+	_check(player.is_on_wall() and (player.is_on_floor() or wall_name == "More13Wall"), "The new wall is approached from the real floor")
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	for frame in 240:
+		await _step()
+		if player.is_on_floor() and player.position.y < top: break
+	_release()
+	_check(player.is_on_floor() and absf(player.position.y - top + 26) < 3, "A live climb reaches " + wall_name)
+
+
+func _more_refill(name: String, launch: float, target: Vector2) -> void:
+	await _more_walk(launch)
+	await _upper_pulse("jump")
+	await _step(upper_jump_delay)
+	await _upper_dash()
+	for frame in 60:
+		await _step()
+		if not player.is_dashing() and not stage.get_node("Items/" + name).visible: break
+	_check(not stage.get_node("Items/" + name).visible, "A real spent dash collects " + name)
+	await _upper_dash()
+	await _land_on(target.x, target.y - 26, 240)
+
+
+func _more_spring(launch: float, target: Vector2) -> void:
+	_horizontal(launch)
+	await _await_launch_long()
+	_horizontal(target.x)
+	await _land_on(target.x, target.y - 26, 240)
+
+
+func _await_launch_long() -> void:
+	for frame in 500:
+		await _step()
+		if player.velocity.y < -900: return
+	_check(false, "The long live traverse reaches its spring")
+
+
+func _more_grab(name: String) -> void:
+	Input.action_press("wall_grab")
+	if player.get_held_object() != null: return
+	for frame in 180:
+		if player.get_held_object() != null: break
+		_horizontal(stage.get_node("Items/" + name).position.x)
+		await _step()
+	_check(player.get_held_object() == stage.get_node("Items/" + name), "The actual new companion is acquired: " + name)
+
+
+func _more_boot(launch: float, name: String, target: Vector2) -> void:
+	await _more_walk(launch)
+	await _upper_pulse("jump")
+	_horizontal(target.x)
+	await _step(upper_jump_delay)
+	_check(player.is_air_jump_ready() and not stage.get_node("Items/" + name).visible, "The live jump collects " + name)
+	await _upper_pulse("jump")
+	await _step(upper_dash_delay)
+	await _upper_pulse("jump")
+	await _step(upper_dash_delay)
+	await _upper_dash()
+	await _land_on(target.x, target.y - 26, 240)
+
+
+func _more_bounce(launch: float, bumper_name: String, target: Vector2) -> void:
+	upper_bounces = 0
+	var bumper: Area2D = stage.get_node("Items/" + bumper_name)
+	if not bumper.launched.is_connected(_on_upper_bounce): bumper.launched.connect(_on_upper_bounce)
+	_horizontal(launch)
+	await _await_launch_long()
+	for frame in 180:
+		_horizontal(bumper.position.x)
+		await _step()
+		if upper_bounces > 0: break
+	_check(upper_bounces == 1 and player.velocity.y < -1000, "The real suspended bumper reflects the descent upward")
+	_horizontal(target.x)
+	await _step(upper_jump_delay + 5)
+	await _upper_dash()
+	await _land_on(target.x, target.y - 26, 240)
+
+
+func _more_course(section: int) -> void:
+	var started := Engine.get_physics_frames()
+	match section:
+		12:
+			await _more_walk(390)
+			await _more_climb("More13Wall")
+			await _more_refill("More13Dash", 700, Vector2(700, -11800))
+			await _more_spring(1900, Vector2(1450, -12460))
+			await _more_walk(1450)
+		13:
+			await _more_bounce(1300, "More14Bumper", Vector2(800, -13600))
+			await _more_spring(-800, Vector2(-400, -14260))
+			await _more_walk(-400)
+		14:
+			await _more_grab("More15Companion")
+			await _more_boot(350, "More15BootA", Vector2(900, -14800))
+			await _more_boot(1350, "More15BootB", Vector2(850, -15340))
+			await _more_walk(600)
+			await _more_climb("More15Wall", true)
+			await _more_walk(650)
+		15:
+			await _more_air_rest()
+			await _more_refill("More16Dash", 1400, Vector2(1200, -18080))
+			await _more_walk(1200)
+		16:
+			await _more_grab("More17Companion")
+			await _more_bounce(1050, "More17Bumper", Vector2(500, -19220))
+			await _more_boot(200, "More17Boot", Vector2(900, -19760))
+			await _more_spring(1600, Vector2(1300, -20420))
+			await _more_walk(1300)
+		17:
+			await _more_grab("More18Companion")
+			await _more_boot(1200, "More18Boot", Vector2(800, -20960))
+			await _more_walk(450)
+			await _more_climb("More18Wall", true)
+			_horizontal(230)
+			await _await_launch_long()
+			_horizontal(-50)
+			await _step(upper_jump_delay + 28)
+			await _upper_dash()
+			for frame in 90:
+				if not player.is_dashing(): _horizontal(-50)
+				await _step()
+				if not stage.get_node("Items/More18Dash").visible and not player.is_dashing(): break
+			_check(not stage.get_node("Items/More18Dash").visible, "The last flight really uses its dash refill")
+			await _upper_dash()
+			await _land_on(-100, -22346, 240)
+			for frame in 240:
+				_horizontal(-400)
+				Input.action_release("jump")
+				if player.is_on_floor() and player.is_on_wall(): Input.action_press("jump")
+				if player.position.x < -345: _horizontal(player.position.x)
+				await _step()
+				if stage.completed: break
+	_release()
+	var seconds := (Engine.get_physics_frames() - started) / 60.0
+	_check(stage.completed if section == 17 else stage.checkpoint_index == section + 1, "The live new section reaches its next checkpoint: %d" % (section + 1))
+	_check(seconds < 30, "Each new checkpoint remains within thirty seconds")
+	print("TOWER_MORE_%02d seconds=%.2f position=%s respawns=%d" % [section + 1, seconds, player.position, respawns])
+
+
+func _more_wall_rest(with_companion: bool = true) -> void:
+	if with_companion: await _more_grab("More16Companion")
+	await _more_walk(650)
+	await _upper_pulse("jump")
+	Input.action_press("move_right", upper_strength)
+	for frame in 650:
+		if player.is_on_wall():
+			var side := player.get_wall_normal().x
+			Input.action_release("move_left")
+			Input.action_release("move_right")
+			Input.action_press("move_right" if side > 0 else "move_left", upper_strength)
+			await _upper_pulse("jump")
+		await _step()
+		if (player.is_on_floor() and player.position.y < -17140) or player.position.y < -17170: break
+	await _land_on(650, -17166, 240)
+	if failed: return
+
+
+func _more_air_rest() -> void:
+	await _more_wall_rest()
+	await _more_walk(750)
+	await _upper_pulse("jump")
+	_horizontal(1050)
+	await _step(upper_jump_delay)
+	await _upper_pulse("jump")
+	await _step(upper_dash_delay)
+	await _upper_dash()
+	await _land_on(1050, -17606, 240)

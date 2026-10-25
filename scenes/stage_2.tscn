@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=3]
+[gd_scene load_steps=61 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -108,6 +108,51 @@ size = Vector2(260, 32)
 
 [sub_resource type="RectangleShape2D" id="Shape_UpperFooting"]
 size = Vector2(740, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More0"]
+size = Vector2(260, 480)
+
+[sub_resource type="RectangleShape2D" id="Shape_More1"]
+size = Vector2(1400, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More2"]
+size = Vector2(480, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More3"]
+size = Vector2(2100, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More4"]
+size = Vector2(1150, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More5"]
+size = Vector2(900, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More6"]
+size = Vector2(1100, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More7"]
+size = Vector2(260, 600)
+
+[sub_resource type="RectangleShape2D" id="Shape_More8"]
+size = Vector2(32, 1060)
+
+[sub_resource type="RectangleShape2D" id="Shape_More9"]
+size = Vector2(360, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More10"]
+size = Vector2(1550, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More11"]
+size = Vector2(500, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More12"]
+size = Vector2(720, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More13"]
+size = Vector2(260, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_More14"]
+size = Vector2(260, 470)
 
 [node name="Stage2" type="Node2D"]
 metadata/environment_theme = 1
@@ -413,6 +458,198 @@ one_way_collision = true
 script = ExtResource("art_terrain")
 polygon = PackedVector2Array(-130, -16, 130, -16, 130, 16, -130, 16)
 
+[node name="More13Wall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(600, -11060)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More13Wall"]
+shape = SubResource("Shape_More0")
+[node name="Body" type="Polygon2D" parent="Terrain/More13Wall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130, -240, 130, -240, 130, 240, -130, 240)
+
+[node name="More13DashRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(1300, -11784)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More13DashRest"]
+shape = SubResource("Shape_More1")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More13DashRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-700, -16, 700, -16, 700, 16, -700, 16)
+
+[node name="More14Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(1450, -12444)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More14Checkpoint"]
+shape = SubResource("Shape_More2")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More14Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-240, -16, 240, -16, 240, 16, -240, 16)
+
+[node name="More14Rest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(150, -13584)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More14Rest"]
+shape = SubResource("Shape_More3")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More14Rest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-1050, -16, 1050, -16, 1050, 16, -1050, 16)
+
+[node name="More15Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-25, -14244)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More15Checkpoint"]
+shape = SubResource("Shape_More4")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More15Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-575, -16, 575, -16, 575, 16, -575, 16)
+
+[node name="More15RightRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(1050, -14784)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More15RightRest"]
+shape = SubResource("Shape_More5")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More15RightRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-450, -16, 450, -16, 450, 16, -450, 16)
+
+[node name="More15LeftRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(700, -15324)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More15LeftRest"]
+shape = SubResource("Shape_More6")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More15LeftRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-550, -16, 550, -16, 550, 16, -550, 16)
+
+[node name="More15Wall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(230, -15640)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More15Wall"]
+shape = SubResource("Shape_More7")
+[node name="Body" type="Polygon2D" parent="Terrain/More15Wall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130, -300, 130, -300, 130, 300, -130, 300)
+
+[node name="More16Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(650, -15924)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More16Checkpoint"]
+shape = SubResource("Shape_More6")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More16Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-550, -16, 550, -16, 550, 16, -550, 16)
+
+[node name="More16LeftWall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(480, -16610)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More16LeftWall"]
+shape = SubResource("Shape_More8")
+[node name="Body" type="Polygon2D" parent="Terrain/More16LeftWall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-16, -530, 16, -530, 16, 530, -16, 530)
+
+[node name="More16RightWall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(720, -16610)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More16RightWall"]
+shape = SubResource("Shape_More8")
+[node name="Body" type="Polygon2D" parent="Terrain/More16RightWall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-16, -530, 16, -530, 16, 530, -16, 530)
+
+[node name="More16WallRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(650, -17124)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More16WallRest"]
+shape = SubResource("Shape_More9")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More16WallRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-180, -16, 180, -16, 180, 16, -180, 16)
+
+[node name="More16AirRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(1250, -17564)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More16AirRest"]
+shape = SubResource("Shape_More5")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More16AirRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-450, -16, 450, -16, 450, 16, -450, 16)
+
+[node name="More17Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(675, -18064)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More17Checkpoint"]
+shape = SubResource("Shape_More10")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More17Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-775, -16, 775, -16, 775, 16, -775, 16)
+
+[node name="More17LeftRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(450, -19204)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More17LeftRest"]
+shape = SubResource("Shape_More6")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More17LeftRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-550, -16, 550, -16, 550, 16, -550, 16)
+
+[node name="More17RightRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(1125, -19744)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More17RightRest"]
+shape = SubResource("Shape_More4")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More17RightRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-575, -16, 575, -16, 575, 16, -575, 16)
+
+[node name="More18Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(1300, -20404)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More18Checkpoint"]
+shape = SubResource("Shape_More11")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More18Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-250, -16, 250, -16, 250, 16, -250, 16)
+
+[node name="More18LeftRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(600, -20944)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More18LeftRest"]
+shape = SubResource("Shape_More6")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/More18LeftRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-550, -16, 550, -16, 550, 16, -550, 16)
+
+[node name="More18Wall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(200, -21260)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/More18Wall"]
+shape = SubResource("Shape_More7")
+[node name="Body" type="Polygon2D" parent="Terrain/More18Wall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130, -300, 130, -300, 130, 300, -130, 300)
+
+[node name="MoreSummit" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-400, -22304)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/MoreSummit"]
+shape = SubResource("Shape_More12")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/MoreSummit"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-360, -16, 360, -16, 360, 16, -360, 16)
+
+[node name="MoreScrollBalcony" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-1030, -14244)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/MoreScrollBalcony"]
+shape = SubResource("Shape_More13")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/MoreScrollBalcony"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130, -16, 130, -16, 130, 16, -130, 16)
+
+[node name="MoreScrollWall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-560, -18265)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/MoreScrollWall"]
+shape = SubResource("Shape_More14")
+[node name="Body" type="Polygon2D" parent="Terrain/MoreScrollWall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130, -235, 130, -235, 130, 235, -130, 235)
+
 [node name="Checkpoints" type="Node2D" parent="."]
 [node name="Checkpoint0" type="Marker2D" parent="Checkpoints"]
 position = Vector2(360, 640)
@@ -529,6 +766,66 @@ text = "12"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
 
+[node name="Checkpoint12" type="Marker2D" parent="Checkpoints"]
+position = Vector2(420, -10700)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint12"]
+offset_left = -116.0
+offset_top = 12.0
+offset_right = 116.0
+text = "13"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Checkpoint13" type="Marker2D" parent="Checkpoints"]
+position = Vector2(1450, -12460)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint13"]
+offset_left = -116.0
+offset_top = 12.0
+offset_right = 116.0
+text = "14"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Checkpoint14" type="Marker2D" parent="Checkpoints"]
+position = Vector2(-400, -14260)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint14"]
+offset_left = -116.0
+offset_top = 12.0
+offset_right = 116.0
+text = "15"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Checkpoint15" type="Marker2D" parent="Checkpoints"]
+position = Vector2(650, -15940)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint15"]
+offset_left = -116.0
+offset_top = 12.0
+offset_right = 116.0
+text = "16"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Checkpoint16" type="Marker2D" parent="Checkpoints"]
+position = Vector2(1200, -18080)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint16"]
+offset_left = -116.0
+offset_top = 12.0
+offset_right = 116.0
+text = "17"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Checkpoint17" type="Marker2D" parent="Checkpoints"]
+position = Vector2(1300, -20420)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint17"]
+offset_left = -116.0
+offset_top = 12.0
+offset_right = 116.0
+text = "18"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
 [node name="Items" type="Node2D" parent="."]
 [node name="Item0" parent="Items" instance=ExtResource("6")]
 position = Vector2(620, -530)
@@ -641,6 +938,118 @@ scale = Vector2(0.45, 0.45)
 modulate = Color(1, 1, 1, 0.75)
 script = ExtResource("scroll_marker")
 
+[node name="More13Dash" parent="Items" instance=ExtResource("4")]
+position = Vector2(700, -11600)
+
+
+[node name="More13Spring" parent="Items" instance=ExtResource("6")]
+position = Vector2(1900, -11800)
+spring_speed = 1650.0
+
+[node name="More14Launch" parent="Items" instance=ExtResource("6")]
+position = Vector2(1300, -12460)
+spring_speed = 1650.0
+
+[node name="More14Bumper" parent="Items" instance=ExtResource("bumper")]
+position = Vector2(1040, -13090)
+minimum_bounce_speed = 1200.0
+maximum_bounce_speed = 1200.0
+
+[node name="More14Wind" parent="Items" instance=ExtResource("wind")]
+position = Vector2(940, -13400)
+wind_direction = Vector2(-1, 0.2)
+wind_acceleration = 500.0
+max_wind_speed = 220.0
+area_size = Vector2(520, 280)
+
+[node name="More14Spring" parent="Items" instance=ExtResource("6")]
+position = Vector2(-800, -13600)
+spring_speed = 1650.0
+
+[node name="More15Companion" parent="Items" instance=ExtResource("7")]
+position = Vector2(430, -14293)
+
+
+[node name="More15BootA" parent="Items" instance=ExtResource("5")]
+position = Vector2(350, -14370)
+
+
+[node name="More15BootB" parent="Items" instance=ExtResource("5")]
+position = Vector2(1350, -14910)
+
+
+[node name="More16Companion" parent="Items" instance=ExtResource("7")]
+position = Vector2(1100, -15973)
+
+
+[node name="More16Dash" parent="Items" instance=ExtResource("4")]
+position = Vector2(1400, -17880)
+
+
+[node name="More17Companion" parent="Items" instance=ExtResource("7")]
+position = Vector2(1300, -18113)
+
+
+[node name="More17Launch" parent="Items" instance=ExtResource("6")]
+position = Vector2(1050, -18080)
+spring_speed = 1650.0
+
+[node name="More17Bumper" parent="Items" instance=ExtResource("bumper")]
+position = Vector2(790, -18710)
+minimum_bounce_speed = 1200.0
+maximum_bounce_speed = 1200.0
+
+[node name="More17Wind" parent="Items" instance=ExtResource("wind")]
+position = Vector2(690, -19020)
+wind_direction = Vector2(-1, 0.2)
+wind_acceleration = 500.0
+max_wind_speed = 220.0
+area_size = Vector2(520, 280)
+
+[node name="More17Boot" parent="Items" instance=ExtResource("5")]
+position = Vector2(200, -19330)
+
+
+[node name="More17Spring" parent="Items" instance=ExtResource("6")]
+position = Vector2(1600, -19760)
+spring_speed = 1650.0
+
+[node name="More18Companion" parent="Items" instance=ExtResource("7")]
+position = Vector2(1450, -20453)
+
+
+[node name="More18Boot" parent="Items" instance=ExtResource("5")]
+position = Vector2(1200, -20530)
+
+
+[node name="More18Spring" parent="Items" instance=ExtResource("6")]
+position = Vector2(230, -21560)
+spring_speed = 1280.0
+
+[node name="More18Dash" parent="Items" instance=ExtResource("4")]
+position = Vector2(-50, -22140)
+
+
+[node name="MoreLeftScroll" parent="ScrollBranch" instance=ExtResource("scroll")]
+position = Vector2(-860, -14370)
+stage_id = "tower"
+scroll_id = "left_return_04"
+[node name="MoreLeftScrollMark" type="Node2D" parent="ScrollBranch"]
+position = Vector2(-570, -14284)
+scale = Vector2(0.45, 0.45)
+modulate = Color(1, 1, 1, 0.75)
+script = ExtResource("scroll_marker")
+
+[node name="MoreHighScroll" parent="ScrollBranch" instance=ExtResource("scroll")]
+position = Vector2(-560, -18590)
+stage_id = "tower"
+scroll_id = "upper_wall_05"
+[node name="MoreHighScrollMark" type="Node2D" parent="ScrollBranch"]
+position = Vector2(-70, -18104)
+scale = Vector2(0.45, 0.45)
+modulate = Color(1, 1, 1, 0.75)
+script = ExtResource("scroll_marker")
+
 [node name="Hints" type="Node2D" parent="."]
 [node name="Hint0" type="Label" parent="Hints"]
 visible = false
@@ -686,7 +1095,7 @@ theme_override_font_sizes/font_size = 17
 modulate = Color(0.8, 0.95, 0.6, 1)
 
 [node name="Goal" parent="." instance=ExtResource("8")]
-position = Vector2(360, -10700)
+position = Vector2(-400, -22320)
 
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(360, 612)
