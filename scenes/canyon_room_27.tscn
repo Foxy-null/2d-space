@@ -208,6 +208,3 @@ width = 2.0
 default_color = Color(0.75, 1, 0.85, 0.6)
 antialiased = true
 
-[node name="Goal" parent="." instance=ExtResource("goal")]
-position = Vector2(2450, 720)
-mission_required = false
