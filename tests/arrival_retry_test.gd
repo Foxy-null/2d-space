@@ -31,9 +31,9 @@ func _run() -> void:
 			"stage_2": goal = stage.get_node("Goal")
 			"stage_3": goal = stage.get_node("Rooms/Room1/Goal")
 			"stage_4":
-				stage.room_index = 5
+				stage.room_index = stage.rooms.get_child_count() - 1
 				stage._set_checkpoint()
-				goal = stage.get_node("Rooms/Room6/Goal")
+				goal = stage.rooms.get_child(stage.room_index).get_node("Goal")
 			"stage_5":
 				stage.room_index = stage.rooms.get_child_count() - 1
 				stage._set_checkpoint()
@@ -70,7 +70,7 @@ func _run() -> void:
 
 func _prepare_goal() -> void:
 	if scene_name == "stage_4":
-		var creature: Grabbable = stage.get_node("Rooms/Room6/Items/JumpCreature")
+		var creature: Grabbable = stage.rooms.get_child(stage.room_index).get_node("Items/JumpCreature")
 		player.global_position = creature.global_position
 		Input.action_press("wall_grab")
 		_check(player.try_begin_grab(creature), "The delivery fixture carries the actual companion")
