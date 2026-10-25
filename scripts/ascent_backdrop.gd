@@ -2,7 +2,6 @@ extends StageBackdrop
 
 const ASCENT_SHADER := preload("res://assets/environments/ascent.gdshader")
 const CAMERA_BOTTOM := 360.0
-const CAMERA_TOP := -3920.0
 var _cloud_shape := PackedVector2Array([
 	Vector2(-64, 22), Vector2(-65, 16), Vector2(-62, 9), Vector2(-55, 5), Vector2(-47, 4), Vector2(-35, 7),
 	Vector2(-29, -8), Vector2(-18, -22), Vector2(-5, -29), Vector2(10, -30), Vector2(23, -24), Vector2(31, -12),
@@ -14,6 +13,7 @@ var sky_progress := 0.0
 var _sky := GradientTexture2D.new()
 
 @onready var camera: Camera2D = $"../../Camera2D"
+@onready var camera_top: float = $"../../Goal".position.y - 240.0
 
 
 func _ready() -> void:
@@ -27,7 +27,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	rise = maxf(0, CAMERA_BOTTOM - camera.position.y)
-	sky_progress = clampf(rise / (CAMERA_BOTTOM - CAMERA_TOP), 0, 1)
+	sky_progress = clampf(rise / (CAMERA_BOTTOM - camera_top), 0, 1)
 	_picture.position.y = rise * 0.5 * get_viewport_rect().size.y / 720.0
 	_sky.gradient.colors = PackedColorArray([
 		Color("73acf0").lerp(Color("0b1330"), smoothstep(0, 1, sky_progress)),

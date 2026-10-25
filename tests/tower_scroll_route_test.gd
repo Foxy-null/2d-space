@@ -65,10 +65,12 @@ func _run() -> void:
 	await _extra_jump_course()
 	await _companion_course()
 	await _finale_course()
+	for section in range(6, 12):
+		await _upper_course(section)
 	_check(respawns == 0 and stage.completed, "The entire original tower remains playable after the optional return")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage2/Content/Collection/Count").text == "1 / 1", "Selection shows the collected and actual placed tower total")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage2/Content/Collection/Count").text == "1 / 3", "Selection shows the collected and actual placed tower total")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.has_scroll("tower", "left_balcony_01"), "Leaving the stage preserves its saved collection")
