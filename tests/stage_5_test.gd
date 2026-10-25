@@ -25,7 +25,7 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.scene_file_path == "res://scenes/stage_5.tscn", "Stage 5 loads from selection")
-	_check(stage.rooms.get_child_count() == 24 and stage.TITLES.size() == 24, "Twenty-four named rooms are available")
+	_check(stage.rooms.get_child_count() == 27 and stage.TITLES.size() == 27, "Twenty-seven named rooms are available")
 	_check(stage.get_meta("environment_theme") == 2, "Use the previously unused wild planet")
 	_check(player.move_speed == 360 and player.dash_speed == 900 and player.wall_actions_enabled, "Preserve the existing movement abilities")
 	_check(not paused and not stage.hints_visible, "Pause and route hints start hidden")
@@ -50,6 +50,9 @@ func _run() -> void:
 		var target_count: int = stage._bumpers().get_child_count()
 		var last_bumper: int = stage.next_bumper
 		var rested := false
+		if index >= 24:
+			await _entry_begin()
+			if failed: return
 		for frame in 1800:
 			if stage.transitioning or stage.completed: break
 			if index >= 18 and not rested and stage.next_bumper == 3:
@@ -58,6 +61,9 @@ func _run() -> void:
 				await _repeat_wide_third(1.0, 20)
 				rested = true
 				if failed: return
+				if index >= 24:
+					await _entry_finish()
+					break
 			if not player._winds.is_empty(): wind_frames += 1
 			_check(index >= 12 or not (player.is_on_floor() and _x() > 210 and _x() < 1100), "The original twelve-room route needs no intermediate rest")
 			_steer()
@@ -78,7 +84,7 @@ func _run() -> void:
 		else:
 			_check(stage.completed and stage.next_bumper == target_count, "All final-room bumpers precede completion")
 		print("STAGE_5_ROOM_%02d_OK (%.2fs)" % [index + 1, (Engine.get_physics_frames() - started) / 60.0])
-	_check(total_bumpers == 128 and visited_bumpers.size() == 128 and respawns == 23, "All 128 reflections are reachable without a death")
+	_check(total_bumpers == 144 and visited_bumpers.size() == 144 and respawns == 26, "All 144 reflections are reachable without a death")
 	_check(not stage.target_marker.visible, "Completion hides the target marker")
 	_check(ceiling_reflected_down, "Room 6 reflects off the underside of the ceiling bumper")
 	_check(wind_frames > 100 and dash_count > 12, "Traversal uses real wind and chained dashes")
@@ -220,6 +226,7 @@ func _x() -> float:
 func _release_inputs() -> void:
 	for action in ["move_left", "move_right", "move_up", "move_down", "jump", "dash", "wall_grab", "reset"]:
 		Input.action_release(action)
+	if is_instance_valid(player) and player.get_held_object()!=null: Input.action_press("wall_grab")
 
 
 func _step(count: int = 1) -> void:
@@ -241,9 +248,9 @@ func _key(code: Key) -> void:
 	await _step(3)
 
 
-func _land_at_wide_rest(strength: float = 1.0) -> void:
+func _land_at_wide_rest(strength: float = 1.0, rest_name: String = "Rest") -> void:
 	var before := respawns
-	var rest: Node2D = stage.rooms.get_child(stage.room_index).get_node("Rest")
+	var rest: Node2D = stage.rooms.get_child(stage.room_index).get_node(rest_name)
 	for frame in 600:
 		_steer_to(rest.position - Vector2(0, 34), false, strength)
 		await _step()
@@ -255,8 +262,8 @@ func _land_at_wide_rest(strength: float = 1.0) -> void:
 	_check(false, "The real flight reaches its safe intermediate rest")
 
 
-func _repeat_wide_third(strength: float, dash_delay: int) -> void:
-	var bumper: Node2D = stage._bumpers().get_child(2)
+func _repeat_wide_third(strength: float, dash_delay: int, bumper_index: int = 2) -> void:
+	var bumper: Node2D = stage._bumpers().get_child(bumper_index)
 	var before := respawns
 	var repeated: Array[bool] = []
 	bumper.launched.connect(func(_body): repeated.append(true), CONNECT_ONE_SHOT)
@@ -276,4 +283,64 @@ func _repeat_wide_third(strength: float, dash_delay: int) -> void:
 		if not repeated.is_empty() or respawns > before: break
 		_steer_to(bumper.position - Vector2(0,62), false, strength)
 		await _step()
-	_check(not repeated.is_empty() and respawns == before, "A normal jump and upward dash return from the rest to the visible third reflection")
+	_check(not repeated.is_empty() and respawns == before, "A normal jump and upward dash return from the rest to the visible reflection")
+
+
+func _entry_begin(strength: float = 1.0) -> void:
+	var before := respawns
+	var room: Node2D = stage.rooms.get_child(stage.room_index)
+	if stage.room_index == 26:
+		Input.action_press("wall_grab")
+		await _step()
+		Input.action_release("wall_grab")
+		_check(player.get_held_object()==room.get_node("Items/Parachute"),"The real entrance parachute is picked up")
+		if failed: return
+		for frame in 900:
+			_entry_horizontal(320,strength)
+			await _step()
+			if player.position.y<970: break
+			if respawns>before: break
+		_check(player.position.y<970 and respawns==before,"The held native parachute actually rises in the real wind")
+	else:
+		var launches: Array[bool] = []
+		room.get_node("Items/Spring").launched.connect(func(_body): launches.append(true),CONNECT_ONE_SHOT)
+		for frame in 120:
+			_entry_horizontal(room.get_node("Items/Spring").position.x,strength)
+			await _step()
+			if not launches.is_empty() or respawns>before: break
+		_check(not launches.is_empty() and respawns==before,"The entrance uses the real Spring")
+	_release_inputs()
+
+
+func _entry_horizontal(target: float, strength: float = 1.0) -> void:
+	_release_inputs()
+	var error := target-_x()-player.velocity.x*absf(player.velocity.x)/(2*player.air_acceleration)
+	if absf(error)>4: Input.action_press("move_right" if error>0 else "move_left",strength)
+
+
+
+func _entry_finish(strength: float = 1.0) -> void:
+	var before := respawns
+	var late_rested := false
+	for frame in 1200:
+		if stage.transitioning or stage.completed or respawns > before: break
+		if stage.room_index in [24,25] and stage.next_bumper == 3 and player.is_on_floor():
+			var shelf: StaticBody2D = stage.rooms.get_child(stage.room_index).get_node("LateRest")
+			var supported := false
+			for index in player.get_slide_collision_count():
+				var contact := player.get_slide_collision(index)
+				if contact.get_collider() == shelf and contact.get_normal().dot(Vector2.UP) > 0.8: supported = true
+			_check(supported,"The alternate relaunch genuinely stands on the native second shelf")
+			if failed: return
+			await _repeat_wide_third(strength,20,3)
+			if failed: return
+			print("CANYON_ENTRY_LATE_RELAUNCH room=",stage.room_index+1)
+		if stage.room_index in [24,25] and stage.next_bumper == 4 and not late_rested:
+			await _land_at_wide_rest(strength,"LateRest")
+			if failed: return
+			var stopped := player.position
+			await _step(180)
+			_check(player.is_on_floor() and player.position.distance_to(stopped)<2 and respawns==before,"The second native shelf permits a safe three-second rest before dropping to the next reflection")
+			late_rested = true
+		_steer(strength)
+		await _step()

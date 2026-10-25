@@ -17,7 +17,7 @@ func _run() -> void:
 			bumper.monitoring = false
 	await _step(2)
 	var first := 18 if OS.get_cmdline_user_args().has("--wide-only") else (15 if OS.get_cmdline_user_args().has("--left-only") else 0)
-	for index in range(first, stage.rooms.get_child_count()):
+	for index in range(first, mini(stage.rooms.get_child_count(), 24)):
 		stage.room_index = index
 		stage._set_checkpoint()
 		for launch_x in [90, 135, 170]:
