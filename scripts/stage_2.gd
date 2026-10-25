@@ -52,8 +52,16 @@ func _physics_process(delta: float) -> void:
 	if player.position.y > minf(checkpoint_y + 180.0, peak_y + SECTION_HEIGHT - 80.0):
 		player.respawn()
 	var target_y := _camera_target_y()
+	camera.position.x = lerpf(camera.position.x, _camera_target_x(), 1.0 - exp(-8.0 * delta))
 	camera.position.y = lerpf(camera.position.y, target_y, 1.0 - exp(-8.0 * delta))
 	_update_hud()
+
+
+func _camera_target_x() -> float:
+	if checkpoint_index != 2:
+		return 640.0
+	# Show the destination before jumping from CP03's left edge.
+	return clampf(640.0 + (player.position.x - 360.0) * 3.0, 0.0, 640.0)
 
 
 func _camera_target_y() -> float:
@@ -93,7 +101,7 @@ func _on_respawned() -> void:
 		if crystal.has_method("reset_for_respawn") and not crystal is Grabbable:
 			crystal.reset_for_respawn()
 	peak_y = player.position.y
-	camera.position = Vector2(640, _camera_target_y())
+	camera.position = Vector2(_camera_target_x(), _camera_target_y())
 	camera.reset_smoothing()
 
 
