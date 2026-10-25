@@ -7,16 +7,18 @@ const CREATURE = preload("res://scenes/jump_creature.tscn")
 const WIND = preload("res://scenes/wind_area.tscn")
 const GOAL = preload("res://scenes/arrival_switch.tscn")
 const SCROLL = preload("res://scenes/scroll_collectible.tscn")
+const DASH = preload("res://scenes/refill_crystal.tscn")
 const BOOT = preload("res://scenes/jump_crystal.tscn")
 const GATE = preload("res://scenes/gravity_gate.tscn")
 const SPRING = preload("res://scenes/spring.tscn")
 const SCROLL_MARK = preload("res://scripts/scroll_marker.gd")
 
-@export_range(0, 14) var room_number := 0
+@export_range(0, 17) var room_number := 0
 var walls: Array[Rect2] = []
 var exit_top := 500.0
 var entrance_top := 620.0
 var room_height := 720.0
+var room_width := 1280.0
 var camera_offset_y := -80.0
 
 
@@ -40,12 +42,13 @@ func _ready() -> void:
 		entrance_top = 1000.0
 		room_height = 1100.0
 	elif room_number >= 9:
-		entrance_top = [1700.0, 1500.0, 1900.0, 1900.0, 2200.0, 2000.0][room_number - 9]
+		entrance_top = [1700.0, 1500.0, 1900.0, 1900.0, 2200.0, 2000.0, 2100.0, 1600.0, 1800.0][room_number - 9]
 		room_height = entrance_top + 100.0
-	if room_number == 11:
+	if room_number >= 15: room_width = 1920.0
+	if room_number in [11, 15]:
 		camera_offset_y = -300.0
 	_block("LeftWall", Rect2(0, 100, 36, room_height - 100))
-	_block("Entrance", Rect2(36, entrance_top, 464 if room_number == 9 else 184, 40))
+	_block("Entrance", Rect2(36, entrance_top, 464 if room_number in [9, 15] else 184, 40))
 	# Each route has its own silhouette and movement problem.
 	match room_number:
 		0: # Jumping from the companion before grabbing it also cannot reach this landing.
@@ -108,8 +111,21 @@ func _ready() -> void:
 		14:
 			walls = [Rect2(370, 1580, 250, 24), Rect2(80, 1300, 240, 24), Rect2(720, 1020, 250, 24), Rect2(330, 740, 230, 24), Rect2(900, 500, 230, 24)]
 			_wind("LastTailwind", Vector2(720, 510), Vector2(220, 80), Vector2.RIGHT, 900, 320)
+		15:
+			walls = [Rect2(480, 1440, 480, 24), Rect2(260, 1200, 250, 24), Rect2(900, 960, 300, 24), Rect2(1430, 720, 260, 24)]
+			_item(DASH, "DashCrystal", Vector2(430, 1740))
+			_scroll_branch("refill_left_04", Vector2(140, 950), Rect2(70, 1040, 190, 24), Vector2(510, 1280))
+		16:
+			walls = [Rect2(260, 400, 400, 24), Rect2(920, 800, 400, 24), Rect2(1450, 1300, 260, 24), Rect2(1050, 1000, 250, 24), Rect2(1620, 780, 180, 24)]
+			_item(GATE, "UpGate", Vector2(300, 1400)).target_gravity = -1
+			_item(GATE, "DownGate", Vector2(1260, 950)).target_gravity = 1
+		17:
+			walls = [Rect2(760, 1470, 580, 24), Rect2(1360, 500, 220, 1400)]
+			_block("ShaftLeft", Rect2(1160, 300, 36, 1100))
+			_wind("HighTailwind", Vector2(500, 1300), Vector2(650, 160), Vector2.RIGHT, 2000, 650)
+			_scroll_branch("wind_shaft_05", Vector2(1030, 210), Rect2(950, 300, 200, 24), Vector2(1300, 330))
 	for rect in walls:
-		_block("Platform%d" % get_child_count(), rect, room_number in [0, 6, 8, 9, 11, 12, 14] or (room_number in [7, 10, 13] and rect != walls[0]))
+		_block("Platform%d" % get_child_count(), rect, room_number in [0, 6, 8, 9, 11, 12, 14, 15] or (room_number in [7, 10, 13] and rect != walls[0]) or (room_number == 16 and rect not in [walls[0], walls[1]]) or (room_number == 17 and rect == walls[0]))
 	if room_number == 6:
 		_block("ScrollRest", Rect2(50, 600, 220, 24), true)
 		var marker := Node2D.new()
@@ -125,16 +141,17 @@ func _ready() -> void:
 		scroll.stage_id = "companion"
 		scroll.scroll_id = "relay_left_01"
 		add_child(scroll)
-	exit_top = 1000.0 if room_number == 13 else 500.0
-	_block("Exit", Rect2(1160, exit_top, 120, 40), room_number == 10)
+	exit_top = 1000.0 if room_number == 13 else (700.0 if room_number in [15, 16] else 500.0)
+	_block("Exit", Rect2(room_width - 120, exit_top, 120, 40), room_number in [10, 15, 16, 17])
 	# The reversed carrier cannot rest under the boundary before the fall reset.
-	_block("ExitBarrier", Rect2(1280, 100, 24, room_height - (0 if room_number == 10 else 100)))
+	_block("ExitBarrier", Rect2(room_width, 100, 24, room_height - (0 if room_number in [10, 16] else 100)))
 	if room_number != 0:
 		_label("Checkpoint", Vector2(45, entrance_top + 47), "↺ %02d / %02d" % [room_number + 1, get_parent().get_child_count()], Color("81f6c2"), 16)
-	_label("ExitLabel", Vector2(1180, exit_top + 48), "○ →", Color.WHITE, 22)
+	_label("ExitLabel", Vector2(room_width - 100, exit_top + 48), "○ →", Color.WHITE, 22)
 	var ceiling := SPIKE.instantiate()
 	ceiling.name = "CeilingSpikes"
-	ceiling.position = Vector2(640, 16)
+	ceiling.position = Vector2(room_width * 0.5, 16)
+	ceiling.strip_half_width = room_width * 0.5
 	ceiling.travel = Vector2.ZERO
 	ceiling.ceiling_strip = true
 	ceiling.room_number = room_number
@@ -174,7 +191,7 @@ func _ready() -> void:
 			_spike(Vector2(780, 240), Vector2(0, 180), 4.2, 0.5)
 		8:
 			_spike(Vector2(810, 700), Vector2(0, 160), 4.0, 0.0)
-	if room_number in [4, 6, 8, 9, 10, 11, 12, 14]:
+	if room_number in [4, 6, 8, 9, 10, 11, 12, 14, 15, 16, 17]:
 		var edge := SPIKE.instantiate()
 		edge.name = "LeftEdgeSpikes"
 		edge.position = Vector2(36, 630 if room_number == 6 else (350 if room_number == 4 else 730))
@@ -196,7 +213,7 @@ func _ready() -> void:
 	delivery_icon.name = "DeliveryIcon"
 	delivery_icon.texture = creature.get_node("Visuals/Body").sprite_frames.get_frame_texture("default", 0)
 	# Keep the final badge clear of the goal and a companion held on its cap.
-	delivery_icon.position = Vector2(1220, exit_top - (250 if room_number in [13, 14] else 65))
+	delivery_icon.position = Vector2(room_width - 60, exit_top - (250 if room_number in [13, 17] else 65))
 	if room_number in [6, 9, 10]:
 		# The upper rest's camera would place an overhead badge under the pause button.
 		delivery_icon.position.y = exit_top + 90
@@ -210,10 +227,10 @@ func _ready() -> void:
 	delivery_frame.width = 3.0
 	delivery_frame.default_color = Color("a7f5ac")
 	add_child(delivery_frame)
-	if room_number == 14:
+	if room_number == 17:
 		var goal := GOAL.instantiate()
 		goal.name = "Goal"
-		goal.position = Vector2(1220, exit_top)
+		goal.position = Vector2(room_width - 90, exit_top)
 		add_child(goal)
 		goal.get_node("Bubble").hide()
 

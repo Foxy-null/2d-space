@@ -31,7 +31,6 @@ func _run() -> void:
 		await _more_capture("room%d_rest"%(section+1))
 		if not OS.get_cmdline_user_args().has("--rest-only"):
 			_check(await traverse(section),"The drawn room resumes from rest to the next checkpoint")
-		if section==14 and stage.completed:await _more_capture("room15_goal")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(root.get_node("CollectionProgress").save_path))
 	print("CORRIDOR_MORE_CAPTURE_%s room=%d checks=%d"%["FAILED" if failed else "OK",section+1,checks])
 	quit(1 if failed else 0)

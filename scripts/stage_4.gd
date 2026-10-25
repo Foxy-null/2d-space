@@ -4,6 +4,7 @@ const TITLES := [
 	"相棒と高い足場へ", "壁キックの峡谷", "低い天井の回廊", "峠を越えて下る", "離れ小島の大跳躍",
 	"折り返しの頂", "二段の高台", "壁キックと折り返し", "折り返しの風橋", "相棒と空中の靴",
 	"反転して運ぶ", "バネから相棒へ", "風と空中の継ぎ足し", "壁の先で持ち直す", "運搬の長い折り返し",
+	"空中でダッシュを継ぐ", "反転中の二つの天井", "風から壁の頂へ",
 ]
 const HINTS := [
 	"相棒の追加ジャンプと上向きダッシュで高い足場へ。広い足場で次の着地点を見よう。",
@@ -21,8 +22,10 @@ const HINTS := [
 	"高い風から右の島へ。空中の靴を使い左上へ折り返そう。",
 	"対向壁を交互に蹴り、頂から左へ寄って谷を下ろう。",
 	"台ごとに相棒とダッシュを回復し、左右へ折り返して最後の風へ。",
+	"相棒と空中の回復をつなぎ、再ダッシュで高台へ。左上から右へ渡ろう。",
+	"反転した二つの天井を相棒と渡り、Downから床側へ戻ろう。",
+	"風で島へ渡り、壁の下から対向壁へ。相棒を持って頂へ登ろう。",
 ]
-const ROOM_WIDTH := 1280.0
 var room_index := 0
 var transitioning := false
 var hints_visible := false
@@ -49,22 +52,27 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if transitioning:
 		return
-	var local_x := player.position.x - room_index * ROOM_WIDTH
+	var room := rooms.get_child(room_index)
+	var local_x: float = player.position.x - room.position.x
 	if player.position.y < -52 or player.position.y > rooms.get_child(room_index).room_height + 52 or local_x < -24:
 		player.respawn()
-	elif local_x >= 1260 and room_index < rooms.get_child_count() - 1 and player.is_on_floor() and _carry_requirement_met():
+	elif local_x >= room.room_width - 20 and room_index < rooms.get_child_count() - 1 and player.is_on_floor() and _carry_requirement_met():
 		_transition_to_next()
-	camera.position.y = lerpf(camera.position.y, _camera_position().y, 1.0 - exp(-8.0 * delta))
+	camera.position = camera.position.lerp(_camera_position(), 1.0 - exp(-8.0 * delta))
 	_update_hud()
 
 
 func _set_checkpoint() -> void:
-	player.set_respawn_position(Vector2(room_index * ROOM_WIDTH + 110, rooms.get_child(room_index).entrance_top - 26))
+	var room := rooms.get_child(room_index)
+	player.set_respawn_position(Vector2(room.position.x + 110, room.entrance_top - 26))
 
 
 func _camera_position() -> Vector2:
-	var bottom: float = rooms.get_child(room_index).room_height - 360.0
-	return Vector2(room_index * ROOM_WIDTH + 640, clampf(player.position.y + rooms.get_child(room_index).camera_offset_y, 360.0, bottom))
+	var room := rooms.get_child(room_index)
+	var bottom: float = room.room_height - 360.0
+	var offset_y: float = 120.0 if room_index == 16 and player.gravity_direction == -1 else room.camera_offset_y
+	if room_index == 15 and player.position.y < 1300.0: offset_y = -80.0
+	return Vector2(clampf(player.position.x, room.position.x + 640, room.position.x + room.room_width - 640), clampf(player.position.y + offset_y, 360.0, bottom))
 
 
 func _transition_to_next() -> void:
@@ -107,7 +115,8 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
-	$HUD/Info.position = Vector2(580, 620) if room_index in [1, 4, 8, 12] else Vector2(24, 620 if room_index == 0 else (100 if room_index == 11 else 40))
+	$HUD/Info.position = Vector2(580, 620) if room_index in [1, 4, 8, 12, 17] else Vector2(24, 620 if room_index == 0 else (100 if room_index == 11 else 40))
+	if room_index == 15: $HUD/Info.position = Vector2(24, 80)
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()

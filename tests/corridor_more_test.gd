@@ -32,7 +32,7 @@ func _run() -> void:
 			_check(player.is_on_floor() and player.position.distance_to(rest) < 2 and stage._carry_requirement_met(), "Three seconds of safe stationary observation")
 			await _more_capture("room%d_rest"%(section+1))
 			_check(await traverse(section), "Rejoin the route and reach the next checkpoint in room %d" % (section+1))
-			_check(deaths == before + (0 if section == 14 else 1), "Successful traversal does not die")
+			_check(deaths == before + (0 if section == stage.rooms.get_child_count() - 1 else 1), "Successful traversal does not die")
 			_check(not actions.has("climb"), "Carry routes do not use wall climbing")
 			_check(progress.get_count("companion") == 0, "Ordinary traversal leaves the optional scrolls untouched")
 			var seconds := float(Engine.get_physics_frames()-started)/60
@@ -40,8 +40,8 @@ func _run() -> void:
 			print("CORRIDOR_MORE_ROOM_%d %.2fs strength=%.2f actions=%s" % [section+1,seconds,strength,actions])
 			_hold()
 			await step(25)
-		_check(stage.completed, "The actual fifteenth arrival completes the stage")
-	await _more_capture("room15_goal")
+		_check(not stage.completed and stage.room_index == 15, "The former final room now reaches the sixteenth checkpoint")
+	await _more_capture("room15_exit")
 	await _new_stage()
 	await _gimmick_retries()
 	if failed:return
@@ -138,7 +138,7 @@ func _new_scroll(section: int, progress: Node) -> void:
 	stage.get_node("PauseMenu").return_to_select()
 	await step(4)
 	var card: Button=current_scene.get_node("Margin/Content/Stages/Stage4")
-	var expected := "%d / 3"%(count+1)
+	var expected := "%d / 5"%(count+1)
 	_check(card.get_node("Content/Collection/Count").text==expected and card.accessibility_name.contains("巻物 "+expected), "Saved collection and actual total appear in selection and its accessible name")
 	progress._collected.clear()
 	progress.load_progress()
@@ -221,7 +221,7 @@ func _gimmick_retries() -> void:
 
 
 func _check_mechanic_view(section: int) -> void:
-	if section not in [11,12]:return
+	if section not in [11,12,17]:return
 	var room: Node2D=stage.rooms.get_child(section)
 	var mechanic: Rect2=room.walls[0] if section==11 else Rect2(room.get_node("HighTailwind").position-room.get_node("HighTailwind").area_size*0.5,room.get_node("HighTailwind").area_size)
 	var screen:=Rect2(root.get_canvas_transform()*room.to_global(mechanic.position),mechanic.size)

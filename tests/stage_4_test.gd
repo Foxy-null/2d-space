@@ -29,7 +29,7 @@ func _run() -> void:
 	player = stage.player
 	player.respawned.connect(func(): deaths += 1)
 	player.movement_action.connect(func(action): actions[action] = actions.get(action, 0) + 1)
-	check(stage.rooms.get_child_count() == 15 and player.is_on_floor(), "Fifteen rooms and safe entrance")
+	check(stage.rooms.get_child_count() == 18 and player.is_on_floor(), "Eighteen rooms and safe entrance")
 	for room in stage.rooms.get_children():
 		check(not room.has_node("Route"), "No speculative route arrows")
 		check(room.has_node("Items/JumpCreature"), "Every room supplies its own companion")
@@ -44,7 +44,7 @@ func _run() -> void:
 					check(not bounds.intersects(wall), "Patrol stays clear of terrain")
 	check(SpikeBlock.segment_hits_box(Vector2(-100, 0), Vector2(100, 0), Vector2(43, 51)), "Swept collision detects a full crossing")
 	check(not SpikeBlock.segment_hits_box(Vector2(-100, 70), Vector2(100, 70), Vector2(43, 51)), "Safe clearance remains safe")
-	var delays := [21, 30, 42, 182, 95, 581, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	var delays := [21, 30, 42, 182, 95, 581, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	for section in stage.rooms.get_child_count():
 		var arrived := false
 		var used_delay := 0
@@ -68,7 +68,7 @@ func _run() -> void:
 			break
 		print("STAGE_4_ROOM_%d_OK delay=%d actions=%s" % [section + 1, used_delay, actions])
 		check(not actions.has("climb"), "Carry route never climbs a wall")
-		if section in [1, 7, 13]:
+		if section in [1, 7, 13, 17]:
 			check(actions.get("wall_jump", 0) > 0, "The canyon uses real wall kicks while carrying its companion")
 		check(actions.has("dash") if section in [0, 4, 6, 8] else (section >= 9 or section in [1, 7] or not actions.has("dash")), "The high entrance and the long island leap use dash")
 		check(actions.get("creature_jump", 0) > 0, "Use the carried creature's additional jump")
@@ -186,13 +186,13 @@ func verify_carry_gate() -> void:
 			frame_bounds = frame_bounds.grow(frame.width * 0.5)
 			badge_bottom = room.global_position.y + frame_bounds.end.y
 			var icon_bounds := Rect2(icon.position + icon.get_rect().position * icon.scale, icon.get_rect().size * icon.scale)
-			check(Rect2(0, 0, 1280, 720).encloses(frame_bounds) and frame_bounds.encloses(icon_bounds) and icon.is_visible_in_tree() and frame.is_visible_in_tree(), "The final companion picture and its frame fit fully inside the room")
+			check(Rect2(0, 0, room.room_width, room.room_height).encloses(frame_bounds) and frame_bounds.encloses(icon_bounds) and icon.is_visible_in_tree() and frame.is_visible_in_tree(), "The final companion picture and its frame fit fully inside the room")
 			var case_collision: CollisionShape2D = room.get_node("Goal/Case/Collision")
 			var case_top := case_collision.to_global(case_collision.shape.get_rect().position).y - room.global_position.y
 			check(frame_bounds.end.y + 24 < case_top, "The final badge leaves space above the case for the goal artwork and opening animation")
 		check(room.get_node("ExitLabel").text == "○ →" and room.get_node("CarryHint").visible, "An empty delivery marker and nearby grab keys explain the initial task")
 		if section < stage.rooms.get_child_count() - 1:
-			player.position = Vector2(section * 1280 + 1262, room.exit_top - 26)
+			player.position = Vector2(room.position.x + room.room_width - 18, room.exit_top - 26)
 			await step(10)
 			check(stage.room_index == section, "Cannot leave any room empty-handed")
 		else:
@@ -231,11 +231,12 @@ func verify_ceiling() -> void:
 	for section in stage.rooms.get_child_count():
 		stage.room_index = section
 		stage._set_checkpoint()
-		for x in [80, 640, 1200]:
+		var room: Node2D = stage.rooms.get_child(section)
+		for x in [80, room.room_width * 0.5, room.room_width - 80]:
 			release()
 			player.respawn()
 			await step(5)
-			player.position = Vector2(section * 1280 + x, 68)
+			player.position = Vector2(room.position.x + x, 68)
 			player.velocity = Vector2.ZERO
 			var before := deaths
 			Input.action_press("move_up")
@@ -243,4 +244,4 @@ func verify_ceiling() -> void:
 			await step(2)
 			release()
 			check(deaths == before + 1, "Visible ceiling spikes stop upward movement inside the screen")
-			check(stage.room_index == section and absf(player.position.x - (section * 1280 + 110)) < 2, "Ceiling death returns to the same entrance")
+			check(stage.room_index == section and absf(player.position.x - (room.position.x + 110)) < 2, "Ceiling death returns to the same entrance")
