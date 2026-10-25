@@ -25,8 +25,8 @@ func _run() -> void:
 				_check(scroll.stage_id == "companion" and not ids.has(scroll.scroll_id), "Native optional scroll IDs belong to this stage and are unique")
 				ids.append(scroll.scroll_id)
 			if room.has_node("Goal"): goals += 1
-		_check(ids.size() == 9 and progress.TOTALS["companion"] == ids.size(), "The persisted selection total equals all nine actual native scrolls")
-		_check(stage.rooms.get_child_count() == 30 and goals == 1 and stage.goal.get_parent() == stage.rooms.get_child(29), "All thirty native rooms connect to one real final Goal")
+		_check(ids.size() == 12 and progress.TOTALS["companion"] == ids.size(), "The persisted selection total equals all twelve actual native scrolls")
+		_check(stage.rooms.get_child_count() == 36 and goals == 1 and stage.goal.get_parent() == stage.rooms.get_child(35), "All thirty-six native rooms connect to one real final Goal")
 		for section in range(first,24):
 			if section == 23:
 				stage.set_hints_visible(true)

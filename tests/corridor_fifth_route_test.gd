@@ -31,8 +31,8 @@ func _run() -> void:
 				_check(scroll.stage_id == "companion" and not ids.has(scroll.scroll_id), "Actual scroll IDs are unique and belong to the carry course")
 				ids.append(scroll.scroll_id)
 			if room.has_node("Goal"): goals += 1
-		_check(ids.size() == 9 and progress.TOTALS["companion"] == 9, "Nine actual optional scrolls match the saved selection total")
-		_check(stage.rooms.get_child_count() == 30 and goals == 1 and stage.goal.get_parent() == stage.rooms.get_child(29), "Thirty native rooms lead to one final Goal")
+		_check(ids.size() == 12 and progress.TOTALS["companion"] == 12, "Twelve actual optional scrolls match the saved selection total")
+		_check(stage.rooms.get_child_count() == 36 and goals == 1 and stage.goal.get_parent() == stage.rooms.get_child(35), "Thirty-six native rooms lead to one final Goal")
 		for section in range(first,last):
 			var before := deaths
 			var started := Engine.get_physics_frames()
@@ -56,13 +56,13 @@ func _run() -> void:
 			_check(await traverse_fifth(section, false, profile[1]), "The real course reaches its next checkpoint or final Goal")
 			var seconds := (Engine.get_physics_frames()-started)/60.0
 			print("FIFTH_MAIN room=",section+1," strength=",profile[0]," gap=",profile[1]," seconds=",seconds," actions=",actions)
-			_check(deaths == before+(0 if section==29 else 1) and seconds<30, "The successful retry has only its ordinary transfer and remains under thirty seconds including rest")
+			_check(deaths == before+(0 if section==stage.rooms.get_child_count()-1 else 1) and seconds<30, "The successful retry has only its ordinary transfer and remains under thirty seconds including rest")
 			_check(progress.get_count("companion")==0, "The normal route leaves optional scrolls untouched")
 			if failed:return
 			_hold()
 			await step(25)
-			if section==29:await _fifth_capture("room30_goal")
-		_check(stage.completed if last==30 else stage.room_index==last, "The actual new rooms connect to their intended endpoint")
+			if stage.completed:await _fifth_capture("room30_goal")
+		_check(stage.completed if last==stage.rooms.get_child_count() else stage.room_index==last, "The actual new rooms connect to their intended endpoint")
 	observe_fifth_view = false
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
 	await _fifth_cleanup()

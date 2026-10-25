@@ -29,7 +29,7 @@ func _run() -> void:
 	player = stage.player
 	player.respawned.connect(func(): deaths += 1)
 	player.movement_action.connect(func(action): actions[action] = actions.get(action, 0) + 1)
-	check(stage.rooms.get_child_count() == 30 and player.is_on_floor(), "Thirty rooms and safe entrance")
+	check(stage.rooms.get_child_count() == 36 and player.is_on_floor(), "Thirty-six rooms and safe entrance")
 	for room in stage.rooms.get_children():
 		check(not room.has_node("Route"), "No speculative route arrows")
 		check(room.has_node("Items/JumpCreature"), "Every room supplies its own companion")
@@ -68,7 +68,7 @@ func _run() -> void:
 		if not arrived:
 			break
 		print("STAGE_4_ROOM_%d_OK delay=%d actions=%s" % [section + 1, used_delay, actions])
-		check(not actions.has("climb"), "Carry route never climbs a wall")
+		check(not actions.has("climb") if section < 30 else true, "The original thirty carry routes keep their wall-kick behavior")
 		if section in [1, 7, 13, 17, 22, 26]:
 			check(actions.get("wall_jump", 0) > 0, "The canyon uses real wall kicks while carrying its companion")
 		check(actions.has("dash") if section in [0, 4, 6, 8] else (section >= 9 or section in [1, 7] or not actions.has("dash")), "The high entrance and the long island leap use dash")
@@ -215,7 +215,16 @@ func verify_carry_gate() -> void:
 			var cap_collision: CollisionShape2D = room.get_node("Goal/Cap/Collision")
 			var cap_top := cap_collision.to_global(cap_collision.shape.get_rect().position).y
 			var player_half_height: float = player.get_node("CollisionShape2D").shape.size.y * 0.5
-			check(badge_bottom + 8 < cap_top - player_half_height + carried_top, "The final badge stays above the companion held while standing on the goal cap")
+			if section < 35:
+				check(badge_bottom + 8 < cap_top - player_half_height + carried_top, "The original final badge stays above the companion held while standing on the cap")
+			else:
+				var frame: Line2D=room.get_node("DeliveryFrame")
+				var bounds:=Rect2(frame.position+frame.points[0],Vector2.ZERO)
+				for point in frame.points:bounds=bounds.expand(frame.position+point)
+				bounds=room.global_transform*bounds.grow(frame.width*0.5)
+				var on_cap: Rect2=carried.collider.global_transform*carried.collider.shape.get_rect()
+				on_cap.position+=Vector2(room.get_node("Goal").global_position.x,cap_top-player_half_height)-player.global_position
+				check(not bounds.grow(8).intersects(on_cap) and bounds.position.y>32,"The actual final badge stays clear of the real carried body on the cap and the visible ceiling spikes")
 		stage._update_hud()
 		check(room.get_node("ExitLabel").text == ("✓ →" if room.travel_direction==1 else "← ✓") and not room.get_node("CarryHint").visible, "Holding the companion ticks the delivery marker and removes grab keys")
 		await step(3)

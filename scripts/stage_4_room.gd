@@ -15,7 +15,7 @@ const BUMPER = preload("res://scenes/pinball_spring.tscn")
 const PARACHUTE = preload("res://scenes/parachute_creature.tscn")
 const SCROLL_MARK = preload("res://scripts/scroll_marker.gd")
 
-@export_range(0, 29) var room_number := 0
+@export_range(0, 35) var room_number := 0
 var walls: Array[Rect2] = []
 var exit_top := 500.0
 var entrance_top := 620.0
@@ -27,7 +27,7 @@ var entrance_x := 110.0
 
 
 func _ready() -> void:
-	travel_direction = -1 if room_number in [25, 28] else 1
+	travel_direction = -1 if room_number in [25, 28, 31, 34] else 1
 	var items := Node2D.new()
 	items.name = "Items"
 	add_child(items)
@@ -47,14 +47,15 @@ func _ready() -> void:
 		entrance_top = 1000.0
 		room_height = 1100.0
 	elif room_number >= 9:
-		entrance_top = [1700.0, 1500.0, 1900.0, 1900.0, 2200.0, 2000.0, 2100.0, 1600.0, 1800.0, 2100.0, 2100.0, 1900.0, 1800.0, 2100.0, 2100.0, 2100.0, 2100.0, 2100.0, 1900.0, 2100.0, 2100.0][room_number - 9]
+		entrance_top = [1700.0, 1500.0, 1900.0, 1900.0, 2200.0, 2000.0, 2100.0, 1600.0, 1800.0, 2100.0, 2100.0, 1900.0, 1800.0, 2100.0, 2100.0, 2100.0, 2100.0, 2100.0, 1900.0, 2100.0, 2100.0, 1800.0, 1900.0, 2100.0, 2000.0, 2100.0, 2100.0][room_number - 9]
 		room_height = entrance_top + (220.0 if room_number == 20 else 100.0)
 	if room_number >= 15: room_width = 2560.0 if room_number == 23 else 1920.0
+	if room_number >= 30: room_width = 2240.0 if room_number in [30, 33] else 2560.0
 	entrance_x = route_x(110)
 	if room_number in [11, 15]:
 		camera_offset_y = -300.0
 	_block("LeftWall", Rect2(0, 100, 36, room_height - 100))
-	_block("Entrance", Rect2(36, entrance_top, 464 if room_number in [9, 15, 19, 23, 24, 28, 29] else 184, 40))
+	_block("Entrance", Rect2(36, entrance_top, 464 if room_number in [9, 15, 19, 23, 24, 28, 29, 30, 31, 33, 35] else 184, 40))
 	# Each route has its own silhouette and movement problem.
 	match room_number:
 		0: # Jumping from the companion before grabbing it also cannot reach this landing.
@@ -195,8 +196,41 @@ func _ready() -> void:
 			_item(DASH, "DashCrystal", Vector2(430, 1740))
 			_spring("Spring", Vector2(900, 1440), 1250)
 
+		30:
+			walls = [Rect2(420, 1300, 220, 650), Rect2(420, 1300, 650, 24), Rect2(1280, 550, 520, 24), Rect2(1830, 700, 260, 24)]
+			_spring("Spring", Vector2(900, 1300), 1350)
+			_scroll_branch("throw_left_10", Vector2(230, 1050), Rect2(120, 1130, 220, 24), Vector2(430, 1230))
+		31:
+			walls = [Rect2(540, 1340, 600, 24), Rect2(1800, 1600, 420, 24)]
+			_item(BOOT, "JumpCrystal", Vector2(430, 1670))
+			_wind("HighTailwind", Vector2(1450, 1130), Vector2(620, 240), Vector2.RIGHT, 2500, 700)
+		32:
+			walls = [Rect2(900, 1440, 460, 24), Rect2(1530, 900, 680, 24)]
+			_bumper(Vector2(248, entrance_top + 62))
+			_item(DASH, "DashCrystal", Vector2(1220, 1080))
+			_scroll_branch("rebound_upper_11", Vector2(730, 1240), Rect2(620, 1320, 220, 24), Vector2(960, 1300))
+		33:
+			walls = [Rect2(260, 850, 500, 24), Rect2(1000, 1400, 500, 24), Rect2(1300, 1900, 540, 24), Rect2(1700, 1450, 300, 24)]
+			_item(GATE, "UpGate", Vector2(300, 1600)).target_gravity = -1
+			_item(DASH, "DashCrystal", Vector2(800, 1260))
+			_item(GATE, "DownGate", Vector2(1510, 1600)).target_gravity = 1
+		34:
+			walls = [Rect2(380, 1500, 420, 24), Rect2(900, 620, 200, 1500), Rect2(1760, 760, 520, 24)]
+			_spring("Spring", Vector2(205, entrance_top), 1250)
+			_block("ShaftLeft", Rect2(680, 620, 36, 810))
+			_wind("HighTailwind", Vector2(1430, 425), Vector2(650, 330), Vector2.RIGHT, 2500, 650)
+			_scroll_branch("shaft_return_12", Vector2(780, 350), Rect2(660, 440, 240, 24), Vector2(970, 470))
+		35:
+			walls = [Rect2(600, 1560, 690, 24), Rect2(1640, 240, 530, 24)]
+			_item(BOOT, "JumpCrystal", Vector2(430, 1870))
+			_spring("Spring", Vector2(1000, 1560), 1750)
+			_bumper(Vector2(1300, 900))
+			$Bumper.scale = Vector2.ONE
+			$Bumper.minimum_bounce_speed = 1250
+			$Bumper.maximum_bounce_speed = 1250
+
 	for rect in walls:
-		_block("Platform%d" % get_child_count(), rect, room_number in [0, 6, 8, 9, 11, 12, 14, 15, 18, 19, 20, 23] or (room_number in [7, 10, 13] and rect != walls[0]) or (room_number == 16 and rect not in [walls[0], walls[1]]) or (room_number in [17, 22] and rect == walls[0]) or (room_number == 21 and rect != walls[0]) or (room_number >= 24 and not (room_number in [25, 27] and rect == walls[1]) and not (room_number == 26 and rect == walls[0])))
+		_block("Platform%d" % get_child_count(), rect, room_number in [0, 6, 8, 9, 11, 12, 14, 15, 18, 19, 20, 23] or (room_number in [7, 10, 13] and rect != walls[0]) or (room_number == 16 and rect not in [walls[0], walls[1]]) or (room_number in [17, 22] and rect == walls[0]) or (room_number == 21 and rect != walls[0]) or (room_number >= 24 and not (room_number in [25, 27, 34] and rect == walls[1]) and not (room_number in [26, 30] and rect == walls[0]) and not (room_number == 33 and rect in [walls[0], walls[1]])))
 	if travel_direction == -1:
 		for index in walls.size(): walls[index] = route_rect(walls[index])
 	if room_number == 6:
@@ -215,11 +249,12 @@ func _ready() -> void:
 		scroll.scroll_id = "relay_left_01"
 		add_child(scroll)
 	exit_top = 1000.0 if room_number == 13 else (700.0 if room_number in [15, 16, 18, 19, 21, 22, 23] else (550.0 if room_number == 26 else (700.0 if room_number >= 24 else 500.0)))
-	_block("Exit", Rect2(room_width - 120, exit_top, 120, 40), room_number in [10, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+	if room_number >= 30: exit_top = [700.0, 1500.0, 1050.0, 1400.0, 900.0, 300.0][room_number - 30]
+	_block("Exit", Rect2(room_width - (240 if room_number == 35 else 120), exit_top, 240 if room_number == 35 else 120, 40), room_number in [10, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35])
 	# The reversed carrier cannot rest under the boundary before the fall reset.
-	_block("ExitBarrier", Rect2(room_width, 100, 24, room_height - (0 if room_number in [10, 16, 21, 25, 27] else 100)))
+	_block("ExitBarrier", Rect2(room_width, 100, 24, room_height - (0 if room_number in [10, 16, 21, 25, 27, 33] else 100)))
 	if room_number != 0:
-		_label("Checkpoint", Vector2(45 if travel_direction == 1 else room_width - 175, entrance_top + 47), "↺ %02d / %02d" % [room_number + 1, get_parent().get_child_count()], Color("81f6c2"), 16)
+		_label("Checkpoint", Vector2(45 if travel_direction == 1 else room_width - 175, entrance_top + (-130 if room_number >= 30 else 47)), "↺ %02d / %02d" % [room_number + 1, get_parent().get_child_count()], Color("81f6c2"), 16)
 	_label("ExitLabel", Vector2(room_width - 100 if travel_direction == 1 else 35, exit_top + 48), "○ →" if travel_direction == 1 else "← ○", Color.WHITE, 22)
 	var ceiling := SPIKE.instantiate()
 	ceiling.name = "CeilingSpikes"
@@ -264,7 +299,7 @@ func _ready() -> void:
 			_spike(Vector2(780, 240), Vector2(0, 180), 4.2, 0.5)
 		8:
 			_spike(Vector2(810, 700), Vector2(0, 160), 4.0, 0.0)
-	if room_number in [4, 6, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]:
+	if room_number in [4, 6, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]:
 		var edge := SPIKE.instantiate()
 		edge.name = "LeftEdgeSpikes"
 		edge.position = Vector2(route_x(36), 630 if room_number == 6 else (350 if room_number == 4 else 730))
@@ -289,10 +324,11 @@ func _ready() -> void:
 	delivery_icon.name = "DeliveryIcon"
 	delivery_icon.texture = creature.get_node("Visuals/Body").sprite_frames.get_frame_texture("default", 0)
 	# Keep the final badge clear of the goal and a companion held on its cap.
-	delivery_icon.position = Vector2(route_x(room_width - 60), exit_top - (250 if room_number in [13, 17, 23, 29] else 65))
+	delivery_icon.position = Vector2(route_x(room_width - 60), exit_top - (250 if room_number in [13, 17, 23, 29, 35] else 65))
 	if room_number in [6, 9, 10]:
 		# The upper rest's camera would place an overhead badge under the pause button.
 		delivery_icon.position.y = exit_top + 90
+	if room_number == 35: delivery_icon.position = Vector2(room_width - 200, exit_top - 220)
 	delivery_icon.scale = Vector2.ONE * (42.0 / delivery_icon.texture.get_width())
 	add_child(delivery_icon)
 	var delivery_frame := Line2D.new()
@@ -303,7 +339,7 @@ func _ready() -> void:
 	delivery_frame.width = 3.0
 	delivery_frame.default_color = Color("a7f5ac")
 	add_child(delivery_frame)
-	if room_number == 29:
+	if room_number == 35:
 		var goal := GOAL.instantiate()
 		goal.name = "Goal"
 		goal.position = Vector2(route_x(room_width - 90), exit_top)

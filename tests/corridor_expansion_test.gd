@@ -231,7 +231,7 @@ func _scroll_route(progress: Node) -> void:
 	_check(progress.get_count("companion") == 1 and stage.rooms.get_child(6).get_node("Scroll").modulate.a < 1, "Confirmed collection survives R and death without being counted again")
 	stage.get_node("PauseMenu").return_to_select()
 	await step(4)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage4/Content/Collection/Count").text == "1 / 9", "Stage selection shows the actual companion scroll count")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage4/Content/Collection/Count").text == "1 / 12", "Stage selection shows the actual companion scroll count")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.has_scroll("companion", "relay_left_01"), "Unfinished-stage return retains the saved scroll")

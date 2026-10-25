@@ -132,7 +132,7 @@ func _fifth_scroll(section: int, progress: Node) -> void:
 	await step(4)
 	var card: Button = current_scene.get_node("Margin/Content/Stages/Stage4")
 	await _fifth_capture("room%d_selection" % (section + 1))
-	var expected := "%d / 9" % (count + 1)
+	var expected := "%d / 12" % (count + 1)
 	_check(card.get_node("Content/Collection/Count").text == expected and card.accessibility_name.contains("巻物 " + expected), "Selection displays and announces the saved count and actual total")
 	progress._collected.clear()
 	progress.load_progress()
