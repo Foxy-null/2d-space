@@ -273,7 +273,7 @@ F6で実行する `main.tscn` のPhase 2配置：
 - `scenes/stage_select.tscn` / `scripts/stage_select.gd`：通常起動するステージ選択画面、ステージ1〜5の開始と環境プレビュー
 - `scenes/stage_2.tscn` / `scripts/stage_2.gd`：星のぼりの塔の全12区間、連続カメラ、復帰地点
 - `scenes/stage_3.tscn` / `scripts/stage_3.gd`：壁キックと重力反転を組み合わせた9部屋の本編ステージ
-- `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全9部屋
+- `scenes/stage_4.tscn` / `scripts/stage_4.gd`：星渡りの回廊の全15部屋
 - `scenes/stage_5.tscn` / `scripts/stage_5.gd`：暴風バンパー峡谷の全18部屋
 - `scenes/tutorial.tscn` / `scripts/tutorial.gd`：17部屋のチュートリアル、部屋切り替え、操作の解禁、復帰地点
 - `scenes/arrival_switch.tscn` / `scripts/arrival_switch.gd`：到着台、目標の吹き出し、ロックケース、解錠と押し込み
