@@ -1,0 +1,50 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
+[ext_resource type="Script" path="res://scripts/scroll_marker.gd" id="marker"]
+[ext_resource type="PackedScene" path="res://scenes/scroll_collectible.tscn" id="scroll"]
+[ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="spike"]
+[ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
+
+[sub_resource type="RectangleShape2D" id="Rest"]
+size = Vector2(120, 24)
+
+[node name="ScrollDetour" type="Node2D"]
+
+[node name="Rest" type="StaticBody2D" parent="."]
+position = Vector2(200, -288)
+
+[node name="Collision" type="CollisionShape2D" parent="Rest"]
+shape = SubResource("Rest")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="Rest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-60.0, -12.0, 60.0, -12.0, 60.0, 12.0, -60.0, 12.0)
+
+[node name="EntranceMark" type="Node2D" parent="."]
+position = Vector2(115, 180)
+scale = Vector2(0.4, 0.4)
+modulate = Color(1, 1, 1, 0.75)
+script = ExtResource("marker")
+
+[node name="Scroll" parent="." instance=ExtResource("scroll")]
+position = Vector2(200, -376)
+stage_id = "tutorial"
+scroll_id = "glide_updraft_01"
+
+[node name="Updraft" parent="." instance=ExtResource("wind")]
+position = Vector2(90, -160)
+area_size = Vector2(80, 680)
+wind_direction = Vector2(0, -1)
+wind_acceleration = 4000.0
+max_wind_speed = 300.0
+
+[node name="BranchSpikes" parent="." instance=ExtResource("spike")]
+position = Vector2(350, -350)
+rotation = 1.5707963
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 350.0
+stage_group = &"tutorial"
+room_number = 13

@@ -282,7 +282,7 @@ func _test_respawn_and_backtrack() -> void:
 	await _step(2)
 	_check(player.global_position.y < 720 and tutorial.room_index == 3, "Falling returns to the current entrance")
 	player.set_gravity_direction(-1)
-	player.global_position.y = -60
+	player.global_position.y = -380
 	await _step(2)
 	_check(player.gravity_direction == 1 and player.global_position.y > 0, "Inverted fall returns to the room entrance with down gravity")
 	player.global_position.x = 3835
