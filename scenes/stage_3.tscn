@@ -1,4 +1,4 @@
-[gd_scene load_steps=87 format=3]
+[gd_scene load_steps=93 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -26,6 +26,18 @@
 [ext_resource type="PackedScene" path="res://scenes/gravity_room_8.tscn" id="room_8"]
 
 [ext_resource type="PackedScene" path="res://scenes/gravity_room_9.tscn" id="room_9"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_10.tscn" id="room_10"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_11.tscn" id="room_11"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_12.tscn" id="room_12"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_13.tscn" id="room_13"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_14.tscn" id="room_14"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_15.tscn" id="room_15"]
 
 [sub_resource type="RectangleShape2D" id="Room1Overhang"]
 size = Vector2(60, 28)
@@ -2373,6 +2385,24 @@ position = Vector2(8960, 0)
 
 [node name="Room9" parent="Rooms" instance=ExtResource("room_9")]
 position = Vector2(10240, 0)
+
+[node name="Room10" parent="Rooms" instance=ExtResource("room_10")]
+position = Vector2(11520, 0)
+
+[node name="Room11" parent="Rooms" instance=ExtResource("room_11")]
+position = Vector2(14080, 0)
+
+[node name="Room12" parent="Rooms" instance=ExtResource("room_12")]
+position = Vector2(16640, 0)
+
+[node name="Room13" parent="Rooms" instance=ExtResource("room_13")]
+position = Vector2(19200, 0)
+
+[node name="Room14" parent="Rooms" instance=ExtResource("room_14")]
+position = Vector2(21760, 0)
+
+[node name="Room15" parent="Rooms" instance=ExtResource("room_15")]
+position = Vector2(24320, 0)
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector2(72, 614)

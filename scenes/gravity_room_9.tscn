@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -46,9 +46,6 @@ size = Vector2(400, 40)
 
 [sub_resource type="RectangleShape2D" id="Shape_FinalCeiling_Room4"]
 size = Vector2(140, 40)
-
-[sub_resource type="RectangleShape2D" id="Shape_52"]
-size = Vector2(40, 720)
 
 [node name="Room9" type="Node2D"]
 
@@ -352,21 +349,4 @@ wind_direction = Vector2(-0.6, -1)
 wind_acceleration = 300.0
 max_wind_speed = 80.0
 area_size = Vector2(260, 600)
-
-[node name="RightBoundary" type="StaticBody2D" parent="."]
-position = Vector2(1300.0, 360.0)
-
-[node name="Collision" type="CollisionShape2D" parent="RightBoundary"]
-shape = SubResource("Shape_52")
-
-[node name="Visual" type="Polygon2D" parent="RightBoundary"]
-script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-20.0, -360.0, 20.0, -360.0, 20.0, 360.0, -20.0, 360.0)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="Edge" type="Line2D" parent="RightBoundary"]
-points = PackedVector2Array(-20.0, -360.0, 20.0, -360.0)
-width = 2.0
-default_color = Color(0.4, 0.75, 0.9, 0.65)
-antialiased = true
 
