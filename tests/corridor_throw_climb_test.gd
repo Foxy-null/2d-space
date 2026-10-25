@@ -4,6 +4,7 @@ var checks := 0
 var failed := false
 var trials := 0
 var climb_trials := 0
+var tested_room := 7
 
 
 func _initialize() -> void:
@@ -11,13 +12,14 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	if OS.get_cmdline_user_args().has("--new-shaft"): tested_room = 13
 	change_scene_to_file("res://scenes/stage_4.tscn")
 	await step(5)
 	stage = current_scene
 	player = stage.player
 	player.respawned.connect(func(): deaths += 1)
 	player.movement_action.connect(func(action): actions[action] = actions.get(action, 0) + 1)
-	for live in [false, true]:
+	for live in ([false] if tested_room == 13 else [false, true]):
 		for stepped in [false, true]:
 			for side in [1, -1]:
 				for delay in [0, 4, 8]:
@@ -31,14 +33,14 @@ func _run() -> void:
 
 func _throw_and_climb(stepped: bool, side: int, delay: int, live: bool) -> void:
 	release()
-	stage.room_index = 7
+	stage.room_index = tested_room
 	stage._set_checkpoint()
 	player.wall_actions_enabled = true
 	player.respawn()
 	await step(5)
 	deaths = 0
 	actions.clear()
-	var room: Node2D = stage.rooms.get_child(7)
+	var room: Node2D = stage.rooms.get_child(tested_room)
 	var creature: Grabbable = room.get_node("Items/JumpCreature")
 	for hazard in room.get_node("Hazards").get_children():
 		if not hazard.ceiling_strip:
@@ -99,7 +101,7 @@ func _throw_and_climb(stepped: bool, side: int, delay: int, live: bool) -> void:
 				_move(Vector2.RIGHT)
 				await _pulse("jump")
 		await step()
-	_check(not reached and stage.room_index == 7 and actions.get("wall_jump", 0) == 0, "Throw, unheld climb and re-grab cannot replace the shaft's wall kicks: step=%s side=%d delay=%d live=%s" % [stepped, side, delay, live])
+	_check(not reached and stage.room_index == tested_room and actions.get("wall_jump", 0) == 0, "Throw, unheld climb and re-grab cannot replace the shaft's wall kicks: step=%s side=%d delay=%d live=%s" % [stepped, side, delay, live])
 	if climbed: climb_trials += 1
 	if deaths > 0:
 		release()

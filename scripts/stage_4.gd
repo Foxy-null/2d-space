@@ -1,6 +1,10 @@
 extends Node2D
 
-const TITLES := ["相棒と高い足場へ", "壁キックの峡谷", "低い天井の回廊", "峠を越えて下る", "離れ小島の大跳躍", "折り返しの頂", "二段の高台", "壁キックと折り返し", "折り返しの風橋"]
+const TITLES := [
+	"相棒と高い足場へ", "壁キックの峡谷", "低い天井の回廊", "峠を越えて下る", "離れ小島の大跳躍",
+	"折り返しの頂", "二段の高台", "壁キックと折り返し", "折り返しの風橋", "相棒と空中の靴",
+	"反転して運ぶ", "バネから相棒へ", "風と空中の継ぎ足し", "壁の先で持ち直す", "運搬の長い折り返し",
+]
 const HINTS := [
 	"相棒の追加ジャンプと上向きダッシュで高い足場へ。広い足場で次の着地点を見よう。",
 	"相棒を持つと壁登りはできない。左右の壁を交互に蹴って峡谷を登ろう。",
@@ -10,7 +14,13 @@ const HINTS := [
 	"中央の足場から左上へ折り返す。その後は右の低い足場へ大きく渡ろう。",
 	"広い足場で相棒とダッシュを回復。左上の棚にも寄り道できる。",
 	"相棒と壁を交互に蹴って登り、左上の足場で休んでから右へ渡ろう。",
-	"高い横風から右の島へ。左上の足場へ折り返してから到着台へ進もう。",
+	"高い横風から右の島へ。左上の足場へ折り返してから出口へ進もう。",
+	"空中の靴と相棒をつなぎ、高い台から左右へ折り返そう。",
+	"相棒と反転ゲートへ。天井で休んだら左の下降ゲートから戻ろう。",
+	"バネの勢いに相棒のジャンプをつなぎ、上の台へ。",
+	"高い風から右の島へ。空中の靴を使い左上へ折り返そう。",
+	"対向壁を交互に蹴り、頂から左へ寄って谷を下ろう。",
+	"台ごとに相棒とダッシュを回復し、左右へ折り返して最後の風へ。",
 ]
 const ROOM_WIDTH := 1280.0
 var room_index := 0
@@ -21,14 +31,15 @@ var completed := false
 @onready var player: PlayerController = $Player
 @onready var camera: Camera2D = $Camera2D
 @onready var rooms: Node2D = $Rooms
+@onready var goal: ArrivalSwitch = rooms.get_child(rooms.get_child_count() - 1).get_node("Goal")
 
 
 func _ready() -> void:
 	add_to_group("stage_four")
 	player.get_node("Camera2D").enabled = false
 	player.respawned.connect(_on_respawned)
-	$Rooms/Room9/Goal.activated.connect(_on_completed)
-	$Rooms/Room9/Goal.set_progress(1, 1, "", "緑の相棒を運ぼう", false)
+	goal.activated.connect(_on_completed)
+	goal.set_progress(1, 1, "", "緑の相棒を運ぼう", false)
 	_set_checkpoint()
 	player.respawn()
 	camera.make_current()
@@ -53,7 +64,7 @@ func _set_checkpoint() -> void:
 
 func _camera_position() -> Vector2:
 	var bottom: float = rooms.get_child(room_index).room_height - 360.0
-	return Vector2(room_index * ROOM_WIDTH + 640, clampf(player.position.y - 80.0, 360.0, bottom))
+	return Vector2(room_index * ROOM_WIDTH + 640, clampf(player.position.y + rooms.get_child(room_index).camera_offset_y, 360.0, bottom))
 
 
 func _transition_to_next() -> void:
@@ -71,7 +82,7 @@ func _transition_to_next() -> void:
 
 
 func _on_respawned() -> void:
-	$Rooms/Room9/Goal.reset_for_respawn()
+	goal.reset_for_respawn()
 	for item in rooms.get_child(room_index).get_node("Items").get_children():
 		item.reset_for_respawn()
 	for room in rooms.get_children():
@@ -92,11 +103,11 @@ func _on_completed() -> void:
 		return
 	completed = true
 	$HUD/Completion.show()
-	$Rooms/Room9/Goal.set_progress(0, 0, "", "", true)
+	goal.set_progress(0, 0, "", "", true)
 
 
 func _update_hud() -> void:
-	$HUD/Info.position = Vector2(580, 620) if room_index in [1, 4, 8] else Vector2(24, 620 if room_index == 0 else 40)
+	$HUD/Info.position = Vector2(580, 620) if room_index in [1, 4, 8, 12] else Vector2(24, 620 if room_index == 0 else (100 if room_index == 11 else 40))
 	$HUD/Info/Rows/Title.text = "星渡りの回廊　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s　　追加ジャンプ %d" % ["●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
@@ -109,8 +120,7 @@ func _update_hud() -> void:
 	var prompt: Label = room.get_node("CarryHint")
 	prompt.visible = not completed and not carrying and player.global_position.distance_to(creature.global_position) < 140.0
 	prompt.position = creature.position + Vector2(-65, -85)
-	if room_index == 8 and not completed:
-		var goal: ArrivalSwitch = $Rooms/Room9/Goal
+	if room_index == rooms.get_child_count() - 1 and not completed:
 		var should_lock := not _carry_requirement_met()
 		if goal.locked != should_lock:
 			goal.set_progress(1 if should_lock else 0, 1, "", "緑の相棒を運ぼう", false)
