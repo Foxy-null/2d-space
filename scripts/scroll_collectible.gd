@@ -72,6 +72,9 @@ func _has_safe_landing() -> bool:
 
 
 func reset_for_respawn() -> void:
+	if is_instance_valid(_follower) and _follower.room_transfer_in_progress:
+		_safe_time = 0.0
+		return
 	if not _secured:
 		_stop_following()
 

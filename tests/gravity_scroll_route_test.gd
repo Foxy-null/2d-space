@@ -3,7 +3,7 @@ extends "res://tests/stage_3_test.gd"
 
 func _run() -> void:
 	var progress := root.get_node("CollectionProgress")
-	progress.save_path = "user://gravity_scroll_route_test.cfg"
+	progress.save_path = "user://gravity_scroll_route_test_%d.cfg" % OS.get_process_id()
 	progress._collected.clear()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
 	change_scene_to_file("res://scenes/stage_3.tscn")
