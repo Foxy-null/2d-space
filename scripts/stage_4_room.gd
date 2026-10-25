@@ -86,7 +86,7 @@ func _ready() -> void:
 		9:
 			walls = [Rect2(600, 1140, 460, 24), Rect2(300, 850, 220, 24), Rect2(760, 550, 300, 24)]
 			_item(BOOT, "JumpCrystal", Vector2(430, 1470))
-			_scroll_branch("combo_left_02", Vector2(140, 650), Rect2(70, 720, 190, 24), Vector2(330, 790))
+			_scroll_branch("combo_left_02", Vector2(140, 650), Rect2(70, 720, 190, 24), Vector2(560, 930))
 		10:
 			walls = [Rect2(300, 350, 380, 24), Rect2(70, 920, 220, 24), Rect2(650, 670, 250, 24), Rect2(340, 600, 180, 24), Rect2(900, 420, 180, 24)]
 			_item(GATE, "UpGate", Vector2(300, 1300)).target_gravity = -1
