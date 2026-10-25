@@ -88,6 +88,30 @@ room_number = 16
 position = Vector2(23040, 0)
 script = ExtResource("room")
 room_number = 17
+[node name="Room19" type="Node2D" parent="Rooms"]
+position = Vector2(24960, 0)
+script = ExtResource("room")
+room_number = 18
+[node name="Room20" type="Node2D" parent="Rooms"]
+position = Vector2(26880, 0)
+script = ExtResource("room")
+room_number = 19
+[node name="Room21" type="Node2D" parent="Rooms"]
+position = Vector2(28800, 0)
+script = ExtResource("room")
+room_number = 20
+[node name="Room22" type="Node2D" parent="Rooms"]
+position = Vector2(30720, 0)
+script = ExtResource("room")
+room_number = 21
+[node name="Room23" type="Node2D" parent="Rooms"]
+position = Vector2(32640, 0)
+script = ExtResource("room")
+room_number = 22
+[node name="Room24" type="Node2D" parent="Rooms"]
+position = Vector2(34560, 0)
+script = ExtResource("room")
+room_number = 23
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(110, 594)
 use_default_respawn_bounds = false

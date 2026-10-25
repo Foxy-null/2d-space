@@ -56,30 +56,49 @@ func _run() -> void:
 	quit(1 if failed else 0)
 
 
-func _missing_action(section: int, mode: String, launch: float, delay: int, direction: Vector2) -> void:
+func _missing_action(section: int, mode: String, launch: float, delay: int, direction: Vector2, rest_target := 0) -> void:
 	await _enter(section)
 	var room: Node2D=stage.rooms.get_child(section)
 	player.wall_actions_enabled=section!=13
 	var spring_hits: Array[bool]=[]
-	if section==11:
+	if section==11 or (section in [18,19,21] and mode=="spring"):
 		room.get_node("Spring").monitoring=false
 		room.get_node("Spring/CollisionShape2D").disabled=true
 		room.get_node("Spring").launched.connect(func(_body):spring_hits.append(true),CONNECT_ONE_SHOT)
 	if section==12:
 		_check(await island_leap(20,20,1.0,section),"The second transfer comparison reaches its real wind island")
+	if section==20 and mode=="bumper":
+		room.get_node("Bumper").monitoring=false
+		room.get_node("Bumper/CollisionShape2D").disabled=true
+	if section==22 and mode=="wind": room.get_node("HighTailwind").wind_acceleration=0
+	if section==22 and mode=="wall":
+		_check(await island_leap(20,20,1.0,section),"The wall comparison uses the actual new wind and island")
+		player.wall_actions_enabled=false
+	if rest_target>0:
+		_check(await traverse_fourth(section,true),"The omission begins after the actual new entrance and first landing")
+		if section==21:
+			_check(await more_walk(330),"The Spring omission starts on the actual inverted ceiling")
+			more_drive(230-_more_x())
+			await more_jump()
+			for frame in 300:
+				more_drive((480 if player.gravity_direction==1 else 230)-_more_x())
+				await step()
+				if player.gravity_direction==1 and _on_more_rest(room.walls[1]):break
+			_check(player.gravity_direction==1 and _on_more_rest(room.walls[1]),"With Spring disabled the real Down route reaches its normal safe floor")
+		if failed:return
 	_check(await more_walk(launch),"The comparison carries the original companion to a real floor launch")
 	var creature: Grabbable=room.get_node("Items/JumpCreature")
 	if mode=="boot":
 		var boot: Area2D=room.get_node("Items/JumpCrystal")
 		boot.monitoring=false
 		boot.get_node("CollisionShape2D").disabled=true
-	elif section==10:
+	elif section==10 or (section==21 and mode=="up"):
 		var gate: Area2D=room.get_node("Items/UpGate")
 		gate.monitoring=false
 		gate.get_node("CollisionShape2D").disabled=true
 	actions.clear()
 	var before:=deaths
-	var target: Rect2=room.walls[1 if section==12 else 0]
+	var target: Rect2=room.walls[rest_target if rest_target>0 else (1 if section==12 or (section==22 and mode=="wall") else 0)]
 	var reached:=false
 	await more_jump()
 	for frame in 300:
@@ -92,14 +111,14 @@ func _missing_action(section: int, mode: String, launch: float, delay: int, dire
 			if direction.y!=0:Input.action_press("move_down" if direction.y>0 else "move_up")
 			await _pulse("dash")
 		if frame>delay and player.is_air_jump_ready() and frame%20==0: await more_jump()
-		if player.is_on_wall() and section!=13 and frame%12==0: await more_jump()
+		if player.is_on_wall() and section!=13 and mode!="wall" and frame%12==0: await more_jump()
 		await step()
 		reached=reached or _on_more_rest(target)
 		if deaths!=before or stage.room_index!=section or stage.completed:break
 	_check(not reached and stage.room_index==section and not stage.completed,"Required action cannot be replaced by normal jumps and eight-way Dash: room=%d mode=%s launch=%d delay=%d direction=%s"%[section+1,mode,launch,delay,direction])
 	if mode=="companion" or section==14:_check(not actions.has("creature_jump"),"The negative route really omits the companion jump")
-	if section==13:_check(not actions.has("wall_jump"),"The shaft comparison really omits wall kicks")
-	if section==11:
+	if section==13 or mode=="wall":_check(not actions.has("wall_jump"),"The shaft comparison really omits wall kicks")
+	if section==11 or (section in [18,19,21] and mode=="spring"):
 		_check(spring_hits.is_empty(),"The no-spring comparison really omits its launch")
 		room.get_node("Spring").monitoring=true
 		room.get_node("Spring/CollisionShape2D").disabled=false
@@ -133,18 +152,23 @@ func _rest_skips() -> void:
 		print("CORRIDOR_MORE_REST_SKIP_ROOM_%d complete"%(section+1))
 
 
-func _companion_steps() -> void:
-	for section in [9,14]:
+func _companion_steps(sections: Array = [9,14], launch_x := 175.0) -> void:
+	for section in sections:
 		for delay in [12,20,28]:
 			for direction in DIRECTIONS:
 				await _enter(section)
 				var room: Node2D=stage.rooms.get_child(section)
 				var creature: Grabbable=room.get_node("Items/JumpCreature")
+				if launch_x!=175:
+					_check(await more_walk(launch_x),"The real companion is carried to its moved support position")
+					release()
+					await step(30)
+					_check(creature.carrier==null and absf(creature.linear_velocity.y)<20,"The moved companion really rests on the native entrance")
 				release()
 				await more_jump()
 				for frame in 120:
 					release()
-					steer_to(175-_more_x())
+					steer_to(launch_x-_more_x())
 					await step()
 					if player.is_on_floor() and player.position.y<room.entrance_top-60:break
 				release()
@@ -175,10 +199,10 @@ func _companion_steps() -> void:
 		print("CORRIDOR_MORE_STEP_ROOM_%d complete"%(section+1))
 
 
-func _spring_without_companion(stepped: bool = false) -> void:
+func _spring_without_companion(stepped: bool = false, section := 11, aim_x := 570.0) -> void:
 	for delay in ([24,28,32,36,40,44,48,52] if stepped else [24,32,36,40,44,48]):
-		await _enter(11)
-		var room: Node2D=stage.rooms.get_child(11)
+		await _enter(section)
+		var room: Node2D=stage.rooms.get_child(section)
 		var launches: Array[Vector2]=[]
 		var callback=func(_body):launches.append(Vector2(_more_x(),player.position.y))
 		room.get_node("Spring").launched.connect(callback)
@@ -214,7 +238,7 @@ func _spring_without_companion(stepped: bool = false) -> void:
 		var reached:=false
 		for frame in 300:
 			room.get_node("Items/JumpCreature").consume_extra_jump()
-			more_drive(570-_more_x())
+			more_drive(aim_x-_more_x())
 			if frame==delay:
 				_drive(Vector2.UP)
 				await _pulse("dash")
@@ -226,15 +250,15 @@ func _spring_without_companion(stepped: bool = false) -> void:
 		trials+=1
 
 
-func _down_gate_skips() -> void:
+func _down_gate_skips(section := 10) -> void:
 	for gap in [12,20,28,36,44]:
 		for aim in [Vector2.DOWN,Vector2(1,1),Vector2.RIGHT,Vector2.UP]:
-			await _enter(10)
+			await _enter(section)
 			_check(await more_walk(185),"The inversion comparison carries the original companion from the actual entrance")
 			_check(await more_inverted_rest(),"The inversion comparison really lands on the ceiling rest")
 			_check(await more_walk(650),"Walk to the actual ceiling's right edge before trying to omit DownGate")
 			var before:=deaths
-			more_drive(1200-_more_x())
+			more_drive(stage.rooms.get_child(section).room_width-80-_more_x())
 			await more_jump()
 			await step(20)
 			await more_jump()
@@ -243,10 +267,10 @@ func _down_gate_skips() -> void:
 			await _pulse("dash")
 			var advanced:=false
 			for frame in 360:
-				advanced=advanced or stage.room_index!=10
+				advanced=advanced or stage.room_index!=section
 				if advanced or deaths!=before:break
-				more_drive(1268-_more_x())
+				more_drive(stage.rooms.get_child(section).room_width-12-_more_x())
 				await step()
-			_check(not advanced and stage.room_index==10,"Inverted Jump, companion Jump and Dash cannot land under the exit and omit DownGate: gap=%d aim=%s"%[gap,aim])
+			_check(not advanced and stage.room_index==section,"Inverted Jump, companion Jump and Dash cannot land under the exit and omit DownGate: gap=%d aim=%s"%[gap,aim])
 			if failed:return
 			trials+=1

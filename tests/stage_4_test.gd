@@ -29,7 +29,7 @@ func _run() -> void:
 	player = stage.player
 	player.respawned.connect(func(): deaths += 1)
 	player.movement_action.connect(func(action): actions[action] = actions.get(action, 0) + 1)
-	check(stage.rooms.get_child_count() == 18 and player.is_on_floor(), "Eighteen rooms and safe entrance")
+	check(stage.rooms.get_child_count() == 24 and player.is_on_floor(), "Twenty-four rooms and safe entrance")
 	for room in stage.rooms.get_children():
 		check(not room.has_node("Route"), "No speculative route arrows")
 		check(room.has_node("Items/JumpCreature"), "Every room supplies its own companion")
@@ -44,7 +44,8 @@ func _run() -> void:
 					check(not bounds.intersects(wall), "Patrol stays clear of terrain")
 	check(SpikeBlock.segment_hits_box(Vector2(-100, 0), Vector2(100, 0), Vector2(43, 51)), "Swept collision detects a full crossing")
 	check(not SpikeBlock.segment_hits_box(Vector2(-100, 70), Vector2(100, 70), Vector2(43, 51)), "Safe clearance remains safe")
-	var delays := [21, 30, 42, 182, 95, 581, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	var delays: Array[int] = [21, 30, 42, 182, 95, 581]
+	delays.resize(stage.rooms.get_child_count())
 	for section in stage.rooms.get_child_count():
 		var arrived := false
 		var used_delay := 0
@@ -68,7 +69,7 @@ func _run() -> void:
 			break
 		print("STAGE_4_ROOM_%d_OK delay=%d actions=%s" % [section + 1, used_delay, actions])
 		check(not actions.has("climb"), "Carry route never climbs a wall")
-		if section in [1, 7, 13, 17]:
+		if section in [1, 7, 13, 17, 22]:
 			check(actions.get("wall_jump", 0) > 0, "The canyon uses real wall kicks while carrying its companion")
 		check(actions.has("dash") if section in [0, 4, 6, 8] else (section >= 9 or section in [1, 7] or not actions.has("dash")), "The high entrance and the long island leap use dash")
 		check(actions.get("creature_jump", 0) > 0, "Use the carried creature's additional jump")

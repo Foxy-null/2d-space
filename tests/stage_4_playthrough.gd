@@ -20,6 +20,8 @@ func release() -> void:
 		Input.action_release(action)
 
 func traverse(section: int, stop_at_rest := false) -> bool:
+	if section >= 18:
+		return await traverse_fourth(section, stop_at_rest)
 	if section >= 15:
 		return await traverse_wide(section, stop_at_rest)
 	if section >= 9:
@@ -538,3 +540,139 @@ func wide_shaft(target: Rect2) -> bool:
 				Input.action_press("dash")
 		await step()
 	return false
+
+
+func traverse_fourth(section: int, stop_at_rest := false, gap := 20) -> bool:
+	var room: Node2D = stage.rooms.get_child(section)
+	var before := deaths
+	var waypoint := 0
+	for index in room.walls.size():
+		if _on_more_rest(room.walls[index]): waypoint = index + 1
+	if section == 21 and player.gravity_direction == -1 and _on_wide_ceiling(room.walls[0]): waypoint = 1
+	if waypoint == 0:
+		if not await more_walk(185): return false
+		if section == 18:
+			if not await fourth_spring(205, room.walls[0], gap): return false
+		elif section in [19, 23]:
+			if not await more_combo(430, room.walls[0], gap): return false
+		elif section == 20:
+			if not await fourth_bumper(room.walls[0], gap): return false
+		elif section == 21:
+			if not await more_inverted_rest(): return false
+		else:
+			if not await island_leap(gap, gap, steering_strength, section): return false
+		waypoint = 1
+		if stop_at_rest: return true
+	if section in [18, 20] and waypoint == 1:
+		if not await more_combo(500 if section == 18 else 1000, room.walls[1], gap): return false
+		waypoint = 2
+	elif section == 19 and waypoint == 1:
+		if not await fourth_spring(920, room.walls[1], gap): return false
+		waypoint = 2
+	elif section == 21 and waypoint == 1:
+		if not await more_walk(330): return false
+		more_drive(230 - _more_x())
+		await more_jump()
+		for frame in 300:
+			more_drive((480 if player.gravity_direction == 1 else 230) - _more_x())
+			await step()
+			if deaths != before: return false
+			if player.gravity_direction == 1 and player.velocity.y < -800: break
+		if player.gravity_direction != 1 or player.velocity.y >= -800: return false
+		if not await fourth_boost(room.walls[2], gap): return false
+		waypoint = 3
+	elif section == 22 and waypoint == 1:
+		if not await more_walk(1310) or not await wide_shaft(room.walls[1]): return false
+		waypoint = 2
+	elif section == 23 and waypoint == 1:
+		if not await more_combo(800, room.walls[1], gap): return false
+		waypoint = 2
+	for index in range(waypoint, room.walls.size()):
+		if not await more_transfer(room.walls[index]): return false
+	var final: bool = section == stage.rooms.get_child_count() - 1
+	var target := Rect2(room.room_width - (110 if final else 30), room.exit_top - (80 if final else 0), 45, 24)
+	if not await more_transfer(target, true): return false
+	return deaths == before + (0 if final else 1)
+
+
+func fourth_spring(launch: float, target: Rect2, gap: int, boost := true) -> bool:
+	var before := deaths
+	for frame in 240:
+		more_drive(launch - _more_x())
+		await step()
+		if deaths != before: return false
+		if not player.is_on_floor() and player.velocity.y < -800: break
+	if player.velocity.y >= -800: return false
+	return await fourth_boost(target, gap) if boost else await more_flight(target, false)
+
+
+func fourth_boost(target: Rect2, gap: int) -> bool:
+	var before := deaths
+	for frame in 180:
+		more_drive(target.get_center().x - _more_x())
+		await step()
+		if deaths != before: return false
+		if player.velocity.y > -40: break
+	if player.get_available_extra_jump_count() > 0:
+		await more_jump()
+	await step(gap)
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	await more_dash()
+	return await more_flight(target, false)
+
+
+func more_dash() -> void:
+	Input.action_press("dash")
+	await step()
+	Input.action_release("dash")
+
+
+func fourth_bumper(target: Rect2, gap: int) -> bool:
+	var before := deaths
+	for frame in 180:
+		more_drive(500 - _more_x())
+		await step()
+		if deaths != before: return false
+		if player.velocity.y < -800: break
+	if player.velocity.y >= -800: return false
+	return await fourth_boost(target, gap)
+
+
+func fourth_choose_red() -> bool:
+	var room: Node2D = stage.rooms.get_child(23)
+	if not await more_walk(800): return false
+	release()
+	await step()
+	for frame in 120:
+		release()
+		Input.action_press("move_right", steering_strength)
+		await step()
+		if _more_x() > 995: break
+	if not await more_walk(1040): return false
+	return player.get_held_object() == room.get_node("Items/ParachuteCreature")
+
+
+func fourth_right_finish(gap := 20, choose := true) -> bool:
+	var room: Node2D = stage.rooms.get_child(23)
+	var before := deaths
+	if choose and not await fourth_choose_red(): return false
+	if not await fourth_spring(1100, room.walls[2], gap, false): return false
+	more_drive(0)
+	await step(20)
+	var rest := player.position
+	await step(180)
+	if not _on_more_rest(room.walls[2]) or player.position.distance_to(rest)>2: return false
+	if not await more_transfer(room.walls[3]): return false
+	if not await more_walk(room.room_width - 230): return false
+	more_drive(0)
+	await more_jump()
+	await step(gap)
+	release()
+	Input.action_press("wall_grab")
+	Input.action_press("move_up")
+	await more_dash()
+	await step(15)
+	var target := Rect2(room.room_width - 110, room.exit_top - 80, 45, 24)
+	return await more_flight(target, false, true) and stage.completed and deaths == before
