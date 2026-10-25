@@ -120,7 +120,7 @@ func _physics_process(delta: float) -> void:
 	var room := rooms.get_child(room_index) as Node2D
 	var left := room.position.x
 	var width := float(room.get_meta("room_width", ROOM_SIZE.x))
-	if width > ROOM_SIZE.x:
+	if width > ROOM_SIZE.x or room.has_meta("room_top"):
 		camera.position = _camera_position()
 	var collision_shape := player.get_node("CollisionShape2D") as CollisionShape2D
 	# A taller neighboring floor can stop the player's center before the boundary.
@@ -129,7 +129,7 @@ func _physics_process(delta: float) -> void:
 		_transition_to(room_index + 1)
 	elif player.global_position.x < left and room_index > 0:
 		_transition_to(room_index - 1)
-	elif player.global_position.y > ROOM_SIZE.y + 52.0 or player.global_position.y < -52.0:
+	elif player.global_position.y > ROOM_SIZE.y + 52.0 or player.global_position.y < _room_top(room) - 52.0:
 		_retry()
 
 
@@ -174,7 +174,16 @@ func _camera_position() -> Vector2:
 	var room := rooms.get_child(room_index) as Node2D
 	var width := float(room.get_meta("room_width", ROOM_SIZE.x))
 	var center := clampf(player.position.x - room.position.x, ROOM_SIZE.x * 0.5, width - ROOM_SIZE.x * 0.5)
-	return room.position + Vector2(center, ROOM_SIZE.y * 0.5)
+	var top := _room_top(room)
+	var center_y := clampf(player.position.y, top + ROOM_SIZE.y * 0.5, ROOM_SIZE.y * 0.5)
+	return room.position + Vector2(center, center_y)
+
+
+func _room_top(room: Node2D) -> float:
+	# Keep the wall-kick course's upper boundary outside the enclosed detour.
+	if player.position.x - room.position.x > float(room.get_meta("room_top_right", INF)):
+		return 0.0
+	return float(room.get_meta("room_top", 0.0))
 
 
 func _on_respawned() -> void:

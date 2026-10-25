@@ -1,4 +1,7 @@
-[gd_scene load_steps=98 format=3]
+[gd_scene load_steps=100 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/tutorial_jump_scroll.tscn" id="jump_scroll"]
+[ext_resource type="PackedScene" path="res://scenes/tutorial_wall_scroll.tscn" id="wall_scroll"]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -286,6 +289,9 @@ script = ExtResource("4_stars")
 
 [node name="Room1" type="Node2D" parent="Rooms"]
 position = Vector2(0, 0)
+metadata/room_top = -240.0
+
+[node name="ScrollDetour" parent="Rooms/Room1" instance=ExtResource("jump_scroll")]
 
 [node name="Spawn" type="Marker2D" parent="Rooms/Room1"]
 position = Vector2(72, 614)
@@ -387,6 +393,10 @@ text = "次の部屋 →"
 
 [node name="Room2" type="Node2D" parent="Rooms"]
 position = Vector2(1280, 0)
+metadata/room_top = -520.0
+metadata/room_top_right = 256.0
+
+[node name="ScrollDetour" parent="Rooms/Room2" instance=ExtResource("wall_scroll")]
 
 [node name="Spawn" type="Marker2D" parent="Rooms/Room2"]
 position = Vector2(72, 614)
@@ -2100,6 +2110,7 @@ text = "X → Space\nB / ○ → A / ×"
 mouse_filter = 2
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
+use_default_respawn_bounds = false
 ; Layer 2 blocks the player at the throw gate while released objects pass.
 collision_mask = 3
 position = Vector2(72, 614)
