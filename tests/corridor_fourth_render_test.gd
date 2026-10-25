@@ -27,7 +27,7 @@ func _run() -> void:
 		await step(20)
 		await _wide_capture("room%d_upper" % (section + 1))
 		_check(await traverse_fourth(section), "The rendered course physically rejoins its exit")
-		if section == 23: await _wide_capture("room24_green_goal")
+		if section == 23: await _wide_capture("room24_green_exit")
 		if failed: return
 	for section in [19, 22]:
 		await _wide_scroll(section, progress)
@@ -59,8 +59,8 @@ func _run() -> void:
 	Input.action_press("move_up")
 	await more_dash()
 	await step(15)
-	_check(await more_flight(Rect2(2450, 620, 45, 24), false, true) and stage.completed, "The captured red alternative activates the real Goal")
-	await _wide_capture("room24_red_goal")
+	_check(await more_flight(Rect2(2530, 700, 45, 24), false, true) and stage.room_index==24 and not stage.completed, "The captured red alternative activates the real next checkpoint")
+	await _wide_capture("room24_red_exit")
 	observe_fourth_view = false
 	release()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
