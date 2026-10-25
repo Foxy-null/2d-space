@@ -14,7 +14,7 @@ const REQUIRED_CUES := [
 	{},
 	{},
 	{},
-	{"PracticeHint": "Space"},
+	{},
 ]
 
 var failed := false

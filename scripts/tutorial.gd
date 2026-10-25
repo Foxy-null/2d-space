@@ -35,7 +35,7 @@ const STEPS := [
 	["throw", "throw_button"], [],
 	[],
 	[],
-	[], ["superdash"],
+	[], [],
 ]
 const STEP_LABELS := {
 	"jump": "段差と穴を越えよう", "climb": "壁を掴んで登ろう",
@@ -56,7 +56,6 @@ const STEP_LABELS := {
 	"fast_fall": "傘なしの速い落下", "two_jumps": "生物と紫のばね靴",
 	"combo_air": "空中ジャンプ1回目", "combo_creature": "着地せず2回目を跳ぶ",
 	"wind_lift": "傘で上昇気流に乗ろう", "inverted_glide": "反転中も傘で降りよう",
-	"superdash": "地上ダッシュから跳ぶ",
 }
 
 var room_index := 0

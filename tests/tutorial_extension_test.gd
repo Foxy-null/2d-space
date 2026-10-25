@@ -248,9 +248,9 @@ func _glider_combo_course() -> void:
 
 
 func _superdash_course() -> void:
-	await _walk_to(570)
+	await _walk_to(590)
 	await _pulse("dash")
-	await _step(4)
+	await _step(5)
 	await _pulse("jump")
 	await _walk_goal()
 
