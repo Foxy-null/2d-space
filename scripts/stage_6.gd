@@ -92,9 +92,9 @@ func _ready() -> void:
 	camera.make_current()
 	_build_hud()
 	_enemy_indicator = _text("", 18)
-	_enemy_indicator.position = Vector2(25, 610)
+	_enemy_indicator.position = Vector2(25, 510)
 	$HUD.add_child(_enemy_indicator)
-	var action_panel := _panel(Rect2(16, 104, 980, 84))
+	var action_panel := _panel(Rect2(16, 612, 980, 84))
 	action_panel.name = "EnemyAction"
 	$HUD.add_child(action_panel)
 	_action = _text("", 18)
@@ -580,7 +580,7 @@ func _build_hud() -> void:
 	pause_button.focus_mode = Control.FOCUS_NONE
 	pause_button.pressed.connect($PauseMenu.open)
 	hud.add_child(pause_button)
-	var footer := _panel(Rect2(16, 650, 1248, 58))
+	var footer := _panel(Rect2(16, 542, 1248, 58))
 	footer.name = "Progress"
 	hud.add_child(footer)
 	_hint = _text("", 19)
