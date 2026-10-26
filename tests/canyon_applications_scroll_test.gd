@@ -176,6 +176,8 @@ func _application_visible(bounds: Rect2, label: String) -> void:
 
 
 func _capture(label: String) -> void:
+	# The main route owns entrance images after applying the hint setting.
+	if label.ends_with("_entrance"): return
 	if label.ends_with("_approach"):
 		var room: Node2D=stage.rooms.get_child(stage.room_index)
 		for name in ["Scroll","ScrollMark"]:

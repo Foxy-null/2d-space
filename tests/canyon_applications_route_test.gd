@@ -27,6 +27,8 @@ func _applications_course(index: int, strength: float, delay: int) -> void:
 	stage.set_hints_visible(OS.get_cmdline_user_args().has("--hints"))
 	await _step()
 	monitor_view = true
+	if index == 32:
+		_check_first_reflection()
 	Input.action_press("move_right",strength)
 	_check(is_equal_approx(Input.get_axis("move_left","move_right"),strength),"The live horizontal axis matches the tested strength")
 	_release_inputs()
@@ -66,3 +68,19 @@ func _check(ok: bool, message: String) -> void:
 
 func _inverted_snapshot(label: String) -> void:
 	_application_snapshot(label)
+
+
+func _check_first_reflection() -> void:
+	var shape: CollisionShape2D = stage._bumpers().get_child(0).get_node("CollisionShape2D")
+	var bounds: Rect2 = shape.get_global_transform_with_canvas() * shape.shape.get_rect()
+	_check(root.get_visible_rect().encloses(bounds),"The first reflection stays wholly visible from its Spring approach")
+	for path in ["HUD/Info","HUD/Hint","HUD/PauseButton"]:
+		var panel: Control = stage.get_node(path)
+		_check(not panel.visible or not panel.get_global_rect().intersects(bounds),"The first reflection remains outside the visible "+panel.name)
+
+
+func _step(count: int = 1) -> void:
+	for frame in count:
+		await super._step()
+		if monitor_view and is_instance_valid(stage) and stage.room_index == 32 and stage.next_bumper == 0 and not stage.transitioning:
+			_check_first_reflection()

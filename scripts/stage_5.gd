@@ -226,6 +226,9 @@ func _update_hud() -> void:
 	if room_index == 31 and player.is_on_floor() and player.gravity_direction == -1 and player.position.y > 900 and player.position.y < 1100:
 		$HUD/Info.position.y = 8
 		$HUD/Hint.position.y = 650
+	if room_index == 32 and next_bumper == 0:
+		$HUD/Info.position = Vector2(560, 200)
+		$HUD/Hint.position.y = 650
 	if room_index == 29 and player.is_on_floor() and player.gravity_direction == 1 and player.position.y > 1600 and player.position.x < rooms.get_child(29).position.x + 300:
 		$HUD/Hint.position.y = 200
 	$HUD/Hint.text = HINTS[room_index]
