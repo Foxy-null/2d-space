@@ -155,7 +155,7 @@ func _load_room(index: int) -> void:
 	_intro_panel.hide()
 	_intro_panel.modulate.a = 1.0
 	_entry_left = 0.9 if index > 0 else 0.0
-	room.set_entrance_intact(index > 0)
+	room.set_entrance_intact(true)
 	enemy.visuals.visible = index == 0
 	if index > 0:
 		_chase_delay = _entry_left
@@ -260,7 +260,10 @@ func _on_player_respawned() -> void:
 		room.reset_state()
 		enemy.call("reset_pursuit")
 		enemy.set("active", false)
-		_chase_delay = -1.0 if room.prepared else room.chase_delay
+		_entry_left = 0.9 if room_index > 0 else 0.0
+		room.set_entrance_intact(true)
+		enemy.visuals.visible = room_index == 0
+		_chase_delay = -1.0 if room.prepared else maxf(room.chase_delay, _entry_left)
 		defeat_hits = 0
 		escape_elapsed = 0.0
 	_immunity_left = 0.6
@@ -506,7 +509,7 @@ func _help_text() -> String:
 		text += "どれか一つでクリア。\n決着：怯んでいない敵へ箱を%d回当てる。\n封鎖：重箱を左のくぼみの金の台へ置いて通電→敵を檻へ誘い箱を当てる→怯んでいる間に右の高台の足跡を自分で踏む。箱を置くだけ・制御盤に先に乗って待つだけでは封鎖しません。\n逃走：同じ区画の敵と%d秒対峙し、左右の高所の鍵を2つ取って最も右上の到着台へ。見失わせても解除は進み、捕獲では時間を数え直します。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
 	text += "この部屋の進め方\n" + ROOM.HINTS[room_index]
 	text += "\n\n物体と捕獲\n金の輪が供給場所です。スイッチに置いた箱と固定した箱を敵は取りません。敵が物を持つ間も掴まれません。投擲・飛行弾はスタミナを3分の1減らし、こちらの箱は敵を2秒止めます。\n掴む予告から離れると避けられます。捕獲時の失敗率はスタミナ満タン0%、半分50%、空100%。失敗しても現在の部屋から再挑戦します。"
-	text += "\n\n復帰と操作\n落下・トゲでは自分だけ入口へ戻り、敵・箱・残る針・雲・目標の進捗を維持します。R / Startか下のやり直しでは部屋全体を初期化します。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
+	text += "\n\n復帰と操作\n落下・トゲでは自分だけ入口へ戻り、敵・箱・残る針・雲・目標の進捗を維持します。スタート付近の地形に刺さった針は0.6秒で消え、箱を固定した足場は残ります。R / Startか下のやり直しでは部屋全体を初期化します。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
 	return text
 
 

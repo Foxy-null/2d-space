@@ -78,6 +78,7 @@ var passage_gate: StaticBody2D
 var entrance_wall: StaticBody2D
 var breach_left := 0.0
 var extension_block: SpikeBlock
+var spawn_area := Rect2()
 
 
 func _ready() -> void:
@@ -313,8 +314,6 @@ func _ready() -> void:
 			_build_spike_corridor()
 		12:
 			_build_final()
-	entrance_wall = _block(Rect2(enemy_spawn.x - 24, enemy_spawn.y - 155, 36, 181))
-	_set_door(entrance_wall, false)
 	if number in [0, 5, 9]:
 		var platform := _block(Rect2(size.x * 0.55, spawn.y - 360.0, 160, 22))
 		platform.set_meta("needle_breakable", true)
@@ -331,7 +330,14 @@ func _ready() -> void:
 			_crystal(route[index] - Vector2(0, 40), 0)
 		for index in range(2, route.size(), 3):
 			_crystal(route[index] - Vector2(0, 65), 1)
-	_block(Rect2(0, 0, 28, size.y + 200))
+	# Break a section of the enclosing wall when the enemy follows into the next room.
+	if number > 0:
+		enemy_spawn = Vector2(-50, spawn.y)
+	spawn_area = Rect2(spawn - Vector2(160, 200), Vector2(400, 280))
+	_block(Rect2(0, 0, 28, spawn.y - 150))
+	entrance_wall = _block(Rect2(0, spawn.y - 150, 28, 176))
+	_block(Rect2(0, spawn.y + 26, 28, size.y - spawn.y + 174))
+	_floor(-180, 208, spawn.y + 26)
 	_block(Rect2(size.x - 28, 0, 28, size.y + 200))
 	if number != FINAL_ROOM:
 		_floor(exit_position.x - 120, size.x - exit_position.x + 120, exit_position.y)
@@ -385,6 +391,7 @@ func open_passage() -> void:
 
 
 func set_entrance_intact(intact: bool) -> void:
+	entrance_wall.collision_layer = 1 if intact else 0
 	_set_door(entrance_wall, intact)
 	if not intact:
 		breach_left = 0.45

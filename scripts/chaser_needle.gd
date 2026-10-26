@@ -70,6 +70,7 @@ func advance(delta: float, player: PlayerController) -> void:
 		global_transform = anchor.global_transform * anchor_transform
 		if (variant == 3 or temporary) and not anchor is Grabbable and not is_instance_valid(pinned_box):
 			stuck_left -= delta
+			picture.modulate.a = clampf(stuck_left / 0.6, 0.0, 1.0)
 			if stuck_left <= 0.0:
 				queue_free()
 		return
@@ -160,6 +161,10 @@ func stick(at: Vector2, normal: Vector2, body: CollisionObject2D) -> void:
 	if body is Grabbable:
 		previous_tip = tip_position()
 		return
+	if course.spawn_area.has_point(tip_position()):
+		temporary = true
+		# Clear the start before the existing 0.8-second respawn grace ends.
+		stuck_left = minf(stuck_left, 0.6)
 	var surface := StaticBody2D.new()
 	surface.collision_layer = 2
 	surface.collision_mask = 0

@@ -16,6 +16,7 @@ func _run() -> void:
 	stage.set_physics_process(false)
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
+	await _boundary_breaches()
 	await _impact_and_box()
 	await _pin_safety()
 	await _hit_recovery()
@@ -23,6 +24,7 @@ func _run() -> void:
 	await _visible_shortcut()
 	await _attacks()
 	await _roof_cover()
+	await _spawn_needle_lifetimes()
 	await _escape_spawn()
 	print("STAGE_6_PRESSURE_TEST_OK (%d checks)" % checks)
 	quit()
@@ -30,6 +32,7 @@ func _run() -> void:
 
 func _presentation() -> void:
 	_check(stage._intro_left > 0.0 and stage._intro_panel.visible, "The first room introduces the enemy before pursuit")
+	_check(stage.room.entrance_wall.visible and stage.enemy.visuals.visible and stage.enemy.position.x > 0, "The first introduction keeps the enemy inside the room with the boundary wall intact")
 	_check(stage._intro_panel.get_child(0).text.contains("UMA妖怪エイリアン") and stage._intro_panel.get_child(0).text.contains("星間山荒・大赤斑"), "The introduction shows both enemy names")
 	_check(not stage.enemy.get_children().any(func(child): return child is Label and child.text == stage.enemy.ENEMY_NAME), "The individual name is not permanently displayed above the enemy")
 	await _step(180)
@@ -45,6 +48,39 @@ func _presentation() -> void:
 		if number in [0, 5, 9]:
 			_check(is_equal_approx(stage.room.brittle_platforms[0].position.x, 1840.0 if number == 9 else 1136.0), "Extending a room does not move the original brittle platform into its exit switch")
 		_check(stage.room.passage_rect.has_area() and stage.room.passage_route.size() >= 4, "Every course has a traversable extension after the switch")
+
+
+func _boundary_breaches() -> void:
+	for number in range(1, stage.ROOM.ROOM_COUNT):
+		stage._load_room(number)
+		stage.room.set_physics_process(false)
+		await _step(2)
+		var wall: StaticBody2D = stage.room.entrance_wall
+		var shape: RectangleShape2D = wall.get_child(0).shape
+		var rect := Rect2(wall.position - shape.size * 0.5, shape.size)
+		_check(is_zero_approx(rect.position.x) and rect.size.x == 28 and stage.enemy.position.x < 0, "Room %d puts the enemy outside its enclosing wall" % number)
+		var query := PhysicsRayQueryParameters2D.create(Vector2(-30, stage.room.spawn.y - 60), Vector2(40, stage.room.spawn.y - 60), 1, [stage.player.get_rid(), stage.enemy.get_rid()])
+		var hit: Dictionary = stage.get_world_2d().direct_space_state.intersect_ray(query)
+		_check(not hit.is_empty() and hit.collider == wall, "Room %d starts with a solid wall across the entrance" % number)
+		stage.room.set_entrance_intact(false)
+		await _step(2)
+		_check(stage.get_world_2d().direct_space_state.intersect_ray(query).is_empty() and wall.collision_layer == 0, "Room %d's broken wall leaves a real opening" % number)
+		query.from.y = rect.position.y - 10
+		query.to.y = query.from.y
+		_check(not stage.get_world_2d().direct_space_state.intersect_ray(query).is_empty(), "Room %d keeps the surrounding wall above the breach" % number)
+		stage.enemy.visuals.show()
+		stage.enemy.active = true
+		stage.enemy._needle_cooldown = 999.0
+		stage.enemy._pickup_left = 999.0
+		stage.enemy.set_physics_process(true)
+		for frame in 90:
+			await _step()
+			if stage.enemy.position.x > 55:
+				break
+		stage.enemy.set_physics_process(false)
+		_check(stage.enemy.position.x > 55, "Room %d's enemy actually walks through the broken boundary wall" % number)
+	stage.player.respawn()
+	_check(stage.room.entrance_wall.visible and not stage.enemy.visuals.visible and stage._entry_left > 0.0, "A full retry restores the wall breach sequence")
 
 
 func _fresh() -> void:
@@ -252,6 +288,37 @@ func _roof_cover() -> void:
 	_check(is_equal_approx(stage.player.get_wall_stamina(), 3.0), "Side-column rain respects a high roof instead of appearing below it")
 
 
+func _spawn_needle_lifetimes() -> void:
+	await _fresh()
+	for item in stage.room.get_node("Items").get_children():
+		item.free()
+	await _step(2)
+	for kind in 6:
+		var needle = _shoot(stage.room.spawn + Vector2(-100 + kind * 30, -150), Vector2.DOWN, kind)
+		needle.neutral_left = 0.0
+		needle.tracking_left = 0.0
+		needle.velocity = Vector2.DOWN * 660
+		needle.acceleration = Vector2.ZERO
+		needle.advance(0.4, stage.player)
+		_check(needle.stuck and needle.temporary and needle.stuck_left <= 0.6, "Every attack's exposed tip near the start gets a short lifetime: %d" % kind)
+		needle.advance(0.3, stage.player)
+		_check(not needle.is_queued_for_deletion() and needle.picture.modulate.a < 1.0, "The start needle fades before disappearing")
+		needle.advance(0.31, stage.player)
+		_check(needle.is_queued_for_deletion(), "The start needle disappears before respawn protection runs out")
+	var pinned = _shoot(stage.room.spawn + Vector2(100, -150), Vector2.DOWN, 0)
+	pinned.advance(0.4, stage.player)
+	var box: Grabbable = stage.room.LIGHT.instantiate()
+	box.position = stage.room.spawn - Vector2(100, 100)
+	stage.room.get_node("Items").add_child(box)
+	_check(pinned.pin_box(box, stage.player), "A short-lived start needle can still accept a box")
+	pinned.advance(60.0, stage.player)
+	_check(not pinned.is_queued_for_deletion() and box.pinned_to == pinned and box.freeze, "A box platform near the start remains intact")
+	var absorbed = _shoot(box.position - Vector2(0, 150), Vector2.DOWN, 0)
+	absorbed.advance(0.4, stage.player)
+	absorbed.advance(60.0, stage.player)
+	_check(absorbed.stuck and absorbed.anchor == box and not absorbed.is_queued_for_deletion() and not absorbed.is_dangerous(), "A box's harmless absorbed needle is preserved near the start")
+
+
 func _escape_spawn() -> void:
 	await _fresh()
 	var needle = _shoot(stage.room.spawn - Vector2(0, 100), Vector2.DOWN, 3)
@@ -260,6 +327,10 @@ func _escape_spawn() -> void:
 	stage.player.respawn(false)
 	stage._keep_enemy_on_respawn = false
 	var generation: int = stage._generation
+	for frame in 60:
+		stage._physics_process(1.0 / 60.0)
+		await _step()
+	_check(stage._generation == generation and not is_instance_valid(needle), "Waiting at the respawn point outlasts the leftover ash without another respawn")
 	stage.player.set_physics_process(true)
 	Input.action_press("move_right")
 	for frame in 24:
