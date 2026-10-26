@@ -6,3 +6,4 @@ Thumbs.db
 deliverables/
 docs/screenshots/art-review/round-*/*.png
 docs/screenshots/art-review/round-*/*.mp4
+/tests/gallery_test.gd.uid
