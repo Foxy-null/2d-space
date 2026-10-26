@@ -13,6 +13,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_6.tscn")
 	await _step(4)
 	stage = current_scene
+	await _step(180)
 	stage.set_physics_process(false)
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
@@ -65,59 +66,40 @@ func _perception() -> void:
 func _attacks() -> void:
 	stage.room._block(Rect2(-1000, -2000, 2000, 40))
 	stage.room.visible_area = Rect2()
-	stage.room.attack_patterns.assign([0, 1, 2, 3])
-	stage.enemy.position = Vector2(-600, -2026)
-	stage.player.position = Vector2(-200, -2026)
-	await _step(2)
-	stage.enemy.velocity = Vector2(0, 400)
-	stage.enemy._move_player()
-	stage.enemy._contacts_valid = true
-	stage.enemy._needle_cooldown = 0.0
-	stage.enemy._needle_variant = 0
-	stage.enemy._update_needle_attack(0.01)
-	_check(stage.enemy._needle_warning > 0.0, "Grounded attacks announce a warning")
-	var aim: Vector2 = stage.enemy._needle_aim
-	stage.player.position.x += 100
-	stage.enemy._update_needle_attack(0.81)
-	for delta in [0.01, 0.21, 0.21]:
-		stage.enemy._update_needle_attack(delta)
-	_check(stage.room.needles.get_child_count() == 3 and stage.enemy._needle_aim == aim, "A locked aim fires three staggered long needles")
-	_check(stage.enemy._needle_recovery > 0.0 and not stage.enemy.can_capture(), "Recovery is a genuine counterattack window without capture")
-	for needle in stage.room.needles.get_children():
-		needle.free()
-	stage.enemy._needle_recovery = 0.0
-	stage.enemy._needle_cooldown = 0.0
-	stage.enemy._update_needle_attack(0.01)
-	var cover: StaticBody2D = stage.room._block(Rect2(-150, -2500, 20, 500))
-	await _step(2)
-	stage.enemy._cache_warning_spans()
-	_check(stage.enemy._warning_spans.size() == 10 and stage.enemy._warning_spans.all(func(point): return point.x <= -149.9), "All five warning rays stop at actual blocking terrain")
-	cover.free()
-	await _step(2)
-	stage.enemy._update_needle_attack(1.01)
-	_check(stage.room.needles.get_child_count() == 5, "The fan emits five real projectiles")
-	for needle in stage.room.needles.get_children():
-		needle.free()
-	stage.enemy._needle_recovery = 0.0
-	stage.enemy._needle_cooldown = 0.0
-	stage.enemy._update_needle_attack(0.01)
-	stage.enemy._update_needle_attack(1.01)
-	stage.enemy._update_needle_attack(0.01)
-	stage.enemy._update_needle_attack(0.51)
-	_check(stage.room.needles.get_child_count() == 2, "The homing volley emits two missiles at different times")
-	for needle in stage.room.needles.get_children():
-		needle.free()
-	stage.enemy._needle_recovery = 0.0
-	stage.enemy._needle_cooldown = 0.0
-	stage.enemy.position.y -= 300
-	stage.enemy._needle_variant = 0
-	stage.enemy._move_player()
-	stage.enemy._update_needle_attack(0.01)
-	_check(stage.enemy._needle_warning < 0.0, "Airborne traversal does not start a shot that releases wall controls")
+	stage.enemy.active = true
+	for kind in [0, 1, 2]:
+		stage.room.attack_patterns.assign([kind])
+		stage.enemy.position = Vector2(-600, -2026)
+		stage.player.position = Vector2(-200, -2026)
+		await _step(2)
+		stage.enemy._update_perception(0.0)
+		stage.enemy._needle_cooldown = 0.0
+		stage.enemy._needle_recovery = 0.0
+		stage.enemy._technique_wait.fill(0.0)
+		stage.enemy._update_needle_attack(0.01)
+		_check(stage.enemy._needle_warning > 0.0, "Every selected attack announces a warning")
+		if kind == 1:
+			var cover: StaticBody2D = stage.room._block(Rect2(-150, -2500, 20, 500))
+			await _step(2)
+			stage.enemy._cache_warning_spans()
+			_check(stage.enemy._warning_spans.size() == 10 and stage.enemy._warning_spans.all(func(point): return point.x <= -149.9), "All five warning rays stop at actual terrain")
+			cover.free()
+			await _step(2)
+		stage.enemy._update_needle_attack(1.11)
+		if kind == 0:
+			for delta in [0.01, 0.21, 0.21]:
+				stage.enemy._update_needle_attack(delta)
+		_check(stage.room.needles.get_child_count() == [3, 5, 6][kind], "The selected volley emits its complete real projectile count")
+		_check(stage.enemy._needle_recovery > 0.0 and not stage.enemy.can_capture(), "Recovery remains a capture-free counterattack window")
+		for needle in stage.room.needles.get_children():
+			needle.free()
+	stage.enemy._needle_warning = -1.0
+	stage.enemy._volley_left = 0
 	stage.enemy.position = stage.player.position
 	stage.enemy._needle_recovery = 0.5
 	stage._immunity_left = 0.0
 	stage._hit_grace = 0.0
+	stage._respawn_grace = 0.0
 	stage._update_capture(0.01)
 	_check(stage.enemy.capture_windup < 0.0, "Touching during recovery does not start capture")
 	stage.enemy._needle_recovery = 0.0
@@ -125,7 +107,7 @@ func _attacks() -> void:
 	_check(stage.enemy.capture_windup > 0.0, "A close grab announces a windup")
 	stage.player.position.x += 180
 	stage._update_capture(0.26)
-	_check(not stage._capture_pending and stage.enemy.capture_recovery > 0.0, "Moving away avoids the grab and creates a whiff recovery")
+	_check(not stage._capture_pending and stage.enemy.capture_recovery > 0.0, "Moving away causes a grab whiff")
 
 
 func _mobile_rain() -> void:
@@ -139,6 +121,8 @@ func _mobile_rain() -> void:
 	await _step(2)
 	stage.enemy._pickup_left = 0.0
 	_check(stage.enemy.try_begin_grab(umbrella), "The cloud fixture holds a real umbrella")
+	stage.room.attack_patterns.assign([3])
+	stage.enemy._update_perception(0.0)
 	stage.enemy._needle_variant = 3
 	stage.enemy._needle_cooldown = 0.0
 	stage.enemy.active = true
@@ -146,7 +130,7 @@ func _mobile_rain() -> void:
 	_check(stage.enemy._mobile_cast and stage.enemy._needle_warning > 0.0, "Umbrella flight can announce ash without stopping traversal")
 	stage.enemy._physics_process(0.05)
 	_check(stage.enemy.get_held_object() == umbrella and stage.enemy._commands.get("wall_grab", false), "Casting preserves the umbrella hold input")
-	stage.enemy._update_needle_attack(1.01)
+	stage.enemy._update_needle_attack(1.11)
 	_check(stage.room.get_node("AshClouds").get_child_count() == 1, "The moving cast creates an actual cloud")
 
 

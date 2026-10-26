@@ -10,18 +10,22 @@ var _jump_left := 0
 var _dash_left := 0
 var _hold := false
 var _live := false
-var _wall_launches := 0
 var samples: Array[Dictionary] = []
 var attack_count := 0
 var _ground_run := false
 var events: Array[Dictionary] = []
+var _step_frames := 1
+var _sample_at := 30
+var _recent_launch := -100
 var _record_label := "full-escape"
+const OUTPUT := "res://deliverables/stage6-pressure-update"
 
 func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
 	change_scene_to_file("res://scenes/stage_6.tscn")
+	await process_frame
 	await _step(4)
 	stage = current_scene
 	stage.enemy.needle_attack.connect(func(_origin, _directions, _variant): attack_count += 1)
@@ -56,11 +60,12 @@ func _run() -> void:
 				await _step()
 				Input.action_release("reset")
 				await _step(3)
-			_wall_launches = 0
-			if number == 6:
-				for child in stage.room.get_children():
-					if child.has_signal("launched") and not is_zero_approx(child.rotation):
-						child.launched.connect(func(_body): _wall_launches += 1)
+			while stage._intro_left > 0.0:
+				await _step()
+			_recent_launch = -100
+			for child in stage.room.get_children():
+				if child.has_signal("launched") and not child.launched.is_connected(_on_launch):
+					child.launched.connect(_on_launch)
 			await _step(3 + attempt * 23)
 			print("TRAVERSE_BEGIN ", number + 1, " attempt=", attempt + 1)
 			events.append({"time": ticks / 60.0, "room": number + 1, "attempt": attempt + 1, "event": "begin"})
@@ -84,14 +89,14 @@ func _run() -> void:
 		print("TRAVERSE_OK %d last=%s attacks=%d" % [number + 1, last, attack_count])
 		events.append({"time": ticks / 60.0, "room": number + 1, "event": "clear"})
 	var expected: String = {"escape": "逃走成功", "seal": "封じ込め成功", "defeat": "決着成功"}[mode]
-	if not stage.completed or stage.ending != expected:
+	if (selected < 0 or selected == stage.ROOM.FINAL_ROOM) and (not stage.completed or stage.ending != expected):
 		push_error("Expected %s, got %s" % [expected, stage.ending])
 		quit(1)
 		return
 	print("STAGE_6_PLAYTHROUGH_OK live=%s inputs=%d jumps=%d retries=%d" % [_live, ticks, jumps, failures])
-	DirAccess.make_dir_recursive_absolute("res://deliverables/stage6-overhaul")
-	var record := {"label": _record_label, "room_count": stage.ROOM.ROOM_COUNT, "frames": ticks, "jumps": jumps, "retries": failures, "ending": stage.ending, "practice_start": selected + 1, "samples": samples, "events": events}
-	FileAccess.open("res://deliverables/stage6-overhaul/playthrough-" + _record_label + ".json", FileAccess.WRITE).store_string(JSON.stringify(record))
+	DirAccess.make_dir_recursive_absolute(OUTPUT)
+	var record := {"label": _record_label, "room_count": stage.ROOM.ROOM_COUNT, "frames": ticks, "jumps": jumps, "retries": failures, "ending": stage.ending, "shots_fired": stage.shots_fired, "clouds_cast": stage.clouds_cast, "blocked_shots": stage.blocked_shots, "practice_start": selected + 1, "samples": samples, "events": events}
+	FileAccess.open(OUTPUT + "/playthrough-" + _record_label + ".json", FileAccess.WRITE).store_string(JSON.stringify(record))
 	_release()
 	if stage.completed:
 		await _step(180)
@@ -153,6 +158,8 @@ func _play_room(number: int) -> bool:
 		Input.action_press("jump")
 		await _step()
 		Input.action_release("jump")
+	if number in [1, 11] and not await _acquire("OBJECT"):
+		return false
 	if number in [3, 7, 8, 10, 12]:
 		var kind: String = "PARACHUTE" if number in [3, 10] else "JUMP"
 		if not await _acquire(kind):
@@ -162,13 +169,17 @@ func _play_room(number: int) -> bool:
 	while route.size() and route[0].x < stage.player.position.x + 60 and number not in [7]:
 		route.pop_front()
 	for point: Vector2 in route:
+		if number == 10 and point == Vector2(1170, 300) and stage.player.gravity_direction == -1:
+			continue
 		if number == stage.ROOM.FINAL_ROOM and point == Vector2(2860, 680):
 			if not await _wait_for_block(0, 880.0):
 				return false
 		if number == stage.ROOM.FINAL_ROOM and point == Vector2(4020, 500):
 			if not await _wait_for_block(1, 705.0):
 				return false
-		_ground_run = number == 11 and point == Vector2(1120, 910)
+		_ground_run = (number == 11 and point in [Vector2(1120, 910), Vector2(1450, 910)]) or (number == 0 and point == Vector2(1600, 670))
+		if number == 0 and point == Vector2(1060, 620) and not await _acquire("PARACHUTE"):
+			return false
 		if not await _navigate(point, 1000):
 			return false
 		_ground_run = false
@@ -183,6 +194,30 @@ func _play_room(number: int) -> bool:
 				break
 			await _step()
 	await _step(45)
+	if number != stage.ROOM.FINAL_ROOM and stage.room_index == number:
+		for frame in 120:
+			if stage.room.exit_open:
+				break
+			await _step()
+		if not stage.room.exit_open:
+			return false
+		var passage: Array = stage.room.passage_route.duplicate()
+		_ground_run = true
+		for i in passage.size():
+			if i == 2 and is_instance_valid(stage.room.extension_block):
+				_release_movement()
+				for frame in 360:
+					var spike: SpikeBlock = stage.room.extension_block
+					if spike.position.y > stage.room.exit_position.y - 100.0 and spike.position.y >= spike.previous_position.y:
+						await _step(12)
+						break
+					await _step()
+			if not await _navigate(passage[i], 900):
+				return false
+			if stage.room_index != number:
+				return true
+		_ground_run = false
+		await _step(6)
 	if not stage.completed and stage.room_index == number:
 		print("Exit did not advance room %d at %s, gravity=%s key=%s locked=%s open=%s time=%.1f enemy=%s state=%s" % [number + 1, stage.player.position, stage.player.gravity_direction, stage.room.key_collected, stage.room.arrival.locked, stage.room.exit_open, stage.escape_elapsed, stage.enemy.position, stage.enemy.awareness])
 		return false
@@ -203,7 +238,11 @@ func _acquire(kind: String) -> bool:
 		var chosen: Grabbable
 		var nearest := INF
 		for item in stage.room.get_node("Items").get_children():
-			if item.carry_name == kind and item.carrier == null and not is_instance_valid(item.pinned_to) and item.linear_velocity.length() < 160.0:
+			if stage.room_index != stage.ROOM.FINAL_ROOM and not stage.room.exit_open and item.position.x > stage.room.passage_gate.position.x:
+				continue
+			if item.carry_name == kind and item.carrier == null and not (item.carry_name in ["OBJECT", "HEAVY"] and stage.room.item_on_switch(item)) and not is_instance_valid(item.pinned_to) and item.linear_velocity.length() < 160.0:
+				if kind == "OBJECT" and stage.room_index == stage.ROOM.FINAL_ROOM and (OS.get_cmdline_user_args().has("--defeat") or OS.get_cmdline_user_args().has("--seal")) and (item.position.y < 1240.0 or item.position.y > 1325.0 or item.position.x < 800.0 or item.position.x > 1460.0):
+					continue
 				var distance: float = stage.player.position.distance_squared_to(item.position)
 				if distance < nearest:
 					nearest = distance
@@ -248,11 +287,15 @@ func _throw_at(point: Vector2) -> bool:
 	var right: bool = point.x > stage.player.position.x
 	_input("move_right", right)
 	_input("move_left", not right)
-	_input("dash", stage.player.is_dash_ready())
+	for frame in 18:
+		if stage.player.velocity.x * (1.0 if right else -1.0) > 100.0:
+			break
+		await _step()
+	if stage.player.get_held_object() == null:
+		return false
 	_hold = false
 	Input.action_release("wall_grab")
 	await _step()
-	Input.action_release("dash")
 	await _step(18)
 	_release_movement()
 	return stage.player.get_held_object() == null
@@ -265,14 +308,14 @@ func _defeat_boss() -> bool:
 			return true
 		if not await _acquire("OBJECT"):
 			return false
-		# Leave the recessed power well before aiming a level throw.
-		if not await _navigate(Vector2(1530, 1294), 600):
+		# Use the cage roof as cover and restock a ground-level box.
+		if not await _navigate(Vector2(1300, 1294), 600):
 			return false
 		for frame in 300:
 			if stage._game_over_pending:
 				return false
 			var delta: Vector2 = stage.enemy.position - stage.player.position
-			if absf(delta.y) < 65.0 and absf(delta.x) < 600.0 and stage.enemy.stun_left <= 0.0:
+			if absf(delta.y) < 65.0 and absf(delta.x) < 360.0 and stage.enemy.stun_left <= 0.0:
 				break
 			_release_movement()
 			await _step()
@@ -308,7 +351,7 @@ func _seal_boss() -> bool:
 	for frame in 900:
 		if stage._game_over_pending:
 			return false
-		if stage.enemy.is_on_floor() and not stage.enemy.is_dashing() and absf(stage.enemy.position.y - stage.player.position.y) < 60.0 and stage.room.cage.encloses(Rect2(stage.enemy.position - Vector2(26, 26), Vector2(52, 52))):
+		if stage.enemy.position.x < stage.room.cage.get_center().x and stage.enemy.is_on_floor() and not stage.enemy.is_dashing() and absf(stage.enemy.position.y - stage.player.position.y) < 60.0 and stage.room.cage.encloses(Rect2(stage.enemy.position - Vector2(26, 26), Vector2(52, 52))):
 			ready = true
 			break
 		await _step()
@@ -330,12 +373,20 @@ func _seal_boss() -> bool:
 func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 	var initial_room: int = stage.room_index
 	var initial_gravity: int = stage.player.gravity_direction
+	var underside: Node2D
+	var ledge_goal := Vector2.ZERO
+	var dropping := false
+	var drop_edge := Vector2.ZERO
+	var drop_below := 0.0
 	var floor_query := PhysicsRayQueryParameters2D.create(point + stage.player.get_gravity_vector() * 5, point + stage.player.get_gravity_vector() * 80, 1, [stage.player.get_rid(), stage.enemy.get_rid()])
 	var require_floor: bool = not stage.player.get_world_2d().direct_space_state.intersect_ray(floor_query).is_empty()
 	for frame in maximum:
 		if not is_instance_valid(stage) or stage._game_over_pending:
 			return false
 		if stage.completed:
+			return true
+		if stage.room_index != stage.ROOM.FINAL_ROOM and stage.room.exit_open and point.distance_to(stage.room.exit_position) < 200.0:
+			_release_movement()
 			return true
 		var actor: PlayerController = stage.player
 		var delta := point - actor.position
@@ -344,6 +395,8 @@ func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 			return true
 		var floating := actor.get_held_object() != null and is_finite(actor.get_held_object().fall_speed_limit()) and not actor._winds.is_empty()
 		var reached := (delta.length() < 38.0 and (not require_floor or actor.is_on_floor())) or (delta.length() < 70.0 and actor._impact_frame >= Engine.get_physics_frames() - 3) or (actor.is_on_floor() and absf(delta.dot(actor.get_walk_axis())) < 35.0 and delta.dot(actor.get_gravity_vector()) > 0.0 and delta.dot(actor.get_gravity_vector()) < 100.0) or (floating and absf(delta.dot(actor.get_walk_axis())) < 55.0 and delta.dot(actor.get_gravity_vector()) > -40.0)
+		if Engine.get_physics_frames() - _recent_launch <= 8 and delta.length() < 130.0:
+			reached = true
 		if strict:
 			reached = actor.is_on_floor() and absf(delta.dot(actor.get_walk_axis())) < 18.0 and absf(delta.dot(actor.get_gravity_vector())) < 20.0
 		if reached:
@@ -351,26 +404,85 @@ func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 			return true
 		var tangent := actor.get_walk_axis()
 		var down := actor.get_gravity_vector()
+		if is_instance_valid(underside):
+			if not underside.visible or actor.position.dot(down) <= ledge_goal.dot(down) + 2.0:
+				underside = null
+			else:
+				delta = ledge_goal - actor.position
 		var climbing := delta.dot(down) < -18.0 or (actor.is_on_wall() and delta.dot(down) < 30.0 and absf(delta.dot(tangent)) > 26.0)
+		if climbing and actor.is_on_ceiling():
+			for index in actor.get_slide_collision_count():
+				var contact := actor.get_slide_collision(index)
+				var body := contact.get_collider() as Node2D
+				if body == null or contact.get_normal().dot(down) < 0.7:
+					continue
+				var shapes := body.get_children().filter(func(node): return node is CollisionShape2D)
+				if shapes.is_empty():
+					continue
+				var collision: CollisionShape2D = shapes[0]
+				if not collision.shape is RectangleShape2D:
+					continue
+				var half: Vector2 = collision.shape.size * 0.5
+				var extent := collision.global_transform.x.abs() * half.x + collision.global_transform.y.abs() * half.y
+				var side := signf((actor.position - body.global_position).dot(tangent))
+				if side == 0.0: side = 1.0
+				underside = body
+				ledge_goal = body.global_position + tangent * side * (extent.dot(tangent.abs()) + 50.0) - down * (extent.dot(down.abs()) + 30.0)
+				delta = ledge_goal - actor.position
+				break
 		var along := delta.dot(tangent)
+		# Walk off an elevated support before trying to reach a waypoint below it.
+		if not dropping and actor.is_on_floor() and absf(along) < 45.0 and delta.dot(down) > 100.0:
+			for index in actor.get_slide_collision_count():
+				var contact := actor.get_slide_collision(index)
+				var body := contact.get_collider() as Node2D
+				if body == null or contact.get_normal().dot(-down) < 0.7:
+					continue
+				var shapes := body.get_children().filter(func(node): return node is CollisionShape2D)
+				if shapes.is_empty():
+					continue
+				var collision: CollisionShape2D = shapes[0]
+				if not collision.shape is RectangleShape2D:
+					continue
+				var half: Vector2 = collision.shape.size * 0.5
+				var extent := collision.global_transform.x.abs() * half.x + collision.global_transform.y.abs() * half.y
+				var side := signf((actor.position - body.global_position).dot(tangent))
+				if side == 0.0: side = 1.0
+				drop_edge = body.global_position + tangent * side * (extent.dot(tangent.abs()) + 48.0)
+				drop_below = body.global_position.dot(down) + extent.dot(down.abs()) + 38.0
+				dropping = true
+				break
+		if dropping:
+			if actor.position.dot(down) > drop_below:
+				dropping = false
+			else:
+				along = (drop_edge - actor.position).dot(tangent)
+				climbing = false
 		var danger: bool = stage.room.hazard_ahead(actor, along)
+		for needle in stage.room.needles.get_children():
+			if not needle.stuck or not needle.is_dangerous():
+				continue
+			var ahead: Vector2 = needle.tip_position() - actor.position
+			if ahead.dot(tangent) * signf(along) > 20.0 and ahead.dot(tangent) * signf(along) < 120.0 and absf(ahead.dot(down)) < 65.0:
+				danger = true
+				break
 		var enemy_delta: Vector2 = stage.enemy.position - actor.position
 		var close_enemy: bool = stage.enemy.active and enemy_delta.dot(tangent) * along > 0.0 and absf(enemy_delta.dot(tangent)) < 170.0 and absf(enemy_delta.dot(down)) < 90.0
 		var rising_target := climbing and absf(along) < 210.0
 		var movement := tangent * signf(along) if absf(along) > 12.0 else Vector2.ZERO
-		_jump_left -= 1
-		_dash_left -= 1
+		_jump_left -= _step_frames
+		_dash_left -= _step_frames
 		var jump := false
 		var dash := false
 		var grab := _hold
 		if actor.is_on_wall() and climbing and not _hold:
 			grab = true
 			movement -= down
-		if _jump_left <= 0 and (((actor.is_on_floor() or actor._coyote_left > 0.0) and (rising_target or danger or close_enemy or (absf(along) > 180 and not _ground_run) or (_ground_run and actor.is_on_wall()))) or (actor.is_on_wall() and climbing and _hold) or (not actor.is_on_floor() and (climbing or danger) and actor.velocity.dot(down) > -50 and actor.get_available_extra_jump_count() > 0)):
+		if not dropping and _jump_left <= 0 and (((actor.is_on_floor() or actor._coyote_left > 0.0) and (rising_target or danger or close_enemy or (absf(along) > 180 and not _ground_run) or (_ground_run and actor.is_on_wall()))) or (actor.is_on_wall() and climbing and _hold) or (not actor.is_on_floor() and (climbing or danger) and actor.velocity.dot(down) > -50 and actor.get_available_extra_jump_count() > 0)):
 			jump = true
 			jumps += 1
 			_jump_left = 14
-		if not jump and _dash_left <= 0 and actor.is_dash_ready() and not actor.is_on_floor() and (not _ground_run or climbing) and actor.velocity.dot(down) > (-350.0 if danger else -150.0) and (climbing or danger or absf(along) > 260):
+		if not dropping and not jump and _dash_left <= 0 and actor.is_dash_ready() and not actor.is_on_floor() and (not _ground_run or climbing) and actor.velocity.dot(down) > (-350.0 if danger else -150.0) and (climbing or danger or absf(along) > 260):
 			dash = true
 			movement = (-down if climbing and absf(along) < 70.0 else (tangent * signf(along) - down).normalized()) if danger else (delta.normalized() if climbing else tangent * signf(along))
 			_dash_left = 20
@@ -397,6 +509,11 @@ func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 	print("Pilot stalled in room %d: target=%s position=%s gravity=%d" % [stage.room_index + 1, point, stage.player.position, stage.player.gravity_direction])
 	return false
 
+func _on_launch(body: Node) -> void:
+	if body == stage.player:
+		_recent_launch = Engine.get_physics_frames()
+
+
 func _input(action: StringName, pressed: bool) -> void:
 	if pressed:
 		Input.action_press(action)
@@ -413,9 +530,15 @@ func _release() -> void:
 	_hold = false
 
 func _step(count := 1) -> void:
-	for frame in count:
+	var began := Engine.get_physics_frames()
+	var previous := began
+	while Engine.get_physics_frames() - began < count:
 		await physics_frame
 		await process_frame
-		ticks += 1
-		if ticks % 30 == 0 and is_instance_valid(stage) and is_instance_valid(stage.player):
+		var current := Engine.get_physics_frames()
+		ticks += current - previous
+		previous = current
+		if ticks >= _sample_at and is_instance_valid(stage) and is_instance_valid(stage.player):
+			_sample_at += 30
 			samples.append({"time": ticks / 60.0, "room": stage.room_index + 1, "player": [stage.player.position.x, stage.player.position.y], "enemy": [stage.enemy.position.x, stage.enemy.position.y], "distance": stage.player.position.distance_to(stage.enemy.position), "awareness": stage.enemy.awareness, "attacks": attack_count, "stamina": stage.player.get_wall_stamina(), "ending": stage.ending})
+	_step_frames = Engine.get_physics_frames() - began

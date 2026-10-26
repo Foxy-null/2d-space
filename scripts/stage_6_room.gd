@@ -17,8 +17,8 @@ const ARRIVAL = preload("res://scenes/arrival_switch.tscn")
 const SPIKE_BLOCK = preload("res://scenes/spike_block.tscn")
 const ROOM_COUNT := 13
 const FINAL_ROOM := ROOM_COUNT - 1
-const MAX_NEEDLES := 384
-const MAX_FLYING_NEEDLES := 32
+const MAX_NEEDLES := 640
+const MAX_FLYING_NEEDLES := 96
 
 const TITLES := ["針を道へ変える", "開門と予備の箱", "重荷を先へ送れ", "灰雲と傘渡り", "逆さまの逃走路", "反発と空中ダッシュ", "横向きの重力迷宮", "重力を渡る縦の塔", "相棒と越える断崖", "二つの重量扉", "封鎖装置の予行", "棘の振り子と誘導路", "追跡者との最終決着"]
 const HINTS := [
@@ -72,6 +72,12 @@ var keys_collected := 0
 var seal_console := Vector2.ZERO
 var _console_occupied := false
 var _seal_triggered := false
+var passage_rect := Rect2()
+var passage_route: Array[Vector2] = []
+var passage_gate: StaticBody2D
+var entrance_wall: StaticBody2D
+var breach_left := 0.0
+var extension_block: SpikeBlock
 
 
 func _ready() -> void:
@@ -86,7 +92,7 @@ func _ready() -> void:
 	var clouds := Node2D.new()
 	clouds.name = "AshClouds"
 	add_child(clouds)
-	attack_patterns.assign([[0], [0, 1], [0, 1], [3], [0, 2], [0, 1], [2], [0, 2], [1, 2], [0, 2], [0, 3], [1, 2], [0, 1, 2, 3]][number])
+	attack_patterns.assign([[0, 3], [0, 1], [0, 3, 5], [3, 4], [2, 3, 4], [1, 3, 4, 5], [2, 3, 5], [0, 2, 3, 4], [1, 2, 3, 5], [0, 2, 3, 4, 5], [0, 3, 4], [1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5]][number])
 	match number:
 		0:
 			_floor(0, 550, 820)
@@ -95,6 +101,8 @@ func _ready() -> void:
 			_platforms([Rect2(580, 650, 110, 28), Rect2(1000, 650, 140, 28), Rect2(1280, 540, 130, 28)])
 			_supply(LIGHT, Vector2(260, 780))
 			_supply(LIGHT, Vector2(930, 780))
+			_supply(UMBRELLA, Vector2(930, 780))
+			_block(Rect2(1500, 500, 280, 24))
 			# The gap's receiving wall accepts needles without blocking the normal route.
 			_block(Rect2(760, 740, 28, 80))
 			_hazard(Rect2(1170, 750, 70, 70), Vector2(0, -100), 3.0)
@@ -109,6 +117,7 @@ func _ready() -> void:
 			_supply(LIGHT, Vector2(1650, 780))
 			_weight_door(Vector2(1120, 820), Rect2(1400, 0, 38, 820), 2.0)
 			_platforms([Rect2(580, 640, 230, 32), Rect2(930, 550, 200, 32), Rect2(1560, 650, 210, 32), Rect2(1900, 530, 180, 32), Rect2(2280, 610, 230, 32)])
+			_block(Rect2(1880, 300, 260, 24))
 			_spring(Vector2(1770, 820))
 			_bumper(Vector2(2150, 390))
 			_hazard(Rect2(1940, 750, 80, 70), Vector2(160, 0), 4.0)
@@ -183,6 +192,15 @@ func _ready() -> void:
 		5:
 			_floor(0, 430, 820)
 			_floor(1460, 460, 690)
+			_floor(480, 270, 860)
+			_floor(830, 300, 820)
+			_floor(1210, 260, 760)
+			_block(Rect2(620, 650, 30, 210))
+			_block(Rect2(880, 590, 30, 230))
+			_block(Rect2(1180, 600, 30, 160))
+			_block(Rect2(470, 700, 90, 24))
+			_supply(UMBRELLA, Vector2(730, 810))
+			_supply(LIGHT, Vector2(520, 820))
 			_spring(Vector2(360, 820))
 			_bumper(Vector2(900, 420))
 			_crystal(Vector2(690, 470), 0)
@@ -265,6 +283,7 @@ func _ready() -> void:
 			_floor(0, 3200, 820)
 			_supply(LIGHT, Vector2(710, 780))
 			_supply(HEAVY, Vector2(1730, 780))
+			_block(Rect2(2160, 640, 260, 24))
 			_weight_door(Vector2(1120, 820), Rect2(1390, 0, 36, 820), 2.0)
 			_weight_door(Vector2(2130, 820), Rect2(2400, 0, 36, 820), 8.0)
 			_platforms([Rect2(640, 620, 250, 32), Rect2(1030, 520, 210, 32), Rect2(1550, 610, 260, 32), Rect2(1960, 520, 220, 32), Rect2(2500, 650, 240, 32), Rect2(2820, 500, 180, 32)])
@@ -294,8 +313,10 @@ func _ready() -> void:
 			_build_spike_corridor()
 		12:
 			_build_final()
+	entrance_wall = _block(Rect2(enemy_spawn.x - 24, enemy_spawn.y - 155, 36, 181))
+	_set_door(entrance_wall, false)
 	if number in [0, 5, 9]:
-		var platform := _block(Rect2(size.x * 0.55, spawn.y - 260.0, 160, 22))
+		var platform := _block(Rect2(size.x * 0.55, spawn.y - 360.0, 160, 22))
 		platform.set_meta("needle_breakable", true)
 		platform.modulate = Color("f1b17d")
 		brittle_platforms.append(platform)
@@ -305,15 +326,14 @@ func _ready() -> void:
 		crack.points = PackedVector2Array([Vector2(-20, -11), Vector2(-5, -2), Vector2(-15, 5), Vector2(8, 11)])
 		platform.add_child(crack)
 	if number != FINAL_ROOM:
+		_build_extension()
 		for index in range(1, route.size(), 3):
 			_crystal(route[index] - Vector2(0, 40), 0)
 		for index in range(2, route.size(), 3):
 			_crystal(route[index] - Vector2(0, 65), 1)
 	_block(Rect2(0, 0, 28, size.y + 200))
 	_block(Rect2(size.x - 28, 0, 28, size.y + 200))
-	if number == 7:
-		_floor(1120, 160, exit_position.y)
-	elif number != FINAL_ROOM:
+	if number != FINAL_ROOM:
 		_floor(exit_position.x - 120, size.x - exit_position.x + 120, exit_position.y)
 	exit_rect = Rect2(exit_position + Vector2(-58, -185), Vector2(116, 180))
 	arrival = ARRIVAL.instantiate()
@@ -322,9 +342,53 @@ func _ready() -> void:
 	arrival.position = exit_position
 	add_child(arrival)
 	arrival.get_node("Bubble").hide()
-	arrival.activated.connect(func(): exit_open = true)
+	arrival.activated.connect(open_passage)
 	if number == FINAL_ROOM:
 		update_escape(false)
+
+
+func _build_extension() -> void:
+	var old_width := size.x
+	var floor_y := exit_position.y
+	# Keep the gravity course's original side wall, with a door at its exit height.
+	if floor_y > 210:
+		_block(Rect2(old_width - 28, 0, 28, floor_y - 210))
+	_block(Rect2(old_width - 28, floor_y + 30, 28, size.y - floor_y + 170))
+	passage_gate = _block(Rect2(old_width - 28, floor_y - 210, 28, 240))
+	passage_gate.modulate = Color("ffd37d")
+	size.x += 1000
+	passage_rect = Rect2(size.x - 180, floor_y - 150, 100, 180)
+	var start := old_width + 40
+	_supply(LIGHT, Vector2(start + 60, floor_y - 40))
+	_supply(UMBRELLA, Vector2(start + 160, floor_y - 40))
+	_supply(CREATURE, Vector2(start + 650, floor_y - 40))
+	# A covered lower route trades speed for shelter; the upper route carries refills.
+	_platforms([Rect2(start + 200, floor_y - 160, 250, 28), Rect2(start + 500, floor_y - 230, 220, 28)])
+	_block(Rect2(start + 100, floor_y - 85, 100, 25))
+	_block(Rect2(start + 680, floor_y - 100, 28, 100))
+	_crystal(Vector2(start + 340, floor_y - 215), 0)
+	_crystal(Vector2(start + 590, floor_y - 285), 1)
+	if number % 3 == 1:
+		_spike_block(Vector2(start + 500, floor_y - 50), Vector2(0, -180), 4.8, 0.0)
+		extension_block = spike_blocks.back()
+	elif number % 3 == 2:
+		_spring(Vector2(start + 120, floor_y))
+		_bumper(Vector2(start + 780, floor_y - 260))
+	passage_route.assign([Vector2(old_width + 100, floor_y - 28), Vector2(start + 330, floor_y - 188), Vector2(start + 610, floor_y - 258), Vector2(start + 810, floor_y - 130), passage_rect.get_center() - Vector2(0, 26)])
+
+
+func open_passage() -> void:
+	exit_open = true
+	if is_instance_valid(passage_gate):
+		_set_door(passage_gate, false)
+	queue_redraw()
+
+
+func set_entrance_intact(intact: bool) -> void:
+	_set_door(entrance_wall, intact)
+	if not intact:
+		breach_left = 0.45
+	queue_redraw()
 
 
 func _build_spike_corridor() -> void:
@@ -351,7 +415,7 @@ func _build_spike_corridor() -> void:
 
 
 func _build_final() -> void:
-	size = Vector2(4480, 1680)
+	size = Vector2(5600, 1680)
 	spawn = Vector2(350, 1294)
 	enemy_spawn = Vector2(70, 1294)
 	prepared = true
@@ -359,8 +423,8 @@ func _build_final() -> void:
 	preferred_item = "JUMP"
 	_floor(0, 640, 1320)
 	_floor(640, 120, 1400)
-	_floor(760, 3720, 1320)
-	battle_arena = Rect2(28, 180, 4424, 1200)
+	_floor(760, 4840, 1320)
+	battle_arena = Rect2(28, 180, 5544, 1200)
 	_supply(LIGHT, Vector2(900, 1280))
 	_supply(HEAVY, Vector2(250, 1280))
 	_supply(LIGHT, Vector2(2250, 1280))
@@ -382,6 +446,21 @@ func _build_final() -> void:
 	# Separate left and right escape keys require crossing the arena, not waiting by the cage.
 	_platforms([Rect2(430, 1160, 230, 30), Rect2(690, 1020, 220, 30), Rect2(1030, 860, 220, 30), Rect2(620, 700, 250, 30), Rect2(1170, 780, 230, 30), Rect2(1530, 700, 230, 30), Rect2(1910, 710, 230, 30), Rect2(2310, 860, 230, 30), Rect2(2740, 710, 230, 30), Rect2(3150, 580, 260, 30), Rect2(3420, 680, 380, 30), Rect2(3910, 530, 220, 30)])
 	_floor(4180, 300, 420)
+	_platforms([Rect2(4550, 440, 240, 30), Rect2(4900, 370, 240, 30)])
+	_floor(5260, 340, 300)
+	_block(Rect2(2200, 1090, 550, 30))
+	_block(Rect2(820, 1100, 250, 24))
+	_block(Rect2(1500, 1000, 650, 24))
+	_block(Rect2(620, 480, 250, 24))
+	_block(Rect2(1910, 490, 230, 24))
+	_block(Rect2(3150, 360, 260, 24))
+	_block(Rect2(5260, 80, 220, 24))
+	_block(Rect2(3630, 1060, 540, 30))
+	_supply(UMBRELLA, Vector2(2010, 1280))
+	_supply(UMBRELLA, Vector2(3820, 1280))
+	_supply(LIGHT, Vector2(4740, 1280))
+	_crystal(Vector2(4690, 340), 0)
+	_crystal(Vector2(5060, 260), 1)
 	_supply(CREATURE, Vector2(2390, 820))
 	_supply(LIGHT, Vector2(1970, 1140))
 	_crystal(Vector2(900, 780), 1)
@@ -402,8 +481,8 @@ func _build_final() -> void:
 		)
 		escape_keys.append(key)
 	escape_key = escape_keys[0]
-	exit_position = Vector2(4330, 420)
-	route.assign([Vector2(530, 1130), Vector2(780, 990), Vector2(1140, 830), Vector2(740, 670), Vector2(1280, 750), Vector2(1650, 670), Vector2(2030, 680), Vector2(2370, 830), Vector2(2860, 680), Vector2(3280, 550), Vector2(3500, 650), Vector2(4020, 500), Vector2(4310, 310)])
+	exit_position = Vector2(5460, 300)
+	route.assign([Vector2(530, 1130), Vector2(780, 990), Vector2(1140, 830), Vector2(740, 670), Vector2(1280, 750), Vector2(1650, 670), Vector2(2030, 680), Vector2(2370, 830), Vector2(2860, 680), Vector2(3280, 550), Vector2(3500, 650), Vector2(4020, 500), Vector2(4310, 390), Vector2(4670, 410), Vector2(5020, 340), Vector2(5450, 190)])
 
 
 func update_escape(time_ready: bool) -> void:
@@ -426,6 +505,9 @@ func item_on_switch(item: Grabbable) -> bool:
 
 func _physics_process(delta: float) -> void:
 	_elapsed += delta
+	if breach_left > 0.0:
+		breach_left = maxf(0.0, breach_left - delta)
+		queue_redraw()
 	for spike in spike_blocks:
 		spike.advance(delta)
 	for entry in doors:
@@ -478,6 +560,8 @@ func reset_state() -> void:
 		entry.current = entry.rect
 		entry.surface.position = entry.rect.get_center()
 	exit_open = false
+	if is_instance_valid(passage_gate):
+		_set_door(passage_gate, true)
 	key_collected = false
 	keys_collected = 0
 	_console_occupied = false
@@ -696,6 +780,17 @@ func _hazard(rect: Rect2, travel := Vector2.ZERO, period := 4.0) -> void:
 
 
 func _draw() -> void:
+	if passage_rect.has_area():
+		var at := passage_rect.get_center()
+		var color := Color("8de8b0") if exit_open else Color("ffd37d")
+		for i in 3:
+			var point := at + Vector2(i * 22 - 40, -50)
+			draw_polyline(PackedVector2Array([point + Vector2(-8, -12), point + Vector2(8, 0), point + Vector2(-8, 12)]), color, 4)
+	if breach_left > 0.0:
+		var center := entrance_wall.position
+		for i in 12:
+			var offset := Vector2(cos(i * 2.4), sin(i * 1.7)) * (1.0 - breach_left / 0.45) * 110.0
+			draw_circle(center + offset, 7.0 * breach_left / 0.45, Color("c9b2a0"))
 	for supply in supplies:
 		ArtDraw.ellipse(self, supply.at + Vector2(0, 34), Vector2(36, 7), Color("ffdc78"), 2)
 	for entry in moving_hazards:

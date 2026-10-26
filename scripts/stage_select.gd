@@ -2,7 +2,11 @@ extends Control
 
 
 func _ready() -> void:
-	$Margin/Content/Stages/Stage1.grab_focus.call_deferred()
+	if get_tree().get_meta("focus_gallery", false):
+		get_tree().remove_meta("focus_gallery")
+		$Margin/Content/Gallery.grab_focus.call_deferred()
+	else:
+		$Margin/Content/Stages/Stage1.grab_focus.call_deferred()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -41,3 +45,7 @@ func _start_stage_five() -> void:
 
 func _start_stage_six() -> void:
 	get_tree().change_scene_to_file("res://scenes/stage_6.tscn")
+
+
+func _gallery() -> void:
+	get_tree().change_scene_to_file("res://scenes/gallery.tscn")

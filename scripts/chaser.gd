@@ -7,6 +7,7 @@ signal ash_attack(origin: Vector2, target_at: Vector2, down: Vector2)
 const ENEMY_GROUP_NAME := "UMA妖怪エイリアン"
 const ENEMY_NAME := "星間山荒・大赤斑"
 const SPRITE = preload("res://scripts/chaser_sprite.gd")
+const ATTACK_NAMES := ["長針3連射", "扇形の針", "追尾トゲ6発", "灰雲の雨", "山なりの長針", "短針の連射"]
 const FAN_ANGLES := [-0.5, -0.25, 0.0, 0.25, 0.5]
 var defeated := false
 var _needle_cooldown := 1.0
@@ -54,6 +55,9 @@ var _ledge_body: StaticBody2D
 var _ledge_goal := Vector2.ZERO
 var _mobile_cast := false
 var _warning_spans: Array[Vector2] = []
+var _last_velocity := Vector2.ZERO
+var _last_attack := -1
+var _technique_wait := [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
 func _ready() -> void:
@@ -79,13 +83,6 @@ func _ready() -> void:
 	warning.add_theme_color_override("font_outline_color", Color("15162c"))
 	warning.add_theme_constant_override("outline_size", 4)
 	add_child(warning)
-	var nameplate := Label.new()
-	nameplate.position = Vector2(-90, -140)
-	nameplate.text = ENEMY_NAME
-	nameplate.add_theme_font_size_override("font_size", 15)
-	nameplate.add_theme_color_override("font_outline_color", Color("15162c"))
-	nameplate.add_theme_constant_override("outline_size", 4)
-	add_child(nameplate)
 	var state := Label.new()
 	state.name = "PursuitState"
 	state.position = Vector2(-42, -194)
@@ -108,7 +105,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	throw_pose_left = maxf(0.0, throw_pose_left - delta)
 	$ThrowWarning.visible = _attack_left >= 0.0 or _needle_warning >= 0.0 or _volley_left > 0 or _needle_recovery > 0.0 or capture_windup >= 0.0
-	$ThrowWarning.text = "掴む！" if capture_windup >= 0.0 else ("隙！" if _needle_recovery > 0.0 and _volley_left == 0 else (["針：3連射！", "針：5方向！", "追尾トゲ×2！", "灰の雨！"][_needle_variant] if _needle_warning >= 0.0 or _volley_left > 0 else "投げる！"))
+	$ThrowWarning.text = "掴む！" if capture_windup >= 0.0 else ("隙！" if _needle_recovery > 0.0 and _volley_left == 0 else (ATTACK_NAMES[_needle_variant] + "！" if _needle_warning >= 0.0 or _volley_left > 0 else "投げる！"))
 	$PursuitState.text = "準備中" if not active else {"pursuit": "追跡中", "search": "探索中", "patrol": "見失った"}[awareness]
 	$PursuitState.modulate = Color("ff9b9b") if awareness == "pursuit" else Color("ffdc78")
 	queue_redraw()
@@ -156,7 +153,7 @@ func _steer(delta: float) -> void:
 	var desired_gravity: int = _trail[_trail_index].gravity if not _trail.is_empty() else _last_gravity
 	var to_target := _last_seen - position
 	var visible_climb := to_target.dot(down) < 0.0 and absf(to_target.dot(tangent)) < 360.0
-	if gravity_direction == _last_gravity and to_target.length() < 540.0 and (absf(to_target.dot(down)) < 65.0 or visible_climb) and _can_see_target():
+	if gravity_direction == _last_gravity and (absf(to_target.dot(down)) < 65.0 or visible_climb) and _can_see_target():
 		destination = _last_seen
 		_trail_index = maxi(0, _trail.size() - 1)
 	elif gravity_direction != desired_gravity:
@@ -306,6 +303,9 @@ func reset_pursuit(keep_path := false) -> void:
 	respawn(false)
 	defeated = false
 	_needle_variant = course.attack_patterns[0] if is_instance_valid(course) else 0
+	_technique_wait.fill(0.0)
+	_last_attack = -1
+	_last_velocity = Vector2.ZERO
 	throw_pose_left = 0.0
 	_needle_warning = -1.0
 	_needle_cooldown = 1.0
@@ -347,6 +347,7 @@ func _update_perception(delta: float) -> void:
 		_has_seen = true
 		awareness = "pursuit"
 		_last_seen = target.global_position
+		_last_velocity = target.velocity.limit_length(700.0)
 		_last_gravity = target.gravity_direction
 		_lost_left = 0.0
 		_search_left = 2.5
@@ -372,11 +373,29 @@ func can_capture() -> bool:
 	return active and controls_enabled and not defeated and stun_left <= 0.0 and get_held_object() == null and _needle_warning < 0.0 and _volley_left == 0 and _needle_recovery <= 0.0 and capture_recovery <= 0.0
 
 
+func action_description() -> String:
+	if not active:
+		return "壁の向こうから近づいている" if course.number > 0 else "こちらに気づいた！ 走って逃げよう"
+	if stun_left > 0.0:
+		return "箱が命中して怯んでいる — 移動・反撃のチャンス"
+	if capture_windup >= 0.0:
+		return "掴もうとしている！ 離れて空振りさせよう"
+	if _needle_warning >= 0.0:
+		return "%sを構えている（あと%.1f秒）" % [ATTACK_NAMES[_needle_variant], maxf(0.0, _needle_warning)]
+	if _volley_left > 0:
+		return "%sを撃っている — 箱で受けるか、狙いから外れよう" % ATTACK_NAMES[_needle_variant]
+	if _needle_recovery > 0.0:
+		return "攻撃後の隙 — 今は掴まれない"
+	if _attack_left >= 0.0:
+		return "持っている物を投げようとしている"
+	return {"pursuit": "こちらを追っている — 離れると灰雲で先回りする", "search": "最後に見た場所を探している", "patrol": "見失い、周辺を巡回している"}[awareness]
+
+
 func _finish_volley() -> void:
-	_needle_recovery = 0.65
-	_needle_cooldown = 3.0
-	var index := course.attack_patterns.find(_needle_variant)
-	_needle_variant = course.attack_patterns[(index + 1) % course.attack_patterns.size()]
+	_needle_recovery = 0.75
+	_needle_cooldown = 1.8
+	_last_attack = _needle_variant
+	_technique_wait[_needle_variant] = [3.5, 4.0, 7.0, 7.5, 6.0, 5.0][_needle_variant]
 
 
 func _large_attack_active() -> bool:
@@ -388,10 +407,51 @@ func _large_attack_active() -> bool:
 	return false
 
 
+func _choose_attack() -> int:
+	if not _has_seen or _lost_left > 2.0 or _large_attack_active():
+		return -1
+	var distance := position.distance_to(_last_seen)
+	var selected := -1
+	var best := -INF
+	for kind in course.attack_patterns:
+		if _technique_wait[kind] > 0.0:
+			continue
+		var score := -INF
+		match kind:
+			0:
+				if distance > 130.0 and distance < 850.0: score = 45.0
+			1:
+				if distance > 130.0 and distance < 500.0: score = 65.0
+			2:
+				if distance > 250.0 and distance < 1300.0: score = 85.0
+			3:
+				if distance > 600.0: score = 140.0 + minf(distance, 2400.0) * 0.02
+				elif distance > 220.0: score = 50.0
+			4:
+				if distance > 500.0 and distance < 1900.0: score = 105.0
+			5:
+				if distance > 180.0 and distance < 1100.0: score = 95.0 if _last_velocity.length() > 60.0 else 60.0
+		if kind == _last_attack:
+			score -= 30.0
+		if score > best:
+			best = score
+			selected = kind
+	return selected
+
+
+func _aim_at_observed_target(turn_limit: float) -> void:
+	var origin := global_position - get_gravity_vector() * 65.0
+	var lead := _last_velocity * clampf(origin.distance_to(_last_seen) / 1800.0, 0.0, 0.2)
+	var desired := (_last_seen + lead - origin).normalized()
+	_needle_aim = _needle_aim.rotated(clampf(_needle_aim.angle_to(desired), -turn_limit, turn_limit))
+
+
 func _update_needle_attack(delta: float) -> void:
 	_needle_cooldown = maxf(0.0, _needle_cooldown - delta)
 	_needle_recovery = maxf(0.0, _needle_recovery - delta)
-	if _needle_warning < 0.0 and _needle_recovery <= 0.0:
+	for i in _technique_wait.size():
+		_technique_wait[i] = maxf(0.0, _technique_wait[i] - delta)
+	if _needle_warning < 0.0 and _needle_recovery <= 0.0 and _volley_left == 0:
 		_mobile_cast = false
 	if stun_left > 0.0 or not controls_enabled or defeated:
 		_needle_warning = -1.0
@@ -400,23 +460,30 @@ func _update_needle_attack(delta: float) -> void:
 		$AttackCue.stop()
 		_needle_cooldown = maxf(_needle_cooldown, 1.0)
 		return
+	if _attack_down != get_gravity_vector() and (_needle_warning >= 0.0 or _volley_left > 0):
+		_needle_warning = -1.0
+		_volley_left = 0
+		_mobile_cast = false
+		$AttackCue.stop()
+		_needle_cooldown = 1.0
+		return
 	if _volley_left > 0:
 		_volley_clock -= delta
 		if _volley_clock <= 0.0:
+			if _lost_left > 0.7:
+				_volley_left = 0
+				_finish_volley()
+				return
+			_aim_at_observed_target(0.18 if _needle_variant == 5 else 0.28)
+			_attack_origin = global_position - _attack_down * 65.0
 			var directions: Array[Vector2] = [_needle_aim]
 			needle_attack.emit(_attack_origin, directions, _needle_variant)
 			_volley_left -= 1
-			_volley_clock = 0.2 if _needle_variant == 0 else 0.5
+			_volley_clock = 0.08 if _needle_variant == 5 else 0.2
 			if _volley_left == 0:
 				_finish_volley()
 		return
 	if _needle_warning >= 0.0:
-		if _attack_down != get_gravity_vector():
-			_needle_warning = -1.0
-			_needle_cooldown = 1.0
-			_mobile_cast = false
-			$AttackCue.stop()
-			return
 		_needle_warning -= delta
 		if _needle_warning <= 0.0:
 			_attack_origin = global_position - _attack_down * 65.0
@@ -424,42 +491,54 @@ func _update_needle_attack(delta: float) -> void:
 			if _needle_variant == 3:
 				ash_attack.emit(_attack_origin, _ash_target, _attack_down)
 				_finish_volley()
-			elif _needle_variant == 1:
+			elif _needle_variant in [1, 2]:
 				var directions: Array[Vector2] = []
-				for angle in FAN_ANGLES:
+				for angle in (FAN_ANGLES if _needle_variant == 1 else [-0.4, -0.24, -0.08, 0.08, 0.24, 0.4]):
 					directions.append(_needle_aim.rotated(angle))
-				needle_attack.emit(_attack_origin, directions, 1)
+				needle_attack.emit(_attack_origin, directions, _needle_variant)
+				_finish_volley()
+			elif _needle_variant == 4:
+				var directions: Array[Vector2] = []
+				var time := clampf(position.distance_to(_ash_target) / 650.0, 1.1, 2.1)
+				for i in 10:
+					var landing := _ash_target + get_walk_axis() * (i - 4.5) * 44.0
+					directions.append((landing - _attack_origin - _attack_down * 600.0 * time * time) / time)
+				needle_attack.emit(_attack_origin, directions, 4)
 				_finish_volley()
 			else:
-				_volley_left = 3 if _needle_variant == 0 else 2
+				_volley_left = 18 if _needle_variant == 5 else 3
 				_volley_clock = 0.0
 		return
-	var distance := global_position.distance_to(target.global_position)
+	if _needle_cooldown > 0.0 or _needle_recovery > 0.0 or capture_windup >= 0.0:
+		return
+	var selected := _choose_attack()
+	if selected < 0:
+		return
 	var origin := global_position - get_gravity_vector() * 65.0
-	var visible := not course.visible_area.has_area() or course.visible_area.grow(-35).has_point(origin)
-	var busy := _large_attack_active()
-	var count: int = [3, 5, 2, 21][_needle_variant]
-	var held := get_held_object()
-	# Ash comes from the cape, so it can be cast without dropping a needed carried tool.
-	var mobile := _needle_variant == 3
-	if _needle_cooldown <= 0.0 and _needle_recovery <= 0.0 and capture_windup < 0.0 and (held == null or mobile) and (is_on_floor() or mobile) and not is_dashing() and not is_wall_grabbing() and distance > 130.0 and distance < 700.0 and visible and not busy and _can_see_target() and course.can_launch_projectiles(origin, [get_rid(), target.get_rid()], count):
-		_needle_aim = (target.global_position - origin).normalized()
-		_ash_target = target.global_position
-		_attack_down = get_gravity_vector()
-		_needle_warning = 0.8 if _needle_variant == 0 else 1.0
-		_mobile_cast = mobile
-		$AttackCue.stream = ArrivalSwitch._sound([[330.0, 440.0], [440.0, 440.0, 660.0], [260.0, 390.0, 520.0], [180.0, 240.0, 300.0]][_needle_variant])
-		$AttackCue.play()
+	var count: int = [3, 5, 6, 36, 10, 18][selected]
+	if not course.can_launch_projectiles(origin, [get_rid(), target.get_rid()], count):
+		return
+	_needle_variant = selected
+	_needle_aim = (_last_seen - origin).normalized()
+	_ash_target = _last_seen + _last_velocity.limit_length(420.0) * (1.4 if selected == 3 else 0.45)
+	_ash_target = _ash_target.clamp(Vector2(80, 100), course.size - Vector2(80, 100))
+	_attack_down = get_gravity_vector()
+	_needle_warning = 1.1 if selected in [2, 3, 4] else 0.8
+	_mobile_cast = true
+	$AttackCue.stream = ArrivalSwitch._sound([[330.0, 440.0], [440.0, 440.0, 660.0], [260.0, 390.0, 520.0], [180.0, 240.0, 300.0], [240.0, 420.0], [700.0, 700.0]][selected])
+	$AttackCue.play()
 
 
 func _cache_warning_spans() -> void:
 	_warning_spans.clear()
-	if _needle_warning < 0.0 or _needle_variant == 3:
+	if _needle_warning < 0.0 and _volley_left == 0:
+		return
+	if _needle_variant in [3, 4]:
 		return
 	var origin := global_position - _attack_down * 65.0
-	var angles := FAN_ANGLES if _needle_variant == 1 else [0.0]
+	var angles := FAN_ANGLES if _needle_variant == 1 else ([-0.4, -0.24, -0.08, 0.08, 0.24, 0.4] if _needle_variant == 2 else [0.0])
 	for angle in angles:
-		var end: Vector2 = origin + _needle_aim.rotated(angle) * 650.0
+		var end: Vector2 = origin + _needle_aim.rotated(angle) * 900.0
 		var query := PhysicsRayQueryParameters2D.create(origin, end, 1, [get_rid(), target.get_rid()])
 		var hit := get_world_2d().direct_space_state.intersect_ray(query)
 		_warning_spans.append(origin)
@@ -467,14 +546,14 @@ func _cache_warning_spans() -> void:
 
 
 func _draw() -> void:
-	if _needle_warning < 0.0:
+	if _needle_warning < 0.0 and _volley_left == 0:
 		return
 	var ink := Color("ffc57999")
-	if _needle_variant == 3:
+	if _needle_variant in [3, 4]:
 		draw_set_transform(to_local(_ash_target), Vector2.DOWN.angle_to(_attack_down))
-		draw_rect(Rect2(-270, -12, 540, 24), Color("ffdc7833"))
-		for slot in 7:
-			draw_line(Vector2((slot - 3) * 80, -22), Vector2((slot - 3) * 80, 22), ink, 2)
+		draw_rect(Rect2(-360, -12, 720, 24), Color("ffdc7833"))
+		for slot in 9:
+			draw_line(Vector2((slot - 4) * 80, -22), Vector2((slot - 4) * 80, 22), ink, 2)
 		draw_set_transform(Vector2.ZERO)
 	else:
 		for index in range(0, _warning_spans.size(), 2):

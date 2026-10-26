@@ -31,34 +31,34 @@ func _ready() -> void:
 
 func advance(delta: float) -> void:
 	elapsed += delta
-	# Wider rows keep the 160px lanes while increasing each wave to three/four shards.
-	while waves < 6 and elapsed >= 1.8 + waves * 0.48:
-		for slot in 7:
+	# Alternating rows keep 160px lanes while covering a wider predicted landing zone.
+	while waves < 8 and elapsed >= 1.3 + waves * 0.45:
+		for slot in 9:
 			if slot % 2 == waves % 2:
-				rain.emit(to_global(Vector2((slot - 3) * 80, 24)), down)
+				rain.emit(to_global(Vector2((slot - 4) * 80, 24)), down)
 		waves += 1
 	_update_picture()
 	queue_redraw()
-	if elapsed >= 5.3:
+	if elapsed >= 5.7:
 		queue_free()
 
 
 func _update_picture() -> void:
-	var forming := smoothstep(0.35, 1.5, elapsed)
-	picture.scale = Vector2.ONE * 600.0 / picture.texture.get_width() * lerpf(0.12, 1.0, forming)
-	picture.modulate.a = forming * (1.0 - smoothstep(4.7, 5.3, elapsed))
+	var forming := smoothstep(0.2, 1.1, elapsed)
+	picture.scale = Vector2.ONE * 760.0 / picture.texture.get_width() * lerpf(0.12, 1.0, forming)
+	picture.modulate.a = forming * (1.0 - smoothstep(5.0, 5.7, elapsed))
 	picture.material.set_shader_parameter("phase", fposmod(elapsed, 4.0) * TAU / 4.0)
 
 
 func _draw() -> void:
-	if elapsed < 1.8:
+	if elapsed < 1.3:
 		var origin := to_local(smoke_origin)
 		for index in 14:
-			var progress := clampf(elapsed / 1.5 - index * 0.035, 0.0, 1.0)
+			var progress := clampf(elapsed / 1.1 - index * 0.035, 0.0, 1.0)
 			var at := origin.lerp(Vector2.ZERO, progress) + Vector2(16 * sin(progress * TAU + index), -28 * sin(progress * PI))
 			draw_circle(at, 10 + progress * 17, Color(0.42, 0.4, 0.37, sin(progress * PI) * 0.6))
 	# Gold seeds signal the next row before it drops, rather than marking a hitbox.
-	if waves < 6 and elapsed > 1.2:
-		for slot in 7:
+	if waves < 8 and elapsed > 0.8:
+		for slot in 9:
 			if slot % 2 == waves % 2:
-				draw_line(Vector2((slot - 3) * 80, 40), Vector2((slot - 3) * 80, 66), Color("ffdf70"), 3, true)
+				draw_line(Vector2((slot - 4) * 80, 40), Vector2((slot - 4) * 80, 66), Color("ffdf70"), 3, true)

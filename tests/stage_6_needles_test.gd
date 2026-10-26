@@ -12,6 +12,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_6.tscn")
 	await _step(4)
 	stage = current_scene
+	await _step(180)
 	stage.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
 	stage.player.set_physics_process(false)
@@ -66,12 +67,14 @@ func _run() -> void:
 	_check(brittle.collision_layer == 1 and brittle.visible, "Retry restores destructible terrain")
 	_place(stage.player, Vector2(350, 200))
 	stage._hit_grace = 0.0
+	stage._respawn_grace = 0.0
 	_shoot(Vector2(100, 200), Vector2.RIGHT, 0)
 	stage._update_needles(1.0)
 	_check(is_equal_approx(stage.player.get_wall_stamina(), 2.0), "A swept flight hits the player before reaching a wall behind them")
 	stage.player.respawn()
 	_place(stage.player, Vector2(650, 200))
 	stage._hit_grace = 0.0
+	stage._respawn_grace = 0.0
 	_shoot(Vector2(100, 200), Vector2.RIGHT, 0)
 	stage._update_needles(1.0)
 	_check(is_equal_approx(stage.player.get_wall_stamina(), 3.0), "Terrain blocks damage to a player behind the wall")

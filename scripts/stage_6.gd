@@ -34,6 +34,7 @@ var _hit_grace := 0.0
 var _chase_delay := 0.0
 var _capture_pending := false
 var _game_over_pending := false
+var _respawn_grace := 0.8
 var _loading := false
 var _generation := 0
 var _previous_player := Vector2.ZERO
@@ -43,6 +44,15 @@ var defeat_hits := 0
 var escape_elapsed := 0.0
 var _keep_enemy_on_respawn := false
 var _enemy_indicator: Label
+var _intro_left := 0.0
+var _intro_seen := false
+var _entry_left := 0.0
+var _action: Label
+var _intro_panel: PanelContainer
+var _shake_left := 0.0
+var shots_fired := 0
+var clouds_cast := 0
+var blocked_shots := 0
 
 
 func _ready() -> void:
@@ -84,6 +94,24 @@ func _ready() -> void:
 	_enemy_indicator = _text("", 18)
 	_enemy_indicator.position = Vector2(25, 610)
 	$HUD.add_child(_enemy_indicator)
+	var action_panel := _panel(Rect2(16, 104, 980, 84))
+	action_panel.name = "EnemyAction"
+	$HUD.add_child(action_panel)
+	_action = _text("", 18)
+	_action.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	action_panel.add_child(_action)
+	_intro_panel = _panel(Rect2(240, 236, 800, 205))
+	_intro_panel.name = "EnemyIntroduction"
+	$HUD.add_child(_intro_panel)
+	var intro := _text("UMA妖怪エイリアン\n星間山荒・大赤斑 が現れた！\n逃げろ！ 箱と傘を使って振り切ろう", 28)
+	intro.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	intro.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_intro_panel.add_child(intro)
+	var breach_sound := AudioStreamPlayer.new()
+	breach_sound.name = "BreachSound"
+	breach_sound.stream = ArrivalSwitch._sound([90.0, 60.0, 120.0])
+	breach_sound.volume_db = -9.0
+	$HUD.add_child(breach_sound)
 	_load_room(0)
 
 
@@ -115,13 +143,27 @@ func _load_room(index: int) -> void:
 	defeat_hits = 0
 	escape_elapsed = 0.0
 	_immunity_left = 0.6
+	_respawn_grace = 0.8
 	_hit_grace = 0.0
 	_capture_pending = false
 	_message.hide()
+	_intro_left = 0.0
+	_intro_panel.hide()
+	_intro_panel.modulate.a = 1.0
+	_entry_left = 0.9 if index > 0 else 0.0
+	room.set_entrance_intact(index > 0)
+	enemy.visuals.visible = index == 0
+	if index > 0:
+		_chase_delay = _entry_left
+	if index == 0 and not _intro_seen:
+		_intro_seen = true
+		_intro_left = 2.8
+		_intro_panel.show()
+		$HUD/BreachSound.play()
 	_loading = false
 	transitioning = false
-	player.controls_enabled = true
-	enemy.controls_enabled = true
+	player.controls_enabled = _intro_left <= 0.0
+	enemy.controls_enabled = _intro_left <= 0.0
 	_previous_player = player.position
 	_previous_enemy = enemy.position
 	_update_camera()
@@ -132,7 +174,30 @@ func _load_room(index: int) -> void:
 func _physics_process(delta: float) -> void:
 	if get_tree().paused or _loading or transitioning or help_visible or completed or _game_over_pending:
 		return
+	if _intro_left > 0.0:
+		_intro_left = maxf(0.0, _intro_left - delta)
+		if _intro_left <= 0.0:
+			_intro_panel.hide()
+			player.controls_enabled = true
+			enemy.controls_enabled = true
+		_intro_panel.modulate.a = clampf(_intro_left / 0.4, 0.0, 1.0)
+		_update_camera()
+		_update_hud()
+		return
+	if _entry_left > 0.0:
+		_entry_left = maxf(0.0, _entry_left - delta)
+		if _entry_left <= 0.0:
+			room.set_entrance_intact(false)
+			enemy.visuals.show()
+			_shake_left = 0.25
+			$HUD/BreachSound.play()
+	_shake_left = maxf(0.0, _shake_left - delta)
 	_immunity_left = maxf(0.0, _immunity_left - delta)
+	_respawn_grace = maxf(0.0, _respawn_grace - delta)
+	for actor in [player, enemy]:
+		var held: Grabbable = actor.get_held_object()
+		if held != null and held.carry_name == "PARACHUTE":
+			held.shield_open = true
 	_hit_grace = maxf(0.0, _hit_grace - delta)
 	if _chase_delay < 0.0 and player.position.distance_to(room.spawn) > 155.0:
 		_chase_delay = room.chase_delay
@@ -144,7 +209,7 @@ func _physics_process(delta: float) -> void:
 	for cloud in room.get_node("AshClouds").get_children():
 		cloud.advance(delta)
 	_check_projectiles()
-	if _out_of_course(player) or _touches_hazard(player, _previous_player):
+	if _out_of_course(player) or (_respawn_grace <= 0.0 and _touches_hazard(player, _previous_player)):
 		_keep_enemy_on_respawn = true
 		player.respawn(false)
 		_keep_enemy_on_respawn = false
@@ -160,7 +225,7 @@ func _physics_process(delta: float) -> void:
 		room.update_escape(escape_elapsed >= escape_seconds)
 	if room_index == ROOM.FINAL_ROOM and room.seal_enemy(enemy, player):
 		_complete("封じ込め成功")
-	elif room.exit_open and (_player_arrived or room.exit_rect.has_point(player.position)) and (room_index != ROOM.FINAL_ROOM or (room.all_weight_doors_open() and room.escape_unlocked)):
+	elif room.exit_open and (room.passage_rect.has_point(player.position) if room_index != ROOM.FINAL_ROOM else (_player_arrived or room.exit_rect.has_point(player.position))) and (room_index != ROOM.FINAL_ROOM or (room.all_weight_doors_open() and room.escape_unlocked)):
 		if room_index == ROOM.FINAL_ROOM:
 			_complete("逃走成功")
 		else:
@@ -178,6 +243,8 @@ func _on_player_respawned() -> void:
 	_generation += 1
 	_capture_pending = false
 	_game_over_pending = false
+	_intro_left = 0.0
+	_intro_panel.hide()
 	player.controls_enabled = not help_visible and not completed
 	enemy.controls_enabled = not help_visible and not completed
 	enemy.capture_windup = -1.0
@@ -193,6 +260,7 @@ func _on_player_respawned() -> void:
 		defeat_hits = 0
 		escape_elapsed = 0.0
 	_immunity_left = 0.6
+	_respawn_grace = 0.8
 	_previous_player = player.position
 	_previous_enemy = enemy.position
 	_update_camera()
@@ -292,17 +360,26 @@ func _check_projectiles() -> void:
 		var previous_target := _previous_player if target == player else _previous_enemy
 		var half: Vector2 = (object.collider.shape as RectangleShape2D).size * 0.5
 		var extent := object.collider.global_transform.x.abs() * half.x + object.collider.global_transform.y.abs() * half.y + Vector2.ONE
-		var pinned := false
+		var target_rect := _actor_rect(target)
+		var rect := Rect2(target_rect.position - extent, target_rect.size + extent * 2.0)
+		var from: Vector2 = entry.previous + target.position - previous_target
+		var target_contact: float = NEEDLE._entry(from, object.position, rect)
+		var candidates: Array[Dictionary] = []
 		for needle in room.needles.get_children():
-			if needle.stuck and needle.is_dangerous() and _segment_hits_rect(entry.previous, object.position, Rect2(needle.tip_position() - extent, extent * 2.0)) and needle.pin_box(object, player):
+			if not needle.stuck or not needle.is_dangerous():
+				continue
+			var contact: float = NEEDLE._entry(entry.previous, object.position, Rect2(needle.tip_position() - extent, extent * 2.0))
+			if contact < target_contact:
+				candidates.append({"needle": needle, "at": contact})
+		candidates.sort_custom(func(left, right): return left.at < right.at)
+		var pinned := false
+		for candidate in candidates:
+			if candidate.needle.pin_box(object, player):
 				pinned = true
 				break
 		if pinned:
 			_projectiles.remove_at(index)
 			continue
-		var target_rect := _actor_rect(target)
-		var rect := Rect2(target_rect.position - extent, target_rect.size + extent * 2.0)
-		var from: Vector2 = entry.previous + target.position - previous_target
 		if _segment_hits_rect(from, object.position, rect):
 			if target == enemy:
 				if room_index == ROOM.FINAL_ROOM and enemy.stun_left <= 0.0 and room.all_weight_doors_open() and room.battle_arena.has_point(enemy.position) and room.battle_arena.has_point(player.position):
@@ -311,9 +388,9 @@ func _check_projectiles() -> void:
 						_complete("決着成功")
 				if enemy.stun_left <= 0.0:
 					enemy.apply_stun(2.0)
-			elif _hit_grace <= 0.0:
-				player.apply_stun(0.3, (object.position - entry.previous).normalized() * 140, player.wall_stamina_max / 3.0)
-				_hit_grace = 0.4
+			elif _hit_grace <= 0.0 and _respawn_grace <= 0.0:
+				player.apply_stun(0.2, (object.position - entry.previous).normalized() * 140, player.wall_stamina_max / 3.0)
+				_hit_grace = 0.75
 			_projectiles.remove_at(index)
 		elif object.linear_velocity.length() < 100.0:
 			_projectiles.remove_at(index)
@@ -373,7 +450,15 @@ func _complete(result: String) -> void:
 
 
 func _update_camera() -> void:
-	camera.position = player.position.clamp(Vector2(640, 360), room.size - Vector2(640, 360))
+	camera.offset = Vector2(sin(_shake_left * 120.0) * 8.0 * _shake_left / 0.25, 0) if _shake_left > 0.0 and DisplayServer.accessibility_should_reduce_animation() != 1 else Vector2.ZERO
+	var target := player.position.clamp(Vector2(640, 360), room.size - Vector2(640, 360))
+	if _intro_left > 0.0 and DisplayServer.accessibility_should_reduce_animation() != 1:
+		var pullback := smoothstep(0.5, 2.8, 2.8 - _intro_left)
+		camera.zoom = Vector2.ONE * lerpf(1.25, 1.0, pullback)
+		camera.position = Vector2(350, target.y).lerp(target, pullback)
+	else:
+		camera.zoom = Vector2.ONE
+		camera.position = target
 	room.visible_area = Rect2(camera.position - Vector2(640, 360), Vector2(1280, 720))
 
 
@@ -391,10 +476,23 @@ func _update_hud() -> void:
 	var offset := enemy.position - camera.position
 	_enemy_indicator.text = "追跡者 %s　%s" % [("→" if offset.x > 0 else "←") if absf(offset.x) > absf(offset.y) else ("↓" if offset.y > 0 else "↑"), pursuit]
 
+	var side := "→" if offset.x > 0.0 else "←"
+	var action: String = enemy.action_description()
+	if _entry_left > 0.0:
+		action = "背後の壁が崩れそうだ！ 追跡者が突破してくる"
+	elif room.exit_open and room_index != ROOM.FINAL_ROOM:
+		action += "\n隔壁が開いた！ 緑の矢印の先へ走って次の部屋へ"
+	_action.text = "%s 敵との距離 %dpx　%s" % [side, roundi(player.position.distance_to(enemy.position)), action]
+	_action.get_parent().visible = not completed and _intro_left <= 0.0
+	if _respawn_grace > 0.0:
+		player.modulate.a = 0.55 + 0.45 * absf(sin(_respawn_grace * 24.0))
+	else:
+		player.modulate.a = 1.0
+
 
 func _help_text() -> String:
 	var text := "追跡者の終域 — 全13部屋\nUMA妖怪エイリアン　星間山荒・大赤斑\n"
-	text += "長針は3連射、扇形は5本、追尾トゲは時間差で2本。灰の雲は予定地に留まり、金の合図の列から雨を降らせます。予告の狙いは固定され、発射後の『隙！』中は掴まれません。追尾は2.5秒で終わり、青みがかった弾は直進します。\n雲は開けた場所へ誘い、別の屋根へ退くと雨を防げます。敵は壁越しに忍者の位置を知りません。視線を切ると最後に見た場所を探し、『見失った』になると追跡を休みます。\n全てのトゲは敵に無効。箱の投擲は有効です。刺さった針の先端へ箱を投げると固定足場になります。ひびのある足場は長針で壊れます。\n\n"
+	text += "長針3連射、扇形5本、追尾トゲ6個、山なりの長針10本、短針18連射、灰の雨36本を状況に応じて使います。遠くへ逃げると灰雲で進路を先読みします。連射は見えている動きへゆっくり狙いを変えます。攻撃後の隙には掴まれません。\n屋根の下や傘は頭上の雨を防ぎ、箱は飛行針を受け止めます。ダッシュ中は傘が閉じます。地面の棘先は盾では防げません。\n敵は壁越しに忍者の位置を知りません。見失うと最後に見た場所を探し、やがて巡回します。画面外の行動もメッセージに表示します。\n地形に刺さった針の露出した後端へ箱を投げると固定足場になります。灰と連射の破片は数秒で崩れますが、箱で作った足場は残ります。全ての棘は敵に無効。箱の投擲は有効です。\n\n道中の到着スイッチは隔壁を開きます。開いた通路を走り抜けると次の部屋へ進み、敵は壁を破って追ってきます。\n\n"
 	if room_index == ROOM.FINAL_ROOM:
 		text += "どれか一つでクリア。\n決着：怯んでいない敵へ箱を%d回当てる。\n封鎖：重箱を左のくぼみの金の台へ置いて通電→敵を檻へ誘い箱を当てる→怯んでいる間に右の高台の足跡を自分で踏む。箱を置くだけ・制御盤に先に乗って待つだけでは封鎖しません。\n逃走：同じ区画の敵と%d秒対峙し、左右の高所の鍵を2つ取って最も右上の到着台へ。見失わせても解除は進み、捕獲では時間を数え直します。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
 	text += "この部屋の進め方\n" + ROOM.HINTS[room_index]
@@ -557,9 +655,15 @@ func _spawn_needles(origin: Vector2, directions: Array[Vector2], variant: int) -
 		needle.position = origin
 		needle.course = room
 		needle.shooter = enemy
-		needle.variant = variant
-		needle.velocity = direction.normalized() * [720.0, 540.0, 380.0, 660.0][variant]
+		needle.variant = 0 if variant == 4 else (1 if variant == 5 else variant)
+		needle.velocity = direction if variant == 4 else direction.normalized() * [720.0, 650.0, 380.0, 660.0][needle.variant]
+		if variant == 4:
+			needle.acceleration = enemy.get_gravity_vector() * 1200.0
+		if variant == 5:
+			needle.stuck_left = 5.0
+			needle.temporary = true
 		room.needles.add_child(needle)
+		shots_fired += 1
 		flying += 1
 
 
@@ -568,11 +672,16 @@ func _spawn_ash_cloud(origin: Vector2, target_at: Vector2, down: Vector2) -> voi
 	if clouds.get_child_count() > 0:
 		return
 	var cloud := ASH_CLOUD.new()
-	# A low ceiling limits the cloud's height; rain never starts through terrain.
+	# Check every rain column so wide clouds never form beneath an adjacent roof.
 	var at := target_at - down * 260.0
-	var query := PhysicsRayQueryParameters2D.create(target_at - down * 30.0, at, 1, [player.get_rid(), enemy.get_rid()])
-	var hit := get_world_2d().direct_space_state.intersect_ray(query)
-	cloud.position = hit.position + down * 55.0 if not hit.is_empty() else at
+	var across := Vector2(down.y, -down.x)
+	for slot in 9:
+		var column := target_at + across * (slot - 4) * 80.0
+		var query := PhysicsRayQueryParameters2D.create(column - down * 600.0, column - down * 30.0, 1, [player.get_rid(), enemy.get_rid()])
+		var hit := get_world_2d().direct_space_state.intersect_ray(query)
+		if not hit.is_empty() and (hit.position - down * 70.0).dot(down) < at.dot(down):
+			at += down * ((hit.position - down * 70.0).dot(down) - at.dot(down))
+	cloud.position = at
 	cloud.smoke_origin = origin
 	cloud.down = down
 	cloud.rain.connect(func(point, direction):
@@ -580,16 +689,20 @@ func _spawn_ash_cloud(origin: Vector2, target_at: Vector2, down: Vector2) -> voi
 		_spawn_needles(point, directions, 3)
 	)
 	clouds.add_child(cloud)
+	clouds_cast += 1
 
 
 func _update_needles(delta: float) -> void:
 	for needle in room.needles.get_children():
+		var was_blocked: bool = needle.blocked
 		needle.advance(delta, player)
 		if not needle.flew:
 			continue
 		var from: Vector2 = needle.flight_start + player.position - _previous_player
 		if _segment_hits_rect(from, needle.flight_end, _actor_rect(player).grow(3.0)):
-			if _hit_grace <= 0.0:
-				player.apply_stun(0.3, (needle.flight_end - needle.flight_start).normalized() * 140.0, player.wall_stamina_max / 3.0)
-				_hit_grace = 0.4
+			if _hit_grace <= 0.0 and _respawn_grace <= 0.0:
+				player.apply_stun(0.2, (needle.flight_end - needle.flight_start).normalized() * 140.0, player.wall_stamina_max / 3.0)
+				_hit_grace = 0.75
 			needle.queue_free()
+		elif needle.blocked and not was_blocked:
+			blocked_shots += 1

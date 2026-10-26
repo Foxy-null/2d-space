@@ -160,6 +160,7 @@ func _four_gravities() -> void:
 func _projectiles_and_retry() -> void:
 	stage._load_room(0)
 	await _step(3)
+	stage._respawn_grace = 0.0
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
 	stage.enemy.position = Vector2(500, 794)
@@ -175,10 +176,11 @@ func _projectiles_and_retry() -> void:
 	stage._on_release(object, true, stage.enemy)
 	object.position = stage.player.position + Vector2(150, 0)
 	stage._check_projectiles()
-	_check(is_equal_approx(stage.player.get_wall_stamina(), 2.0) and stage.player.stun_left == 0.3, "Enemy throws remove one third stamina and stagger the player")
+	_check(is_equal_approx(stage.player.get_wall_stamina(), 2.0) and stage.player.stun_left == 0.2, "Enemy throws remove one third stamina and stagger the player")
 	stage._check_projectiles()
 	_check(is_equal_approx(stage.player.get_wall_stamina(), 2.0), "The same throw cannot damage every frame")
 	stage.player.respawn()
+	stage._respawn_grace = 0.0
 	_place(stage.player, Vector2(180, 550))
 	_place(stage.enemy, Vector2(500, 550))
 	var shot: Grabbable = BOX.instantiate()
@@ -213,12 +215,12 @@ func _projectiles_and_retry() -> void:
 	for item in stage.room.get_node("Items").get_children():
 		item.position += Vector2(350, 0)
 	stage.room._restock()
-	_check(stage.room.get_node("Items").get_child_count() > 2, "A shared supply replenishes stock taken away by the enemy")
+	_check(stage.room.get_node("Items").get_child_count() > stage.room.supplies.size(), "A shared supply replenishes stock taken away by the enemy")
 	for attempt in 9:
 		for item in stage.room.get_node("Items").get_children():
 			item.position += Vector2(350, 0)
 		stage.room._restock()
-	_check(stage.room.get_node("Items").get_child_count() <= 12, "Repeated throws cannot create unlimited rigid bodies")
+	_check(stage.room.get_node("Items").get_child_count() <= stage.room.supplies.size() * 6, "Repeated throws cannot create unlimited rigid bodies")
 	for supply in stage.room.supplies:
 		var nearby: Array = stage.room.get_node("Items").get_children().filter(func(item): return item.position.distance_to(supply.at) < 150.0)
 		_check(not nearby.is_empty(), "Supply still replenishes after reaching the body cap")
@@ -251,6 +253,7 @@ func _fall_keeps_chaser() -> void:
 	_check(stage.enemy.position == enemy_position and stage.enemy.velocity == enemy_velocity and stage.enemy.gravity_direction == -1 and stage.enemy.stun_left == 0.75, "Fall recovery preserves enemy position, momentum, gravity and stun")
 	_check(stage.enemy.get_held_object() == item and item.carrier == stage.enemy and stage.enemy.get("active"), "Fall recovery preserves enemy carrying and pursuit state")
 	_check(stage.room.all_weight_doors_open() and stage.room._elapsed == clock, "Falling does not reset open doors, weights or the room clock")
+	stage._respawn_grace = 0.0
 	_place(stage.player, stage.room.moving_hazards[0].current.get_center())
 	stage._physics_process(0.0)
 	_check(stage.player.position == stage.room.spawn and stage.enemy.position == enemy_position, "Spike recovery also leaves the enemy in place")
@@ -356,10 +359,17 @@ func _arrival_latency() -> void:
 	stage.room.arrival.activated.connect(func(): activated_at[0] = Engine.get_physics_frames())
 	for frame in 90:
 		await _step()
+		if stage.room.exit_open:
+			break
+	_check(activated_at[0] >= 0 and stage.room_index == 1, "Pressing the arrival cap opens the wall without warping the player")
+	_check(stage.room.passage_gate.visible == false, "The actual passage wall opens after activation")
+	_place(stage.player, stage.room.passage_rect.get_center())
+	for frame in 4:
+		await _step()
 		if stage.room_index == 2:
 			break
-	_check(activated_at[0] >= 0 and stage.room_index == 2, "Pressing the arrival cap at its edge advances the room")
-	_check(Engine.get_physics_frames() - activated_at[0] <= 2, "Room transition follows activation within two physics ticks")
+	_check(stage.room_index == 2, "Walking through the opened passage advances the room")
+	_check(stage._entry_left > 0.0 and stage.room.entrance_wall.visible, "The next room begins with an approaching wall breach")
 	stage.enemy.set_physics_process(true)
 
 
@@ -410,6 +420,7 @@ func _new_stage() -> void:
 	change_scene_to_file("res://scenes/stage_6.tscn")
 	await _step(4)
 	stage = current_scene
+	await _step(180)
 
 
 func _step(count := 1) -> void:

@@ -73,7 +73,7 @@ func _physics_process(delta: float) -> void:
 		return
 	if not pressing:
 		for body in get_overlapping_bodies():
-			if not body is PlayerController or not body.controls_enabled or body.gravity_direction != 1 or not body.is_on_floor():
+			if not body is PlayerController or not body.is_in_group("player") or not body.controls_enabled or body.gravity_direction != 1 or not body.is_on_floor():
 				continue
 			for index in body.get_slide_collision_count():
 				var contact: KinematicCollision2D = body.get_slide_collision(index)

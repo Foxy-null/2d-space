@@ -12,6 +12,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_6.tscn")
 	await _step(4)
 	stage = current_scene
+	await _step(180)
 	stage.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
 	stage.player.set_physics_process(false)
@@ -56,6 +57,9 @@ func _homing() -> void:
 	stage.player.position = needle.tip_position()
 	_check(not stage._touches_hazard(stage.enemy, stage.enemy.position) and stage._touches_hazard(stage.player, stage.player.position), "The same exposed tip hurts only the ninja")
 	var box: Grabbable = stage.room.LIGHT.instantiate()
+	stage.player.position = needle.tip_position() - Vector2(150, 0)
+	stage.enemy.position = needle.tip_position() + Vector2(150, 0)
+	await _step(2)
 	box.position = needle.tip_position() - Vector2(70, 0)
 	stage.room.get_node("Items").add_child(box)
 	_check(needle.pin_box(box, stage.player) and not needle.is_dangerous(), "Homing spines also accept boxes as safe platforms")
@@ -71,21 +75,24 @@ func _cloud() -> void:
 	var locked: Vector2 = cloud.position
 	var points: Array[Vector2] = []
 	cloud.rain.connect(func(at, _down): points.append(at))
-	cloud.advance(1.79)
+	cloud.advance(1.29)
 	_check(points.is_empty(), "Smoke gathers into a cloud before any damaging rain appears")
 	stage.player.position.x += 250
 	cloud.advance(0.02)
-	_check(points.size() == 4 and cloud.position == locked, "The first rain row has four shards and does not follow a dodging player")
+	_check(points.size() == 5 and cloud.position == locked, "The first rain row has five shards and does not follow a dodging player")
 	_check(is_equal_approx(points[1].x - points[0].x, 160.0), "Rain leaves wide escape lanes")
-	cloud.advance(2.5)
-	_check(points.size() == 21 and cloud.waves == 6, "Six alternating rain rows emit twenty-one actual shards")
-	_check(stage.room.needles.get_child_count() == 21, "Ash rain uses the shared swept projectile and embedded-tip rules")
+	cloud.advance(3.2)
+	_check(points.size() == 36 and cloud.waves == 8, "Eight alternating rain rows emit thirty-six actual shards")
+	_check(stage.room.needles.get_child_count() == 36, "Ash rain uses the shared swept projectile and embedded-tip rules")
 	for needle in stage.room.needles.get_children():
 		_check(needle.variant == 3 and needle.velocity == Vector2.DOWN * 660.0, "Solid ash falls along the cast gravity")
 	var rain = stage.room.needles.get_child(0)
+	# Isolate damage from the roof collision verified separately below.
+	rain.position = Vector2(800, -500)
 	stage.player.position = rain.position + Vector2(0, 100)
 	stage._previous_player = stage.player.position
 	stage._hit_grace = 0.0
+	stage._respawn_grace = 0.0
 	stage._update_needles(0.2)
 	_check(stage.player.get_wall_stamina() < stage.player.wall_stamina_max, "Solidified ash actually damages the player on a swept hit")
 	var elapsed: float = cloud.elapsed
@@ -103,11 +110,11 @@ func _cloud() -> void:
 	await _step(2)
 	stage._spawn_ash_cloud(Vector2(200, 650), Vector2(800, 600), Vector2.DOWN)
 	cloud = stage.room.get_node("AshClouds").get_child(0)
-	_check(cloud.position.y > 430.0, "A low ceiling forms the cloud underneath instead of inside terrain")
+	_check(cloud.position.y < 400.0, "Clouds form above a roof so the roof remains real rain cover")
 	var blocked_direction: Array[Vector2] = [Vector2.DOWN]
 	stage._spawn_needles(ceiling.position, blocked_direction, 3)
 	_check(stage.room.needles.get_child_count() == 0, "A rain source inside terrain cannot shoot through the solid from inside")
-	cloud.advance(5.4)
+	cloud.advance(5.8)
 	_check(cloud.is_queued_for_deletion(), "The cloud expires after its finite attack")
 	stage.player.respawn()
 	await _step(2)
@@ -117,8 +124,8 @@ func _cloud() -> void:
 		points.clear()
 		var directions: Array[Vector2] = []
 		cloud.rain.connect(func(at, direction): points.append(at); directions.append(direction))
-		cloud.advance(1.81)
-		_check(directions.size() == 4 and directions[0] == gravity and absf((points[1] - points[0]).dot(gravity)) < 0.01, "Clouds and their escape lanes rotate with gravity")
+		cloud.advance(1.31)
+		_check(directions.size() == 5 and directions[0] == gravity and absf((points[1] - points[0]).dot(gravity)) < 0.01, "Clouds and their escape lanes rotate with gravity")
 		stage.player.respawn()
 	await _step(2)
 	stage.room._block(Rect2(50, -2000, 1000, 30))
@@ -130,12 +137,14 @@ func _cloud() -> void:
 	stage.room.visible_area = Rect2()
 	stage.enemy.active = true
 	stage.enemy.stun_left = 0.0
+	stage.room.attack_patterns.assign([3])
+	stage.enemy._update_perception(0.0)
 	stage.enemy._needle_variant = 3
 	stage.enemy._needle_cooldown = 0.0
 	stage.enemy._update_needle_attack(0.01)
 	_check(stage.enemy._needle_warning > 0.0, "The AI announces its ash attack")
-	stage.enemy._update_needle_attack(1.01)
-	_check(stage.room.get_node("AshClouds").get_child_count() == 1 and stage.enemy._needle_variant == 0, "The AI casts a cloud and cycles back to straight needles")
+	stage.enemy._update_needle_attack(1.11)
+	_check(stage.room.get_node("AshClouds").get_child_count() == 1 and stage.enemy._last_attack == 3, "The AI casts a cloud and records the technique cooldown")
 	stage.player.respawn()
 	await _step(2)
 
@@ -193,6 +202,8 @@ func _poses() -> void:
 
 func _superdash() -> void:
 	stage._load_room(1)
+	stage.room.set_entrance_intact(false)
+	await _step(2)
 	stage.room.set_physics_process(false)
 	for item in stage.room.get_node("Items").get_children():
 		item.free()
