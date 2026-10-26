@@ -52,6 +52,114 @@ room_number = 7
 position = Vector2(10240, 0)
 script = ExtResource("room")
 room_number = 8
+[node name="Room10" type="Node2D" parent="Rooms"]
+position = Vector2(11520, 0)
+script = ExtResource("room")
+room_number = 9
+[node name="Room11" type="Node2D" parent="Rooms"]
+position = Vector2(12800, 0)
+script = ExtResource("room")
+room_number = 10
+[node name="Room12" type="Node2D" parent="Rooms"]
+position = Vector2(14080, 0)
+script = ExtResource("room")
+room_number = 11
+[node name="Room13" type="Node2D" parent="Rooms"]
+position = Vector2(15360, 0)
+script = ExtResource("room")
+room_number = 12
+[node name="Room14" type="Node2D" parent="Rooms"]
+position = Vector2(16640, 0)
+script = ExtResource("room")
+room_number = 13
+[node name="Room15" type="Node2D" parent="Rooms"]
+position = Vector2(17920, 0)
+script = ExtResource("room")
+room_number = 14
+[node name="Room16" type="Node2D" parent="Rooms"]
+position = Vector2(19200, 0)
+script = ExtResource("room")
+room_number = 15
+[node name="Room17" type="Node2D" parent="Rooms"]
+position = Vector2(21120, 0)
+script = ExtResource("room")
+room_number = 16
+[node name="Room18" type="Node2D" parent="Rooms"]
+position = Vector2(23040, 0)
+script = ExtResource("room")
+room_number = 17
+[node name="Room19" type="Node2D" parent="Rooms"]
+position = Vector2(24960, 0)
+script = ExtResource("room")
+room_number = 18
+[node name="Room20" type="Node2D" parent="Rooms"]
+position = Vector2(26880, 0)
+script = ExtResource("room")
+room_number = 19
+[node name="Room21" type="Node2D" parent="Rooms"]
+position = Vector2(28800, 0)
+script = ExtResource("room")
+room_number = 20
+[node name="Room22" type="Node2D" parent="Rooms"]
+position = Vector2(30720, 0)
+script = ExtResource("room")
+room_number = 21
+[node name="Room23" type="Node2D" parent="Rooms"]
+position = Vector2(32640, 0)
+script = ExtResource("room")
+room_number = 22
+[node name="Room24" type="Node2D" parent="Rooms"]
+position = Vector2(34560, 0)
+script = ExtResource("room")
+room_number = 23
+[node name="Room25" type="Node2D" parent="Rooms"]
+position = Vector2(37120, 0)
+script = ExtResource("room")
+room_number = 24
+[node name="Room26" type="Node2D" parent="Rooms"]
+position = Vector2(39168, 0)
+script = ExtResource("room")
+room_number = 25
+[node name="Room27" type="Node2D" parent="Rooms"]
+position = Vector2(41216, 0)
+script = ExtResource("room")
+room_number = 26
+[node name="Room28" type="Node2D" parent="Rooms"]
+position = Vector2(43264, 0)
+script = ExtResource("room")
+room_number = 27
+[node name="Room29" type="Node2D" parent="Rooms"]
+position = Vector2(45312, 0)
+script = ExtResource("room")
+room_number = 28
+[node name="Room30" type="Node2D" parent="Rooms"]
+position = Vector2(47360, 0)
+script = ExtResource("room")
+room_number = 29
+[node name="Room31" type="Node2D" parent="Rooms"]
+position = Vector2(49408, 0)
+script = ExtResource("room")
+room_number = 30
+[node name="Room32" type="Node2D" parent="Rooms"]
+position = Vector2(51776, 0)
+script = ExtResource("room")
+room_number = 31
+[node name="Room33" type="Node2D" parent="Rooms"]
+position = Vector2(54464, 0)
+script = ExtResource("room")
+room_number = 32
+[node name="Room34" type="Node2D" parent="Rooms"]
+position = Vector2(57152, 0)
+script = ExtResource("room")
+room_number = 33
+[node name="Room35" type="Node2D" parent="Rooms"]
+position = Vector2(59520, 0)
+script = ExtResource("room")
+room_number = 34
+[node name="Room36" type="Node2D" parent="Rooms"]
+position = Vector2(62208, 0)
+script = ExtResource("room")
+room_number = 35
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(110, 594)
 use_default_respawn_bounds = false

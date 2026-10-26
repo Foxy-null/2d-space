@@ -27,7 +27,7 @@ func _run() -> void:
 			if failed:
 				quit(1)
 				return
-		_check(respawns == 0 and stage.completed, "The upper six sections are a real continuous route at strength %s and timing %s" % profile)
+		_check(respawns == 0 and stage.checkpoint_index == 12 and not stage.completed, "The original upper six sections form a continuous route to CP13 at strength %s and timing %s" % profile)
 		await _upper_capture("summit")
 	print("TOWER_UPPER_ROUTE_TEST_", "FAILED" if failed else "OK")
 	quit(1 if failed else 0)

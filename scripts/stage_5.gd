@@ -5,6 +5,9 @@ const TITLES := [
 	"吹き落とす風", "折り返す航路", "壁からの一撃", "暴走する追い風", "嵐の五連鎖", "暴風の六連鎖",
 	"折り返す空と巻物", "縦に抜ける峡谷", "嵐の帰り道",
 	"左へ抜ける反射", "上層への五段", "深い谷の折り返し",
+	"広い空の反射連鎖", "向かい風の左航路", "斜めに登る峡谷", "谷底からの帰還", "風を渡る左折り返し", "天空の大きな一周",
+	"バネから反射の階段へ", "左へ跳ねるバネ航路", "傘から反射する空", "天井へ反転する反射", "左へ折り返す天井", "傘から天井の航路へ", "ブーツから反射の空へ", "天井から床の航路へ", "反射から高い岩壁へ",
+	"動く反射と空中の靴",
 ]
 const HINTS := [
 	"足場を右へ降りてバンパーの上側へ。反射後は右へ進み、隙間の先のバンパーを狙おう。",
@@ -24,7 +27,23 @@ const HINTS := [
 	"横風と下向きの風を抜け、左へ折り返してから最後の反射へ向かおう。",
 	"右の入口から上へ戻り、左の出口へ反射をつなごう。",
 	"下層から反射をつなぐ。中間の台で休んでから上へ戻れます。",
-	"下向きの風に乗り、谷の奥から左上の到着台へ折り返そう。",
+	"下向きの風に乗り、谷の奥から左上の足場へ折り返そう。",
+	"高さの違う反射をつなぎ、右の足場へ。途中の台から同じ反射へ戻れます。",
+	"右の入口から左へ。風の変わり目で次の反射を見よう。",
+	"下層から斜めに登り、上層の足場へ渡ろう。",
+	"谷の底へ降り、最後は反射をつないで右上へ。",
+	"上下に流れる風を抜け、左へ反射をつなごう。",
+	"上へ登って左へ折り返し、下降の反射から右の到着台へ。",
+	"入口のバネで高い反射へ。三つ目の下の台で休んで再出発できます。",
+	"右のバネから左上の反射へ。向かい風を越え、左の出口へ渡ろう。",
+	"傘で風を上がり、右の反射へ滑空。反射の下の棚で休めます。",
+	"上のゲートから天井側へ。反射の後は下のゲートから床へ戻ろう。",
+	"右の入口から天井へ。反射を左へつなぎ、下のゲートから床へ。",
+	"傘で風を上がり、上のゲートへ。天井のバネから反射をつなごう。",
+	"ブーツで高い反射へ。途中の台で休み、上へ跳び直せます。",
+	"天井から下のゲートへ。足場で休み、空中の回復から上の反射へ戻ろう。",
+	"反射から壁をつかんで上へ。岩の上から次の反射へ跳ぼう。",
+	"バネから動く反射へ。台で休み、靴で次の反射へ戻ろう。",
 ]
 const ROOM_WIDTH := 1280.0
 var room_index := 0
@@ -61,17 +80,29 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if transitioning:
 		return
-	var local_x := player.position.x - room_index * ROOM_WIDTH
-	var height := float(rooms.get_child(room_index).get_meta("room_height", 720.0))
-	var exit_left := bool(rooms.get_child(room_index).get_meta("exit_left", false))
+	var room := rooms.get_child(room_index)
+	var local_x: float = player.position.x - room.position.x
+	var width := float(room.get_meta("room_width", ROOM_WIDTH))
+	var height := float(room.get_meta("room_height", 720.0))
+	var exit_left := bool(room.get_meta("exit_left", false))
 	if player.position.y < -52 or player.position.y > height + 52:
 		player.respawn()
-	elif room_index < rooms.get_child_count() - 1 and (_landed_on_exit() or (local_x <= 0 if exit_left else local_x >= ROOM_WIDTH)):
+	elif room_index < rooms.get_child_count() - 1 and (_landed_on_exit() or (local_x <= 0 if exit_left else local_x >= width)):
 		_transition_to_next()
-	elif local_x < -24 or local_x > ROOM_WIDTH + 24:
+	elif local_x < -24 or local_x > width + 24:
 		player.respawn()
-	if height > 720:
-		camera.position.y = lerpf(camera.position.y, _camera_position().y, 1.0 - exp(-8.0 * delta))
+	if transitioning:
+		return
+	if width > ROOM_WIDTH or height > 720:
+		camera.position = camera.position.lerp(_camera_position(), 1.0 - exp(-8.0 * delta))
+	if room_index == 33:
+		var points:=PackedVector2Array([room.get_node("Spawn").position])
+		for index in _bumpers().get_child_count():
+			points.append(_bumpers().get_child(index).position)
+			if index==2: points.append_array(PackedVector2Array([room.get_node("Rest").position-Vector2(0,34),Vector2(1840,1134),room.get_node("Items/Boots").position,Vector2(1840,720)]))
+		points.append(room.get_node("Exit").position)
+		room.get_node("Route").points=points
+		_update_route()
 	_update_hud()
 
 
@@ -95,7 +126,36 @@ func _camera_position() -> Vector2:
 	var room := rooms.get_child(room_index)
 	var height := float(room.get_meta("room_height", 720.0))
 	var offset_y := float(room.get_meta("camera_offset_y", -80.0))
-	return Vector2(room_index * ROOM_WIDTH + 640, clampf(player.position.y + offset_y, 360, height - 360))
+	var width := float(room.get_meta("room_width", ROOM_WIDTH))
+	if width > ROOM_WIDTH and not transitioning and not player.is_on_floor():
+		var target: Node2D = _bumpers().get_child(next_bumper) if next_bumper < _bumpers().get_child_count() else room.get_node("Exit")
+		offset_y = clampf(target.global_position.y - player.global_position.y, -80, 80)
+	if room_index in [24,25,26,30] and next_bumper == 0 and (player.is_on_floor() or player.position.distance_to(room.get_node("Spawn").global_position) < 8):
+		offset_y = -160.0
+	if room_index >= 27 and player.is_on_floor():
+		var target: Node2D = _bumpers().get_child(next_bumper) if next_bumper < _bumpers().get_child_count() else room.get_node("Exit")
+		offset_y = clampf(target.global_position.y-player.global_position.y,-240,150)
+	var lead_x := 0.0
+	if room_index in [24,30] and player.is_on_floor() and player.position.y < 600:
+		offset_y = 240.0
+		lead_x = 160.0
+	if room_index == 27 and player.is_on_floor() and player.position.y > 1300 and player.position.x-room.position.x < 1100:
+		offset_y = -270.0
+		lead_x = 360.0
+	if room_index == 29 and player.gravity_direction == -1 and player.is_on_floor() and player.position.y > 900 and player.position.x-room.position.x < 150:
+		offset_y = -200.0
+	if room_index == 33 and player.is_on_floor() and player.position.y < 800 and player.position.x-room.position.x < 1250:
+		offset_y = 140.0
+		lead_x = 240.0
+	if completed:
+		offset_y = -80.0
+	# 入口の反転直後に残る接地判定を、天井の休憩と扱わない。
+	if room_index == 31 and player.is_on_floor() and player.gravity_direction == -1 and player.position.y > 900 and player.position.y < 1100:
+		offset_y = 220.0
+	if room_index == 31 and player.is_on_floor() and player.position.y > 1450:
+		offset_y = -300.0
+	var margin := 72.0 if room_index >= 24 else 0.0
+	return Vector2(clampf(player.position.x + lead_x, room.position.x + 640 - margin, room.position.x + width - 640 + margin), clampf(player.position.y + offset_y, 360, height - 360))
 
 
 func _transition_to_next() -> void:
@@ -168,8 +228,24 @@ func _on_completed() -> void:
 
 
 func _update_hud() -> void:
-	$HUD/Info.position = Vector2(24, 620 if room_index == 16 else 16)
+	$HUD/Info.position = Vector2(24, 620 if room_index in [16, 20, 21, 24, 26] else 16)
+	if room_index == 30:
+		var upper_branch: bool = next_bumper==3 and player.position.y<1000 and player.position.x-rooms.get_child(30).position.x<1350
+		$HUD/Info.position.y = 620 if player.position.y-camera.position.y+360 < 180 or upper_branch else 16
+	$HUD/Info.size.x = 500 if room_index == 23 else (560 if room_index in [20, 21] else 676)
 	$HUD/Info/Rows/Title.text = "暴風バンパー峡谷　%02d / %02d　%s" % [room_index + 1, rooms.get_child_count(), TITLES[room_index]]
 	$HUD/Info/Rows/Status.text = "ダッシュ %s" % ("●" if player.is_dash_ready() else "○")
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
+	var high_body := player.position.y-camera.position.y+360 < (200 if room_index >= 27 else 220)
+	$HUD/Hint.position.y = 16 if room_index == 26 else (570 if (room_index == 24 or room_index >= 27) and high_body else 110)
+	if room_index == 31 and player.is_on_floor() and player.gravity_direction == -1 and player.position.y > 900 and player.position.y < 1100:
+		$HUD/Info.position.y = 8
+		$HUD/Hint.position.y = 650
+	if room_index in [32, 33] and next_bumper == 0:
+		$HUD/Info.position = Vector2(560, 200)
+		$HUD/Hint.position.y = 650
+	if room_index == 29 and player.is_on_floor() and player.gravity_direction == 1 and player.position.y > 1600 and player.position.x < rooms.get_child(29).position.x + 300:
+		$HUD/Hint.position.y = 200
+	if room_index == 33 and player.is_on_floor() and player.position.y < 800 and player.position.x-rooms.get_child(33).position.x < 1250:
+		$HUD/Hint.position.y = 570
 	$HUD/Hint.text = HINTS[room_index]

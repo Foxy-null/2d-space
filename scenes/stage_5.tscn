@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3]
+[gd_scene load_steps=66 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_5.gd" id="stage"]
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
@@ -20,6 +20,36 @@
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_16.tscn" id="room16"]
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_17.tscn" id="room17"]
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_18.tscn" id="room18"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_19.tscn" id="room19"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_20.tscn" id="room20"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_21.tscn" id="room21"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_22.tscn" id="room22"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_23.tscn" id="room23"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_24.tscn" id="room24"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_25.tscn" id="room25"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_26.tscn" id="room26"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_27.tscn" id="room27"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_28.tscn" id="room28"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_29.tscn" id="room29"]
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_30.tscn" id="room30"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_31.tscn" id="room31"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_32.tscn" id="room32"]
+
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_33.tscn" id="room33"]
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_34.tscn" id="room34"]
 
 [sub_resource type="RectangleShape2D" id="EntranceShape"]
 size = Vector2(180, 40)
@@ -126,7 +156,7 @@ size = Vector2(28, 155)
 [sub_resource type="RectangleShape2D" id="Hazard12_2"]
 size = Vector2(28, 480)
 
-[node name="Stage5" type="Node2D"]
+[node name="Stage5" type="Node2D" groups=["stage_five"]]
 metadata/environment_theme = 2
 script = ExtResource("stage")
 
@@ -2422,6 +2452,54 @@ position = Vector2(20480, 0)
 [node name="Room18" parent="Rooms" instance=ExtResource("room18")]
 position = Vector2(21760, 0)
 
+[node name="Room19" parent="Rooms" instance=ExtResource("room19")]
+position = Vector2(23040, 0)
+
+[node name="Room20" parent="Rooms" instance=ExtResource("room20")]
+position = Vector2(26880, 0)
+
+[node name="Room21" parent="Rooms" instance=ExtResource("room21")]
+position = Vector2(30720, 0)
+
+[node name="Room22" parent="Rooms" instance=ExtResource("room22")]
+position = Vector2(34560, 0)
+
+[node name="Room23" parent="Rooms" instance=ExtResource("room23")]
+position = Vector2(38400, 0)
+
+[node name="Room24" parent="Rooms" instance=ExtResource("room24")]
+position = Vector2(42240, 0)
+
+[node name="Room25" parent="Rooms" instance=ExtResource("room25")]
+position = Vector2(44800, 0)
+
+[node name="Room26" parent="Rooms" instance=ExtResource("room26")]
+position = Vector2(48000, 0)
+
+[node name="Room27" parent="Rooms" instance=ExtResource("room27")]
+position = Vector2(51200, 0)
+
+[node name="Room28" parent="Rooms" instance=ExtResource("room28")]
+position = Vector2(53760, 0)
+
+[node name="Room29" parent="Rooms" instance=ExtResource("room29")]
+position = Vector2(57488, 0)
+
+[node name="Room30" parent="Rooms" instance=ExtResource("room30")]
+position = Vector2(61216, 0)
+
+[node name="Room31" parent="Rooms" instance=ExtResource("room31")]
+position = Vector2(64164, 0)
+
+[node name="Room32" parent="Rooms" instance=ExtResource("room32")]
+position = Vector2(67492, 0)
+
+[node name="Room33" parent="Rooms" instance=ExtResource("room33")]
+position = Vector2(71340, 0)
+
+[node name="Room34" parent="Rooms" instance=ExtResource("room34")]
+position = Vector2(74968, 0)
+
 [node name="Player" parent="." instance=ExtResource("player")]
 position = Vector2(90, 570)
 use_default_respawn_bounds = false
@@ -2489,3 +2567,8 @@ theme_override_constants/outline_size = 6
 [node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
 
 [connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]
+
+[connection signal="respawned" from="Player" to="Rooms/Room31/Items/Boots" method="reset_for_respawn"]
+[connection signal="respawned" from="Player" to="Rooms/Room32/Items/Refill" method="reset_for_respawn"]
+
+[connection signal="respawned" from="Player" to="Rooms/Room34/Items/Boots" method="reset_for_respawn"]

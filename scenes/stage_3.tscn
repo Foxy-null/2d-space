@@ -1,4 +1,4 @@
-[gd_scene load_steps=87 format=3]
+[gd_scene load_steps=115 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -26,6 +26,62 @@
 [ext_resource type="PackedScene" path="res://scenes/gravity_room_8.tscn" id="room_8"]
 
 [ext_resource type="PackedScene" path="res://scenes/gravity_room_9.tscn" id="room_9"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_10.tscn" id="room_10"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_11.tscn" id="room_11"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_12.tscn" id="room_12"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_13.tscn" id="room_13"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_14.tscn" id="room_14"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_15.tscn" id="room_15"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_16.tscn" id="room_16"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_17.tscn" id="room_17"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_18.tscn" id="room_18"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_19.tscn" id="room_19"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_20.tscn" id="room_20"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_21.tscn" id="room_21"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_22.tscn" id="room_22"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_23.tscn" id="room_23"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_24.tscn" id="room_24"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_25.tscn" id="room_25"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_26.tscn" id="room_26"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_27.tscn" id="room_27"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_28.tscn" id="room_28"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_29.tscn" id="room_29"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_30.tscn" id="room_30"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_31.tscn" id="room_31"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_32.tscn" id="Room32"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_33.tscn" id="Room33"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_34.tscn" id="Room34"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_35.tscn" id="Room35"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_36.tscn" id="Room36"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_37.tscn" id="Room37"]
 
 [sub_resource type="RectangleShape2D" id="Room1Overhang"]
 size = Vector2(60, 28)
@@ -2374,6 +2430,72 @@ position = Vector2(8960, 0)
 [node name="Room9" parent="Rooms" instance=ExtResource("room_9")]
 position = Vector2(10240, 0)
 
+[node name="Room10" parent="Rooms" instance=ExtResource("room_10")]
+position = Vector2(11520, 0)
+
+[node name="Room11" parent="Rooms" instance=ExtResource("room_11")]
+position = Vector2(14080, 0)
+
+[node name="Room12" parent="Rooms" instance=ExtResource("room_12")]
+position = Vector2(16640, 0)
+
+[node name="Room13" parent="Rooms" instance=ExtResource("room_13")]
+position = Vector2(19200, 0)
+
+[node name="Room14" parent="Rooms" instance=ExtResource("room_14")]
+position = Vector2(21760, 0)
+
+[node name="Room15" parent="Rooms" instance=ExtResource("room_15")]
+position = Vector2(24320, 0)
+
+[node name="Room16" parent="Rooms" instance=ExtResource("room_16")]
+position = Vector2(26880, 0)
+
+[node name="Room17" parent="Rooms" instance=ExtResource("room_17")]
+position = Vector2(29184, 0)
+
+[node name="Room18" parent="Rooms" instance=ExtResource("room_18")]
+position = Vector2(31488, 0)
+
+[node name="Room19" parent="Rooms" instance=ExtResource("room_19")]
+position = Vector2(33792, 0)
+
+[node name="Room20" parent="Rooms" instance=ExtResource("room_20")]
+position = Vector2(36096, 0)
+
+[node name="Room21" parent="Rooms" instance=ExtResource("room_21")]
+position = Vector2(38400, 0)
+
+[node name="Room22" parent="Rooms" instance=ExtResource("room_22")]
+position = Vector2(40704, 0)
+
+[node name="Room23" parent="Rooms" instance=ExtResource("room_23")]
+position = Vector2(43008, 0)
+
+[node name="Room24" parent="Rooms" instance=ExtResource("room_24")]
+position = Vector2(45312, 0)
+
+[node name="Room25" parent="Rooms" instance=ExtResource("room_25")]
+position = Vector2(47616, 0)
+
+[node name="Room26" parent="Rooms" instance=ExtResource("room_26")]
+position = Vector2(50688, 0)
+
+[node name="Room27" parent="Rooms" instance=ExtResource("room_27")]
+position = Vector2(52992, 0)
+
+[node name="Room28" parent="Rooms" instance=ExtResource("room_28")]
+position = Vector2(55296, 0)
+
+[node name="Room29" parent="Rooms" instance=ExtResource("room_29")]
+position = Vector2(57600, 0)
+
+[node name="Room30" parent="Rooms" instance=ExtResource("room_30")]
+position = Vector2(59904, 0)
+
+[node name="Room31" parent="Rooms" instance=ExtResource("room_31")]
+position = Vector2(62208, 0)
+
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector2(72, 614)
 
@@ -2456,3 +2578,21 @@ mouse_filter = 2
 [node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
 
 [connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]
+
+[node name="Room32" parent="Rooms" instance=ExtResource("Room32")]
+position = Vector2(64512, 0)
+
+[node name="Room33" parent="Rooms" instance=ExtResource("Room33")]
+position = Vector2(66816, 0)
+
+[node name="Room34" parent="Rooms" instance=ExtResource("Room34")]
+position = Vector2(69120, 0)
+
+[node name="Room35" parent="Rooms" instance=ExtResource("Room35")]
+position = Vector2(71424, 0)
+
+[node name="Room36" parent="Rooms" instance=ExtResource("Room36")]
+position = Vector2(73728, 0)
+
+[node name="Room37" parent="Rooms" instance=ExtResource("Room37")]
+position = Vector2(76032, 0)

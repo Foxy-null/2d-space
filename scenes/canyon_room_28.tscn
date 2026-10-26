@@ -1,0 +1,281 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
+
+[ext_resource type="PackedScene" path="res://scenes/pinball_spring.tscn" id="bumper"]
+
+[ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
+
+[ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="spikes"]
+
+[ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="spring"]
+
+[ext_resource type="PackedScene" path="res://scenes/parachute_creature.tscn" id="parachute"]
+
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
+
+[ext_resource type="PackedScene" path="res://scenes/scroll_collectible.tscn" id="scroll"]
+
+[ext_resource type="Script" path="res://scripts/scroll_marker.gd" id="scroll_marker"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="gate"]
+[sub_resource type="RectangleShape2D" id="Entrance"]
+size = Vector2(300, 40)
+
+[sub_resource type="RectangleShape2D" id="Exit"]
+size = Vector2(1040, 16)
+
+[sub_resource type="RectangleShape2D" id="Rest"]
+size = Vector2(280, 16)
+
+[sub_resource type="RectangleShape2D" id="ScrollRest"]
+size = Vector2(220, 16)
+
+[sub_resource type="RectangleShape2D" id="LateRest"]
+size = Vector2(400, 16)
+
+[node name="Room28" type="Node2D"]
+metadata/room_width = 3600.0
+metadata/room_height = 2000.0
+metadata/exit_left = false
+
+[node name="CeilingEntry" type="StaticBody2D" parent="."]
+position = Vector2(150, 280.0)
+
+[node name="Collision" type="CollisionShape2D" parent="CeilingEntry"]
+shape = SubResource("Entrance")
+one_way_collision = false
+
+[node name="Visual" type="Polygon2D" parent="CeilingEntry"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-150, -20, 150, -20, 150, 20, -150, 20)
+
+[node name="Exit" type="StaticBody2D" parent="."]
+position = Vector2(3080, 1508)
+
+[node name="Collision" type="CollisionShape2D" parent="Exit"]
+shape = SubResource("Exit")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="Exit"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-520, -8, 520, -8, 520, 8, -520, 8)
+
+[node name="Rest" type="StaticBody2D" parent="."]
+position = Vector2(1540, 932.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Rest"]
+shape = SubResource("Rest")
+one_way_collision = false
+
+[node name="Visual" type="Polygon2D" parent="Rest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-140, -8, 140, -8, 140, 8, -140, 8)
+
+[node name="ScrollRest" type="StaticBody2D" parent="."]
+position = Vector2(950, 1472.0)
+
+[node name="Collision" type="CollisionShape2D" parent="ScrollRest"]
+shape = SubResource("ScrollRest")
+one_way_collision = false
+
+[node name="Visual" type="Polygon2D" parent="ScrollRest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-110, -8, 110, -8, 110, 8, -110, 8)
+
+[node name="LateRest" type="StaticBody2D" parent="."]
+position = Vector2(1900, 1132.0)
+
+[node name="Collision" type="CollisionShape2D" parent="LateRest"]
+shape = SubResource("LateRest")
+one_way_collision = false
+
+[node name="Visual" type="Polygon2D" parent="LateRest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-200, -8, 200, -8, 200, 8, -200, 8)
+
+[node name="Spawn" type="Marker2D" parent="."]
+position = Vector2(90, 1674)
+
+[node name="ExitLabel" type="Label" parent="."]
+visible = false
+offset_left = 3450.0
+offset_top = 1520.0
+text = "→"
+mouse_filter = 2
+
+[node name="Items" type="Node2D" parent="."]
+
+[node name="Spring" parent="Items" instance=ExtResource("spring")]
+position = Vector2(190, 300)
+rotation = 3.1415926536
+spring_speed = 1500.0
+
+[node name="Winds" type="Node2D" parent="."]
+
+[node name="Wind1" parent="Winds" instance=ExtResource("wind")]
+position = Vector2(1080, 1100.0)
+wind_direction = Vector2(1, 0)
+wind_acceleration = 300.0
+max_wind_speed = 140.0
+area_size = Vector2(380, 420)
+
+[node name="Wind2" parent="Winds" instance=ExtResource("wind")]
+position = Vector2(2320, 1300.0)
+wind_direction = Vector2(-1, 0)
+wind_acceleration = 300.0
+max_wind_speed = 140.0
+area_size = Vector2(380, 420)
+
+[node name="Bumpers" type="Node2D" parent="."]
+
+[node name="Bumper1" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(400, 800.0)
+minimum_bounce_speed = 1170.0
+maximum_bounce_speed = 1230.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper1"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "1"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper2" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(850, 1000.0)
+minimum_bounce_speed = 1170.0
+maximum_bounce_speed = 1230.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper2"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "2"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper3" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(1300, 1200.0)
+minimum_bounce_speed = 1170.0
+maximum_bounce_speed = 1230.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper3"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "3"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper4" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(1750, 1400.0)
+minimum_bounce_speed = 1170.0
+maximum_bounce_speed = 1230.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper4"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "4"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper5" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(2200, 920.0)
+minimum_bounce_speed = 1170.0
+maximum_bounce_speed = 1230.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper5"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "5"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Bumper6" parent="Bumpers" instance=ExtResource("bumper")]
+position = Vector2(2550, 1100.0)
+minimum_bounce_speed = 1170.0
+maximum_bounce_speed = 1230.0
+
+[node name="Number" type="Label" parent="Bumpers/Bumper6"]
+visible = false
+offset_left = -7.0
+offset_top = -15.0
+text = "6"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_outline_color = Color(0.09, 0.07, 0.16, 1)
+theme_override_constants/outline_size = 5
+mouse_filter = 2
+
+[node name="Hazards" type="Node2D" parent="."]
+
+[node name="Scroll" parent="." instance=ExtResource("scroll")]
+position = Vector2(950, 1570)
+stage_id = "canyon"
+scroll_id = "inverted_return_08"
+
+[node name="ScrollMark" type="Node2D" parent="."]
+position = Vector2(1230, 1380.0)
+scale = Vector2(0.45, 0.45)
+modulate = Color(1, 1, 1, 0.75)
+script = ExtResource("scroll_marker")
+
+[node name="Route" type="Line2D" parent="."]
+visible = false
+points = PackedVector2Array(90, 1674, 150, 1600, 190, 300, 400, 800, 850, 1000, 1300, 1200, 1750, 1400, 2200, 920, 2550, 1100, 2630, 1400, 2700, 1474, 3460, 1500)
+width = 2.0
+default_color = Color(0.75, 1, 0.85, 0.6)
+antialiased = true
+
+[node name="Entrance" type="StaticBody2D" parent="."]
+position = Vector2(150, 1720)
+[node name="Collision" type="CollisionShape2D" parent="Entrance"]
+shape = SubResource("Entrance")
+one_way_collision = true
+[node name="Visual" type="Polygon2D" parent="Entrance"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-150, -20, 150, -20, 150, 20, -150, 20)
+
+[node name="Gates" type="Node2D" parent="."]
+[node name="Up" parent="Gates" instance=ExtResource("gate")]
+position = Vector2(150, 1600)
+[node name="Down" parent="Gates" instance=ExtResource("gate")]
+position = Vector2(2630, 1400)
+target_gravity = 1
+
+[node name="ExitRoof" parent="Hazards" instance=ExtResource("spikes")]
+position = Vector2(3050, 1420)
+travel = Vector2(0, 0)
+room_number = 27
+ceiling_strip = true
+strip_half_width = 250.0
+stage_group = &"stage_five"
+[node name="ExitUpper" parent="Hazards" instance=ExtResource("spikes")]
+position = Vector2(3580, 600)
+rotation = 1.5707963268
+travel = Vector2(0, 0)
+room_number = 27
+ceiling_strip = true
+strip_half_width = 800.0
+stage_group = &"stage_five"
+[node name="ExitLower" parent="Hazards" instance=ExtResource("spikes")]
+position = Vector2(3580, 1900)
+rotation = 1.5707963268
+travel = Vector2(0, 0)
+room_number = 27
+ceiling_strip = true
+strip_half_width = 300.0
+stage_group = &"stage_five"
+

@@ -16,7 +16,8 @@ func _run() -> void:
 			bumper.launched.connect(func(_body): bounces += 1)
 			bumper.monitoring = false
 	await _step(2)
-	for index in (range(15, stage.rooms.get_child_count()) if OS.get_cmdline_user_args().has("--left-only") else range(stage.rooms.get_child_count())):
+	var first := 18 if OS.get_cmdline_user_args().has("--wide-only") else (15 if OS.get_cmdline_user_args().has("--left-only") else 0)
+	for index in range(first, mini(stage.rooms.get_child_count(), 24)):
 		stage.room_index = index
 		stage._set_checkpoint()
 		for launch_x in [90, 135, 170]:
@@ -49,7 +50,7 @@ func _try_without_bumper(index: int, launch_x: int, delay: int, direction: Vecto
 	var left: bool = stage.rooms.get_child(index).get_meta("exit_left", false)
 	var forward := "move_left" if left else "move_right"
 	Input.action_press(forward)
-	while (1280 - _x() if left else _x()) < launch_x:
+	while (float(stage.rooms.get_child(index).get_meta("room_width", 1280.0)) - _x() if left else _x()) < launch_x:
 		await _step()
 	Input.action_press("jump")
 	for frame in 300:

@@ -11,7 +11,7 @@ func _run() -> void:
 	var placed := 0
 	for area in stage.find_children("*", "Area2D", true, false):
 		if area.get_script() != null and area.get_script().resource_path == "res://scripts/scroll_collectible.gd": placed += 1
-	_check(placed == 3 and placed == progress.TOTALS.canyon, "The selection total matches the actual placed canyon scrolls")
+	_check(placed == 12 and placed == progress.TOTALS.canyon, "The selection total matches the actual placed canyon scrolls")
 	for strength in [1.0, 0.8]:
 		for index in [12, 13, 14]:
 			await _setup(index)
@@ -82,7 +82,7 @@ func _run() -> void:
 	_check(progress.get_count("canyon") == 1 and _scroll().modulate.a < 1, "R keeps one saved collectible and its faint revisit marker")
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(5)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage5/Content/Collection/Count").text == "1 / 3", "Stage selection displays the actual canyon scroll count")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage5/Content/Collection/Count").text == "1 / 12", "Stage selection displays the actual canyon scroll count")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.get_count("canyon") == 1, "The unfinished canyon's confirmed scroll survives reloading")
@@ -139,12 +139,6 @@ func _land_at_rest(strength: float = 1.0) -> void:
 
 func _scroll() -> Area2D:
 	return stage.rooms.get_child(12).get_node("Scroll")
-
-
-func _pulse(action: String) -> void:
-	Input.action_press(action)
-	await _step()
-	Input.action_release(action)
 
 
 func _capture(label: String) -> void:

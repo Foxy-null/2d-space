@@ -6,11 +6,11 @@
 
 [ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
 
-[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
-
 [ext_resource type="PackedScene" path="res://scenes/scroll_collectible.tscn" id="scroll"]
 
 [ext_resource type="Script" path="res://scripts/scroll_marker.gd" id="marker"]
+
+[ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="spikes"]
 
 [sub_resource type="RectangleShape2D" id="Entrance"]
 size = Vector2(180, 40)
@@ -225,6 +225,11 @@ position = Vector2(1000, 1050)
 stage_id = "canyon"
 scroll_id = "deep_return_03"
 
-[node name="Goal" parent="." instance=ExtResource("goal")]
-position = Vector2(70, 992)
-mission_required = false
+[node name="LowerLeftSpikes" parent="Hazards" instance=ExtResource("spikes")]
+position = Vector2(0, 1360)
+rotation = -1.5707963268
+travel = Vector2(0, 0)
+room_number = 17
+ceiling_strip = true
+strip_half_width = 360.0
+stage_group = &"stage_five"

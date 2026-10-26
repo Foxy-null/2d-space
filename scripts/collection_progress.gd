@@ -1,7 +1,7 @@
 extends Node
 
 const STAGE_IDS := ["tutorial", "tower", "gravity", "companion", "canyon"]
-const TOTALS := {"tutorial": 4, "tower": 3, "gravity": 2, "companion": 1, "canyon": 3}
+const TOTALS := {"tutorial": 8, "tower": 8, "gravity": 10, "companion": 12, "canyon": 12}
 var save_path := "user://collection_progress.cfg"
 var _collected: Dictionary = {}
 

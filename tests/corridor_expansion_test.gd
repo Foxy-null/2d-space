@@ -29,7 +29,7 @@ func _run() -> void:
 			if OS.get_cmdline_user_args().has("--screenshots") and strength == 1.0:
 				await _capture("room_%d_rest" % (section+1))
 			_check(await traverse(section), "The new carry course reaches its next checkpoint: room %d" % (section+1))
-			_check(deaths == before + (0 if section == 8 else 1), "The successful course never dies")
+			_check(deaths == before + 1, "The successful course never dies")
 			_check(actions.has("creature_jump") and not actions.has("climb"), "The held companion performs its actual additional jump")
 			if section == 7:
 				_check(actions.has("wall_jump"), "The shaft uses real wall kicks while carrying")
@@ -38,9 +38,9 @@ func _run() -> void:
 			print("EXPANSION_ROOM_%d %.2fs strength=%.2f actions=%s" % [section+1, seconds, strength, actions])
 			release()
 			await step(25)
-		_check(stage.completed, "The ninth arrival completes the stage")
+		_check(stage.room_index == 9 and not stage.completed, "The old ninth room leads to the new course")
 		if OS.get_cmdline_user_args().has("--screenshots") and strength == 1.0:
-			await _capture("room_9_goal")
+			await _capture("room_9_exit")
 	steering_strength = 1.0
 	await _new_stage()
 	if not OS.get_cmdline_user_args().has("--positive"):
@@ -231,7 +231,7 @@ func _scroll_route(progress: Node) -> void:
 	_check(progress.get_count("companion") == 1 and stage.rooms.get_child(6).get_node("Scroll").modulate.a < 1, "Confirmed collection survives R and death without being counted again")
 	stage.get_node("PauseMenu").return_to_select()
 	await step(4)
-	_check(current_scene.get_node("Margin/Content/Stages/Stage4/Content/Collection/Count").text == "1 / 1", "Stage selection shows the actual companion scroll count")
+	_check(current_scene.get_node("Margin/Content/Stages/Stage4/Content/Collection/Count").text == "1 / 12", "Stage selection shows the actual companion scroll count")
 	progress._collected.clear()
 	progress.load_progress()
 	_check(progress.has_scroll("companion", "relay_left_01"), "Unfinished-stage return retains the saved scroll")
@@ -268,7 +268,7 @@ func _move_to(target: float) -> void:
 
 
 func _x() -> float:
-	return player.position.x - stage.room_index * 1280
+	return player.position.x - stage.rooms.get_child(stage.room_index).position.x
 
 
 func _capture(label: String) -> void:
