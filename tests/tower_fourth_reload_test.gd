@@ -31,7 +31,7 @@ func _run() -> void:
 		_check(root.get_texture().get_image().save_png("res://docs/screenshots/tower-fourth/stage_selection_2.png")==OK,"The actual saved selection is captured natively")
 	change_scene_to_file("res://scenes/stage_2.tscn")
 	await _step(6)
-	_check(current_scene.checkpoints.get_child_count()==31,"The separate process opens all thirty-one native sections")
+	_check(current_scene.checkpoints.get_child_count()==34,"The separate process opens all thirty-four native sections")
 	for name in ["FourthReflectionScroll","FourthUpdraftScroll"]:
 		var scroll=current_scene.get_node("ScrollBranch/"+name)
 		_check(scroll._secured and scroll._follower==null and scroll.modulate.a<1,"A saved native scroll remains a faint revisitable marker")

@@ -50,7 +50,7 @@ func _run() -> void:
 		monitor_view=true
 		await _fifth_course(section)
 		_check(respawns==2 and root.get_node("CollectionProgress").get_count("tower")==0,"The restored real course replays without a fall or an optional pickup")
-		if section==30:_check(stage.completed and stage.get_node("Goal").is_pressed(),"The replay physically presses the unique final Goal")
+		if section==stage.checkpoints.get_child_count()-1:_check(stage.completed and stage.get_node("Goal").is_pressed(),"The replay physically presses the unique final Goal")
 		print("FIFTH_RETRY_NATIVE section=",section+1," resets=1 falls=1")
 	monitor_view=false
 	_release()

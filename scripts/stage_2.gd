@@ -2,7 +2,7 @@ extends Node2D
 
 const SECTION_HEIGHT := 720.0
 const START_Y := 640.0
-const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "空中の分かれ道", "壁から空中のつなぎ", "バネの左折り返し", "靴と相棒でジグザグ", "相棒と壁キック", "横風と反射", "大きな折り返し", "壁から長い回廊へ", "逆風の反射と左折り返し", "運んで横断し壁へ", "壁から二段の空中資源へ", "反射と追加ジャンプの横断", "左の壁から風の入口へ", "傘で風を渡る", "壁の上から空中を継ぐ", "バネと靴で左へ", "反射から次のバネへ", "相棒と靴から壁へ", "風の上から下を回る", "反射から上の空中資源へ", "投げて登り再び運ぶ", "回復を取りに折り返す", "張り出しの下から", "反射から風を越える", "滑空から上昇風へ", "上空の折り返し"]
+const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "空中の分かれ道", "壁から空中のつなぎ", "バネの左折り返し", "靴と相棒でジグザグ", "相棒と壁キック", "横風と反射", "大きな折り返し", "壁から長い回廊へ", "逆風の反射と左折り返し", "運んで横断し壁へ", "壁から二段の空中資源へ", "反射と追加ジャンプの横断", "左の壁から風の入口へ", "傘で風を渡る", "壁の上から空中を継ぐ", "バネと靴で左へ", "反射から次のバネへ", "相棒と靴から壁へ", "風の上から下を回る", "反射から上の空中資源へ", "投げて登り再び運ぶ", "回復を取りに折り返す", "張り出しの下から", "反射から風を越える", "滑空から上昇風へ", "上空の折り返し", "壁の上の相棒", "回復からバネへ", "反射と壁の頂上"]
 const HINTS := [
 	"Shiftで目の前の壁を掴んで上へ。広い足場で休み、ジャンプと上ダッシュで次の旗へ。",
 	"バネで上昇。空中で左右を調整し、次の足場へ着地しよう。",
@@ -34,7 +34,10 @@ const HINTS := [
 	"張り出しの下からバネへ。上で休み、次の壁へ。",
 	"反射板の上へ回り込み、左の風と靴をつないで旗へ。",
 	"傘で左下へ滑空。向こうの風から右上へ。",
-	"靴から反射へ。回復をつないで最後の到着台へ。",
+	"靴から反射へ。回復をつないで次の旗へ。",
+	"壁を登り、上の相棒と左上の旗へ。",
+	"左の回復や運んだ相棒で棚へ。バネで右上へ。",
+	"靴から反射し、棚の先の壁へ。上のバネで到着台へ。",
 ]
 
 var checkpoint_index := 0
@@ -87,6 +90,7 @@ func _camera_target_x() -> float:
 	if checkpoint_index >= 19:
 		var lead := -340.0 if checkpoint_index == 20 else (-200.0 if checkpoint_index in [22, 23] else 100.0)
 		if checkpoint_index == 25: lead = 450.0
+		if checkpoint_index == 33 and player.position.y < -42300: lead = -250.0
 		if checkpoint_index == 29: lead = 450.0 if player.position.y < -37300.0 else -450.0
 		if checkpoint_index == 20 and player.position.y < -25680.0: lead = 100.0
 		if checkpoint_index == 21 and player.position.y < -27200.0 and player.position.x > 1000.0: lead = 400.0
@@ -186,9 +190,11 @@ func _update_hud() -> void:
 	$HUD/Info.position = Vector2(24, 620) if checkpoint_index >= 19 else Vector2(24, 16)
 	if checkpoint_index == 22 or checkpoint_index >= 25 or (checkpoint_index == 21 and player.position.y < -27200.0):
 		$HUD/Info.position.y = 16
+	if checkpoint_index == 33 and player.position.y < -42300: $HUD/Info.position.y = 250
 	$HUD/Info/Rows/Title.text = "星のぼりの塔　%02d / %02d" % [checkpoint_index + 1, checkpoints.get_child_count()]
 	$HUD/Info/Rows/Status.text = "高度 %dm　ダッシュ %s　追加ジャンプ %d" % [maxi(0, int((START_Y - player.position.y) / 10.0)), "●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
 	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
 	$HUD/Hint.position.y = 16 if checkpoint_index == 19 or (checkpoint_index == 24 and player.position.y < -31700.0) else 110
 	if checkpoint_index == 29 and (player.position.x < -1000.0 or player.position.y < -37300.0): $HUD/Hint.position.y = 560
+	if checkpoint_index >= 31: $HUD/Hint.position.y = 140 if checkpoint_index == 31 else 180
 	$HUD/Hint.text = TITLES[checkpoint_index] + "：" + HINTS[checkpoint_index]

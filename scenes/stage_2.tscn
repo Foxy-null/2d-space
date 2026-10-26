@@ -1,4 +1,4 @@
-[gd_scene load_steps=99 format=3]
+[gd_scene load_steps=108 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -266,6 +266,33 @@ size = Vector2(700, 32)
 
 [sub_resource type="RectangleShape2D" id="Shape_FifthSummit"]
 size = Vector2(850, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Application32Wall"]
+size = Vector2(260, 600)
+
+[sub_resource type="RectangleShape2D" id="Shape_Application32Rest"]
+size = Vector2(700, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Application33Checkpoint"]
+size = Vector2(700, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Application33Rest"]
+size = Vector2(800, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Application34Checkpoint"]
+size = Vector2(700, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Application34Rest"]
+size = Vector2(700, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Application34Wall"]
+size = Vector2(260, 500)
+
+[sub_resource type="RectangleShape2D" id="Shape_Application34UpperRest"]
+size = Vector2(800, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_ApplicationSummit"]
+size = Vector2(800, 32)
 
 [node name="Stage2" type="Node2D"]
 metadata/environment_theme = 1
@@ -1573,7 +1600,7 @@ scale = Vector2(0.75, 0.75)
 modulate = Color(1, 1, 1, 0.75)
 
 [node name="Goal" parent="." instance=ExtResource("8")]
-position = Vector2(-150, -38860)
+position = Vector2(400, -42970)
 
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(360, 612)
@@ -1880,3 +1907,134 @@ minimum_bounce_speed = 1650.0
 maximum_bounce_speed = 1650.0
 [node name="Fifth31Dash" parent="Items" instance=ExtResource("4")]
 position = Vector2(-650, -38680)
+
+[node name="Checkpoint31" type="Marker2D" parent="Checkpoints"]
+position = Vector2(-150, -38860)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint31"]
+offset_left = -75.0
+offset_top = -54.0
+offset_right = -32.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 20
+text = "32"
+
+[node name="Application32Wall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(280, -39140.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Application32Wall"]
+shape = SubResource("Shape_Application32Wall")
+[node name="Body" type="Polygon2D" parent="Terrain/Application32Wall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130.0, -300.0, 130.0, -300.0, 130.0, 300.0, -130.0, 300.0)
+
+[node name="Application32Rest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(500, -39424.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Application32Rest"]
+shape = SubResource("Shape_Application32Rest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Application32Rest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-350.0, -16.0, 350.0, -16.0, 350.0, 16.0, -350.0, 16.0)
+
+[node name="Application32Companion" parent="Items" instance=ExtResource("7")]
+position = Vector2(550, -39473)
+
+[node name="Application33Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-150, -39864.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Application33Checkpoint"]
+shape = SubResource("Shape_Application33Checkpoint")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Application33Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-350.0, -16.0, 350.0, -16.0, 350.0, 16.0, -350.0, 16.0)
+
+[node name="Checkpoint32" type="Marker2D" parent="Checkpoints"]
+position = Vector2(-150, -39880)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint32"]
+offset_left = -75.0
+offset_top = -54.0
+offset_right = -32.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 20
+text = "33"
+
+[node name="Application33Dash" parent="Items" instance=ExtResource("4")]
+position = Vector2(-430, -40120)
+
+[node name="Application33Rest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-150, -40264.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Application33Rest"]
+shape = SubResource("Shape_Application33Rest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Application33Rest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-400.0, -16.0, 400.0, -16.0, 400.0, 16.0, -400.0, 16.0)
+
+[node name="Application33Spring" parent="Items" instance=ExtResource("6")]
+position = Vector2(80, -40280)
+spring_speed = 1650.0
+
+[node name="Application34Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(200, -40864.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Application34Checkpoint"]
+shape = SubResource("Shape_Application34Checkpoint")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Application34Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-350.0, -16.0, 350.0, -16.0, 350.0, 16.0, -350.0, 16.0)
+
+[node name="Checkpoint33" type="Marker2D" parent="Checkpoints"]
+position = Vector2(200, -40880)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint33"]
+offset_left = -75.0
+offset_top = -54.0
+offset_right = -32.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 20
+text = "34"
+
+[node name="Application34Boot" parent="Items" instance=ExtResource("5")]
+position = Vector2(150, -41020)
+
+[node name="Application34Bumper" parent="Items" instance=ExtResource("bumper")]
+position = Vector2(0, -41260)
+minimum_bounce_speed = 1650.0
+maximum_bounce_speed = 1650.0
+
+[node name="Application34Rest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(650, -41904.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Application34Rest"]
+shape = SubResource("Shape_Application34Rest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Application34Rest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-350.0, -16.0, 350.0, -16.0, 350.0, 16.0, -350.0, 16.0)
+
+[node name="Application34Wall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(1100, -42120.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Application34Wall"]
+shape = SubResource("Shape_Application34Wall")
+[node name="Body" type="Polygon2D" parent="Terrain/Application34Wall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130.0, -250.0, 130.0, -250.0, 130.0, 250.0, -130.0, 250.0)
+
+[node name="Application34UpperRest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(900, -42354.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Application34UpperRest"]
+shape = SubResource("Shape_Application34UpperRest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Application34UpperRest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-400.0, -16.0, 400.0, -16.0, 400.0, 16.0, -400.0, 16.0)
+
+[node name="Application34Spring" parent="Items" instance=ExtResource("6")]
+position = Vector2(800, -42370)
+spring_speed = 1650.0
+
+[node name="ApplicationSummit" type="StaticBody2D" parent="Terrain"]
+position = Vector2(400, -42954.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/ApplicationSummit"]
+shape = SubResource("Shape_ApplicationSummit")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/ApplicationSummit"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-400.0, -16.0, 400.0, -16.0, 400.0, 16.0, -400.0, 16.0)

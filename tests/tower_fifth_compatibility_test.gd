@@ -29,7 +29,7 @@ func _run() -> void:
 	_check(card.get_node("Content/Collection/Count").text=="8 / 8" and card.accessibility_name.contains("巻物 8 / 8"),"Selection displays and announces the same saved eight identities")
 	change_scene_to_file("res://scenes/stage_2.tscn")
 	await _step(6)
-	_check(current_scene.checkpoints.get_child_count()==31,"The same saved data opens the thirty-one-section tower")
+	_check(current_scene.checkpoints.get_child_count()==34,"The same saved data opens the thirty-four-section tower")
 	var ids: Array[String]=[]
 	for scroll in current_scene.get_node("ScrollBranch").get_children():
 		if not scroll is Area2D:continue
