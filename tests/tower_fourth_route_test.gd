@@ -40,7 +40,7 @@ func _run() -> void:
 			if section == 24: _check(actions.get("dash",0)>=3,"The reflection and final refill contribute three actual dashes")
 			print("FOURTH_ACTIONS section=",section+1," actions=",actions," climb_frames=",climb_frames," wind_force_frames=",wind_force_frames)
 			if failed: return
-		_check(stage.completed if last==25 else stage.checkpoint_index==last, "The real native sections reach their next checkpoint or unique final Goal")
+		_check(stage.checkpoint_index==last and not stage.completed, "The real preceding native sections reach their next checkpoint without completing the new summit")
 	_release()
 	current_scene.queue_free()
 	await _step(18)
@@ -128,9 +128,8 @@ func _fourth_view(phase: String) -> void:
 		var shape: CollisionShape2D = stage.get_node("Items/Fourth"+("22" if phase=="22_entry" else "25")+"Bumper/CollisionShape2D")
 		_check_next_visible(shape.get_global_transform_with_canvas()*shape.shape.get_rect(),phase+" first bumper")
 	if phase=="25_refill":
-		for part in ["Case","Cap","Base"]:
-			var shape: CollisionShape2D = stage.get_node("Goal/"+part+"/Collision")
-			_check_next_visible(shape.get_global_transform_with_canvas()*shape.shape.get_rect(),"The actual final Goal "+part)
+		var point: Marker2D=stage.checkpoints.get_child(25)
+		_check_next_visible(point.get_global_transform_with_canvas()*Rect2(-108,-52,48,56),"The actual next CP26 flag")
 	if phase=="19_wind_b":
 		var point: Marker2D=stage.checkpoints.get_child(19)
 		_check_next_visible(point.get_global_transform_with_canvas()*Rect2(-108,-52,48,56),"The old final wind shows the real CP20 flag")
@@ -143,7 +142,7 @@ func _fourth_view(phase: String) -> void:
 		_check_next_visible(flag,"The actual next CP23 flag before the second spring")
 		_check_next_visible(bounds,"The entire native companion at the next checkpoint")
 	if not OS.get_cmdline_user_args().has("--screenshots"):return
-	if phase=="25_goal":
+	if phase=="25_checkpoint":
 		_horizontal(player.position.x)
 		await _step(18)
 	await process_frame

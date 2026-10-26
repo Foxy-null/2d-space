@@ -1,4 +1,4 @@
-[gd_scene load_steps=83 format=3]
+[gd_scene load_steps=99 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -218,6 +218,54 @@ size = Vector2(260, 32)
 
 [sub_resource type="RectangleShape2D" id="Shape_FourthUpdraftBranch"]
 size = Vector2(260, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth26Wall"]
+size = Vector2(260, 600)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth26Rest"]
+size = Vector2(1800, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth27Checkpoint"]
+size = Vector2(700, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth27Rest"]
+size = Vector2(900, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth27Wall"]
+size = Vector2(260, 500)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth28Checkpoint"]
+size = Vector2(550, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth28Lower"]
+size = Vector2(350, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth28Rest"]
+size = Vector2(600, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth28Wall"]
+size = Vector2(260, 500)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth29Checkpoint"]
+size = Vector2(600, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth29Rest"]
+size = Vector2(700, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth30Checkpoint"]
+size = Vector2(600, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth30Lower"]
+size = Vector2(800, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth31Checkpoint"]
+size = Vector2(1000, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_Fifth31Rest"]
+size = Vector2(700, 32)
+
+[sub_resource type="RectangleShape2D" id="Shape_FifthSummit"]
+size = Vector2(850, 32)
 
 [node name="Stage2" type="Node2D"]
 metadata/environment_theme = 1
@@ -1525,7 +1573,7 @@ scale = Vector2(0.75, 0.75)
 modulate = Color(1, 1, 1, 0.75)
 
 [node name="Goal" parent="." instance=ExtResource("8")]
-position = Vector2(-1050, -32280)
+position = Vector2(-150, -38860)
 
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(360, 612)
@@ -1592,3 +1640,243 @@ theme_override_colors/font_color = Color(0.5, 1, 0.75, 1)
 [node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
 
 [connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]
+
+[node name="Fifth26Wall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-470, -32580.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth26Wall"]
+shape = SubResource("Shape_Fifth26Wall")
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth26Wall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130.0, -300.0, 130.0, -300.0, 130.0, 300.0, -130.0, 300.0)
+
+[node name="Fifth26Rest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(300, -32864.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth26Rest"]
+shape = SubResource("Shape_Fifth26Rest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth26Rest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-900.0, -16.0, 900.0, -16.0, 900.0, 16.0, -900.0, 16.0)
+
+[node name="Fifth27Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(200, -33304.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth27Checkpoint"]
+shape = SubResource("Shape_Fifth27Checkpoint")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth27Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-350.0, -16.0, 350.0, -16.0, 350.0, 16.0, -350.0, 16.0)
+
+[node name="Checkpoint25" type="Marker2D" parent="Checkpoints"]
+position = Vector2(-1050, -32280)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint25"]
+offset_left = -116.0
+offset_top = 12.0
+offset_right = 116.0
+text = "26"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Checkpoint26" type="Marker2D" parent="Checkpoints"]
+position = Vector2(200, -33320)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint26"]
+offset_left = -116.0
+offset_top = 12.0
+offset_right = 116.0
+text = "27"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="Fifth26Companion" parent="Items" instance=ExtResource("7")]
+position = Vector2(-900, -32313)
+
+[node name="Fifth27Rest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(300.0, -33704.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth27Rest"]
+shape = SubResource("Shape_Fifth27Rest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth27Rest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-450.0, -16.0, 450.0, -16.0, 450.0, 16.0, -450.0, 16.0)
+
+[node name="Fifth27Wall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(780.0, -33970.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth27Wall"]
+shape = SubResource("Shape_Fifth27Wall")
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth27Wall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130.0, -250.0, 130.0, -250.0, 130.0, 250.0, -130.0, 250.0)
+
+[node name="Fifth28Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(925.0, -34204.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth28Checkpoint"]
+shape = SubResource("Shape_Fifth28Checkpoint")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth28Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-275.0, -16.0, 275.0, -16.0, 275.0, 16.0, -275.0, 16.0)
+
+[node name="Fifth27Dash" parent="Items" instance=ExtResource("4")]
+position = Vector2(-120, -33560)
+
+[node name="Checkpoint27" type="Marker2D" parent="Checkpoints"]
+position = Vector2(900, -34220)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint27"]
+offset_left = -75.0
+offset_top = -54.0
+offset_right = -32.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 20
+text = "28"
+
+[node name="Fifth28Lower" type="StaticBody2D" parent="Terrain"]
+position = Vector2(425.0, -34084.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth28Lower"]
+shape = SubResource("Shape_Fifth28Lower")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth28Lower"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-175.0, -16.0, 175.0, -16.0, 175.0, 16.0, -175.0, 16.0)
+
+[node name="Fifth28Rest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(200.0, -34804.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth28Rest"]
+shape = SubResource("Shape_Fifth28Rest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth28Rest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-300.0, -16.0, 300.0, -16.0, 300.0, 16.0, -300.0, 16.0)
+
+[node name="Fifth28Wall" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-230.0, -35070.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth28Wall"]
+shape = SubResource("Shape_Fifth28Wall")
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth28Wall"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-130.0, -250.0, 130.0, -250.0, 130.0, 250.0, -130.0, 250.0)
+
+[node name="Fifth29Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-400.0, -35304.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth29Checkpoint"]
+shape = SubResource("Shape_Fifth29Checkpoint")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth29Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-300.0, -16.0, 300.0, -16.0, 300.0, 16.0, -300.0, 16.0)
+
+[node name="Fifth28Spring" parent="Items" instance=ExtResource("6")]
+position = Vector2(450, -34100)
+spring_speed = 1650.0
+
+[node name="Checkpoint28" type="Marker2D" parent="Checkpoints"]
+position = Vector2(-400, -35320)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint28"]
+offset_left = -75.0
+offset_top = -54.0
+offset_right = -32.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 20
+text = "29"
+
+[node name="Fifth29Rest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-300.0, -35984.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth29Rest"]
+shape = SubResource("Shape_Fifth29Rest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth29Rest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-350.0, -16.0, 350.0, -16.0, 350.0, 16.0, -350.0, 16.0)
+
+[node name="Fifth30Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-800.0, -36424.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth30Checkpoint"]
+shape = SubResource("Shape_Fifth30Checkpoint")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth30Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-300.0, -16.0, 300.0, -16.0, 300.0, 16.0, -300.0, 16.0)
+
+[node name="Fifth29Bumper" parent="Items" instance=ExtResource("bumper")]
+position = Vector2(-50, -35460)
+minimum_bounce_speed = 1450.0
+maximum_bounce_speed = 1450.0
+[node name="Fifth29Wind" parent="Items" instance=ExtResource("wind")]
+position = Vector2(-410, -35740)
+wind_direction = Vector2(-1, 0)
+wind_acceleration = 500.0
+max_wind_speed = 120.0
+area_size = Vector2(540, 440)
+[node name="Fifth29Boot" parent="Items" instance=ExtResource("5")]
+position = Vector2(-450, -36140)
+[node name="Checkpoint29" type="Marker2D" parent="Checkpoints"]
+position = Vector2(-800, -36440)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint29"]
+offset_left = -75.0
+offset_top = -54.0
+offset_right = -32.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 20
+text = "30"
+
+[node name="Fifth30Lower" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-2300.0, -36104.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth30Lower"]
+shape = SubResource("Shape_Fifth30Lower")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth30Lower"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-400.0, -16.0, 400.0, -16.0, 400.0, 16.0, -400.0, 16.0)
+
+[node name="Fifth31Checkpoint" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-1000.0, -37384.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth31Checkpoint"]
+shape = SubResource("Shape_Fifth31Checkpoint")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth31Checkpoint"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-500.0, -16.0, 500.0, -16.0, 500.0, 16.0, -500.0, 16.0)
+
+[node name="Fifth30Parachute" parent="Items" instance=ExtResource("parachute")]
+position = Vector2(-950, -36473)
+[node name="Fifth30Wind" parent="Items" instance=ExtResource("wind")]
+position = Vector2(-2200, -36980)
+wind_direction = Vector2(0, -1)
+wind_acceleration = 2400.0
+max_wind_speed = 400.0
+area_size = Vector2(260, 1780)
+[node name="Checkpoint30" type="Marker2D" parent="Checkpoints"]
+position = Vector2(-1000, -37400)
+[node name="Label" type="Label" parent="Checkpoints/Checkpoint30"]
+offset_left = -75.0
+offset_top = -54.0
+offset_right = -32.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 20
+text = "31"
+
+[node name="Fifth31Rest" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-550.0, -38424.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/Fifth31Rest"]
+shape = SubResource("Shape_Fifth31Rest")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/Fifth31Rest"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-350.0, -16.0, 350.0, -16.0, 350.0, 16.0, -350.0, 16.0)
+
+[node name="FifthSummit" type="StaticBody2D" parent="Terrain"]
+position = Vector2(-125.0, -38844.0)
+[node name="Collision" type="CollisionShape2D" parent="Terrain/FifthSummit"]
+shape = SubResource("Shape_FifthSummit")
+one_way_collision = true
+[node name="Body" type="Polygon2D" parent="Terrain/FifthSummit"]
+script = ExtResource("art_terrain")
+polygon = PackedVector2Array(-425.0, -16.0, 425.0, -16.0, 425.0, 16.0, -425.0, 16.0)
+
+[node name="Fifth31Boot" parent="Items" instance=ExtResource("5")]
+position = Vector2(-1150, -37540)
+[node name="Fifth31Bumper" parent="Items" instance=ExtResource("bumper")]
+position = Vector2(-1300, -37780)
+minimum_bounce_speed = 1650.0
+maximum_bounce_speed = 1650.0
+[node name="Fifth31Dash" parent="Items" instance=ExtResource("4")]
+position = Vector2(-650, -38680)
