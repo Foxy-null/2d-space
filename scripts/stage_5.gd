@@ -7,6 +7,7 @@ const TITLES := [
 	"左へ抜ける反射", "上層への五段", "深い谷の折り返し",
 	"広い空の反射連鎖", "向かい風の左航路", "斜めに登る峡谷", "谷底からの帰還", "風を渡る左折り返し", "天空の大きな一周",
 	"バネから反射の階段へ", "左へ跳ねるバネ航路", "傘から反射する空", "天井へ反転する反射", "左へ折り返す天井", "傘から天井の航路へ", "ブーツから反射の空へ", "天井から床の航路へ", "反射から高い岩壁へ",
+	"動く反射と空中の靴",
 ]
 const HINTS := [
 	"足場を右へ降りてバンパーの上側へ。反射後は右へ進み、隙間の先のバンパーを狙おう。",
@@ -42,6 +43,7 @@ const HINTS := [
 	"ブーツで高い反射へ。途中の台で休み、上へ跳び直せます。",
 	"天井から下のゲートへ。足場で休み、空中の回復から上の反射へ戻ろう。",
 	"反射から壁をつかんで上へ。岩の上から次の反射へ跳ぼう。",
+	"バネから動く反射へ。台で休み、靴で次の反射へ戻ろう。",
 ]
 const ROOM_WIDTH := 1280.0
 var room_index := 0
@@ -89,8 +91,18 @@ func _physics_process(delta: float) -> void:
 		_transition_to_next()
 	elif local_x < -24 or local_x > width + 24:
 		player.respawn()
+	if transitioning:
+		return
 	if width > ROOM_WIDTH or height > 720:
 		camera.position = camera.position.lerp(_camera_position(), 1.0 - exp(-8.0 * delta))
+	if room_index == 33:
+		var points:=PackedVector2Array([room.get_node("Spawn").position])
+		for index in _bumpers().get_child_count():
+			points.append(_bumpers().get_child(index).position)
+			if index==2: points.append_array(PackedVector2Array([room.get_node("Rest").position-Vector2(0,34),Vector2(1840,1134),room.get_node("Items/Boots").position,Vector2(1840,720)]))
+		points.append(room.get_node("Exit").position)
+		room.get_node("Route").points=points
+		_update_route()
 	_update_hud()
 
 
@@ -132,6 +144,9 @@ func _camera_position() -> Vector2:
 		lead_x = 360.0
 	if room_index == 29 and player.gravity_direction == -1 and player.is_on_floor() and player.position.y > 900 and player.position.x-room.position.x < 150:
 		offset_y = -200.0
+	if room_index == 33 and player.is_on_floor() and player.position.y < 800 and player.position.x-room.position.x < 1250:
+		offset_y = 140.0
+		lead_x = 240.0
 	if completed:
 		offset_y = -80.0
 	# 入口の反転直後に残る接地判定を、天井の休憩と扱わない。
@@ -226,9 +241,11 @@ func _update_hud() -> void:
 	if room_index == 31 and player.is_on_floor() and player.gravity_direction == -1 and player.position.y > 900 and player.position.y < 1100:
 		$HUD/Info.position.y = 8
 		$HUD/Hint.position.y = 650
-	if room_index == 32 and next_bumper == 0:
+	if room_index in [32, 33] and next_bumper == 0:
 		$HUD/Info.position = Vector2(560, 200)
 		$HUD/Hint.position.y = 650
 	if room_index == 29 and player.is_on_floor() and player.gravity_direction == 1 and player.position.y > 1600 and player.position.x < rooms.get_child(29).position.x + 300:
 		$HUD/Hint.position.y = 200
+	if room_index == 33 and player.is_on_floor() and player.position.y < 800 and player.position.x-rooms.get_child(33).position.x < 1250:
+		$HUD/Hint.position.y = 570
 	$HUD/Hint.text = HINTS[room_index]

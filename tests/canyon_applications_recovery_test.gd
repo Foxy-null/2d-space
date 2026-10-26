@@ -35,7 +35,7 @@ func _run() -> void:
 		monitor_view=true
 		await _applications_main(0.8,24)
 		monitor_view=false
-		_check((stage.completed and respawns==before_death+1) if index==32 else (stage.transitioning and stage.room_index==index+1 and respawns==before_death+2),"A real weak-input replay reaches its own exit after R and death")
+		_check((stage.completed and respawns==before_death+1) if index==stage.rooms.get_child_count()-1 else (stage.transitioning and stage.room_index==index+1 and respawns==before_death+2),"A real weak-input replay reaches its own exit after R and death")
 		if failed:return
 	# Actual transfers preserve the preceding room's real item/resource consequences.
 	await _setup(29)
@@ -48,7 +48,7 @@ func _run() -> void:
 		var before:=respawns
 		await _applications_main(0.8,24)
 		if failed:return
-		_check((stage.completed and respawns==before) if index==32 else (stage.transitioning and stage.room_index==index+1 and respawns==before+1),"The integrated weak-input route uses normal transfers")
+		_check((stage.completed and respawns==before) if index==stage.rooms.get_child_count()-1 else (stage.transitioning and stage.room_index==index+1 and respawns==before+1),"The integrated weak-input route uses normal transfers")
 		if index<32:await _step(25)
 		if failed:return
 	_check(progress.get_count("canyon")==0,"The integrated main route leaves all optional scrolls untouched")

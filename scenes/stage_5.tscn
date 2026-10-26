@@ -1,4 +1,4 @@
-[gd_scene load_steps=65 format=3]
+[gd_scene load_steps=66 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_5.gd" id="stage"]
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
@@ -49,6 +49,7 @@
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_32.tscn" id="room32"]
 
 [ext_resource type="PackedScene" path="res://scenes/canyon_room_33.tscn" id="room33"]
+[ext_resource type="PackedScene" path="res://scenes/canyon_room_34.tscn" id="room34"]
 
 [sub_resource type="RectangleShape2D" id="EntranceShape"]
 size = Vector2(180, 40)
@@ -2496,6 +2497,9 @@ position = Vector2(67492, 0)
 [node name="Room33" parent="Rooms" instance=ExtResource("room33")]
 position = Vector2(71340, 0)
 
+[node name="Room34" parent="Rooms" instance=ExtResource("room34")]
+position = Vector2(74968, 0)
+
 [node name="Player" parent="." instance=ExtResource("player")]
 position = Vector2(90, 570)
 use_default_respawn_bounds = false
@@ -2566,3 +2570,5 @@ theme_override_constants/outline_size = 6
 
 [connection signal="respawned" from="Player" to="Rooms/Room31/Items/Boots" method="reset_for_respawn"]
 [connection signal="respawned" from="Player" to="Rooms/Room32/Items/Refill" method="reset_for_respawn"]
+
+[connection signal="respawned" from="Player" to="Rooms/Room34/Items/Boots" method="reset_for_respawn"]

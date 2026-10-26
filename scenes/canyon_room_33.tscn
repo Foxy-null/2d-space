@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
 
@@ -10,7 +10,6 @@
 
 [ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="spring"]
 
-[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
 
 [ext_resource type="PackedScene" path="res://scenes/scroll_collectible.tscn" id="scroll"]
 
@@ -240,7 +239,3 @@ shape = SubResource("ClimbWall")
 [node name="Visual" type="Polygon2D" parent="ClimbWall"]
 script = ExtResource("terrain")
 polygon = PackedVector2Array(-20,-600,20,-600,20,600,-20,600)
-
-[node name="Goal" parent="." instance=ExtResource("goal")]
-position = Vector2(3200.0, 1520.0)
-mission_required = false

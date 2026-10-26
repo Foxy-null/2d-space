@@ -25,7 +25,7 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.scene_file_path == "res://scenes/stage_5.tscn", "Stage 5 loads from selection")
-	_check(stage.rooms.get_child_count() == 33 and stage.TITLES.size() == 33, "Thirty-three named rooms are available")
+	_check(stage.rooms.get_child_count() == 34 and stage.TITLES.size() == 34, "Thirty-four named rooms are available")
 	_check(stage.get_meta("environment_theme") == 2, "Use the previously unused wild planet")
 	_check(player.move_speed == 360 and player.dash_speed == 900 and player.wall_actions_enabled, "Preserve the existing movement abilities")
 	_check(not paused and not stage.hints_visible, "Pause and route hints start hidden")
@@ -90,7 +90,7 @@ func _run() -> void:
 		else:
 			_check(stage.completed and stage.next_bumper == target_count, "All final-room bumpers precede completion")
 		print("STAGE_5_ROOM_%02d_OK (%.2fs)" % [index + 1, (Engine.get_physics_frames() - started) / 60.0])
-	_check(total_bumpers == 178 and visited_bumpers.size() == 178 and respawns == 32, "All 178 reflections are reachable without a death")
+	_check(total_bumpers == 184 and visited_bumpers.size() == 184 and respawns == 33, "All 184 reflections are reachable without a death")
 	_check(not stage.target_marker.visible, "Completion hides the target marker")
 	_check(ceiling_reflected_down, "Room 6 reflects off the underside of the ceiling bumper")
 	_check(wind_frames > 100 and dash_count > 12, "Traversal uses real wind and chained dashes")
@@ -731,6 +731,8 @@ func _applications_main(strength: float = 1.0, delay: int = 20) -> void:
 			await _applications_relay_begin(strength,delay)
 			if failed: return
 			await _applications_relay_finish(strength,delay)
+		33:
+			await _moving_main(strength,delay)
 		32:
 			await _applications_wall_begin(strength,delay)
 			if failed: return
@@ -743,3 +745,60 @@ func _application_snapshot(label: String) -> void:
 	var directory := "res://docs/screenshots/canyon-applications/"+("hints" if stage.hints_visible else "default")
 	DirAccess.make_dir_recursive_absolute(directory)
 	_check(root.get_texture().get_image().save_png(directory+"/"+label+".png")==OK,"The actual native application image is saved")
+
+
+func _moving_first(strength: float) -> void:
+	var before:=respawns
+	await _entry_begin(strength)
+	for frame in 1200:
+		if stage.next_bumper>=3 or respawns>before:break
+		_steer(strength)
+		await _step()
+	_check(stage.next_bumper==3 and respawns==before,"The real Spring and moving third reflection launch the actual player")
+	_moving_snapshot("room34_moving_reflection")
+
+
+func _moving_relaunch(strength: float, delay: int) -> void:
+	var before:=respawns
+	var boots: Area2D=stage.rooms.get_child(stage.room_index).get_node("Items/Boots")
+	for frame in 240:
+		_entry_horizontal(1840,strength)
+		await _step()
+		if absf(_x()-1840)<5 and absf(player.velocity.x)<15:break
+	_release_inputs()
+	_check(player.is_on_floor(),"The real rest supplies a grounded Boot launch")
+	await _pulse("jump")
+	for frame in delay:
+		_entry_horizontal(1840,strength)
+		await _step()
+	_check(not boots.visible and player.is_air_jump_ready(),"The live jump collects the actual middle Boot")
+	_moving_snapshot("room34_boots")
+	await _pulse("jump")
+	_check(not player.is_air_jump_ready(),"The actual Boot jump is consumed in the middle ascent")
+	for frame in delay:
+		_entry_horizontal(1840,strength)
+		await _step()
+	_release_inputs()
+	Input.action_press("move_up")
+	await _pulse("dash")
+	await _step(10)
+	for frame in 600:
+		if stage.next_bumper>=4 or respawns>before:break
+		_steer(strength)
+		await _step()
+	_check(stage.next_bumper>=4 and respawns==before,"The actual middle Boot and Dash reach the upper fourth reflection")
+
+
+func _moving_main(strength: float, delay: int) -> void:
+	await _moving_first(strength)
+	if failed:return
+	await _land_at_wide_rest(strength)
+	await _step(180)
+	_moving_snapshot("room34_rest")
+	await _moving_relaunch(strength,delay)
+	if failed:return
+	await _entry_finish(strength,delay)
+
+
+func _moving_snapshot(_label: String) -> void:
+	pass

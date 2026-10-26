@@ -88,7 +88,7 @@ func _application_lifecycle(index: int, strength: float) -> void:
 		await _entry_finish(strength)
 	else: await _applications_wall_finish(strength,20)
 	_release_inputs()
-	_check((stage.completed and respawns==0) if index==32 else (stage.transitioning and stage.room_index==31 and respawns==1),"The confirmed detour rejoins its own main exit")
+	_check((stage.completed and respawns==0) if index==stage.rooms.get_child_count()-1 else (stage.transitioning and stage.room_index==index+1 and respawns==1),"The confirmed detour rejoins its own main exit")
 	if failed: return
 	if OS.get_cmdline_user_args().has("--branch-only"): return
 	await _entry_setup(index)
@@ -107,7 +107,7 @@ func _application_lifecycle(index: int, strength: float) -> void:
 	stage.get_node("PauseMenu").return_to_select()
 	await _step(4)
 	var card: Button=current_scene.get_node("Margin/Content/Stages/Stage5")
-	var expected:="%d / 11"%(count+1)
+	var expected:="%d / 12"%(count+1)
 	_check(card.get_node("Content/Collection/Count").text==expected and card.accessibility_name.contains("巻物 "+expected),"Selection displays and announces the actual saved count")
 	await _capture("room%d_scroll_selection"%(index+1))
 	progress._collected.clear()

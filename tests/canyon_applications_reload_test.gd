@@ -21,7 +21,7 @@ func _verify() -> void:
 	await process_frame
 	await process_frame
 	var card: Button = current_scene.get_node("Margin/Content/Stages/Stage5")
-	assert(card.get_node("Content/Collection/Count").text=="2 / 11" and card.accessibility_name.contains("巻物 2 / 11"),"A fresh selection displays and announces two out of eleven")
+	assert(card.get_node("Content/Collection/Count").text=="2 / 12" and card.accessibility_name.contains("巻物 2 / 12"),"A fresh selection displays and announces two out of twelve")
 	var screenshots := OS.get_cmdline_user_args().has("--screenshots")
 	if screenshots:
 		RenderingServer.force_draw()
@@ -42,7 +42,7 @@ func _verify() -> void:
 	await process_frame
 	await process_frame
 	card=current_scene.get_node("Margin/Content/Stages/Stage5")
-	assert(card.get_node("Content/Collection/Count").text=="11 / 11" and card.accessibility_name.contains("巻物 11 / 11"),"The compatibility fixture displays and announces the complete total")
+	assert(card.get_node("Content/Collection/Count").text=="11 / 12" and card.accessibility_name.contains("巻物 11 / 12"),"The compatibility fixture displays and announces the eleven legacy IDs out of twelve")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(root.get_node("CollectionProgress").save_path))
 	print("CANYON_APPLICATIONS_RELOAD_TEST_OK (",18 if screenshots else 17," checks)")
 	quit()
