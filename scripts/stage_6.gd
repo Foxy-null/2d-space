@@ -94,11 +94,15 @@ func _ready() -> void:
 	_enemy_indicator = _text("", 18)
 	_enemy_indicator.position = Vector2(25, 510)
 	$HUD.add_child(_enemy_indicator)
-	var action_panel := _panel(Rect2(16, 612, 980, 84))
+	var action_panel := _panel(Rect2())
 	action_panel.name = "EnemyAction"
+	var action_style := action_panel.get_theme_stylebox("panel") as StyleBoxFlat
+	action_style.content_margin_left = 8
+	action_style.content_margin_right = 8
+	action_style.content_margin_top = 4
+	action_style.content_margin_bottom = 4
 	$HUD.add_child(action_panel)
 	_action = _text("", 18)
-	_action.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	action_panel.add_child(_action)
 	_intro_panel = _panel(Rect2(240, 236, 800, 205))
 	_intro_panel.name = "EnemyIntroduction"
@@ -483,7 +487,12 @@ func _update_hud() -> void:
 	elif room.exit_open and room_index != ROOM.FINAL_ROOM:
 		action += "\n隔壁が開いた！ 緑の矢印の先へ走って次の部屋へ"
 	_action.text = "%s 敵との距離 %dpx　%s" % [side, roundi(player.position.distance_to(enemy.position)), action]
-	_action.get_parent().visible = not completed and _intro_left <= 0.0
+	var action_panel := _action.get_parent() as PanelContainer
+	action_panel.reset_size()
+	action_panel.position = Vector2(16, 696 - action_panel.size.y)
+	action_panel.visible = not completed and _intro_left <= 0.0
+	$HUD/Progress.position.y = action_panel.position.y - $HUD/Progress.size.y - 12
+	_enemy_indicator.position.y = ($HUD/Progress.position.y if $HUD/Progress.visible else action_panel.position.y) - 34
 	if _respawn_grace > 0.0:
 		player.modulate.a = 0.55 + 0.45 * absf(sin(_respawn_grace * 24.0))
 	else:
@@ -584,7 +593,6 @@ func _build_hud() -> void:
 	footer.name = "Progress"
 	hud.add_child(footer)
 	_hint = _text("", 19)
-	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	footer.add_child(_hint)
 	_message = _text("", 27)
 	_message.position = Vector2(120, 270)
