@@ -61,9 +61,8 @@ func _fifth_view(phase: String) -> void:
 		var point: Marker2D=stage.checkpoints.get_child(25)
 		_check_next_visible(point.get_global_transform_with_canvas()*Rect2(-108,-52,48,56),"The actual next CP26 flag at the old summit")
 	if phase=="31_goal":
-		for part in ["Case","Cap","Base"]:
-			var shape: CollisionShape2D=stage.get_node("Goal/"+part+"/Collision")
-			_check_next_visible(shape.get_global_transform_with_canvas()*shape.shape.get_rect(),"The actual final Goal "+part)
+		var point: Marker2D=stage.checkpoints.get_child(31)
+		_check_next_visible(point.get_global_transform_with_canvas()*Rect2(-108,-52,48,56),"The actual next CP32 flag at the former summit")
 	if not OS.get_cmdline_user_args().has("--screenshots"):return
 	await process_frame
 	RenderingServer.force_draw()
