@@ -132,7 +132,7 @@ Godot 4.7.2、fixed60、専用PID保存先、共有2枠のwrapperで1担当1job�
 
 `gravity_sixth_recovery_test.gd -- --hints`は94,709項目で成功。新Boots／Crystalを実消費して2.5秒の自動再出現より早くRを押す列、新6室の実R／現物トゲ死／再攻略／確定後R、実旧31→32→…→37、保持傘を持つ35→36、全左戻りと現物Returnでの25f保持・Rを含む。正常転送のrespawnedと実死は別に数える。ReturnとGoal3部品の実矩形も比較する。
 
-`stage_3_test.gd`は入口から全37室を位置・速度の注入なしで通り、実Goalまで1,064項目で成功した。最終到達後の既存単体境界fixtureには位置変更が残り、その部分を実経路の証拠に使わない。旧31の通常／弱×16/20/24と実32転送は49,944項目で成功。旧25→31とその全左戻りのcallerは`gravity_fifth_recovery_test.gd -- --seams-only --hints`で133項目だった。
+`stage_3_test.gd`は全37室の攻略と実Goalまで1,064項目で成功した。旧pitの単体fixtureには前半の室間にも位置変更があり、最終到達後にも既存の単体境界fixtureがある。これらを連続した実経路の証拠には使わない。各courseの攻略と、`gravity_sixth_recovery_test.gd`の旧31→32→…→37の連続移動は位置・速度の途中注入なしで確認した。旧31の通常／弱×16/20/24と実32転送は49,944項目で成功。旧25→31とその全左戻りのcallerは`gravity_fifth_recovery_test.gd -- --seams-only --hints`で133項目だった。
 
 既存巻物は以下の6系列で全10IDの現物経路を確認した。10本を同じプレイで連続取得したという意味ではない。
 
