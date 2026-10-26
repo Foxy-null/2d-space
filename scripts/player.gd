@@ -101,6 +101,8 @@ func _physics_process(delta: float) -> void:
 	var wall_grab_at_start := _wall_grabbing
 	_parachute_grace_left = maxf(0.0, _parachute_grace_left - delta)
 	_superdash_left = maxf(_superdash_left - delta, 0.0)
+	if grounded and not is_dashing():
+		_dash_ready = true
 	# Dash starts before release so a simultaneous release inherits dash velocity.
 	var input_axis := Input.get_axis("move_left", "move_right")
 	if absf(input_axis) > 0.1:
@@ -215,6 +217,7 @@ func _try_jump(grounded: bool, on_wall: bool) -> void:
 		return
 	if grounded or _coyote_left > 0.0:
 		if _superdash_left > 0.0:
+			_dash_ready = true
 			velocity.x = _superdash_speed
 			velocity.y = -gravity_direction * jump_speed
 			movement_action.emit("superdash")

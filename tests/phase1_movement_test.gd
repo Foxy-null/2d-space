@@ -170,6 +170,9 @@ func _test_dash() -> void:
 		_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color.TRANSPARENT, "landing restores original indigo")
 		await _step(3)
 		_check(player.is_air_jump_ready(), "remaining grounded preserves air jump")
+		player._dash_ready = false
+		await _step()
+		_check(player.is_dash_ready(), "ground contact refills dash without another landing")
 		player._jump_buffer_left = 0.1
 		player._try_jump(true, false)
 		_check(player.is_air_jump_ready(), "ground jump after landing preserves air jump")
@@ -291,21 +294,36 @@ func _test_walls() -> void:
 
 func _test_jumps() -> void:
 	for gravity in [1, -1]:
-		for during in [true, false]:
+		for delay in [1, 10, 15]:
 			await _reset(Vector2(400, 674 if gravity > 0 else 26), gravity)
 			await _step(2)
 			Input.action_press("move_right")
 			Input.action_press("dash")
 			await _step()
 			Input.action_release("dash")
-			if not during:
-				while player.is_dashing():
-					await _step()
+			await _step(delay - 1)
+			if delay > 1:
+				_check(not player.is_dashing() and player.is_dash_ready(), "grounded dash refills during end momentum")
 			Input.action_press("jump")
 			await _step()
 			_check(not player.is_dashing(), "superdash leaves dash state")
 			_near(player.velocity.y, -gravity * player.jump_speed, "superdash jump speed")
 			_near(player.velocity.x, player.dash_speed * player.dash_end_speed_ratio, "superdash momentum")
+			_check(not player.is_on_floor() and player.is_dash_ready(), "superdash jump refills dash g=%d delay=%d" % [gravity, delay])
+			_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color.TRANSPARENT, "superdash refill restores original indigo")
+			Input.action_release("jump")
+			Input.action_release("move_right")
+			Input.action_press("move_up" if gravity > 0 else "move_down")
+			Input.action_press("dash")
+			await _step()
+			_check(player.is_dashing() and not player.is_dash_ready(), "superdash permits one more air dash")
+			_near(player.velocity.y, -gravity * player.dash_speed, "refilled air dash uses chosen direction")
+			Input.action_release("dash")
+			while player.is_dashing():
+				await _step()
+			Input.action_press("dash")
+			await _step()
+			_check(not player.is_dashing() and not player.is_dash_ready(), "superdash does not grant unlimited air dashes")
 		await _reset(Vector2(400, 674 if gravity > 0 else 26), gravity)
 		await _step(2)
 		player.grant_air_jump()
@@ -379,6 +397,7 @@ func _test_crystal() -> void:
 			_check(not crystal.visible, scene + " waits respawn time")
 			await _step(25)
 			_check(crystal.visible and not crystal.get_node("CollisionShape2D").disabled and crystal.monitoring, scene + " respawns after 2.5 seconds")
+			await _reset(Vector2(550, 350), gravity)
 			player._dash_ready = false
 			crystal.position = player.position
 			await _step(3)
