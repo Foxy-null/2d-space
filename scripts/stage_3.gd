@@ -2,7 +2,7 @@ extends Node2D
 
 const ROOM_SIZE := Vector2(1280, 720)
 const TRANSITION_TIME := 0.28
-const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ", "左へ渡り直す", "上層から二段跳び", "風の中で待つ", "上層から風へ", "左向きのSpring連携", "反発から反転へ", "風から二段下降", "左へ蹴り返す", "反転連鎖のまとめ", "天井の回復リレー", "深い下降をつなぐ", "逆風の左折り返し", "壁の上から角を回る", "左へ上昇して戻る", "上下の回復連鎖", "傘で風の上へ", "反転した上昇気流", "左へ上がって深く下る", "上下をつなぐ傘", "壁から天井へ抜ける", "左への天井回復", "風から壁の上へ", "逆風から左へ反発", "靴から二段上昇", "風から左へつなぐ"]
+const TITLES := ["壁から壁へ", "天井を進む", "蹴って反転", "上下を往復", "動くゲートへ", "連携のまとめ", "左へ渡り直す", "上層から二段跳び", "風の中で待つ", "上層から風へ", "左向きのSpring連携", "反発から反転へ", "風から二段下降", "左へ蹴り返す", "反転連鎖のまとめ", "天井の回復リレー", "深い下降をつなぐ", "逆風の左折り返し", "壁の上から角を回る", "左へ上昇して戻る", "上下の回復連鎖", "傘で風の上へ", "反転した上昇気流", "左へ上がって深く下る", "上下をつなぐ傘", "壁から天井へ抜ける", "左への天井回復", "風から壁の上へ", "逆風から左へ反発", "靴から二段上昇", "風から左へつなぐ", "反転して壁の下へ", "左への反発と移動Down", "反転した段差へ跳ぶ", "天井から横風の滑空へ", "壁から斜めの回復へ", "上下二段の折り返し"]
 const HINTS := [
 	"Springと反転をキックでつなぐ。",
 	"天井の反発板から壁を掴む。",
@@ -35,6 +35,12 @@ const HINTS := [
 	"左へのDashから休み、天井のSpringで深いDownへ。",
 	"靴の追加Jumpで回復へ届き、もう一度上Dashして天井へ。",
 	"傘で上がったら左へ反転し、回復Dashで最後の天井へ。",
+	"反転したら壁を蹴り替えて、深い床へ戻ろう。",
+	"反発から左の天井へ。休んだら動くDownを目指そう。",
+	"反転した追加Jumpで、左の深い天井へ。",
+	"傘を持って反転し、横風から左の床へ滑ろう。",
+	"斜めDashを回復して、張り出しの角を回ろう。",
+	"上下の壁を渡り、右と左の折り返しをつなごう。",
 ]
 
 var room_index := 0
@@ -126,8 +132,11 @@ func _camera_position() -> Vector2:
 	var room := rooms.get_child(room_index)
 	var left: float = room.global_position.x
 	var width := float(room.get_meta("room_width", ROOM_SIZE.x))
-	var margin := 72.0 if room.get_meta("parachute_room", false) else 0.0
-	return Vector2(clampf(player.position.x + float(room.get_meta("camera_offset_x", 0.0)), left + ROOM_SIZE.x * 0.5 - margin, left + width - ROOM_SIZE.x * 0.5 + margin), clampf(player.position.y + (parachute_camera_lead if room.get_meta("parachute_room", false) else -80.0), top + ROOM_SIZE.y * 0.5, bottom - ROOM_SIZE.y * 0.5))
+	var margin := float(room.get_meta("camera_margin_x", 72.0 if room.get_meta("parachute_room", false) else 0.0))
+	var vertical_lead := float(room.get_meta("camera_offset_y", parachute_camera_lead if room.get_meta("parachute_room", false) else -80.0))
+	if player.gravity_direction == 1:
+		vertical_lead = float(room.get_meta("camera_offset_y_normal", vertical_lead))
+	return Vector2(clampf(player.position.x + float(room.get_meta("camera_offset_x", 0.0)), left + ROOM_SIZE.x * 0.5 - margin, left + width - ROOM_SIZE.x * 0.5 + margin), clampf(player.position.y + vertical_lead, top + ROOM_SIZE.y * 0.5, bottom - ROOM_SIZE.y * 0.5))
 
 
 func _on_respawned() -> void:

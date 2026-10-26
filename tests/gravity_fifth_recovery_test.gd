@@ -22,7 +22,7 @@ func _run() -> void:
 			await _fifth_course(index)
 			_check(respawns==before and stage.cleared.has(index), "The full course remains playable after the actual contact death")
 			await _retry()
-			_check(stage.cleared.has(index) and room.get_node("Goal").is_pressed() and stage.completed==(index==30), "R keeps the real arrival; only room31 completes the stage")
+			_check(stage.cleared.has(index) and room.get_node("Goal").is_pressed() and stage.completed==(index==stage.rooms.get_child_count()-1), "R keeps the real arrival; only the actual final room completes the stage")
 	await _fifth_seams()
 	monitor_view = false
 	_release_inputs()
@@ -74,7 +74,7 @@ func _fifth_seams() -> void:
 			await _until(func(): return stage.room_index==index+1,180,"Walk through each actual new forward boundary")
 			_release_inputs()
 			await _step(25)
-	_check(stage.completed and stage.cleared.size()==7,"Only the actual final room31 completes this continuous old25-plus-six route")
+	_check(not stage.completed and stage.cleared.size()==7,"The actual old25-plus-six route stays intermediate before the new room32")
 	for index in range(30,24,-1):
 		var before_transfer := respawns
 		for frame in 700:
