@@ -30,7 +30,7 @@ func _run() -> void:
 		monitor_view = true
 		await _inverted_main(0.8,24)
 		monitor_view = false
-		_check((stage.completed and respawns==2) if index==29 else (stage.transitioning and stage.room_index==index+1 and respawns==3),"A weak-input native replay reaches its actual exit after R and death")
+		_check((stage.completed and respawns==2) if index==stage.rooms.get_child_count()-1 else (stage.transitioning and stage.room_index==index+1 and respawns==3),"A weak-input native replay reaches its actual exit after R and death")
 		if failed: return
 	for index in [27,28,29]:
 		for name in ["ExitRoof","ExitUpper","ExitLower"]:

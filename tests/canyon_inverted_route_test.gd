@@ -49,11 +49,11 @@ func _inverted_course(index: int, strength: float, delay: int) -> void:
 	_release_inputs()
 	var seconds := float(Engine.get_physics_frames()-started)/60
 	print("INV_COMPLETE room=",index+1," strength=",strength," delay=",delay," seconds=",seconds," respawns=",respawns)
-	_check((stage.completed and respawns==0) if index==29 else (stage.transitioning and stage.room_index==index+1 and respawns==1),"The inverted native route reaches its actual normal exit")
+	_check((stage.completed and respawns==0) if index==stage.rooms.get_child_count()-1 else (stage.transitioning and stage.room_index==index+1 and respawns==1),"The inverted native route reaches its actual normal exit")
 	_check(seconds<30,"The actual retry including three-second rests stays below thirty seconds")
 	_check(progress.get_count("canyon")==0,"The actual main route leaves the optional scrolls untouched")
 	if index==29: _inverted_snapshot("room30_goal")
-	if index==29 and OS.get_cmdline_user_args().has("--practice"):
+	if index==stage.rooms.get_child_count()-1 and OS.get_cmdline_user_args().has("--practice"):
 		await _pulse("jump")
 		await _step(120)
 		_check(stage.completed and respawns==0,"A real jump after completion preserves safe playable space and visible feedback")

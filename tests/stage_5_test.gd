@@ -25,7 +25,7 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.scene_file_path == "res://scenes/stage_5.tscn", "Stage 5 loads from selection")
-	_check(stage.rooms.get_child_count() == 30 and stage.TITLES.size() == 30, "Thirty named rooms are available")
+	_check(stage.rooms.get_child_count() == 33 and stage.TITLES.size() == 33, "Thirty-three named rooms are available")
 	_check(stage.get_meta("environment_theme") == 2, "Use the previously unused wild planet")
 	_check(player.move_speed == 360 and player.dash_speed == 900 and player.wall_actions_enabled, "Preserve the existing movement abilities")
 	_check(not paused and not stage.hints_visible, "Pause and route hints start hidden")
@@ -50,7 +50,10 @@ func _run() -> void:
 		var target_count: int = stage._bumpers().get_child_count()
 		var last_bumper: int = stage.next_bumper
 		var rested := false
-		if index >= 27:
+		if index >= 30:
+			await _applications_main()
+			if failed: return
+		elif index >= 27:
 			await _inverted_main()
 			if failed: return
 		elif index >= 24:
@@ -87,7 +90,7 @@ func _run() -> void:
 		else:
 			_check(stage.completed and stage.next_bumper == target_count, "All final-room bumpers precede completion")
 		print("STAGE_5_ROOM_%02d_OK (%.2fs)" % [index + 1, (Engine.get_physics_frames() - started) / 60.0])
-	_check(total_bumpers == 160 and visited_bumpers.size() == 160 and respawns == 29, "All 160 reflections are reachable without a death")
+	_check(total_bumpers == 178 and visited_bumpers.size() == 178 and respawns == 32, "All 178 reflections are reachable without a death")
 	_check(not stage.target_marker.visible, "Completion hides the target marker")
 	_check(ceiling_reflected_down, "Room 6 reflects off the underside of the ceiling bumper")
 	_check(wind_frames > 100 and dash_count > 12, "Traversal uses real wind and chained dashes")
@@ -321,13 +324,12 @@ func _entry_horizontal(target: float, strength: float = 1.0) -> void:
 	if absf(error)>4: Input.action_press("move_right" if error>0 else "move_left",strength)
 
 
-
-func _entry_finish(strength: float = 1.0) -> void:
+func _entry_finish(strength: float = 1.0, delay: int = 20) -> void:
 	var before := respawns
 	var late_rested := false
 	for frame in 1200:
 		if stage.transitioning or stage.completed or respawns > before: break
-		if stage.room_index in [24,25] and stage.next_bumper == 3 and player.is_on_floor():
+		if stage.room_index in [24,25,30] and stage.next_bumper == 3 and player.is_on_floor():
 			var shelf: StaticBody2D = stage.rooms.get_child(stage.room_index).get_node("LateRest")
 			var supported := false
 			for index in player.get_slide_collision_count():
@@ -335,16 +337,17 @@ func _entry_finish(strength: float = 1.0) -> void:
 				if contact.get_collider() == shelf and contact.get_normal().dot(Vector2.UP) > 0.8: supported = true
 			_check(supported,"The alternate relaunch genuinely stands on the native second shelf")
 			if failed: return
-			await _repeat_wide_third(strength,20,3)
+			await _repeat_wide_third(strength,delay,3)
 			if failed: return
 			print("CANYON_ENTRY_LATE_RELAUNCH room=",stage.room_index+1)
-		if stage.room_index in [24,25] and stage.next_bumper == 4 and not late_rested:
+		if stage.room_index in [24,25,30] and stage.next_bumper == 4 and not late_rested:
 			await _land_at_wide_rest(strength,"LateRest")
 			if failed: return
 			var stopped := player.position
 			await _step(180)
 			_check(player.is_on_floor() and player.position.distance_to(stopped)<2 and respawns==before,"The second native shelf permits a safe three-second rest before dropping to the next reflection")
 			late_rested = true
+			if stage.room_index==30: _application_snapshot("room31_late_rest")
 		_steer(strength)
 		await _step()
 
@@ -396,9 +399,9 @@ func _inverted_finish(strength: float, delay: int = 20) -> void:
 			var gate: Node2D = room.get_node("Gates/Down")
 			var target := gate.position.x+(-70 if left else 70)
 			if player.gravity_direction > 0:
-				target = room.get_node("Goal").position.x if index==29 else room.get_node("Exit").position.x
+				target = room.get_node("Goal").position.x if index==stage.rooms.get_child_count()-1 else room.get_node("Exit").position.x
 			_entry_horizontal(target,strength)
-			if index==29 and player.gravity_direction>0 and player.is_on_floor() and _x()>target-90 and _x()<target-70: Input.action_press("jump")
+			if index==stage.rooms.get_child_count()-1 and player.gravity_direction>0 and player.is_on_floor() and _x()>target-90 and _x()<target-70: Input.action_press("jump")
 		await _step()
 		if frame % 120 == 0 and OS.get_cmdline_user_args().has("--trace"): print("INV_LAST p=",Vector2(_x(),player.position.y)," v=",player.velocity," next=",stage.next_bumper," g=",player.gravity_direction)
 		if not captured_down and player.gravity_direction==1 and not stage.transitioning and respawns==before:
@@ -551,3 +554,192 @@ func _pulse(action: String) -> void:
 	Input.action_press(action)
 	await _step()
 	Input.action_release(action)
+
+
+func _applications_boots_begin(strength: float, delay: int) -> void:
+	await _pulse("jump")
+	for frame in 20:
+		_entry_horizontal(150,strength)
+		await _step()
+	_check(player.is_air_jump_ready(),"The real airborne boots grant the extra jump")
+	if failed: return
+	_application_snapshot("room31_boots_pickup")
+	await _pulse("jump")
+	for frame in delay:
+		_entry_horizontal(200,strength)
+		await _step()
+	_release_inputs()
+	Input.action_press("move_up")
+	await _pulse("dash")
+	await _step(10)
+	_application_snapshot("room31_boots_launch")
+
+
+func _applications_relay_begin(strength: float, delay: int) -> void:
+	var before := respawns
+	await _inverted_begin(strength)
+	if failed: return
+	for frame in 1200:
+		if stage.next_bumper>=3 or respawns>before: break
+		_inverted_steer(strength)
+		await _step()
+	_check(stage.next_bumper==3 and respawns==before,"The inverted entrance reaches the first three real reflections")
+	if failed: return
+	await _inverted_rest("Rest",strength)
+	if failed: return
+	await _inverted_observe("Rest")
+	var room: Node2D = stage.rooms.get_child(31)
+	for shape in [room.get_node("Gates/Down/CollisionShape2D"),room.get_node("RelayFloor/Collision")]:
+		var bounds: Rect2 = shape.get_global_transform_with_canvas()*shape.shape.get_rect()
+		_check(root.get_visible_rect().encloses(bounds),"The next actual Down and normal landing are fully visible from the ceiling rest: "+str(bounds))
+		for path in ["HUD/Info","HUD/Hint","HUD/PauseButton"]:
+			var panel: Control = stage.get_node(path)
+			_check(not panel.visible or not panel.get_global_rect().intersects(bounds),"The next Down and normal landing remain outside "+path)
+	if failed: return
+	await _pulse("jump")
+	for frame in delay:
+		_entry_horizontal(1720,strength)
+		await _step()
+	_release_inputs()
+	Input.action_press("move_down")
+	await _pulse("dash")
+	for frame in 600:
+		_entry_horizontal(1740,strength)
+		await _step()
+		if player.gravity_direction==1 and player.is_on_floor(): break
+		if respawns>before: break
+	_release_inputs()
+	print("RELAY_FLOOR p=",Vector2(_x(),player.position.y)," g=",player.gravity_direction," n=",stage.next_bumper)
+	_check(player.gravity_direction==1 and player.is_on_floor() and respawns==before,"The real middle Down returns to the actual normal floor")
+	if failed: return
+	await _step(180)
+	_application_snapshot("room32_normal_rest")
+
+
+func _applications_relay_refill(strength: float, delay: int) -> void:
+	var before := respawns
+	var refill: Area2D = stage.rooms.get_child(31).get_node("Items/Refill")
+	var refilled: Array[bool] = []
+	refill.collected.connect(func(_body): refilled.append(true),CONNECT_ONE_SHOT)
+	await _pulse("jump")
+	for frame in delay:
+		_entry_horizontal(1740,strength)
+		await _step()
+	_release_inputs()
+	Input.action_press("move_up")
+	await _pulse("dash")
+	for frame in 180:
+		_entry_horizontal(1740,strength)
+		await _step()
+		if not refilled.is_empty() and not player.is_dashing(): break
+		if respawns>before: break
+	print("RELAY_REFILL p=",Vector2(_x(),player.position.y)," v=",player.velocity," ready=",player.is_dash_ready())
+	_check(not refilled.is_empty() and player.is_dash_ready() and respawns==before,"The actual upward Dash contacts the middle refill")
+	if failed: return
+	_application_snapshot("room32_refill")
+
+
+func _applications_relay_finish(strength: float, delay: int) -> void:
+	var before := respawns
+	await _applications_relay_refill(strength,delay)
+	if failed: return
+	_release_inputs()
+	Input.action_press("move_right",strength)
+	Input.action_press("move_up")
+	await _pulse("dash")
+	for frame in 1200:
+		if stage.transitioning or stage.completed or respawns>before: break
+		_steer(strength)
+		await _step()
+	_release_inputs()
+
+
+func _applications_wall_begin(strength: float, delay: int) -> void:
+	var before := respawns
+	await _entry_begin(strength)
+	if failed: return
+	for frame in 1200:
+		if stage.next_bumper>=3 or respawns>before: break
+		_steer(strength)
+		await _step()
+	_check(stage.next_bumper==3 and respawns==before,"The actual Spring reaches the three lower reflections")
+	if failed: return
+	await _land_at_wide_rest(strength)
+	await _step(180)
+	_application_snapshot("room33_lower_rest")
+	await _pulse("jump")
+	for frame in delay:
+		_entry_horizontal(1702,strength)
+		await _step()
+	_release_inputs()
+	Input.action_press("move_right",strength)
+	Input.action_press("move_up")
+	await _pulse("dash")
+	var climbed := 0
+	for frame in 600:
+		_release_inputs()
+		Input.action_press("move_right",strength)
+		Input.action_press("wall_grab")
+		Input.action_press("move_up")
+		await _step()
+		if player.is_wall_grabbing(): climbed+=1
+		if player.is_on_floor() and player.position.y<800: break
+		if respawns>before: break
+	_release_inputs()
+	print("WALL_TOP p=",Vector2(_x(),player.position.y)," stamina=",player.get_wall_stamina()," climbed=",climbed)
+	_check(player.is_on_floor() and player.position.y<800 and climbed>30 and respawns==before,"The real wall climb reaches the solid rock top")
+	if failed: return
+	await _step(180)
+	_application_snapshot("room33_wall_top")
+
+
+func _applications_wall_finish(strength: float, delay: int) -> void:
+	var before := respawns
+	await _pulse("jump")
+	for frame in delay:
+		_entry_horizontal(2000,strength)
+		await _step()
+	_release_inputs()
+	Input.action_press("move_right",strength)
+	Input.action_press("move_up")
+	await _pulse("dash")
+	for frame in 1200:
+		if stage.transitioning or stage.completed or respawns>before: break
+		_steer(strength)
+		await _step()
+	_release_inputs()
+
+func _applications_main(strength: float = 1.0, delay: int = 20) -> void:
+	var before := respawns
+	match stage.room_index:
+		30:
+			await _applications_boots_begin(strength,delay)
+			if failed: return
+			for frame in 1200:
+				if stage.next_bumper>=3 or respawns>before: break
+				_steer(strength)
+				await _step()
+			_check(stage.next_bumper==3 and respawns==before,"The real boots and jumps reach three reflections")
+			if failed: return
+			await _land_at_wide_rest(strength)
+			await _step(180)
+			_application_snapshot("room31_main_rest")
+			await _repeat_wide_third(strength,delay)
+			if failed: return
+			await _entry_finish(strength,delay)
+		31:
+			await _applications_relay_begin(strength,delay)
+			if failed: return
+			await _applications_relay_finish(strength,delay)
+		32:
+			await _applications_wall_begin(strength,delay)
+			if failed: return
+			await _applications_wall_finish(strength,delay)
+
+func _application_snapshot(label: String) -> void:
+	if not OS.get_cmdline_user_args().has("--screenshots"): return
+	stage._update_hud()
+	RenderingServer.force_draw()
+	var directory := "res://docs/screenshots/canyon-applications/"+("hints" if stage.hints_visible else "default")
+	DirAccess.make_dir_recursive_absolute(directory)
+	_check(root.get_texture().get_image().save_png(directory+"/"+label+".png")==OK,"The actual native application image is saved")

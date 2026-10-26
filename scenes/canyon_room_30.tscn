@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
 
@@ -11,8 +11,6 @@
 [ext_resource type="PackedScene" path="res://scenes/spring.tscn" id="spring"]
 
 [ext_resource type="PackedScene" path="res://scenes/parachute_creature.tscn" id="parachute"]
-
-[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
 
 [ext_resource type="PackedScene" path="res://scenes/scroll_collectible.tscn" id="scroll"]
 
@@ -30,9 +28,6 @@ size = Vector2(280, 16)
 
 [sub_resource type="RectangleShape2D" id="ScrollRest"]
 size = Vector2(220, 16)
-
-[sub_resource type="RectangleShape2D" id="LateRest"]
-size = Vector2(400, 16)
 
 [node name="Room30" type="Node2D"]
 metadata/room_width = 2820.0
@@ -218,9 +213,6 @@ strip_half_width = 300.0
 stage_group = &"stage_five"
 
 
-[node name="Goal" parent="." instance=ExtResource("goal")]
-position = Vector2(2680, 1840)
-mission_required = false
 
 [node name="Parachute" parent="Items" instance=ExtResource("parachute")]
 position = Vector2(160, 1655)

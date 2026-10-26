@@ -28,6 +28,8 @@ func _run() -> void:
 			var edge_x: float = room.position.x + (15 if left else float(room.get_meta("room_width", 1280.0)) - 15)
 			player.global_position = Vector2(edge_x if airborne else exit.global_position.x, exit.global_position.y - 100 if airborne else top - 30)
 			if airborne and index >= 27: player.global_position.y = top-32
+			# This isolates boundary handling beyond room 32’s sealed edge, not a traversal route.
+			if airborne and index==31: player.global_position.x=room.position.x+float(room.get_meta("room_width"))+20
 			player.velocity = Vector2.ZERO
 			player._contacts_valid = false
 			if airborne:
