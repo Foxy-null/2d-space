@@ -1,4 +1,4 @@
-[gd_scene load_steps=109 format=3]
+[gd_scene load_steps=115 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -70,6 +70,18 @@
 [ext_resource type="PackedScene" path="res://scenes/gravity_room_30.tscn" id="room_30"]
 
 [ext_resource type="PackedScene" path="res://scenes/gravity_room_31.tscn" id="room_31"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_32.tscn" id="Room32"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_33.tscn" id="Room33"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_34.tscn" id="Room34"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_35.tscn" id="Room35"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_36.tscn" id="Room36"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_room_37.tscn" id="Room37"]
 
 [sub_resource type="RectangleShape2D" id="Room1Overhang"]
 size = Vector2(60, 28)
@@ -2566,3 +2578,21 @@ mouse_filter = 2
 [node name="PauseMenu" parent="." instance=ExtResource("pause_menu")]
 
 [connection signal="pressed" from="HUD/PauseButton" to="PauseMenu" method="open"]
+
+[node name="Room32" parent="Rooms" instance=ExtResource("Room32")]
+position = Vector2(64512, 0)
+
+[node name="Room33" parent="Rooms" instance=ExtResource("Room33")]
+position = Vector2(66816, 0)
+
+[node name="Room34" parent="Rooms" instance=ExtResource("Room34")]
+position = Vector2(69120, 0)
+
+[node name="Room35" parent="Rooms" instance=ExtResource("Room35")]
+position = Vector2(71424, 0)
+
+[node name="Room36" parent="Rooms" instance=ExtResource("Room36")]
+position = Vector2(73728, 0)
+
+[node name="Room37" parent="Rooms" instance=ExtResource("Room37")]
+position = Vector2(76032, 0)

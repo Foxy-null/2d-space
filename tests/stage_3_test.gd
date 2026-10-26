@@ -53,6 +53,7 @@ func _run() -> void:
 	for index in [23,24]:
 		stage.rooms.get_child(index).get_node("DashCrystal").collected.connect(func(_body): actions["crystal"] = actions.get("crystal",0)+1)
 	_fifth_connect()
+	_sixth_connect()
 	_check_hints(false)
 	_check_help(false)
 	_check_status(false)
@@ -79,7 +80,7 @@ func _run() -> void:
 	_check_help(false)
 	await _toggle_hints()
 	_check_hints(true)
-	_check(stage.rooms.get_child_count() == 31, "Stage 3 has thirty-one native rooms")
+	_check(stage.rooms.get_child_count() == 37, "Stage 3 has thirty-seven native rooms")
 	_check(player.wall_actions_enabled and player.dash_enabled, "Walls and dash are available from the start")
 	for room in stage.rooms.get_children():
 		var goal: ArrivalSwitch = room.get_node("Goal")
@@ -178,7 +179,8 @@ func _run() -> void:
 				if index < 15: await _composite_course(index)
 				elif index < 21: await _third_course(index)
 				elif index < 25: await _para_course(index)
-				else: await _fifth_course(index)
+				elif index < 31: await _fifth_course(index)
+				else: await _sixth_course(index)
 		if failed:
 			quit(1)
 			return
@@ -188,8 +190,8 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4, 5, 2, 7, 5, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
-		_check(actions.get("dash", 0) == ([0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 2, 0, 1, 1, 1, 2, 2, 2, 2, 3, 4, 0, 0, 2, 2, 1, 2, 1, 1, 3, 2][index]), "The real inputs use each course's intended Dash resources")
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4, 5, 2, 7, 5, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		_check(actions.get("dash", 0) == ([0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 2, 0, 1, 1, 1, 2, 2, 2, 2, 3, 4, 0, 0, 2, 2, 1, 2, 1, 1, 3, 2, 0, 1, 2, 0, 2, 1][index]), "The real inputs use each course's intended Dash resources")
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
 			_check(flips.count(-1) == 2 and flips.count(1) == 2, "Later rooms use two intended cycles without an accidental return flip")
@@ -245,7 +247,7 @@ func _run() -> void:
 	await _step(25)
 	_check(stage.room_index == final_index-1 and player.position.distance_to(stage.rooms.get_child(final_index-1).get_node("Return").global_position)<5, "Backtracking uses the actual preceding room's right entrance")
 	_check(bridge.visible and not bridge.get_node("Collision").disabled, "Backtracking preserves the return bridge")
-	_check(stage.completed and stage.cleared.size() == 31 and not stage.get_node("HUD/Completion").visible, "Backtracking preserves all thirty-one cleared rooms without a completion overlay")
+	_check(stage.completed and stage.cleared.size() == 37 and not stage.get_node("HUD/Completion").visible, "Backtracking preserves all thirty-seven cleared rooms without a completion overlay")
 	await _retry()
 	_check(player.position.distance_to(stage.rooms.get_child(final_index-1).get_node("Return").global_position)<5, "Retry after backtracking keeps the preceding right entrance")
 	stage._set_room(4, true)
@@ -1422,7 +1424,7 @@ func _fifth_capture(_name: String) -> void:
 
 
 func _fifth_return_right() -> void:
-	var target := 2240.0 if stage.room_index==30 else 2258.0
+	var target := 2240.0 if stage.room_index==30 or (stage.room_index==34 and player.get_held_object()!=null) else 2258.0
 	for frame in 650:
 		_para_drive(target,stage.room_index==30)
 		if absf(_para_x()-target)<4 and absf(player.velocity.x)<35 and player.is_on_floor():
@@ -1449,3 +1451,192 @@ func _fifth_goal() -> void:
 		await _step()
 		if failed: return
 	_check(false, "Physically press the new room's actual arrival")
+
+
+func _sixth_connect() -> void:
+	for room in stage.rooms.get_children().slice(31,37):
+		for area in room.find_children("*","Area2D",true,false):
+			if area.has_signal("launched"): area.launched.connect(func(_body):
+				actions["sixth_launch"] = actions.get("sixth_launch",0)+1
+			)
+			if area.has_signal("collected"):
+				var key := "sixth_crystal" if area.refill_kind==0 else "sixth_boots"
+				area.collected.connect(func(_body): actions[key] = actions.get(key,0)+1)
+
+
+func _sixth_entry(index: int) -> void:
+	match index:
+		31:
+			_para_drive(360)
+			await _until(func(): return player.gravity_direction==-1,240,"The native Spring ascent reaches the high Up gate")
+			await _para_walk(800)
+			await _fifth_rest("entry_rest")
+		32:
+			await _para_walk(1800)
+			await _fifth_rest("entry_rest")
+		33:
+			await _para_walk(1720)
+			_check(player.gravity_direction==-1 and player.is_air_jump_ready(),"The real inverted ceiling supplies the optional extra-Jump charge")
+			await _fifth_rest("entry_rest")
+		34:
+			await _para_grab()
+			await _para_walk(1800)
+			await _fifth_rest("entry_rest")
+		35:
+			await _fifth_shaft()
+			await _fifth_rest("entry_rest")
+		36:
+			await _para_walk(1800)
+			await _fifth_rest("entry_rest")
+
+
+func _sixth_course(index: int) -> void:
+	var started := Engine.get_physics_frames()
+	var before := respawns
+	await _sixth_entry(index)
+	match index:
+		31:
+			_sixth_down_grip(910)
+			await _until(func(): return player.is_wall_grabbing(),180,"Reach the actual inverted grip")
+			await _step(para_gap)
+			_sixth_down_grip(710)
+			await _jump()
+			await _until(func(): return player.is_wall_grabbing() and _para_x()<770 and player.position.y>550,180,"Inverted kick reaches the opposing deeper grip")
+			_sixth_down_grip(910)
+			await _jump()
+			await _until(func(): return player.is_wall_grabbing() and _para_x()>850 and player.position.y>696,180,"Kick below the first actual projection")
+			_sixth_down_grip(710)
+			await _jump()
+			await _until(func(): return player.is_wall_grabbing() and _para_x()<770 and player.position.y>910,180,"Kick reaches the final deeper opposing wall")
+			_sixth_down_grip(1080)
+			await _jump()
+			await _until(func(): return player.gravity_direction==1,180,"The final inverted kick enters Down")
+			await _para_walk(1300)
+			await _fifth_rest("landing_rest")
+			_check(actions.get("wall_jump",0)>=4 and actions.get("sixth_launch",0)>0,"The route actually uses the Spring and inverted wall kicks")
+		32:
+			await _para_walk(1690)
+			await _jump()
+			await _step(para_gap)
+			_para_drive(1760)
+			await _until(func(): return actions.get("sixth_launch",0)>0,120,"The actual inverted jump returns into the circular bumper")
+			_para_drive(800)
+			await _until(func(): return _fifth_floor("LandingCeiling"),240,"The reflected trajectory reaches the native deeper left ceiling")
+			await _para_walk(800)
+			await _fifth_rest("landing_rest")
+			await _para_walk(450)
+			_para_drive(300)
+			await _jump()
+			await _step(para_gap)
+			await _para_dash(Vector2.DOWN)
+			for frame in 180:
+				if player.gravity_direction==1: break
+				_para_drive(300)
+				await _step()
+			await _para_walk(500)
+			_check(player.gravity_direction==1 and _fifth_floor("ExitFloor"),"The real moving Down gate returns the route to the left floor")
+		33:
+			await _para_walk(1664)
+			_para_drive(1450)
+			await _jump()
+			await _sixth_travel(1450,para_gap)
+			await _jump()
+			await _sixth_travel(1450,para_gap)
+			_check(actions.get("air_jump",0)==1,"The deeper inverted step consumes one real extra Jump")
+			await _para_dash(Vector2.DOWN)
+			_para_drive(1200)
+			await _until(func(): return _fifth_floor("LandingCeiling"),240,"The real extra Jump and downward Dash reach the deeper left ceiling")
+			await _para_walk(1200)
+			await _fifth_rest("landing_rest")
+			_para_drive(850)
+			await _jump()
+			await _step(para_gap)
+			await _para_dash(Vector2.DOWN)
+			await _para_walk(700)
+		34:
+			var takeoff := 1800.0 + (para_gap - 20) * 4.0
+			await _para_walk(takeoff)
+			print("SIXTH_GLIDE_TAKEOFF axis=",para_strength," gap=",para_gap," requested=",takeoff," actual=",_para_x())
+			_para_drive(800)
+			await _jump()
+			await _step(para_gap)
+			await _until(func(): return player.gravity_direction==1,180,"The held umbrella route enters the actual Down before gliding")
+			await _para_walk(800)
+			await _fifth_rest("landing_rest")
+			await _para_walk(550)
+			_check(player.get_held_object()==stage.rooms.get_child(index).get_node("Parachute"),"The crosswind glide keeps the actual umbrella through its static landing")
+		35:
+			await _para_walk(830)
+			_para_drive(1100)
+			await _jump()
+			await _step(para_gap)
+			await _para_dash(Vector2(1,1))
+			await _until(func(): return not player.is_dashing() and actions.get("sixth_crystal",0)>0,60,"The real diagonal Dash reaches the airborne refill and finishes")
+			_check(player.is_dash_ready(),"Actual diagonal contact restores the spent Dash")
+			_para_drive(1100)
+			await _until(func(): return player.position.y>450,30,"The actual diagonal descent clears the hanging corner before the recovered Dash")
+			await _para_dash(Vector2(1,1))
+			_para_drive(1500)
+			await _until(func(): return player.gravity_direction==1 and _fifth_floor("LandingFloor"),240,"The second diagonal Dash rounds the native corner and reaches Down above its visible safe landing")
+			await _para_walk(1500)
+			await _fifth_rest("landing_rest")
+		36:
+			_para_drive(1620)
+			await _until(func(): return actions.get("sixth_launch",0)>0,180,"The actual inverted ceiling Spring begins the first downward leg")
+			await _para_walk(1620)
+			_check(player.gravity_direction==1 and _fifth_floor("MiddleFloor"),"The first native Down reaches the middle safe floor")
+			await _fifth_rest("middle_rest")
+			await _para_walk(1100)
+			_fifth_grip(990)
+			await _jump()
+			await _sixth_mirrored_shaft()
+			await _para_walk(600)
+			await _fifth_rest("upper_rest")
+			await _para_walk(800)
+			_para_drive(500)
+			await _jump()
+			await _step(para_gap)
+			await _para_dash(Vector2(-1,1))
+			await _para_walk(500)
+		_:
+			_check(false,"The requested native sixth room has a real driver")
+	await _fifth_goal()
+	if index in [32,33,34,36]:
+		await _fifth_return_right()
+		await _sixth_capture("room_%d_right_return" % [index+1])
+	var seconds := float(Engine.get_physics_frames()-started)/60.0
+	_check(respawns==before and stage.cleared.has(index) and seconds<30,"The actual native route reaches its arrival within thirty seconds without death")
+	_check(flips.has(-1) and flips.has(1),"The mandatory route really uses both gravities and leaves all scrolls optional")
+	print("GRAVITY_SIXTH_%d %.2fs axis=%.1f gap=%d kicks=%d launch=%d refill=%d" % [index+1,seconds,para_strength,para_gap,actions.get("wall_jump",0),actions.get("sixth_launch",0),actions.get("sixth_crystal",0)])
+
+
+func _sixth_down_grip(target: float) -> void:
+	_para_drive(target,true)
+	Input.action_press("move_down")
+
+
+func _sixth_travel(target: float,frames: int) -> void:
+	for frame in frames:
+		_para_drive(target)
+		await _step()
+
+
+func _sixth_mirrored_shaft() -> void:
+	_fifth_grip(990)
+	await _until(func(): return player.is_wall_grabbing() and player.position.y<1004,180,"Climb below the mirrored lower projection")
+	_fifth_grip(1190)
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _para_x()>1130 and player.position.y<850,180,"Kick right to the real opposing grip")
+	_fifth_grip(990)
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _para_x()<1050 and player.position.y<704,180,"Kick left above the native projection")
+	_fifth_grip(1190)
+	await _jump()
+	await _until(func(): return player.is_wall_grabbing() and _para_x()>1130 and player.position.y<490,180,"Kick above the final mirrored projection")
+	_fifth_grip(820)
+	await _jump()
+	await _until(func(): return player.gravity_direction==-1,180,"The real leftward kick enters Up beyond the shaft")
+
+
+func _sixth_capture(_name: String) -> void:
+	pass

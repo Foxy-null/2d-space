@@ -96,7 +96,7 @@ func _fresh(index: int) -> void:
 		for node in room.find_children("*", "Area2D", true, false):
 			if node.get_script() != null and node.get_script().resource_path == "res://scripts/scroll_collectible.gd": total += 1
 	_check(total == 10 and progress.TOTALS["gravity"] == total, "The ten actual scroll nodes match the stage-selection total")
-	_check(stage.rooms.get_child_count() == 31 and not stage.completed, "Thirty-one native rooms begin without a premature completion")
+	_check(stage.rooms.get_child_count() == 37 and not stage.completed, "Thirty-seven native rooms begin without a premature completion")
 	await _third_capture("room_%d_entrance" % (index+1))
 
 

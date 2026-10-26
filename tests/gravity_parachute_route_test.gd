@@ -69,7 +69,7 @@ func _fresh_para(index: int) -> void:
 		if crystal.get_script() != null and crystal.get_script().resource_path == "res://scripts/refill_crystal.gd": crystal.collected.connect(func(_body): actions["crystal"] = actions.get("crystal",0)+1)
 	if OS.get_cmdline_user_args().has("--hints"): stage.set_hints_visible(true)
 	monitor_view = true
-	_check(stage.rooms.get_child_count() == 31 and not stage.completed, "Thirty-one native rooms begin without premature completion")
+	_check(stage.rooms.get_child_count() == 37 and not stage.completed, "Thirty-seven native rooms begin without premature completion")
 	for room in stage.rooms.get_children():
 		var boundary:Node2D=room.get_node_or_null("RightBoundary")
 		if boundary!=null:
