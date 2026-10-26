@@ -96,15 +96,12 @@ func _cloud() -> void:
 	stage._update_needles(0.2)
 	_check(stage.player.get_wall_stamina() < stage.player.wall_stamina_max, "Solidified ash actually damages the player on a swept hit")
 	var elapsed: float = cloud.elapsed
-	stage._keep_enemy_on_respawn = true
-	stage.player.respawn(false)
-	stage._keep_enemy_on_respawn = false
-	_check(stage.room.get_node("AshClouds").get_child(0) == cloud, "Ordinary falling preserves the active cloud and rain")
+	stage._game_over("棘に触れました")
+	_check(stage.room.get_node("AshClouds").get_child(0) == cloud and paused, "Game over freezes the failure scene until explicit retry")
 	paused = true
 	stage._physics_process(1.0)
 	_check(cloud.elapsed == elapsed, "Pause freezes cloud timers and rain spawning")
-	paused = false
-	stage.player.respawn()
+	stage._retry_button.pressed.emit()
 	_check(stage.room.get_node("AshClouds").get_child_count() == 0 and stage.room.needles.get_child_count() == 0, "A full retry clears clouds and all rain")
 	var ceiling = stage.room._block(Rect2(500, 400, 600, 30))
 	await _step(2)

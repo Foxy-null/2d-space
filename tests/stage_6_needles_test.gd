@@ -23,8 +23,8 @@ func _run() -> void:
 	_check(needle.stuck and needle.anchor == wall, "A fast needle sticks at the first terrain surface without tunneling")
 	_check(is_equal_approx(needle.global_position.x, 550.0), "The embedded end stays at the terrain surface")
 	_check(needle.is_dangerous(), "An uncovered tip remains dangerous")
-	needle.advance(60.0, stage.player)
-	_check(not needle.is_queued_for_deletion(), "A stuck needle does not expire")
+	needle.advance(1.0, stage.player)
+	_check(not needle.is_queued_for_deletion(), "A fresh receiving needle stays usable")
 	_place(stage.player, needle.tip_position())
 	_check(stage._touches_hazard(stage.player, stage.player.position), "Only the exposed needle tip acts as a spike")
 	_place(stage.player, needle.global_position - Vector2(30, 0))
@@ -46,10 +46,8 @@ func _run() -> void:
 	_check(stage.player.is_on_floor() and stage.player.position.y < box.position.y - 45.0, "The player can really stand on the pinned box")
 	_check(not stage._touches_hazard(stage.player, stage.player.position), "Standing on the box is safe")
 	stage.player.set_physics_process(false)
-	stage._keep_enemy_on_respawn = true
-	stage.player.respawn(false)
-	stage._keep_enemy_on_respawn = false
-	_check(box.pinned_to == needle and box.freeze, "Falling preserves the constructed route")
+	needle.advance(60.0, stage.player)
+	_check(not needle.is_queued_for_deletion() and box.pinned_to == needle, "Constructed footholds outlive unpinned needle expiry")
 	stage.player.respawn()
 	_check(stage.room.needles.get_child_count() == 0 and not box.freeze and box.pinned_to == null, "Full retry removes needles and releases all pinned boxes")
 	box.queue_free()

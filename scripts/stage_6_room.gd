@@ -17,13 +17,13 @@ const ARRIVAL = preload("res://scenes/arrival_switch.tscn")
 const SPIKE_BLOCK = preload("res://scenes/spike_block.tscn")
 const ROOM_COUNT := 13
 const FINAL_ROOM := ROOM_COUNT - 1
-const MAX_NEEDLES := 640
+const MAX_NEEDLES := 240
 const MAX_FLYING_NEEDLES := 96
 
 const TITLES := ["針を道へ変える", "開門と予備の箱", "重荷を先へ送れ", "灰雲と傘渡り", "逆さまの逃走路", "反発と空中ダッシュ", "横向きの重力迷宮", "重力を渡る縦の塔", "相棒と越える断崖", "二つの重量扉", "封鎖装置の予行", "棘の振り子と誘導路", "追跡者との最終決着"]
 const HINTS := [
 	"長針は狙いの線へ3連射します。狙われた場所を離れて壁へ刺し、露出した先端へ箱を投げると安全な足場になります。最初の穴には普通の足場の道もあります。\n動きながらShiftを離すと投擲、止まって離すと置く操作です。敵に箱を当てると2秒止まります。緑でダッシュを戻し、紫の追加ジャンプを一つずつつなぎます。",
-	"手前の軽い箱をShiftで持ち、開門スイッチの上で止まってから離してください。箱が台に残ると縞の扉が開きます。\n敵が近づいたら、開門用の箱は台に残し、別の箱を投げて怯ませます。扉の先は高い足場、床ばね、丸いバンパーを使うとトゲを避けて進めます。入口で準備してから進めば、追跡開始まで短い猶予があります。",
+	"手前の軽い箱をShiftで持ち、開門スイッチの上で止まってから離してください。箱が台に残ると縞の扉が開きます。\n敵が近づいたら、開門用の箱は台に残し、別の箱を投げて怯ませます。扉の先は上の足場を跳ぶ近道と、下へ降りる屋根付きの道を選べます。下道で箱を補充し、最後の上りから到着台へ戻れます。入口で準備してから進めば、追跡開始まで短い猶予があります。",
 	"この扉には重い箱が必要です。軽い箱では重量が足りません。手前の重い箱を段差の先へ投げて追い、奥の重量スイッチまで運んで置いてください。\n持っている間は移動が遅く、壁も登れません。段差で詰まったら安全な足場で箱を先へ送り、自分は空身で追うと安定します。箱を敵への攻撃に使った場合も、金の輪で補充できます。",
 	"赤い和傘を持って最初の上昇気流へ入ります。足場の真下で上昇が止まったら、横へ出て端を抜け、上へ回り込んでください。\n途中の足場で着地してから、横風に乗って次の上昇気流へ渡ります。後半の動くトゲには突っ込まず、上下する位置を見て外側を回ります。傘を失った場合は途中の金の輪でも取り直せます。",
 	"最初の↑ゲートで天井を床にします。天井の障害物を避け、壁を掴むときは↓入力で重力に逆らって登ってください。\n途中は障害物の下へ離れ、緑で補充したダッシュをつなぎます。最後の↓ゲートを通って通常の床へ戻り、右の足跡の到着台へ着地します。荷物があると壁を掴めないので、必要なら置いて進みましょう。",
@@ -78,6 +78,10 @@ var passage_gate: StaticBody2D
 var entrance_wall: StaticBody2D
 var breach_left := 0.0
 var extension_block: SpikeBlock
+var entrance_area := Rect2()
+var branch_route: Array[Vector2] = []
+var route_name := ""
+var approach_route: Array[Vector2] = []
 
 
 func _ready() -> void:
@@ -112,9 +116,12 @@ func _ready() -> void:
 			spawn.x = 600
 			enemy_spawn.x = 320
 			chase_delay = 1.5
-			_floor(0, 3000, 820)
+			_floor(0, 1510, 820)
+			_floor(1710, 750, 820)
+			_floor(2540, 130, 820)
+			approach_route = _walkway([Vector2(1470, 820), Vector2(1750, 1120), Vector2(2360, 1120), Vector2(2750, 1120), Vector2(2860, 820)])
 			_supply(LIGHT, Vector2(700, 780))
-			_supply(LIGHT, Vector2(1650, 780))
+			_supply(LIGHT, Vector2(1810, 1080))
 			_weight_door(Vector2(1120, 820), Rect2(1400, 0, 38, 820), 2.0)
 			_platforms([Rect2(580, 640, 230, 32), Rect2(930, 550, 200, 32), Rect2(1560, 650, 210, 32), Rect2(1900, 530, 180, 32), Rect2(2280, 610, 230, 32)])
 			_block(Rect2(1880, 300, 260, 24))
@@ -122,6 +129,10 @@ func _ready() -> void:
 			_bumper(Vector2(2150, 390))
 			_hazard(Rect2(1940, 750, 80, 70), Vector2(160, 0), 4.0)
 			_hazard(Rect2(2580, 730, 90, 90))
+			# The first high landing needs an extra jump while carrying a defensive box.
+			_crystal(Vector2(1510, 750), 0)
+			_crystal(Vector2(1650, 555), 1)
+			_crystal(Vector2(2740, 615), 1)
 			_crystal(Vector2(1030, 460), 1)
 			_crystal(Vector2(2030, 440), 0)
 			_crystal(Vector2(2390, 510), 1)
@@ -313,8 +324,6 @@ func _ready() -> void:
 			_build_spike_corridor()
 		12:
 			_build_final()
-	entrance_wall = _block(Rect2(enemy_spawn.x - 24, enemy_spawn.y - 155, 36, 181))
-	_set_door(entrance_wall, false)
 	if number in [0, 5, 9]:
 		var platform := _block(Rect2(size.x * 0.55, spawn.y - 360.0, 160, 22))
 		platform.set_meta("needle_breakable", true)
@@ -327,14 +336,20 @@ func _ready() -> void:
 		platform.add_child(crack)
 	if number != FINAL_ROOM:
 		_build_extension()
-		for index in range(1, route.size(), 3):
-			_crystal(route[index] - Vector2(0, 40), 0)
-		for index in range(2, route.size(), 3):
-			_crystal(route[index] - Vector2(0, 65), 1)
-	_block(Rect2(0, 0, 28, size.y + 200))
+	if number in [1, 2, 9]:
+		chase_delay = 4.0
+	# The breach is a missing section of the enclosing wall, not a freestanding prop.
+	enemy_spawn = Vector2(-50, spawn.y)
+	entrance_area = Rect2(spawn - Vector2(130, 190), Vector2(350, 250))
+	_block(Rect2(0, 0, 28, spawn.y - 150))
+	entrance_wall = _block(Rect2(0, spawn.y - 150, 28, 176))
+	_block(Rect2(0, spawn.y + 26, 28, size.y - spawn.y + 174))
+	_floor(-180, 208, spawn.y + 26)
+	_block(Rect2(0, 0, size.x, 28))
 	_block(Rect2(size.x - 28, 0, 28, size.y + 200))
 	if number != FINAL_ROOM:
-		_floor(exit_position.x - 120, size.x - exit_position.x + 120, exit_position.y)
+		var landing := _block(Rect2(exit_position.x - 120, exit_position.y, 260, 24))
+		landing.get_child(0).one_way_collision = not approach_route.is_empty()
 	exit_rect = Rect2(exit_position + Vector2(-58, -185), Vector2(116, 180))
 	arrival = ARRIVAL.instantiate()
 	arrival.name = "Arrival"
@@ -350,31 +365,128 @@ func _ready() -> void:
 func _build_extension() -> void:
 	var old_width := size.x
 	var floor_y := exit_position.y
-	# Keep the gravity course's original side wall, with a door at its exit height.
+	size = Vector2(maxf(5600, old_width + 2400), maxf(1680, size.y))
 	if floor_y > 210:
 		_block(Rect2(old_width - 28, 0, 28, floor_y - 210))
 	_block(Rect2(old_width - 28, floor_y + 30, 28, size.y - floor_y + 170))
 	passage_gate = _block(Rect2(old_width - 28, floor_y - 210, 28, 240))
 	passage_gate.modulate = Color("ffd37d")
-	size.x += 1000
-	passage_rect = Rect2(size.x - 180, floor_y - 150, 100, 180)
-	var start := old_width + 40
-	_supply(LIGHT, Vector2(start + 60, floor_y - 40))
-	_supply(UMBRELLA, Vector2(start + 160, floor_y - 40))
-	_supply(CREATURE, Vector2(start + 650, floor_y - 40))
-	# A covered lower route trades speed for shelter; the upper route carries refills.
-	_platforms([Rect2(start + 200, floor_y - 160, 250, 28), Rect2(start + 500, floor_y - 230, 220, 28)])
-	_block(Rect2(start + 100, floor_y - 85, 100, 25))
-	_block(Rect2(start + 680, floor_y - 100, 28, 100))
-	_crystal(Vector2(start + 340, floor_y - 215), 0)
-	_crystal(Vector2(start + 590, floor_y - 285), 1)
-	if number % 3 == 1:
-		_spike_block(Vector2(start + 500, floor_y - 50), Vector2(0, -180), 4.8, 0.0)
-		extension_block = spike_blocks.back()
-	elif number % 3 == 2:
-		_spring(Vector2(start + 120, floor_y))
-		_bumper(Vector2(start + 780, floor_y - 260))
-	passage_route.assign([Vector2(old_width + 100, floor_y - 28), Vector2(start + 330, floor_y - 188), Vector2(start + 610, floor_y - 258), Vector2(start + 810, floor_y - 130), passage_rect.get_center() - Vector2(0, 26)])
+	# Each route has its own contour and tools; the second path reconnects at both ends.
+	var contours := [
+		[700, 620, 460, 620, 940, 1100, 940],
+		[820, 900, 1060, 1140, 980, 820, 660],
+		[640, 560, 720, 1040, 1120, 960, 800],
+		[620, 780, 1020, 1260, 1100, 860, 700],
+		[740, 580, 420, 660, 980, 820, 580],
+		[690, 850, 1090, 1250, 1010, 770, 610],
+		[500, 660, 900, 1060, 820, 660, 900],
+		[390, 550, 790, 1110, 1350, 1110, 870],
+		[620, 460, 620, 940, 1180, 1020, 780],
+		[820, 980, 1140, 980, 740, 580, 740],
+		[540, 700, 940, 1180, 1020, 780, 540],
+		[840, 680, 520, 760, 1000, 1160, 1000],
+	]
+	route_name = ["受け壁の上下回廊", "重量扉と屋根の下道", "運搬路と高架の合流", "灰雲を避ける風の谷", "天井から降りる分岐路", "反発する谷と屋根道", "横重力から上下の分岐へ", "塔の頂から外周へ", "相棒で選ぶ尾根と谷", "二段開門と立体交差", "封鎖壁と風の外回り", "振り子の間と迂回路"][number]
+	var start := Vector2(old_width + 80, floor_y)
+	var end_x := size.x - 240
+	var main: Array[Vector2] = [start, start + Vector2(260, -80)]
+	for index in range(1, 7):
+		main.append(Vector2(lerpf(start.x, end_x, index / 6.0), contours[number][index]))
+	passage_route = _walkway(main, true)
+	passage_rect = Rect2(end_x - 45, main.back().y - 155, 100, 180)
+	# A roofed detour can be entered and left without a precision jump or a consumable.
+	var lower_y := minf(size.y - 120, float(contours[number].max()) + 280)
+	var detour: Array[Vector2] = [start, Vector2(lerpf(start.x, end_x, 0.18), maxf(floor_y + 240, _path_height(main, lerpf(start.x, end_x, 0.18)) + 220)), Vector2(lerpf(start.x, end_x, 0.4), lower_y), Vector2(lerpf(start.x, end_x, 0.66), lower_y), Vector2(lerpf(start.x, end_x, 0.86), maxf(main.back().y + 240, _path_height(main, lerpf(start.x, end_x, 0.86)) + 220)), main.back()]
+	branch_route = _walkway(detour)
+	# Two openings per divider allow a real loop while breaking sight between levels.
+	for fraction in [0.32, 0.68]:
+		var x := lerpf(start.x, end_x, fraction)
+		var upper := _path_height(main, x)
+		var lower := _path_height(detour, x)
+		_block(Rect2(x, 28, 48, maxf(20, upper - 268)))
+		if lower - upper > 300:
+			_block(Rect2(x, upper + 60, 48, lower - upper - 280))
+		_block(Rect2(x, lower + 60, 48, maxf(20, size.y - lower - 32)))
+	_floor(old_width, size.x - old_width, size.y - 80)
+	_floor(start.x - 110, 230, floor_y)
+	match number:
+		0:
+			_supply(LIGHT, main[2] - Vector2(0, 40))
+			_block(Rect2(start.x + 440, floor_y - 340, 30, 120))
+			_crystal(main[2] - Vector2(0, 70), 0)
+		1:
+			_supply(LIGHT, main[2] - Vector2(0, 40))
+			_spike_block(main[3] - Vector2(0, 270), Vector2(0, 110), 5.5, 0.0)
+		2:
+			_supply(LIGHT, main[2] - Vector2(0, 40))
+			_block(Rect2(main[3].x - 170, main[3].y - 210, 340, 26))
+		3:
+			_supply(UMBRELLA, main[2] - Vector2(0, 40))
+			_wind(Rect2(main[3].x - 180, main[3].y - 440, 360, 420), Vector2.UP, 1400, 300)
+		4:
+			_crystal(main[2] - Vector2(0, 60), 0)
+			_block(Rect2(main[3].x - 160, main[3].y - 240, 320, 28))
+		5:
+			_spring(main[3])
+			_crystal(main[3] - Vector2(0, 260), 1)
+		6:
+			_supply(LIGHT, main[2] - Vector2(0, 40))
+			_block(Rect2(main[4].x - 120, main[4].y - 220, 300, 28))
+		7:
+			_supply(CREATURE, main[2] - Vector2(0, 40))
+			_crystal(main[4] - Vector2(0, 75), 0)
+		8:
+			_supply(CREATURE, main[2] - Vector2(0, 40))
+			_crystal(main[4] - Vector2(0, 85), 1)
+		9:
+			_supply(LIGHT, main[2] - Vector2(0, 40))
+			_block(Rect2(main[3].x - 180, main[3].y - 230, 360, 28))
+		10:
+			_supply(UMBRELLA, main[2] - Vector2(0, 40))
+			_wind(Rect2(main[3].x - 160, main[3].y - 400, 320, 380), Vector2.UP, 1400, 300)
+		11:
+			_spike_block(main[2] - Vector2(0, 230), Vector2(160, 0), 5.8, 0.0)
+			_supply(LIGHT, main[2] - Vector2(0, 40))
+	for entry in doors:
+		if not entry.closes:
+			var shape: CollisionShape2D = entry.body.get_child(0)
+			var rect := Rect2(entry.body.position - shape.shape.size * 0.5, shape.shape.size)
+			if rect.end.y < size.y:
+				_block(Rect2(rect.position.x, rect.end.y, rect.size.x, size.y - rect.end.y + 200))
+
+
+func _walkway(points: Array[Vector2], upper := false) -> Array[Vector2]:
+	var steps: Array[Vector2] = [points[0] - Vector2(0, 26)]
+	for index in range(1, points.size()):
+		var from := points[index - 1]
+		var to := points[index]
+		var count := maxi(1, ceili(maxf(absf(to.x - from.x) / 300.0, absf(to.y - from.y) / 80.0)))
+		for step in range(1, count + 1):
+			var at := from.lerp(to, step / float(count))
+			var width := clampf(absf(to.x - from.x) / count + 24, 140, 324)
+			if upper and index == 1 and step == 1:
+				width = 140
+			var platform := _block(Rect2(at.x - width * 0.5, at.y, width, 24))
+			platform.get_child(0).one_way_collision = true
+			steps.append(at - Vector2(0, 26))
+	return steps
+
+
+func _path_height(points: Array[Vector2], x: float) -> float:
+	for index in range(1, points.size()):
+		if x <= points[index].x:
+			return lerpf(points[index - 1].y, points[index].y, inverse_lerp(points[index - 1].x, points[index].x, x))
+	return points.back().y
+
+
+func limit_stuck_needles(latest: Node2D) -> void:
+	var nearby: Array[Node2D] = []
+	for needle in needles.get_children():
+		if needle != latest and needle.stuck and not needle.is_queued_for_deletion() and not needle.anchor is Grabbable and not is_instance_valid(needle.pinned_box) and needle.tip_position().distance_to(latest.tip_position()) < 160.0:
+			nearby.append(needle)
+	# Keep a useful receiving spine without filling one landing with a solid fence.
+	while nearby.size() >= 2:
+		nearby.pop_front().queue_free()
 
 
 func open_passage() -> void:
@@ -535,12 +647,18 @@ func _restock() -> void:
 				available = true
 		if available:
 			continue
-		# shortcut: six items per supply, raise the cap for puzzles needing more simultaneous weights.
-		if matching.size() < 6:
+		# A working item and one spare are enough; fixed footholds and switch weights are preserved.
+		if matching.size() < 2:
 			_spawn_item(supply.scene, supply.at, supply.id)
 		else:
 			matching.sort_custom(func(a, b): return a.position.distance_squared_to(supply.at) > b.position.distance_squared_to(supply.at))
+			var ninja := get_tree().get_first_node_in_group("player") as PlayerController
 			for item in matching:
+				var moving := item.linear_velocity.length_squared() > 6400
+				var nearby := ninja != null and ninja.position.distance_to(item.position) < 150
+				var outside := not Rect2(Vector2(-100, -200), size + Vector2(200, 400)).has_point(item.position)
+				if not outside and (moving or nearby):
+					continue
 				var on_switch := item_on_switch(item)
 				if item.carrier == null and not on_switch and not is_instance_valid(item.pinned_to):
 					item.reset_for_respawn()
@@ -556,6 +674,7 @@ func reset_state() -> void:
 		platform.collision_layer = 1
 		platform.show()
 	_elapsed = 0.0
+	_supply_left = 0.0
 	for entry in moving_hazards:
 		entry.current = entry.rect
 		entry.surface.position = entry.rect.get_center()
@@ -723,6 +842,7 @@ func _set_door(body: StaticBody2D, closed: bool) -> void:
 	if body.visible == closed:
 		return
 	body.visible = closed
+	body.collision_layer = 1 if closed else 0
 	body.get_child(0).set_deferred("disabled", not closed)
 
 

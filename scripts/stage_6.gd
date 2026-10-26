@@ -42,7 +42,6 @@ var _previous_enemy := Vector2.ZERO
 var _player_arrived := false
 var defeat_hits := 0
 var escape_elapsed := 0.0
-var _keep_enemy_on_respawn := false
 var _enemy_indicator: Label
 var _intro_left := 0.0
 var _intro_seen := false
@@ -53,6 +52,9 @@ var _shake_left := 0.0
 var shots_fired := 0
 var clouds_cast := 0
 var blocked_shots := 0
+var _game_over_panel: Control
+var _failure_reason: Label
+var _retry_button: Button
 
 
 func _ready() -> void:
@@ -91,6 +93,7 @@ func _ready() -> void:
 	_world.add_child(camera)
 	camera.make_current()
 	_build_hud()
+	_build_game_over()
 	_enemy_indicator = _text("", 18)
 	_enemy_indicator.position = Vector2(25, 510)
 	$HUD.add_child(_enemy_indicator)
@@ -121,6 +124,10 @@ func _ready() -> void:
 
 func _load_room(index: int) -> void:
 	_loading = true
+	_game_over_pending = false
+	set_meta("stage_failed", false)
+	_game_over_panel.hide()
+	get_tree().paused = false
 	_generation += 1
 	_projectiles.clear()
 	if is_instance_valid(room):
@@ -132,7 +139,11 @@ func _load_room(index: int) -> void:
 	room = ROOM.new()
 	room.number = index
 	_world.add_child(room)
-	room.arrival.activated.connect(func(): _player_arrived = room.arrival.activator == player)
+	room.arrival.activated.connect(func():
+		_player_arrived = room.arrival.activator == player
+		if _player_arrived:
+			enemy.hear_switch(room.exit_position)
+	)
 	set_meta("environment_theme", 3 if index < 6 else 4)
 	_backdrop.environment_theme = 3 if index < 6 else 4
 	player.set_respawn_position(room.spawn)
@@ -154,10 +165,10 @@ func _load_room(index: int) -> void:
 	_intro_left = 0.0
 	_intro_panel.hide()
 	_intro_panel.modulate.a = 1.0
-	_entry_left = 0.9 if index > 0 else 0.0
-	room.set_entrance_intact(index > 0)
-	enemy.visuals.visible = index == 0
-	if index > 0:
+	_entry_left = 2.5
+	room.set_entrance_intact(true)
+	enemy.visuals.hide()
+	if not room.prepared:
 		_chase_delay = _entry_left
 	if index == 0 and not _intro_seen:
 		_intro_seen = true
@@ -214,9 +225,7 @@ func _physics_process(delta: float) -> void:
 		cloud.advance(delta)
 	_check_projectiles()
 	if _out_of_course(player) or (_respawn_grace <= 0.0 and _touches_hazard(player, _previous_player)):
-		_keep_enemy_on_respawn = true
-		player.respawn(false)
-		_keep_enemy_on_respawn = false
+		_game_over("コースの外へ落ちました" if _out_of_course(player) else "棘に触れました")
 		return
 	if _out_of_course(enemy) or _touches_hazard(enemy, _previous_enemy):
 		enemy.call("reset_pursuit", true)
@@ -247,6 +256,9 @@ func _on_player_respawned() -> void:
 	_generation += 1
 	_capture_pending = false
 	_game_over_pending = false
+	set_meta("stage_failed", false)
+	_game_over_panel.hide()
+	get_tree().paused = false
 	_intro_left = 0.0
 	_intro_panel.hide()
 	player.controls_enabled = not help_visible and not completed
@@ -255,14 +267,16 @@ func _on_player_respawned() -> void:
 	_hit_grace = 0.0
 	_message.hide()
 	_player_arrived = false
-	if not _keep_enemy_on_respawn:
-		_projectiles.clear()
-		room.reset_state()
-		enemy.call("reset_pursuit")
-		enemy.set("active", false)
-		_chase_delay = -1.0 if room.prepared else room.chase_delay
-		defeat_hits = 0
-		escape_elapsed = 0.0
+	_projectiles.clear()
+	room.reset_state()
+	_entry_left = 2.5
+	room.set_entrance_intact(true)
+	enemy.visuals.hide()
+	enemy.call("reset_pursuit")
+	enemy.set("active", false)
+	_chase_delay = -1.0 if room.prepared else _entry_left
+	defeat_hits = 0
+	escape_elapsed = 0.0
 	_immunity_left = 0.6
 	_respawn_grace = 0.8
 	_previous_player = player.position
@@ -330,20 +344,57 @@ func _update_capture(delta: float) -> void:
 			_capture()
 
 
-func _game_over() -> void:
-	var generation := _generation
+func _game_over(reason := "追跡者に捕獲されました") -> void:
+	if _game_over_pending or completed:
+		return
 	_game_over_pending = true
+	set_meta("stage_failed", true)
 	player.controls_enabled = false
 	enemy.controls_enabled = false
-	_message.text = "捕獲されました\nこの部屋から、もう一度！"
-	_message.show()
-	await get_tree().create_timer(1.2, false).timeout
-	if not is_inside_tree() or completed or generation != _generation:
-		return
-	_game_over_pending = false
-	player.controls_enabled = true
-	enemy.controls_enabled = true
+	_message.hide()
+	_failure_reason.text = reason + "\n再挑戦すると、この部屋の敵・針・雲・仕掛けを最初の状態に戻します。"
+	_game_over_panel.show()
+	get_tree().paused = true
+	_retry_button.grab_focus()
+
+
+func _retry_room() -> void:
+	get_tree().paused = false
 	player.respawn()
+
+
+func _build_game_over() -> void:
+	_game_over_panel = Control.new()
+	_game_over_panel.name = "GameOver"
+	_game_over_panel.z_index = 100
+	_game_over_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	$HUD.add_child(_game_over_panel)
+	var shade := ColorRect.new()
+	shade.color = Color(0.02, 0.04, 0.09, 0.8)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_game_over_panel.add_child(shade)
+	var panel := _panel(Rect2(260, 190, 760, 340))
+	_game_over_panel.add_child(panel)
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", 16)
+	panel.add_child(rows)
+	var title := _text("ゲームオーバー", 34)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rows.add_child(title)
+	_failure_reason = _text("", 18)
+	_failure_reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rows.add_child(_failure_reason)
+	_retry_button = Button.new()
+	_retry_button.text = "この部屋を最初からやり直す"
+	_retry_button.custom_minimum_size.y = 54
+	_retry_button.pressed.connect(_retry_room)
+	rows.add_child(_retry_button)
+	var leave := Button.new()
+	leave.text = "ステージ選択へ戻る"
+	leave.custom_minimum_size.y = 48
+	leave.pressed.connect(_return_to_select)
+	rows.add_child(leave)
+	_game_over_panel.hide()
 
 
 func _on_release(object: Grabbable, thrown: bool, source: PlayerController) -> void:
@@ -501,12 +552,14 @@ func _update_hud() -> void:
 
 func _help_text() -> String:
 	var text := "追跡者の終域 — 全13部屋\nUMA妖怪エイリアン　星間山荒・大赤斑\n"
-	text += "長針3連射、扇形5本、追尾トゲ6個、山なりの長針10本、短針18連射、灰の雨36本を状況に応じて使います。遠くへ逃げると灰雲で進路を先読みします。連射は見えている動きへゆっくり狙いを変えます。攻撃後の隙には掴まれません。\n屋根の下や傘は頭上の雨を防ぎ、箱は飛行針を受け止めます。ダッシュ中は傘が閉じます。地面の棘先は盾では防げません。\n敵は壁越しに忍者の位置を知りません。見失うと最後に見た場所を探し、やがて巡回します。画面外の行動もメッセージに表示します。\n地形に刺さった針の露出した後端へ箱を投げると固定足場になります。灰と連射の破片は数秒で崩れますが、箱で作った足場は残ります。全ての棘は敵に無効。箱の投擲は有効です。\n\n道中の到着スイッチは隔壁を開きます。開いた通路を走り抜けると次の部屋へ進み、敵は壁を破って追ってきます。\n\n"
+	text += "長針3連射、扇形5本、追尾トゲ6個、山なりの長針10本、短針18連射、灰の雨36本を状況に応じて使います。遠くへ逃げると灰雲で進路を先読みします。連射は見えている動きへゆっくり狙いを変えます。攻撃後の隙には掴まれません。\n屋根の下や傘は頭上の雨を防ぎ、箱は飛行針を受け止めます。ダッシュ中は傘が閉じます。地面の棘先は盾では防げません。重量扉の部屋では動き始めてから4秒間、準備の猶予があります。\n敵は壁越しに忍者の位置を知りません。見失うと最後に見た場所を探し、やがて巡回します。画面外の行動もメッセージに表示します。\n地形に刺さった針の露出した後端へ箱を投げると固定足場になります。灰と連射の破片は数秒で崩れますが、箱で作った足場は残ります。全ての棘は敵に無効。箱の投擲は有効です。\n\n道中の到着スイッチは隔壁を開きます。開いた通路を走り抜けると次の部屋へ進み、敵は壁を破って追ってきます。\n\n"
 	if room_index == ROOM.FINAL_ROOM:
 		text += "どれか一つでクリア。\n決着：怯んでいない敵へ箱を%d回当てる。\n封鎖：重箱を左のくぼみの金の台へ置いて通電→敵を檻へ誘い箱を当てる→怯んでいる間に右の高台の足跡を自分で踏む。箱を置くだけ・制御盤に先に乗って待つだけでは封鎖しません。\n逃走：同じ区画の敵と%d秒対峙し、左右の高所の鍵を2つ取って最も右上の到着台へ。見失わせても解除は進み、捕獲では時間を数え直します。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
 	text += "この部屋の進め方\n" + ROOM.HINTS[room_index]
+	if room_index != ROOM.FINAL_ROOM:
+		text += "\n開門後は「" + room.route_name + "」。上下の道は両端でつながります。足場の間から下へ降りると屋根のある迂回路へ移れます。"
 	text += "\n\n物体と捕獲\n金の輪が供給場所です。スイッチに置いた箱と固定した箱を敵は取りません。敵が物を持つ間も掴まれません。投擲・飛行弾はスタミナを3分の1減らし、こちらの箱は敵を2秒止めます。\n掴む予告から離れると避けられます。捕獲時の失敗率はスタミナ満タン0%、半分50%、空100%。失敗しても現在の部屋から再挑戦します。"
-	text += "\n\n復帰と操作\n落下・トゲでは自分だけ入口へ戻り、敵・箱・残る針・雲・目標の進捗を維持します。R / Startか下のやり直しでは部屋全体を初期化します。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
+	text += "\n\n復帰と操作\n落下・トゲ・捕獲失敗でゲームオーバーになります。「この部屋を最初からやり直す」で敵・箱・残る針・雲・目標の進捗を初期化します。未固定の針は時間で消え、入口には蓄積しません。R / Startでも部屋全体を初期化します。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
 	return text
 
 
@@ -664,12 +717,12 @@ func _spawn_needles(origin: Vector2, directions: Array[Vector2], variant: int) -
 		needle.course = room
 		needle.shooter = enemy
 		needle.variant = 0 if variant == 4 else (1 if variant == 5 else variant)
+		needle.stuck_left = [6.0, 3.0, 5.0, 2.0][needle.variant]
 		needle.velocity = direction if variant == 4 else direction.normalized() * [720.0, 650.0, 380.0, 660.0][needle.variant]
 		if variant == 4:
 			needle.acceleration = enemy.get_gravity_vector() * 1200.0
 		if variant == 5:
-			needle.stuck_left = 5.0
-			needle.temporary = true
+			needle.stuck_left = 3.0
 		room.needles.add_child(needle)
 		shots_fired += 1
 		flying += 1

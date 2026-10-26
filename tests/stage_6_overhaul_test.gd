@@ -21,7 +21,7 @@ func _run() -> void:
 		stage._load_room(number)
 		_check(stage.room.route.size() >= 4 and not stage.room.attack_patterns.is_empty(), "All thirteen rooms have a route and attack selection")
 	stage._load_room(11)
-	_check(stage.room.spike_blocks.size() == 4, "The added room uses four actual stage-four spike blocks")
+	_check(stage.room.spike_blocks.size() == 5, "The added room uses the original four spike blocks and a new route obstacle")
 	var spike: SpikeBlock = stage.room.spike_blocks[0]
 	stage.player.position = spike.position
 	stage.enemy.position = spike.position
@@ -57,6 +57,9 @@ func _perception() -> void:
 	stage.enemy.position = remembered
 	stage.enemy._update_perception(2.6)
 	_check(stage.enemy.awareness == "patrol", "Search finishes instead of tracking through a wall forever")
+	var noise := Vector2(720, -500)
+	stage.enemy.hear_switch(noise)
+	_check(stage.enemy.awareness == "search" and stage.enemy._last_seen == noise - Vector2(0, 26) and stage.enemy._last_seen != stage.player.position, "A switch sound directs search to the switch without exposing the hidden player")
 	wall.free()
 	await _step(2)
 	stage.enemy._update_perception(0.01)
@@ -187,8 +190,8 @@ func _capture_retry() -> void:
 	stage.player._wall_stamina = 0.0
 	stage._capture()
 	_check(stage._game_over_pending, "A failed capture starts the room-loss feedback")
-	stage.get_node("PauseMenu").open()
-	stage.get_node("PauseMenu").retry()
+	_check(paused, "A failed capture pauses the world until the player chooses retry")
+	stage._retry_button.pressed.emit()
 	var generation: int = stage._generation
 	await _step(85)
 	_check(not stage._game_over_pending and stage.player.controls_enabled and stage._generation == generation, "Manual retry cancels a stale capture timer without a second reset")

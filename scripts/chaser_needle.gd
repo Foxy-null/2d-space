@@ -23,7 +23,6 @@ var impact_normal := Vector2.ZERO
 var acceleration := Vector2.ZERO
 var stuck_left := 8.0
 var blocked := false
-var temporary := false
 var life := 3.0
 var length := 84.0
 var picture: Sprite2D
@@ -68,8 +67,9 @@ func advance(delta: float, player: PlayerController) -> void:
 			queue_free()
 			return
 		global_transform = anchor.global_transform * anchor_transform
-		if (variant == 3 or temporary) and not anchor is Grabbable and not is_instance_valid(pinned_box):
+		if not anchor is Grabbable and not is_instance_valid(pinned_box):
 			stuck_left -= delta
+			picture.modulate.a = clampf(stuck_left, 0.0, 1.0)
 			if stuck_left <= 0.0:
 				queue_free()
 		return
@@ -160,6 +160,10 @@ func stick(at: Vector2, normal: Vector2, body: CollisionObject2D) -> void:
 	if body is Grabbable:
 		previous_tip = tip_position()
 		return
+	if course.entrance_area.has_point(tip_position()):
+		queue_free()
+		return
+	course.limit_stuck_needles(self)
 	var surface := StaticBody2D.new()
 	surface.collision_layer = 2
 	surface.collision_mask = 0

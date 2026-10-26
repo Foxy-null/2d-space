@@ -55,6 +55,9 @@ func _enemy_behavior() -> void:
 	await _step(3)
 	stage.player.set_physics_process(false)
 	_place(stage.player, Vector2(450, 794))
+	stage._intro_left = 0.0
+	stage._intro_panel.hide()
+	stage._chase_delay = 2.5
 	stage._immunity_left = 999.0
 	var actions: Array[String] = []
 	var throws: Array[Grabbable] = []
@@ -64,7 +67,7 @@ func _enemy_behavior() -> void:
 			throws.append(object)
 	)
 	var start: Vector2 = stage.enemy.position
-	await _step(360)
+	await _step(720)
 	_check(stage.enemy.position.distance_to(start) > 60.0, "The autonomous enemy follows the course without player input")
 	_check(not throws.is_empty(), "The enemy picks up shared stock and performs real throws")
 	stage.enemy.set_physics_process(false)
@@ -230,44 +233,24 @@ func _fall_keeps_chaser() -> void:
 	stage._load_room(1)
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
-	_place(stage.player, Vector2(600, 794))
-	_place(stage.enemy, Vector2(620, 780))
-	await _step(3)
-	var item: Grabbable = stage.room.get_node("Items").get_child(0)
-	_check(stage.enemy.try_begin_grab(item), "Enemy holds a real shared item before the player falls")
-	var weight: Grabbable = stage.room.get_node("Items").get_child(1)
-	weight.position = stage.room.doors[0].button.position - Vector2(0, 60)
-	weight.linear_velocity = Vector2.ZERO
-	await _step(30)
-	stage.enemy.set("active", true)
-	stage._chase_delay = 0.0
-	stage.enemy.stun_left = 0.75
-	stage.enemy.velocity = Vector2(120, -80)
-	stage.enemy.set_gravity_direction(-1)
-	var enemy_position: Vector2 = stage.enemy.position
-	var enemy_velocity: Vector2 = stage.enemy.velocity
-	var clock: float = stage.room._elapsed
+	stage.enemy.active = true
 	_place(stage.player, Vector2(900, stage.room.size.y + 200))
 	stage._physics_process(0.0)
-	_check(stage.player.position == stage.room.spawn, "A real out-of-course check returns only the player to the entrance")
-	_check(stage.enemy.position == enemy_position and stage.enemy.velocity == enemy_velocity and stage.enemy.gravity_direction == -1 and stage.enemy.stun_left == 0.75, "Fall recovery preserves enemy position, momentum, gravity and stun")
-	_check(stage.enemy.get_held_object() == item and item.carrier == stage.enemy and stage.enemy.get("active"), "Fall recovery preserves enemy carrying and pursuit state")
-	_check(stage.room.all_weight_doors_open() and stage.room._elapsed == clock, "Falling does not reset open doors, weights or the room clock")
-	stage._respawn_grace = 0.0
-	_place(stage.player, stage.room.moving_hazards[0].current.get_center())
-	stage._physics_process(0.0)
-	_check(stage.player.position == stage.room.spawn and stage.enemy.position == enemy_position, "Spike recovery also leaves the enemy in place")
-	stage.player.respawn()
-	await _step(3)
-	_check(stage.enemy.position == stage.room.enemy_spawn and not stage.enemy.get("active") and not stage.room.all_weight_doors_open(), "An explicit full retry still resets both actors and room mechanisms")
+	_check(stage._game_over_pending and paused, "A real fall opens game over instead of silently respawning into the same needles")
+	var failed_at: Vector2 = stage.player.position
+	await _step(100)
+	_check(stage._game_over_pending and stage.player.position == failed_at, "Waiting does not automatically restart the failure loop")
+	stage._retry_button.pressed.emit()
+	_check(not paused and stage.player.position == stage.room.spawn and stage.enemy.position == stage.room.enemy_spawn and not stage.enemy.active, "Explicit retry resets both actors and gives a fresh departure")
 	stage._load_room(stage.ROOM.FINAL_ROOM)
 	stage.defeat_hits = 4
 	stage.escape_elapsed = 7.0
 	stage.room.key_collected = true
-	var last_enemy_position: Vector2 = stage.enemy.position
 	_place(stage.player, Vector2(900, stage.room.size.y + 200))
 	stage._physics_process(0.0)
-	_check(stage.defeat_hits == 4 and stage.escape_elapsed == 7.0 and stage.room.key_collected and stage.enemy.position == last_enemy_position, "Falling preserves final-room objectives as well as the enemy")
+	_check(stage._game_over_pending, "Final-room failure also has a game-over decision")
+	stage._retry_button.pressed.emit()
+	_check(stage.defeat_hits == 0 and stage.escape_elapsed == 0.0 and not stage.room.key_collected, "Retry resets the final encounter instead of preserving incremental progress")
 	stage.player.set_physics_process(true)
 	stage.enemy.set_physics_process(true)
 
@@ -395,7 +378,13 @@ func _capture_results() -> void:
 	stage.player._wall_stamina = 0.0
 	stage._capture()
 	await _step(90)
-	_check(current_scene == stage and not stage._game_over_pending and stage.player.position == stage.room.spawn, "A failed capture retries the current room without losing the stage")
+	_check(current_scene == stage and stage._game_over_pending and paused, "A failed capture stays at game over until the player chooses")
+	stage._retry_button.pressed.emit()
+	_check(not stage._game_over_pending and stage.player.position == stage.room.spawn, "Explicit retry restarts the current room")
+	var generation: int = stage._generation
+	stage.set_physics_process(false)
+	await _step(120)
+	_check(not stage._game_over_pending and stage._generation == generation, "Earlier surviving-capture feedback cannot alter an explicitly retried room")
 
 
 func _put_weight(at: Vector2, scene: PackedScene) -> void:

@@ -17,7 +17,13 @@ func _run() -> void:
 	stage._load_room(1)
 	stage._immunity_left = 999.0
 	stage._chase_delay = 0.0
-	# This fixture isolates movement; projectile/stock behavior has dedicated checks.
+	stage._entry_left = 0.0
+	stage.room.set_entrance_intact(false)
+	stage.enemy.visuals.show()
+	# This fixture isolates visible movement; cover and stock have dedicated checks.
+	stage.room.set_physics_process(false)
+	for item in stage.room.get_node("Items").get_children():
+		item.free()
 	stage.enemy._needle_cooldown = 999.0
 	stage.enemy._pickup_left = 999.0
 	stage.player.set_physics_process(false)

@@ -369,6 +369,20 @@ func _update_perception(delta: float) -> void:
 			awareness = "patrol"
 
 
+func hear_switch(at: Vector2) -> void:
+	if _can_see_target():
+		return
+	# The audible switch gives a location to investigate, never the hidden player's position.
+	_has_seen = true
+	awareness = "search"
+	_last_seen = at - Vector2(0, 26)
+	_last_gravity = 1
+	_trail.assign([{"at": _last_seen, "gravity": 1}])
+	_trail_index = 0
+	_lost_left = 0.0
+	_search_left = 4.0
+
+
 func can_capture() -> bool:
 	return active and controls_enabled and not defeated and stun_left <= 0.0 and get_held_object() == null and _needle_warning < 0.0 and _volley_left == 0 and _needle_recovery <= 0.0 and capture_recovery <= 0.0
 
@@ -388,7 +402,7 @@ func action_description() -> String:
 		return "攻撃後の隙 — 今は掴まれない"
 	if _attack_left >= 0.0:
 		return "持っている物を投げようとしている"
-	return {"pursuit": "こちらを追っている — 離れると灰雲で先回りする", "search": "最後に見た場所を探している", "patrol": "見失い、周辺を巡回している"}[awareness]
+	return {"pursuit": "こちらを追っている — 離れると灰雲で先回りする", "search": "最後に確認した場所を探している", "patrol": "見失い、周辺を巡回している"}[awareness]
 
 
 func _finish_volley() -> void:

@@ -18,7 +18,7 @@ var _step_frames := 1
 var _sample_at := 30
 var _recent_launch := -100
 var _record_label := "full-escape"
-const OUTPUT := "res://deliverables/stage6-pressure-update"
+const OUTPUT := "res://deliverables/stage6-human-rework"
 
 func _initialize() -> void:
 	_run.call_deferred()
@@ -54,8 +54,17 @@ func _run() -> void:
 			if selected >= 0 and attempt == 0:
 				stage._load_room(number)
 			elif attempt > 0:
-				while stage._game_over_pending:
+				if stage._game_over_pending:
+					var accept := InputEventAction.new()
+					accept.action = "ui_accept"
+					accept.pressed = true
+					Input.parse_input_event(accept)
 					await _step()
+					accept = InputEventAction.new()
+					accept.action = "ui_accept"
+					accept.pressed = false
+					Input.parse_input_event(accept)
+					await _step(3)
 				Input.action_press("reset")
 				await _step()
 				Input.action_release("reset")
@@ -78,6 +87,7 @@ func _run() -> void:
 					await _step()
 			if passed:
 				break
+			print("RETRY_CAUSE room=", number + 1, " at=", stage.player.position, " cause=", stage._failure_reason.text)
 			failures += 1
 			events.append({"time": ticks / 60.0, "room": number + 1, "event": "retry"})
 		if not passed:
@@ -158,13 +168,15 @@ func _play_room(number: int) -> bool:
 		Input.action_press("jump")
 		await _step()
 		Input.action_release("jump")
+	if number == 1:
+		_ground_run = true
 	if number in [1, 11] and not await _acquire("OBJECT"):
 		return false
 	if number in [3, 7, 8, 10, 12]:
 		var kind: String = "PARACHUTE" if number in [3, 10] else "JUMP"
 		if not await _acquire(kind):
 			return false
-	var route: Array = stage.room.route.duplicate()
+	var route: Array = stage.room.approach_route.duplicate() if not stage.room.approach_route.is_empty() else stage.room.route.duplicate()
 	# Weight puzzles have already traversed the opening section.
 	while route.size() and route[0].x < stage.player.position.x + 60 and number not in [7]:
 		route.pop_front()
@@ -177,7 +189,7 @@ func _play_room(number: int) -> bool:
 		if number == stage.ROOM.FINAL_ROOM and point == Vector2(4020, 500):
 			if not await _wait_for_block(1, 705.0):
 				return false
-		_ground_run = (number == 11 and point in [Vector2(1120, 910), Vector2(1450, 910)]) or (number == 0 and point == Vector2(1600, 670))
+		_ground_run = number == 1 or (number == 11 and point in [Vector2(1120, 910), Vector2(1450, 910)]) or (number == 0 and point == Vector2(1600, 670))
 		if number == 0 and point == Vector2(1060, 620) and not await _acquire("PARACHUTE"):
 			return false
 		if not await _navigate(point, 1000):
@@ -201,21 +213,23 @@ func _play_room(number: int) -> bool:
 			await _step()
 		if not stage.room.exit_open:
 			return false
-		var passage: Array = stage.room.passage_route.duplicate()
+		var lower := number == 1
+		var passage: Array = stage.room.branch_route.duplicate() if lower else stage.room.passage_route.duplicate()
 		_ground_run = true
-		for i in passage.size():
-			if i == 2 and is_instance_valid(stage.room.extension_block):
+		var index := 0
+		while index < passage.size():
+			if not await _navigate(passage[index], 900):
+				if lower or stage._game_over_pending:
+					return false
+				# A missed upper landing has a real lower way out; use it instead of retrying.
+				lower = true
+				passage = stage.room.branch_route.filter(func(point): return point.x > stage.player.position.x + 35)
+				index = 0
 				_release_movement()
-				for frame in 360:
-					var spike: SpikeBlock = stage.room.extension_block
-					if spike.position.y > stage.room.exit_position.y - 100.0 and spike.position.y >= spike.previous_position.y:
-						await _step(12)
-						break
-					await _step()
-			if not await _navigate(passage[i], 900):
-				return false
+				continue
 			if stage.room_index != number:
 				return true
+			index += 1
 		_ground_run = false
 		await _step(6)
 	if not stage.completed and stage.room_index == number:
@@ -378,6 +392,7 @@ func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 	var dropping := false
 	var drop_edge := Vector2.ZERO
 	var drop_below := 0.0
+	var drop_side := 1.0
 	var floor_query := PhysicsRayQueryParameters2D.create(point + stage.player.get_gravity_vector() * 5, point + stage.player.get_gravity_vector() * 80, 1, [stage.player.get_rid(), stage.enemy.get_rid()])
 	var require_floor: bool = not stage.player.get_world_2d().direct_space_state.intersect_ray(floor_query).is_empty()
 	for frame in maximum:
@@ -390,6 +405,8 @@ func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 			return true
 		var actor: PlayerController = stage.player
 		var delta := point - actor.position
+		if frame > 180 and stage.room.exit_open and stage.room.passage_route.has(point) and actor.is_on_floor() and delta.dot(actor.get_gravity_vector()) < -160.0:
+			return false
 		if actor.gravity_direction != initial_gravity and delta.length() < 220.0:
 			_release_movement()
 			return true
@@ -448,11 +465,18 @@ func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 				var extent := collision.global_transform.x.abs() * half.x + collision.global_transform.y.abs() * half.y
 				var side := signf((actor.position - body.global_position).dot(tangent))
 				if side == 0.0: side = 1.0
-				drop_edge = body.global_position + tangent * side * (extent.dot(tangent.abs()) + 48.0)
+				drop_side = signf(along) if absf(along) > 8.0 else side
+				drop_edge = body.global_position + tangent * drop_side * (extent.dot(tangent.abs()) + 48.0)
 				drop_below = body.global_position.dot(down) + extent.dot(down.abs()) + 38.0
 				dropping = true
 				break
 		if dropping:
+			if actor.is_on_wall() and actor.get_wall_normal().dot(tangent) * drop_side < -0.1:
+				drop_side *= -1.0
+				drop_edge = actor.position + tangent * drop_side * 180.0
+			# Adjacent steps may support the old walk-off point; keep walking to a real edge.
+			if actor.is_on_floor() and absf((drop_edge - actor.position).dot(tangent)) < 20.0:
+				drop_edge += tangent * drop_side * 160.0
 			if actor.position.dot(down) > drop_below:
 				dropping = false
 			else:
@@ -506,7 +530,10 @@ func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 			return false
 		if frame > 0 and frame % 240 == 0:
 			print("PILOT ", stage.room_index + 1, " target=", point, " pos=", actor.position, " gravity=", actor.gravity_direction, " held=", actor.get_held_object() != null, " weights=", stage.room.doors.map(func(entry): return entry.button.total_weight))
-	print("Pilot stalled in room %d: target=%s position=%s gravity=%d" % [stage.room_index + 1, point, stage.player.position, stage.player.gravity_direction])
+	print("Pilot stalled in room %d: target=%s position=%s gravity=%d velocity=%s floor=%s wall=%s" % [stage.room_index + 1, point, stage.player.position, stage.player.gravity_direction, stage.player.velocity, stage.player.is_on_floor(), stage.player.is_on_wall()])
+	for i in stage.player.get_slide_collision_count():
+		var c = stage.player.get_slide_collision(i)
+		print("CONTACT ", c.get_normal(), " ", c.get_collider().position)
 	return false
 
 func _on_launch(body: Node) -> void:

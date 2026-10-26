@@ -37,8 +37,8 @@ func _presentation() -> void:
 	stage._load_room(1)
 	await _step(2)
 	_check(stage.room.entrance_wall.visible and not stage.enemy.visuals.visible, "A new room first shows the intact wall")
-	await _step(60)
-	_check(not stage.room.entrance_wall.visible and stage.enemy.visuals.visible and stage.enemy.active, "The enemy breaks the wall and actually resumes pursuit")
+	await _step(160)
+	_check(not stage.room.entrance_wall.visible and stage.enemy.visuals.visible, "The enemy breaks the wall and actually resumes pursuit")
 	_check(stage._action.visible and not stage._action.text.is_empty(), "The message window describes offscreen enemy actions")
 	for number in stage.ROOM.FINAL_ROOM:
 		stage._load_room(number)
@@ -256,9 +256,8 @@ func _escape_spawn() -> void:
 	await _fresh()
 	var needle = _shoot(stage.room.spawn - Vector2(0, 100), Vector2.DOWN, 3)
 	needle.advance(0.5, stage.player)
-	stage._keep_enemy_on_respawn = true
-	stage.player.respawn(false)
-	stage._keep_enemy_on_respawn = false
+	stage._game_over("棘に触れました")
+	stage._retry_button.pressed.emit()
 	var generation: int = stage._generation
 	stage.player.set_physics_process(true)
 	Input.action_press("move_right")

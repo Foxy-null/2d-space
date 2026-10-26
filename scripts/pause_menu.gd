@@ -21,6 +21,8 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if stage.get_meta("stage_failed", false):
+		return
 	if event.is_action_pressed("pause_game"):
 		get_viewport().set_input_as_handled()
 		if event.is_echo():
