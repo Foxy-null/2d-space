@@ -54,7 +54,8 @@ func _physics_process(delta: float) -> void:
 	var before := global_position
 	elapsed += delta
 	position = origin + travel * _progress()
-	queue_redraw()
+	if not travel.is_zero_approx():
+		queue_redraw()
 	var player_shape := player.get_node("CollisionShape2D") as CollisionShape2D
 	var local_extent := hit_extent()
 	var hazard_extent := global_transform.x.abs() * local_extent.x + global_transform.y.abs() * local_extent.y

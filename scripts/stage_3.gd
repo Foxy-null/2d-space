@@ -69,6 +69,10 @@ func _ready() -> void:
 			if hint is Label:
 				hint.add_theme_color_override("font_outline_color", ArtDraw.INK)
 				hint.add_theme_constant_override("outline_size", 2)
+		for area in room.find_children("*", "Area2D", true, false):
+			if area is ScrollCollectible:
+				# Pending scrolls keep following through a room transfer.
+				area.process_mode = Node.PROCESS_MODE_PAUSABLE
 		room.get_node("Goal").activated.connect(_on_arrival.bind(room.get_index()))
 	_set_room(0, false)
 	player.respawn()
@@ -108,6 +112,9 @@ func _physics_process(delta: float) -> void:
 func _set_room(index: int, from_right: bool) -> void:
 	room_index = index
 	var room := rooms.get_child(index)
+	# Cached artwork remains visible while the camera pans between rooms.
+	for candidate in rooms.get_children():
+		candidate.process_mode = Node.PROCESS_MODE_INHERIT if candidate == room else Node.PROCESS_MODE_DISABLED
 	var entrance: Marker2D = room.get_node("Return" if from_right else "Spawn")
 	player.set_respawn_position(entrance.global_position)
 	hud.show_stage_room(index, TITLES[index], HINTS[index] if hints_visible else "", rooms.get_child_count())
