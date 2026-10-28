@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
 
@@ -35,7 +35,10 @@ size = Vector2(854, 40)
 size = Vector2(2304, 40)
 
 [sub_resource type="RectangleShape2D" id="ExitBarrierShape"]
-size = Vector2(28, 1400)
+size = Vector2(28, 220)
+
+[sub_resource type="RectangleShape2D" id="ExitLintelShape"]
+size = Vector2(28, 880)
 
 [sub_resource type="RectangleShape2D" id="RightBoundaryShape"]
 size = Vector2(28, 1400)
@@ -168,14 +171,24 @@ script = ExtResource("terrain")
 polygon = PackedVector2Array(-1152.0, -20.0, 1152.0, -20.0, 1152.0, 20.0, -1152.0, 20.0)
 
 [node name="ExitBarrier" type="StaticBody2D" parent="."]
-position = Vector2(14, 700.0)
+position = Vector2(468, 990)
 
 [node name="Collision" type="CollisionShape2D" parent="ExitBarrier"]
 shape = SubResource("ExitBarrierShape")
 
 [node name="Visual" type="Polygon2D" parent="ExitBarrier"]
 script = ExtResource("terrain")
-polygon = PackedVector2Array(-14.0, -700.0, 14.0, -700.0, 14.0, 700.0, -14.0, 700.0)
+polygon = PackedVector2Array(-14, -110, 14, -110, 14, 110, -14, 110)
+
+[node name="ExitLintel" type="StaticBody2D" parent="."]
+position = Vector2(468, 440)
+
+[node name="Collision" type="CollisionShape2D" parent="ExitLintel"]
+shape = SubResource("ExitLintelShape")
+
+[node name="Visual" type="Polygon2D" parent="ExitLintel"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-14, -440, 14, -440, 14, 440, -14, 440)
 
 [node name="RightBoundary" type="StaticBody2D" parent="."]
 position = Vector2(2324.0, 700.0)
