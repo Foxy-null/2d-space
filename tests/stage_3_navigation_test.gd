@@ -52,8 +52,8 @@ func _run() -> void:
 				para_strength = strength
 				var started := Engine.get_physics_frames()
 				await _cross_room_boundary()
-				if index == 22:
-					_check(Engine.get_physics_frames()-started < 110, "Room23 exits at the arrival floor instead of crossing empty space")
+				if index in [22, 23, 24, 26, 28]:
+					_check(Engine.get_physics_frames()-started < 110, "Room%d exits at the arrival floor instead of crossing empty space" % [index + 1])
 				_check(stage.cleared.has(index), "Forward passage preserves the actual cleared room")
 			else:
 				Input.action_press("move_left", strength)
