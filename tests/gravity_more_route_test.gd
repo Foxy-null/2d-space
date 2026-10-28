@@ -45,7 +45,7 @@ func _run() -> void:
 				_reset_course()
 				var seconds := float(Engine.get_physics_frames() - started) / 60.0
 				print("GRAVITY_MORE_ROOM_%d_SECONDS %.2f strength=%.2f" % [index + 1, seconds, stick])
-				_check(respawns == 0 and stage.cleared.has(index) and seconds < 30, "The two challenges, three-second rest and actual arrival take less than thirty seconds")
+				_check(respawns == 0 and stage.cleared.has(index) and seconds < 30, "The native course, three-second rest and actual arrival take less than thirty seconds")
 				_check(progress.get_count("gravity") == 0, "The main route never collects an optional scroll")
 				await _retry()
 				_check(stage.room_index == index and stage.cleared.has(index), "R keeps the current cleared checkpoint")
@@ -188,8 +188,7 @@ func _part_course() -> void:
 func _branch_launch(index: int) -> void:
 	_set_part(index, 0)
 	if index == 9:
-		await _kick_gate(240, -1)
-		await _cross_ceiling_pit(330, 470)
+		await _room_ten_entry()
 		_drive("move_right")
 		await _until(func(): return _x() >= 575 and player.is_on_floor(), 100, "Reach the upper branch's actual quiet takeoff")
 		_release_inputs()
@@ -399,7 +398,7 @@ func _mandatory_used() -> bool:
 		3, 8: return flips.size() >= 4 and kicks >= 4
 		4: return actions.has("exit_spring") and flips.size() >= 2
 		5: return actions.has("spring") and flips.size() >= 4 and kicks >= 5
-		7: return actions.get("air_jump", 0) >= 2 and flips.size() >= 2
+		7: return actions.get("air_jump", 0) >= 2 and flips.size() >= 2 and (stage.room_index != 9 or actions.has("launch_spring"))
 	return false
 
 
@@ -425,7 +424,7 @@ func _negative_routes(indices: Array = [9, 10, 11, 12, 13, 14]) -> void:
 		if failed: return
 	# Finite real-input roof, floor and wall attempts; no mechanic is disabled.
 	for index in indices:
-		for part in 2:
+		for part in MORE_SOURCES[index - 9].size():
 			for direction in _directions():
 				await _approach_part(index, part)
 				_drive("move_right", true)
@@ -453,8 +452,11 @@ func _negative_routes(indices: Array = [9, 10, 11, 12, 13, 14]) -> void:
 		for extras in [0, 1]:
 			for direction in _directions():
 				await _approach_part(index, 0 if index == 9 else 1)
-				await _kick_gate(240, -1)
-				await _cross_ceiling_pit(330, 470)
+				if index == 9:
+					await _room_ten_entry()
+				else:
+					await _kick_gate(240, -1)
+					await _cross_ceiling_pit(330, 470)
 				_drive("move_right")
 				await _until(func(): return player.is_on_floor() and _x() >= 760, 180, "Reach the upper takeoff by its real entrance route")
 				_release_inputs()
