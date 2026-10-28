@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="art_terrain"]
 
@@ -18,7 +18,10 @@ size = Vector2(320, 40)
 size = Vector2(36, 220)
 
 [sub_resource type="RectangleShape2D" id="Shape_27"]
-size = Vector2(36, 220)
+size = Vector2(36, 280)
+
+[sub_resource type="RectangleShape2D" id="MiddleDownShape"]
+size = Vector2(170, 140)
 
 [sub_resource type="RectangleShape2D" id="Shape_28"]
 size = Vector2(36, 220)
@@ -230,25 +233,31 @@ shape = SubResource("Shape_Room4UpGate")
 polygon = PackedVector2Array(-80, -80, 80, -80, 80, 80, -80, 80)
 
 [node name="CeilingWall" type="StaticBody2D" parent="."]
-position = Vector2(598.0, 190.0)
+position = Vector2(598, 220)
 
 [node name="Collision" type="CollisionShape2D" parent="CeilingWall"]
 shape = SubResource("Shape_27")
 
 [node name="Visual" type="Polygon2D" parent="CeilingWall"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-18.0, -110.0, 18.0, -110.0, 18.0, 110.0, -18.0, 110.0)
+polygon = PackedVector2Array(-18.0, -140.0, 18.0, -140.0, 18.0, 140.0, -18.0, 140.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
 [node name="Edge" type="Line2D" parent="CeilingWall"]
-points = PackedVector2Array(-18.0, -110.0, 18.0, -110.0)
+points = PackedVector2Array(-18.0, -140.0, 18.0, -140.0)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="MiddleDownGate" parent="." instance=ExtResource("5_gate")]
-position = Vector2(490, 400)
+position = Vector2(505, 450)
 target_gravity = 1
+
+[node name="CollisionShape2D" parent="MiddleDownGate" index="0"]
+shape = SubResource("MiddleDownShape")
+
+[node name="Glow" parent="MiddleDownGate" index="1"]
+polygon = PackedVector2Array(-85, -70, 85, -70, 85, 70, -85, 70)
 
 [node name="SecondLaunchWall" type="StaticBody2D" parent="."]
 position = Vector2(858.0, 530.0)
