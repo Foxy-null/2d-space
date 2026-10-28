@@ -34,6 +34,8 @@ size = Vector2(28, 1400)
 [node name="Room17" type="Node2D"]
 metadata/room_width = 2304.0
 metadata/room_bottom = 1400.0
+metadata/camera_offset_y = 165.0
+metadata/camera_offset_y_normal = -80.0
 metadata/third_mirror = false
 metadata/return_retract = PackedStringArray("UpGate", "DownGate")
 
