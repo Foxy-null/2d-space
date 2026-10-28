@@ -28,6 +28,7 @@ var life := 3.0
 var length := 84.0
 var picture: Sprite2D
 var neutral_left := 0.65
+var launch_straight_left := 0.2
 var tracking_left := 2.5
 
 
@@ -82,11 +83,15 @@ func advance(delta: float, player: PlayerController) -> void:
 			_set_picture(true)
 		if delta <= 0.0:
 			return
-	if variant == 2 and tracking_left > 0.0:
+	var tracking_delta := delta
+	if variant == 2:
+		tracking_delta = maxf(0.0, delta - launch_straight_left)
+		launch_straight_left = maxf(0.0, launch_straight_left - delta)
+	if variant == 2 and tracking_left > 0.0 and tracking_delta > 0.0:
 		var turn := velocity.angle_to(player.global_position - global_position)
-		var turn_limit := 2.3 * minf(delta, tracking_left)
+		var turn_limit := 2.3 * minf(tracking_delta, tracking_left)
 		velocity = velocity.rotated(clampf(turn, -turn_limit, turn_limit))
-		tracking_left = maxf(0.0, tracking_left - delta)
+		tracking_left = maxf(0.0, tracking_left - tracking_delta)
 		rotation = velocity.angle()
 		if tracking_left <= 0.0:
 			picture.modulate = Color("a9ddff")

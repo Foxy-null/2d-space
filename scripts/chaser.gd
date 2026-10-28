@@ -9,6 +9,7 @@ const ENEMY_NAME := "星間山荒・大赤斑"
 const SPRITE = preload("res://scripts/chaser_sprite.gd")
 const ATTACK_NAMES := ["長針3連射", "扇形の針", "追尾トゲ6発", "灰雲の雨", "山なりの長針", "短針の連射"]
 const FAN_ANGLES := [-0.5, -0.25, 0.0, 0.25, 0.5]
+const HOMING_ANGLES := [-0.75, -0.45, -0.15, 0.15, 0.45, 0.75]
 var defeated := false
 var _needle_cooldown := 1.0
 var _needle_warning := -1.0
@@ -493,7 +494,7 @@ func _update_needle_attack(delta: float) -> void:
 				_finish_volley()
 			elif _needle_variant in [1, 2]:
 				var directions: Array[Vector2] = []
-				for angle in (FAN_ANGLES if _needle_variant == 1 else [-0.4, -0.24, -0.08, 0.08, 0.24, 0.4]):
+				for angle in (FAN_ANGLES if _needle_variant == 1 else HOMING_ANGLES):
 					directions.append(_needle_aim.rotated(angle))
 				needle_attack.emit(_attack_origin, directions, _needle_variant)
 				_finish_volley()
@@ -536,7 +537,7 @@ func _cache_warning_spans() -> void:
 	if _needle_variant in [3, 4]:
 		return
 	var origin := global_position - _attack_down * 65.0
-	var angles := FAN_ANGLES if _needle_variant == 1 else ([-0.4, -0.24, -0.08, 0.08, 0.24, 0.4] if _needle_variant == 2 else [0.0])
+	var angles := FAN_ANGLES if _needle_variant == 1 else (HOMING_ANGLES if _needle_variant == 2 else [0.0])
 	for angle in angles:
 		var end: Vector2 = origin + _needle_aim.rotated(angle) * 900.0
 		var query := PhysicsRayQueryParameters2D.create(origin, end, 1, [get_rid(), target.get_rid()])

@@ -78,6 +78,10 @@ func _attacks() -> void:
 		stage.enemy._technique_wait.fill(0.0)
 		stage.enemy._update_needle_attack(0.01)
 		_check(stage.enemy._needle_warning > 0.0, "Every selected attack announces a warning")
+		var warnings := PackedVector2Array()
+		if kind == 2:
+			stage.enemy._cache_warning_spans()
+			warnings = stage.enemy._warning_spans.duplicate()
 		if kind == 1:
 			var cover: StaticBody2D = stage.room._block(Rect2(-150, -2500, 20, 500))
 			await _step(2)
@@ -91,6 +95,20 @@ func _attacks() -> void:
 				stage.enemy._update_needle_attack(delta)
 		_check(stage.room.needles.get_child_count() == [3, 5, 6][kind], "The selected volley emits its complete real projectile count")
 		_check(stage.enemy._needle_recovery > 0.0 and not stage.enemy.can_capture(), "Recovery remains a capture-free counterattack window")
+		if kind == 2:
+			var volley: Array = stage.room.needles.get_children()
+			var aligned := warnings.size() == 12
+			var across: Vector2 = stage.enemy._needle_aim.orthogonal()
+			var low := INF
+			var high := -INF
+			for i in volley.size():
+				aligned = aligned and (warnings[i * 2 + 1] - warnings[i * 2]).normalized().is_equal_approx(volley[i].velocity.normalized())
+				volley[i].advance(0.85, stage.player)
+				var lateral: float = (volley[i].position - stage.enemy._attack_origin).dot(across)
+				low = minf(low, lateral)
+				high = maxf(high, lateral)
+			_check(aligned, "All six launch directions match their telegraphed rays")
+			_check(high - low > 100.0, "The six actual projectiles spread over one hundred pixels before homing")
 		for needle in stage.room.needles.get_children():
 			needle.free()
 	stage.enemy._needle_warning = -1.0
