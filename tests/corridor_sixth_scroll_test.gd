@@ -76,7 +76,8 @@ func _sixth_fall(pending := false) -> void:
 	var room: Node2D=stage.rooms.get_child(stage.room_index)
 	for frame in 420:
 		more_drive(-3000*room.travel_direction)
-		if pending and frame%6==0:await _pulse("jump")
+		if (pending and frame%6==0) or (not pending and player.is_on_floor() and player.is_on_wall()):
+			await _pulse("jump")
 		await step()
 		if deaths!=before:
 			_hold()

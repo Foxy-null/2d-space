@@ -308,8 +308,9 @@ func _ready() -> void:
 		edge.ceiling_strip = true
 		edge.strip_half_width = 590.0 if room_number == 6 else 250.0
 		if room_number >= 9:
-			edge.position.y = (entrance_top + 100) * 0.5
-			edge.strip_half_width = (entrance_top - 100) * 0.5
+			var edge_bottom := entrance_top - (140.0 if travel_direction < 0 else 0.0)
+			edge.position.y = (edge_bottom + 100) * 0.5
+			edge.strip_half_width = (edge_bottom - 100) * 0.5
 		if room_number == 26:
 			edge.position.y = 550
 			edge.strip_half_width = 100

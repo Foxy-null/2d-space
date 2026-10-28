@@ -136,6 +136,7 @@ func _transition_to_next() -> void:
 
 
 func _on_respawned() -> void:
+	player.facing_direction = rooms.get_child(room_index).travel_direction
 	goal.reset_for_respawn()
 	for item in rooms.get_child(room_index).get_node("Items").get_children():
 		item.reset_for_respawn()

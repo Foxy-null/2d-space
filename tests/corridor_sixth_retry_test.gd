@@ -22,7 +22,7 @@ func _run() -> void:
 		var hits: Array[bool] = []
 		room.get_node("Hazards/LeftEdgeSpikes").player_hit.connect(func():hits.append(true),CONNECT_ONE_SHOT)
 		before=deaths
-		_drive(Vector2.LEFT*room.travel_direction)
+		_drive(Vector2.LEFT*room.travel_direction+(Vector2.UP if room.travel_direction==-1 else Vector2.ZERO))
 		await _pulse("dash")
 		for frame in 180:
 			if deaths!=before:break
