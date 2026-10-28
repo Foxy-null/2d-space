@@ -24,6 +24,16 @@ func _run() -> void:
 		_check(stage.room.get_node("Items").get_child_count() > 0, "Every room supplies a throwable object")
 		_check(stage.room.route.size() >= 4, "Every room has a chase route")
 		_check(stage._backdrop.environment_theme == (3 if number < 6 else 4), "Unused lava/evil environments are assigned")
+		stage.room._physics_process(0.3)
+		for platform in stage.room.brittle_platforms:
+			stage.room.break_needle_platform(platform)
+		var crystals: Array = stage.room.get_children().filter(func(child): return child.get_script() == load("res://scripts/refill_crystal.gd"))
+		for crystal in crystals:
+			crystal._on_body_entered(stage.player)
+		stage.retry_room()
+		_check(stage.room_index == number and stage.room._elapsed == 0.0 and stage.room._supply_left == 0.0 and stage.room.moving_hazards.all(func(entry): return entry.current == entry.rect) and stage.room.spike_blocks.all(func(spike): return spike.elapsed == 0.0), "Every room resets its moving hazards and timers: %d" % (number + 1))
+		_check(stage.room.brittle_platforms.all(func(platform): return platform.visible and platform.collision_layer == 1) and crystals.all(func(crystal): return crystal._available and crystal.visible), "Every room restores broken terrain and consumed refills: %d" % (number + 1))
+		_check(stage.room.doors.all(func(entry): return not entry.button.is_pressed() and entry.body.visible != entry.closes), "Every room restores weight-door defaults: %d" % (number + 1))
 		if OS.get_cmdline_user_args().has("--screenshots"):
 			RenderingServer.force_draw()
 			DirAccess.make_dir_recursive_absolute("res://docs/screenshots/stage-6")
@@ -40,7 +50,7 @@ func _run() -> void:
 	await _enemy_behavior()
 	await _four_gravities()
 	await _projectiles_and_retry()
-	await _fall_keeps_chaser()
+	await _fall_resets_room()
 	await _final_endings()
 	await _capture_results()
 	print("STAGE_6_TEST_OK (%d checks)" % checks)
@@ -221,9 +231,12 @@ func _projectiles_and_retry() -> void:
 	for supply in stage.room.supplies:
 		var nearby: Array = stage.room.get_node("Items").get_children().filter(func(item): return item.position.distance_to(supply.at) < 150.0)
 		_check(not nearby.is_empty(), "Supply still replenishes after reaching the body cap")
+	stage.retry_room()
+	await _step(2)
+	_check(stage.room.get_node("Items").get_child_count() == stage.room.supplies.size(), "Retry removes replenished copies and leaves only the initial stock")
 
 
-func _fall_keeps_chaser() -> void:
+func _fall_resets_room() -> void:
 	stage._load_room(1)
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
@@ -241,19 +254,27 @@ func _fall_keeps_chaser() -> void:
 	stage.enemy.stun_left = 0.75
 	stage.enemy.velocity = Vector2(120, -80)
 	stage.enemy.set_gravity_direction(-1)
-	var enemy_position: Vector2 = stage.enemy.position
-	var enemy_velocity: Vector2 = stage.enemy.velocity
-	var clock: float = stage.room._elapsed
+	_check(stage.room.all_weight_doors_open(), "A real weight opens the door before retry")
+	stage.player.apply_attack_damage(0.45, true)
+	stage.room.set_entrance_intact(false)
 	_place(stage.player, Vector2(900, stage.room.size.y + 200))
 	stage._physics_process(0.0)
-	_check(stage.player.position == stage.room.spawn, "A real out-of-course check returns only the player to the entrance")
-	_check(stage.enemy.position == enemy_position and stage.enemy.velocity == enemy_velocity and stage.enemy.gravity_direction == -1 and stage.enemy.stun_left == 0.75, "Fall recovery preserves enemy position, momentum, gravity and stun")
-	_check(stage.enemy.get_held_object() == item and item.carrier == stage.enemy and stage.enemy.get("active"), "Fall recovery preserves enemy carrying and pursuit state")
-	_check(stage.room.all_weight_doors_open() and stage.room._elapsed == clock, "Falling does not reset open doors, weights or the room clock")
+	_check(stage.room_index == 1 and stage.player.position == stage.room.spawn, "A real fall keeps the checkpoint in the current room")
+	_check(stage.enemy.position == stage.room.enemy_spawn and stage.enemy.velocity == Vector2.ZERO and stage.enemy.gravity_direction == 1 and stage.enemy.stun_left == 0.0, "Fall recovery resets enemy position, momentum, gravity and stun")
+	_check(stage.enemy.get_held_object() == null and item.carrier == null and not stage.enemy.get("active"), "Fall recovery releases carried items and restarts pursuit")
+	_check(not stage.room.all_weight_doors_open() and stage.room.doors[0].body.visible and stage.room._elapsed == 0.0 and stage.room._supply_left == 0.0, "Falling resets weights, doors and room timers immediately")
+	_check(stage.player.get_wall_stamina() == 3.0 and stage.player.recovery_slow_left == 0.0 and stage.player.movement_slow_left == 0.0, "Falling also heals attack damage and status effects")
+	_check(stage.room.entrance_wall.visible and stage.room.breach_left == 0.0 and stage._entry_left == 0.9, "Retry restores the entrance wall and its breach sequence")
 	stage._respawn_grace = 0.0
+	stage.enemy.position += Vector2(100, 0)
 	_place(stage.player, stage.room.moving_hazards[0].current.get_center())
 	stage._physics_process(0.0)
-	_check(stage.player.position == stage.room.spawn and stage.enemy.position == enemy_position, "Spike recovery also leaves the enemy in place")
+	_check(stage.player.position == stage.room.spawn and stage.enemy.position == stage.room.enemy_spawn and stage.room._elapsed == 0.0, "Moving-spike recovery resets the room too")
+	stage._respawn_grace = 0.0
+	stage.enemy.position += Vector2(100, 0)
+	_place(stage.player, stage.room.hazards[0].get_center())
+	stage._physics_process(0.0)
+	_check(stage.player.position == stage.room.spawn and stage.enemy.position == stage.room.enemy_spawn, "Fixed-spike recovery also resets the room")
 	stage.player.respawn()
 	await _step(3)
 	_check(stage.enemy.position == stage.room.enemy_spawn and not stage.enemy.get("active") and not stage.room.all_weight_doors_open(), "An explicit full retry still resets both actors and room mechanisms")
@@ -261,10 +282,11 @@ func _fall_keeps_chaser() -> void:
 	stage.defeat_hits = 4
 	stage.escape_elapsed = 7.0
 	stage.room.key_collected = true
-	var last_enemy_position: Vector2 = stage.enemy.position
+	stage.room.keys_collected = 2
+	stage.room.update_escape(true)
 	_place(stage.player, Vector2(900, stage.room.size.y + 200))
 	stage._physics_process(0.0)
-	_check(stage.defeat_hits == 4 and stage.escape_elapsed == 7.0 and stage.room.key_collected and stage.enemy.position == last_enemy_position, "Falling preserves final-room objectives as well as the enemy")
+	_check(stage.defeat_hits == 0 and stage.escape_elapsed == 0.0 and not stage.room.key_collected and stage.room.keys_collected == 0 and stage.room.arrival.locked, "Falling resets final-room hits, time, keys and the escape gate")
 	stage.player.set_physics_process(true)
 	stage.enemy.set_physics_process(true)
 

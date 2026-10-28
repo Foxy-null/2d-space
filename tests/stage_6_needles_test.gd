@@ -46,12 +46,9 @@ func _run() -> void:
 	_check(stage.player.is_on_floor() and stage.player.position.y < box.position.y - 45.0, "The player can really stand on the pinned box")
 	_check(not stage._touches_stuck_needle(stage.player, stage.player.position), "Standing on the box is safe")
 	stage.player.set_physics_process(false)
-	stage._keep_enemy_on_respawn = true
-	stage.player.respawn(false)
-	stage._keep_enemy_on_respawn = false
-	_check(box.pinned_to == needle and box.freeze, "Falling preserves the constructed route")
-	stage.player.respawn()
-	_check(stage.room.needles.get_child_count() == 0 and not box.freeze and box.pinned_to == null, "Full retry removes needles and releases all pinned boxes")
+	_place(stage.player, Vector2(900, stage.room.size.y + 200))
+	stage._physics_process(0.0)
+	_check(stage.room.needles.get_child_count() == 0 and not box.freeze and box.pinned_to == null, "Falling removes needles and releases all pinned boxes")
 	box.queue_free()
 	await _step(2)
 	var brittle: StaticBody2D = stage.room.brittle_platforms[0]

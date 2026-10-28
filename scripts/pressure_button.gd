@@ -37,6 +37,14 @@ func is_pressed() -> bool:
 	return _pressed
 
 
+func reset_for_respawn() -> void:
+	total_weight = 0.0
+	if _pressed:
+		_pressed = false
+		pressed_changed.emit(false)
+	queue_redraw()
+
+
 func _draw() -> void:
 	var width: float = ($CollisionShape2D.shape as RectangleShape2D).size.x
 	ArtDraw.box(self, Rect2(-width / 2, -3, width, 20), Color("777681"))

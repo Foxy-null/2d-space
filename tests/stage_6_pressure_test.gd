@@ -413,14 +413,14 @@ func _escape_spawn() -> void:
 	await _fresh()
 	var needle = _shoot(stage.room.spawn - Vector2(0, 100), Vector2.DOWN, 3)
 	needle.advance(0.5, stage.player)
-	stage._keep_enemy_on_respawn = true
-	stage.player.respawn(false)
-	stage._keep_enemy_on_respawn = false
+	stage.player.position = Vector2(900, stage.room.size.y + 200)
+	stage._physics_process(0.0)
+	_check(not is_instance_valid(needle), "Falling clears the dangerous ash at the checkpoint immediately")
 	var generation: int = stage._generation
 	for frame in 60:
 		stage._physics_process(1.0 / 60.0)
 		await _step()
-	_check(stage._generation == generation and not is_instance_valid(needle), "Waiting at the respawn point outlasts the leftover ash without another respawn")
+	_check(stage._generation == generation and stage.room.needles.get_child_count() == 0, "Waiting at the checkpoint does not bring back old ash or cause another retry")
 	stage.player.set_physics_process(true)
 	Input.action_press("move_right")
 	for frame in 24:

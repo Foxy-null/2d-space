@@ -391,8 +391,7 @@ func open_passage() -> void:
 func set_entrance_intact(intact: bool) -> void:
 	entrance_wall.collision_layer = 1 if intact else 0
 	_set_door(entrance_wall, intact)
-	if not intact:
-		breach_left = 0.45
+	breach_left = 0.0 if intact else 0.45
 	queue_redraw()
 
 
@@ -562,6 +561,7 @@ func reset_state() -> void:
 		platform.collision_layer = 1
 		platform.show()
 	_elapsed = 0.0
+	_supply_left = 0.0
 	for entry in moving_hazards:
 		entry.current = entry.rect
 		entry.surface.position = entry.rect.get_center()
@@ -580,6 +580,8 @@ func reset_state() -> void:
 	for child in get_children():
 		if child.has_method("reset_for_respawn") and child != arrival:
 			child.reset_for_respawn()
+	for entry in doors:
+		_set_door(entry.body, not entry.closes)
 	for door in cage_doors:
 		_set_door(door, false)
 	for supply in supplies:

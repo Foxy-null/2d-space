@@ -42,7 +42,6 @@ var _previous_enemy := Vector2.ZERO
 var _player_arrived := false
 var defeat_hits := 0
 var escape_elapsed := 0.0
-var _keep_enemy_on_respawn := false
 var _enemy_indicator: Label
 var _intro_left := 0.0
 var _intro_seen := false
@@ -295,9 +294,7 @@ func _physics_process(delta: float) -> void:
 	if _game_over_pending:
 		return
 	if _out_of_course(player) or (_respawn_grace <= 0.0 and _touches_hazard(player, _previous_player)):
-		_keep_enemy_on_respawn = true
-		player.respawn(false, true)
-		_keep_enemy_on_respawn = false
+		player.respawn()
 		return
 	if _out_of_course(enemy) or _touches_hazard(enemy, _previous_enemy):
 		enemy.call("reset_pursuit", true)
@@ -336,23 +333,26 @@ func _on_player_respawned() -> void:
 	_hit_grace = 0.0
 	_message.hide()
 	_player_arrived = false
-	if not _keep_enemy_on_respawn:
-		_projectiles.clear()
-		room.reset_state()
-		enemy.call("reset_pursuit")
-		enemy.set("active", false)
-		_entry_left = 0.9 if room_index > 0 else 0.0
-		room.set_entrance_intact(true)
-		enemy.visuals.visible = room_index == 0
-		_chase_delay = -1.0 if room.prepared else maxf(room.chase_delay, _entry_left)
-		defeat_hits = 0
-		escape_elapsed = 0.0
+	_projectiles.clear()
+	room.reset_state()
+	enemy.call("reset_pursuit")
+	enemy.set("active", false)
+	_entry_left = 0.9 if room_index > 0 else 0.0
+	room.set_entrance_intact(true)
+	enemy.visuals.visible = room_index == 0
+	_chase_delay = -1.0 if room.prepared else maxf(room.chase_delay, _entry_left)
+	defeat_hits = 0
+	escape_elapsed = 0.0
+	_shake_left = 0.0
+	_effect_left = 0.0
+	$HUD/BreachSound.stop()
 	_immunity_left = 0.6
 	_respawn_grace = 0.8
 	_previous_player = player.position
 	_previous_enemy = enemy.position
 	_update_camera()
 	camera.reset_smoothing()
+	_update_hud()
 
 
 func _capture() -> void:
@@ -630,7 +630,7 @@ func _help_text() -> String:
 		text += "どれか一つでクリア。\n決着：怯んでいない敵へ箱を%d回当てる。\n封鎖：逃走出口の下の区画へ進む。近くの重箱をくぼみの金の台へ置いて通電→右の檻へ敵を誘い箱を当てる→怯んでいる間に左の高台の制御盤を自分で踏む。箱を置くだけ・制御盤に先に乗って待つだけでは封鎖しません。\n逃走：同じ区画の敵と%d秒対峙し、左右の高所の鍵を2つ取って最も右上の到着台へ。見失わせても解除は進み、捕獲では時間を数え直します。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
 	text += "この部屋の進め方\n" + ROOM.HINTS[room_index]
 	text += "\n\n物体と捕獲\n金の輪が供給場所です。スイッチに置いた箱と固定した箱を敵は取りません。敵が物を持つ間も掴まれません。投擲・飛行弾はスタミナを3分の1減らし、被弾後は4秒間回復が遅くなります。追加被弾で2秒ずつ、最大8秒まで延長します。通常時の着地は即時全回復です。こちらの箱は敵を2秒止めます。\n掴む予告から離れると避けられます。スタミナが少しでも残っていれば捕獲をしのぎ、投げ返されます。スタミナ0での捕獲か、攻撃によるスタミナ切れでは、演出後にこの部屋のチェックポイントから自動でやり直します。スタミナと状態異常を回復し、敵・針・部屋の仕掛けも初期状態へ戻します。"
-	text += "\n\n復帰と操作\n落下・固定棘・移動棘では自分だけ入口へ戻り、敵・箱・残る針・雲・目標の進捗を維持します。スタート付近の地形に刺さった針は0.6秒で消え、箱を固定した足場は残ります。R / Startか下のやり直しでは部屋全体を初期化しますが、残っている回復低下と減速は維持します。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
+	text += "\n\n復帰と操作\n落下・固定棘・移動棘、R / Start、ポーズや下のやり直し、敗北後の再開は、すべて現在の部屋を初期状態へ戻します。敵・針・箱・雲・仕掛けとこの部屋の目標進捗をリセットし、スタミナを全回復して回復低下と減速を解除します。クリア済みの部屋は保持します。スタート付近の地形に刺さった針は0.6秒で消え、箱を固定した足場はやり直すまで残ります。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
 	return text
 
 
@@ -670,7 +670,7 @@ func _return_to_select() -> void:
 
 func retry_room() -> void:
 	if not _game_over_pending:
-		player.respawn(true, true)
+		player.respawn()
 
 
 func _draw_effects() -> void:

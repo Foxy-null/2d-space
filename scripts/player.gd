@@ -107,7 +107,7 @@ func _physics_process(delta: float) -> void:
 	if not controls_enabled:
 		return
 	if _just_pressed("reset"):
-		respawn(true, true)
+		respawn()
 		return
 	var grounded := _contacts_valid and is_on_floor()
 	var on_wall := _contacts_valid and is_on_wall()
@@ -533,7 +533,7 @@ func set_respawn_position(location: Vector2) -> void:
 	_spawn_position = location
 
 
-func respawn(reset_objects := true, preserve_attack_state := false) -> void:
+func respawn(reset_objects := true) -> void:
 	for object in _separating_objects.duplicate():
 		_clear_object_separation(object)
 	if get_held_object() != null and not reset_objects:
@@ -541,9 +541,8 @@ func respawn(reset_objects := true, preserve_attack_state := false) -> void:
 	_held = null
 	stun_left = 0.0
 	stamina_recovery_left = 0.0
-	if not preserve_attack_state:
-		recovery_slow_left = 0.0
-		movement_slow_left = 0.0
+	recovery_slow_left = 0.0
+	movement_slow_left = 0.0
 	_parachute_grace_left = 0.0
 	if reset_objects:
 		for object in get_tree().get_nodes_in_group("grabbable"):
