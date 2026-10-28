@@ -1,4 +1,4 @@
-[gd_scene load_steps=115 format=3]
+[gd_scene load_steps=116 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/pause_menu.tscn" id="pause_menu"]
 
@@ -162,7 +162,10 @@ size = Vector2(320, 40)
 size = Vector2(36, 220)
 
 [sub_resource type="RectangleShape2D" id="Shape_27"]
-size = Vector2(36, 220)
+size = Vector2(36, 280)
+
+[sub_resource type="RectangleShape2D" id="MiddleDownShape"]
+size = Vector2(170, 140)
 
 [sub_resource type="RectangleShape2D" id="Shape_28"]
 size = Vector2(36, 220)
@@ -1445,25 +1448,31 @@ shape = SubResource("Shape_Room4UpGate")
 polygon = PackedVector2Array(-80, -80, 80, -80, 80, 80, -80, 80)
 
 [node name="CeilingWall" type="StaticBody2D" parent="Rooms/Room4"]
-position = Vector2(598.0, 190.0)
+position = Vector2(598, 220)
 
 [node name="Collision" type="CollisionShape2D" parent="Rooms/Room4/CeilingWall"]
 shape = SubResource("Shape_27")
 
 [node name="Visual" type="Polygon2D" parent="Rooms/Room4/CeilingWall"]
 script = ExtResource("art_terrain")
-polygon = PackedVector2Array(-18.0, -110.0, 18.0, -110.0, 18.0, 110.0, -18.0, 110.0)
+polygon = PackedVector2Array(-18.0, -140.0, 18.0, -140.0, 18.0, 140.0, -18.0, 140.0)
 color = Color(0.24, 0.38, 0.56, 1)
 
 [node name="Edge" type="Line2D" parent="Rooms/Room4/CeilingWall"]
-points = PackedVector2Array(-18.0, -110.0, 18.0, -110.0)
+points = PackedVector2Array(-18.0, -140.0, 18.0, -140.0)
 width = 2.0
 default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="MiddleDownGate" parent="Rooms/Room4" instance=ExtResource("5_gate")]
-position = Vector2(490, 400)
+position = Vector2(505, 450)
 target_gravity = 1
+
+[node name="CollisionShape2D" parent="Rooms/Room4/MiddleDownGate" index="0"]
+shape = SubResource("MiddleDownShape")
+
+[node name="Glow" parent="Rooms/Room4/MiddleDownGate" index="1"]
+polygon = PackedVector2Array(-85, -70, 85, -70, 85, 70, -85, 70)
 
 [node name="SecondLaunchWall" type="StaticBody2D" parent="Rooms/Room4"]
 position = Vector2(858.0, 530.0)
@@ -1553,15 +1562,6 @@ offset_top = 205.0
 theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "床の壁から左へキック ↑"
-mouse_filter = 2
-
-[node name="CeilingHint" type="Label" parent="Rooms/Room4" groups=["stage_3_hints"]]
-visible = false
-offset_left = 330.0
-offset_top = 380.0
-theme_override_colors/font_color = Color(0.78, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "天井の壁から\n左へキック ↓"
 mouse_filter = 2
 
 [node name="SecondHint" type="Label" parent="Rooms/Room4" groups=["stage_3_hints"]]

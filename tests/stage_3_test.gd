@@ -452,6 +452,25 @@ func _verify_shortcuts() -> void:
 		_check(not stage.cleared.has(3), "Room 4 cannot leave either floor wall without encountering Up gravity")
 		if failed:
 			return
+	await _verify_middle_gate_mantle()
+	_release_inputs()
+
+
+func _verify_middle_gate_mantle() -> void:
+	for index in [3, 8]:
+		_release_inputs()
+		stage._set_room(index, false)
+		player.respawn()
+		await _step(4)
+		var before := respawns
+		await _kick_gate(280, -1)
+		await _cross_ceiling_pit(320, 450)
+		_drive("move_right")
+		await _until(func(): return player.is_on_wall() and _x() > 555, 120, "Reach the actual middle ceiling wall")
+		_drive("move_right", true, true)
+		await _until(func(): return respawns > before or player.gravity_direction == 1 or _x() > 625, 180, "Attempt the previously successful middle-wall mantle")
+		_check(respawns == before and player.gravity_direction == 1 and _x() < 625 and not stage.cleared.has(index), "The native MiddleDown intercepts grab descent before the ceiling wall can be mantled underneath")
+		if failed: return
 	_release_inputs()
 
 
