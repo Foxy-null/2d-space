@@ -393,7 +393,7 @@ func _mandatory_used() -> bool:
 	var kicks: int = actions.get("wall_jump", 0)
 	match course_model:
 		0: return actions.has("launch_spring") and actions.has("return_spring") and kicks >= 2
-		1: return actions.has("bumper") and kicks >= 3
+		1: return actions.has("bumper") and kicks >= 3 and (stage.room_index != 11 or actions.has("dash"))
 		2: return actions.get("air_jump", 0) >= 1 and flips.size() >= 2
 		3:
 			if stage.room_index == 12: return flips.size() >= 4 and kicks >= 2 and actions.has("dash")
@@ -403,6 +403,61 @@ func _mandatory_used() -> bool:
 		5: return actions.has("spring") and flips.size() >= 4 and kicks >= 5
 		7: return actions.get("air_jump", 0) >= 2 and flips.size() >= 2 and (stage.room_index != 9 or actions.has("launch_spring"))
 	return false
+
+
+func _twelfth_entry_negatives() -> void:
+	var previous_strength := stick
+	var previous_para_strength := para_strength
+	for strength in [1.0, 0.8]:
+		stick = strength
+		para_strength = strength
+		for use_dash in [false, true]:
+			await _approach_part(11, 0)
+			_drive("move_right")
+			await _until(func(): return _x() >= 300 and player.is_on_floor(), 120, "Walk to the real floor under the raised Up")
+			_release_inputs()
+			_check(player.gravity_direction == 1, "The high Up leaves the initial floor safe for choosing a takeoff")
+			if use_dash:
+				Input.action_press("move_up")
+				Input.action_press("dash")
+				await _step()
+				_release_inputs()
+			else:
+				await _jump()
+			await _step(150)
+			_check(respawns == 0 and flips.is_empty() and player.gravity_direction == 1 and player.is_on_floor() and not stage.cleared.has(11), "Neither an ordinary Jump nor an Up Dash alone reaches the high Up")
+			_check(actions.get("dash", 0) == (1 if use_dash else 0), "The omitted-action comparison preserves real Dash input")
+			negatives += 1
+			if failed:
+				stick = previous_strength
+				para_strength = previous_para_strength
+				return
+		for use_step in [false, true]:
+			await _approach_part(11, 0)
+			if use_step:
+				_drive("move_left", true)
+				await _until(func(): return respawns > 0 or (player.is_on_floor() and player.position.y < 570), 120, "Climb onto the actual entry step without Jump")
+				_check(respawns == 0 and player.is_on_floor() and player.position.y < 570, "The omitted-Jump probe starts on the native entry step")
+				await _para_walk(16, 180)
+			else:
+				await _para_walk(330)
+			_release_inputs()
+			Input.action_press("move_up")
+			Input.action_press("dash")
+			await _step()
+			_release_inputs()
+			await _step(9 if use_step else 10)
+			_drive("move_right", true)
+			await _until(func(): return respawns > 0 or player.gravity_direction < 0 or (player.is_on_floor() and player.position.y < 230 and _x() > 390), 260, "Attempt the previously successful Up-Dash-only wall or entry-step route")
+			_check(respawns == 1 and flips.is_empty() and not stage.cleared.has(11), "The raised native guard and more distant Up prevent both known omitted-Jump routes")
+			_check(actions.get("jump", 0) == 0 and actions.get("dash", 0) == 1, "The wall and step comparisons use a real Up Dash without any Jump")
+			negatives += 1
+			if failed:
+				stick = previous_strength
+				para_strength = previous_para_strength
+				return
+	stick = previous_strength
+	para_strength = previous_para_strength
 
 
 func _thirteenth_descent_negatives() -> void:
@@ -456,6 +511,9 @@ func _thirteenth_descent_negatives() -> void:
 
 
 func _negative_routes(indices: Array = [9, 10, 11, 12, 13, 14]) -> void:
+	if 11 in indices:
+		await _twelfth_entry_negatives()
+		if failed: return
 	if 12 in indices:
 		await _thirteenth_descent_negatives()
 		if failed: return
