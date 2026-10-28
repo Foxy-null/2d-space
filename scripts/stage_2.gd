@@ -106,6 +106,7 @@ func _camera_target_x() -> float:
 		return clampf(player.position.x + lead, -800.0, 1400.0)
 	if checkpoint_index >= 12:
 		var lead := 240.0 if checkpoint_index == 17 or (checkpoint_index in [13, 16] and player.position.x >= 100.0) else 0.0
+		if checkpoint_index == 16 and player.position.y < checkpoints.get_child(16).position.y - 640.0: lead = 0.0
 		return clampf(player.position.x - lead, -800.0, 1400.0)
 	if checkpoint_index not in [2, 7, 11]:
 		return 640.0

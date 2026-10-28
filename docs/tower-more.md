@@ -87,3 +87,28 @@ Godot 4.7.2 / Linux、物理60Hzで確認した。次の所要時間は各区間
 | 18 | [入口](screenshots/tower-more/18-entrance.png)・[最後のSpring](screenshots/tower-more/18-final-spring.png)・[頂上](screenshots/tower-more/18-summit.png) |
 | CP15の任意枝 | [入口の印](screenshots/tower-more/left-branch-mark.png)・[巻物の棚](screenshots/tower-more/left-scroll-balcony.png) |
 | CP17の任意枝 | [入口の印](screenshots/tower-more/high-branch-mark.png)・[上の壁](screenshots/tower-more/high-scroll-wall.png) |
+
+
+## Issue #216：第17区間の踏切から次の安全棚を見る
+
+実CP17からSpring・Bumper・左棚を通り、靴の踏切まで進むと、次の幅1150pxの安全棚は右端へ52.87pxだけ見えていた。最初のJumpを20f進めても97.84pxだった。画面外への完全な盲跳びではないが、右へ向かう判断の時点にも左へ渡るための寄せが残り、安全な着地点を読み取りにくかった。[Issue #216](https://github.com/Foxy-null/2d-space/issues/216)では、既存のカメラ条件だけを変える。
+
+CP17かつCPより640px以上上では、横の左寄せ240pxを解除する。640pxは縦カメラが下側の巻物枝と主経路の上段を分ける既存の閾値とそろえた。入口・下側巻物・帰路・他CPの規約、Y追従と既存の補間、地形・操作・保存は保つ。新しいUI・説明・カメラ状態は加えない。
+
+### 実攻略・収集と復帰・描画の3観点
+
+- 既存の実踏切helperへ、次棚先頭220pxと外周2pxを画面端から4px以上内側へ入れるassertを追加した。旧カメラは実CP17→相棒→Spring/Bumper→靴の踏切でこのassertに失敗。変更後は通常1.0/20f・実axis0.85/16f・同24fの3経路が、CP17/18を続けて死亡0で通過した。第17区間は10.98/12.12/12.07秒。全34区間の通しも終了0・STAGE_2_TEST_OK。
+- 巻物の通常/実axis0.85は、実空中取得、未確定のR/実落下による破棄、安全確定、自然帰還、確定後のR/実落下による保持、選択2/8と2IDのディスク再読込まで成功。左枝は5.40/5.87秒、上枝は15.02/16.67秒。既存CPから始める局所実経路であり、塔全通しの収集とは区別する。Rの5座標fixtureも床での3秒静止・視界・CP復帰が成功した。
+- 正式シーンのOpenGLは14項目成功し、実CP17から相棒を持ってSpring/Bumperを通り、踏切で3秒休んでCP18へ到達した。踏切の可視棚は292.87px、Jump20fでは337.84px。ヒントON/OFFで実テキストの6,785pxの変化を確認し、次棚先頭220pxの画像変化は0pxだった。画面・休憩・実保持相棒の画像を目視した。
+
+独立した旧/新の40座標・80項目では、全34CPと巻物棚・入口・帰路の対象外Xと全Yが一致した。これは座標fixtureであり、実攻略の代わりとは扱わない。実CP17からの上昇監視は184フレーム・24項目成功し、閾値を一度通過して実Bumper後の休憩へ死亡0で進んだ。全フレームが既存の補間式に従い、最大誤差0.000031px、最大X移動23.96px/frame。240pxの瞬間移動はなかった。
+
+旧/新の実Spring上昇→Bumper→休憩も各184フレーム・193項目で比較し、新しい画面外/HUD重複は0だった。キャラ・保持相棒・次Bumperと可視HUDの交差は旧新とも0、相棒も全区間画面内。ただし既存のY方向の欠けは残り、初回Bumper接触105fより前の83〜104fにBumperが下端で一部欠ける。着地直前のキャラの実alphaも2fだけ3.27/0.91px下端を越えた。いずれも旧新が同じ時機・同じYであり、この横方向の改善とは区別し、次の縦の見通しの候補とする。
+
+座標fixtureの終了時だけObjectDB4件の警告が残る。実攻略・巻物・R・上昇監視は警告なし、OpenGLはllvmpipeでV-Sync非対応の警告がある。実機ゲームパッド、初見ユーザー、60Hz以外は未確認。
+
+![改善前は右上の安全棚が約53pxしか見えない](screenshots/tower-more/17-boots-view-before.png)
+
+![改善後は相棒と靴、足元と次棚の先頭を同時に見渡せる](screenshots/tower-more/17-boots-view-after.png)
+
+![ヒントを表示しても次の着地点を隠さない](screenshots/tower-more/17-boots-view-hints.png)

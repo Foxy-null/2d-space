@@ -822,6 +822,11 @@ func _more_grab(name: String) -> void:
 
 func _more_boot(launch: float, name: String, target: Vector2) -> void:
 	await _more_walk(launch)
+	if name == "More17Boot":
+		var shape: CollisionShape2D = stage.get_node("Terrain/More17RightRest/Collision")
+		var bounds := shape.get_global_transform_with_canvas() * shape.shape.get_rect()
+		var landing := Rect2(bounds.position, Vector2(220, bounds.size.y)).grow(2)
+		_check(root.get_visible_rect().grow(-4).encloses(landing), "The next safe shelf is visible before jumping from the actual Boots takeoff")
 	await _upper_pulse("jump")
 	_horizontal(target.x)
 	await _step(upper_jump_delay)
