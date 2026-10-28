@@ -12,7 +12,7 @@ var course_model := -1
 var course_origin := 0.0
 var course_reversed := false
 var course_prefix := ""
-const MORE_SOURCES := [[8], [5, 3], [2, 1], [4, 8], [2, 3], [6, 5]]
+const MORE_SOURCES := [[8], [5, 3], [2, 1], [4], [2, 3], [6, 5]]
 
 
 func _initialize() -> void:
@@ -190,9 +190,11 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4, 0, 2, 7, 5, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4, 0, 2, 7, 3, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
 		if index == 9:
 			_check(actions.get("launch_spring", 0) == 1 and actions.get("air_jump", 0) == 2 and actions.get("wall_jump", 0) == 0, "The shortened tenth room uses the real Spring entry and both Boots instead of repeating wall kicks")
+		if index == 12:
+			_check(actions.get("wall_jump", 0) == 3 and actions.get("air_jump", 0) == 0 and actions.get("jump_crystal", 0) == 0, "The shortened thirteenth room ends with a downward Dash instead of repeating the Boots course")
 		_check(actions.get("dash", 0) == ([0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 2, 0, 1, 1, 1, 2, 2, 2, 2, 3, 4, 0, 0, 2, 2, 1, 2, 1, 1, 3, 2, 0, 1, 2, 0, 2, 1][index]), "The real inputs use each course's intended Dash resources")
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
@@ -366,6 +368,35 @@ func _room_ten_entry() -> void:
 		for path in ["HUD/Margin/Panel", "HUD/PauseButton", "HUD/Status"]:
 			var panel: Control = stage.get_node(path)
 			_check(not panel.is_visible_in_tree() or not panel.get_global_rect().grow(4).intersects(bounds), "The next actual Boots and Down stay clear of visible HUD " + path)
+
+
+func _room_thirteen_descent(jump_delay: int = 20) -> void:
+	_drive("move_right")
+	await _until(func(): return _x() >= 1020 and player.is_on_floor(), 120, "Reach the actual final ceiling above the moving Down")
+	_release_inputs()
+	await _step(20)
+	var rest := player.position
+	var gate: Area2D = _course_node("DownGate")
+	var shape: CollisionShape2D = gate.get_node("CollisionShape2D")
+	var gate_bounds := Rect2()
+	for frame in 180:
+		await _step()
+		var bounds := shape.get_global_transform_with_canvas() * shape.shape.get_rect().grow(7)
+		gate_bounds = bounds if frame == 0 else gate_bounds.merge(bounds)
+	_check(player.position.distance_to(rest) < 2 and player.is_on_floor() and player.is_dash_ready(), "The final ceiling allows three input-free seconds before choosing the Down approach")
+	_check(root.get_visible_rect().grow(-4).encloses(gate_bounds), "The moving Down ring stays inside the viewport throughout the three-second rest")
+	for path in ["HUD/Margin/Panel", "HUD/PauseButton", "HUD/Status"]:
+		var panel: Control = stage.get_node(path)
+		_check(not panel.is_visible_in_tree() or not panel.get_global_rect().grow(4).intersects(gate_bounds), "The moving Down ring stays clear of visible HUD " + path)
+	await _until(func(): return gate.position.y <= 420, 150, "Wait on the ceiling for the visible Down's broad upper approach")
+	await _jump()
+	await _step(jump_delay)
+	Input.action_press("move_down")
+	Input.action_press("dash")
+	await _step()
+	_release_inputs()
+	await _until(func(): return player.gravity_direction == 1, 120, "The inverted Jump and actual downward Dash enter the moving Down")
+	_check(actions.get("dash", 0) == 1, "The thirteenth room uses its downward Dash instead of a final wall kick")
 
 
 func _room_nine_course() -> void:
@@ -755,7 +786,10 @@ func _part_course() -> void:
 			await _jump()
 			await _kick_gate(840, -1)
 			await _cross_ceiling_pit(850, 1020)
-			await _kick_gate(1100, 1, "DownGate")
+			if stage.room_index == 12:
+				await _room_thirteen_descent(jump_spacing)
+			else:
+				await _kick_gate(1100, 1, "DownGate")
 		4:
 			await _kick_gate(360, -1, "UpGate")
 			await _cross_ceiling_pit(330, 470)
