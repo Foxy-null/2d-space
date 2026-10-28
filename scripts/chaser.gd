@@ -171,7 +171,7 @@ func _steer(delta: float) -> void:
 			destination = _ledge_goal
 	var difference := destination - global_position
 	var along := difference.dot(tangent)
-	var climbing := difference.dot(down) < -8.0 or (is_on_wall() and difference.dot(down) < 30.0 and absf(along) > 26.0)
+	var climbing := difference.dot(down) < -8.0 or (is_on_wall() and (difference.dot(down) < 30.0 or is_wall_grabbing()) and absf(along) > 26.0)
 	var holding := get_held_object() != null
 	if not holding:
 		_held_time = 0.0

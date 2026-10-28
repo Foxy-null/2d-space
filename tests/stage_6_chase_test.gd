@@ -95,7 +95,7 @@ func _final_approach() -> void:
 	stage.room.set_physics_process(true)
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
-	_position(Vector2(800, 1294), Vector2(1750, 1294))
+	_position(stage.room.cage.get_center() + Vector2(-600, 124), stage.room.cage.get_center() + Vector2(250, 124))
 	stage.enemy._pickup_left = 999.0
 	stage.enemy._needle_cooldown = 999.0
 	var entered_cage := false

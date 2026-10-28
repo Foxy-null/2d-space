@@ -55,7 +55,7 @@ func _homing() -> void:
 	_check(needle.picture.texture.atlas.resource_path.ends_with("homing-neutral.png"), "An embedded homing spine stops its flame and returns to c1")
 	stage.enemy.position = needle.tip_position()
 	stage.player.position = needle.tip_position()
-	_check(not stage._touches_hazard(stage.enemy, stage.enemy.position) and stage._touches_hazard(stage.player, stage.player.position), "The same exposed tip hurts only the ninja")
+	_check(not stage._touches_stuck_needle(stage.enemy, stage.enemy.position) and stage._touches_stuck_needle(stage.player, stage.player.position), "The same exposed tip hurts only the ninja")
 	var box: Grabbable = stage.room.LIGHT.instantiate()
 	stage.player.position = needle.tip_position() - Vector2(150, 0)
 	stage.enemy.position = needle.tip_position() + Vector2(150, 0)

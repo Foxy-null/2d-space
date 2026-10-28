@@ -57,6 +57,10 @@ var _grab_frame: Line2D
 var _grab_outline: Line2D
 var _grab_hint: Label
 var _grab_target: Grabbable
+var _condition: Label
+var _effects: Node2D
+var _effect_left := 0.0
+var _fade: ColorRect
 
 
 func _ready() -> void:
@@ -136,6 +140,18 @@ func _ready() -> void:
 	breach_sound.stream = ArrivalSwitch._sound([90.0, 60.0, 120.0])
 	breach_sound.volume_db = -9.0
 	$HUD.add_child(breach_sound)
+	_condition = _text("", 18)
+	_condition.position = Vector2(28, 96)
+	$HUD.add_child(_condition)
+	_fade = ColorRect.new()
+	_fade.size = get_viewport_rect().size
+	_fade.color = Color(0.02, 0.03, 0.08, 0.0)
+	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	$HUD.add_child(_fade)
+	_effects = Node2D.new()
+	_effects.draw.connect(_draw_effects)
+	$HUD.add_child(_effects)
+	$HUD.move_child(_message, -1)
 	_load_room(0)
 
 
@@ -183,6 +199,7 @@ func _load_room(index: int) -> void:
 		_intro_seen = true
 		_intro_left = 2.8
 		_intro_panel.show()
+		_effect_left = 1.2
 		$HUD/BreachSound.play()
 	_loading = false
 	transitioning = false
@@ -195,8 +212,11 @@ func _load_room(index: int) -> void:
 	_update_hud()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_update_grab_hint()
+	if not get_tree().paused or _game_over_pending or completed:
+		_effect_left = maxf(0.0, _effect_left - delta)
+	_effects.queue_redraw()
 
 
 func _update_grab_hint() -> void:
@@ -263,12 +283,20 @@ func _physics_process(delta: float) -> void:
 		if _chase_delay <= 0.0:
 			enemy.set("active", true)
 	_update_needles(delta)
+	if _game_over_pending:
+		return
 	for cloud in room.get_node("AshClouds").get_children():
 		cloud.advance(delta)
 	_check_projectiles()
+	if _game_over_pending:
+		return
+	if _touches_stuck_needle(player, _previous_player):
+		_damage_player(player.wall_stamina_max * 0.15, Vector2.ZERO, true)
+	if _game_over_pending:
+		return
 	if _out_of_course(player) or (_respawn_grace <= 0.0 and _touches_hazard(player, _previous_player)):
 		_keep_enemy_on_respawn = true
-		player.respawn(false)
+		player.respawn(false, true)
 		_keep_enemy_on_respawn = false
 		return
 	if _out_of_course(enemy) or _touches_hazard(enemy, _previous_enemy):
@@ -295,7 +323,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_player_respawned() -> void:
-	if _loading or not is_instance_valid(room):
+	if _loading or not is_instance_valid(room) or _game_over_pending:
 		return
 	_generation += 1
 	_capture_pending = false
@@ -386,20 +414,39 @@ func _update_capture(delta: float) -> void:
 			_capture()
 
 
-func _game_over() -> void:
+func _game_over(reason := "捕獲されました") -> void:
+	if _game_over_pending or completed:
+		return
 	var generation := _generation
 	_game_over_pending = true
+	_update_hud()
 	player.controls_enabled = false
 	enemy.controls_enabled = false
-	_message.text = "捕獲されました\nこの部屋から、もう一度！"
+	$PauseMenu.set_process_input(false)
+	$HUD/HelpButton.disabled = true
+	$HUD/PauseButton.disabled = true
+	get_tree().paused = true
+	_message.text = reason + "\nステージ選択へ戻ります"
 	_message.show()
-	await get_tree().create_timer(1.2, false).timeout
+	_effect_left = 1.2
+	if DisplayServer.accessibility_should_reduce_animation() != 1:
+		create_tween().tween_property(_fade, "color:a", 0.85, 1.0)
+	await get_tree().create_timer(1.2, true).timeout
 	if not is_inside_tree() or completed or generation != _generation:
 		return
-	_game_over_pending = false
-	player.controls_enabled = true
-	enemy.controls_enabled = true
-	player.respawn()
+	get_tree().set_meta("focus_stage_six", true)
+	_return_to_select()
+
+
+func _damage_player(amount: float, impulse := Vector2.ZERO, ground_needle := false) -> void:
+	if completed or _game_over_pending or _hit_grace > 0.0 or _respawn_grace > 0.0:
+		return
+	if not ground_needle:
+		player.apply_stun(0.2, impulse)
+	player.apply_attack_damage(amount, ground_needle)
+	_hit_grace = 0.75
+	if player.get_wall_stamina() <= 0.00001:
+		_game_over("攻撃でスタミナが尽きました")
 
 
 func _on_release(object: Grabbable, thrown: bool, source: PlayerController) -> void:
@@ -449,8 +496,7 @@ func _check_projectiles() -> void:
 				if enemy.stun_left <= 0.0:
 					enemy.apply_stun(2.0)
 			elif _hit_grace <= 0.0 and _respawn_grace <= 0.0:
-				player.apply_stun(0.2, (object.position - entry.previous).normalized() * 140, player.wall_stamina_max / 3.0)
-				_hit_grace = 0.75
+				_damage_player(player.wall_stamina_max / 3.0, (object.position - entry.previous).normalized() * 140)
 			_projectiles.remove_at(index)
 		elif object.linear_velocity.length() < 100.0:
 			_projectiles.remove_at(index)
@@ -484,14 +530,21 @@ func _touches_hazard(actor: PlayerController, previous: Vector2) -> bool:
 	for spike in room.spike_blocks:
 		if SpikeBlock.segment_hits_box(previous - spike.previous_position, actor.position - spike.global_position, half + spike.hit_extent()):
 			return true
-	for needle in room.needles.get_children():
-		if needle.stuck and needle.is_dangerous() and _segment_hits_rect(previous, actor.position, Rect2(needle.tip_position() - half - Vector2(3, 3), half * 2.0 + Vector2(6, 6))):
-			return true
 	var rectangles: Array = room.hazards.duplicate()
 	for entry in room.moving_hazards:
 		rectangles.append(entry.current)
 	for rect: Rect2 in rectangles:
 		if _segment_hits_rect(previous, actor.position, Rect2(rect.position - half, rect.size + half * 2.0)):
+			return true
+	return false
+
+
+func _touches_stuck_needle(actor: PlayerController, previous: Vector2) -> bool:
+	if actor.is_in_group("spike_immune"):
+		return false
+	var half := _actor_rect(actor).size * 0.5
+	for needle in room.needles.get_children():
+		if needle.stuck and needle.is_dangerous() and _segment_hits_rect(previous, actor.position, Rect2(needle.tip_position() - half - Vector2(3, 3), half * 2.0 + Vector2(6, 6))):
 			return true
 	return false
 
@@ -504,9 +557,19 @@ func _complete(result: String) -> void:
 	player.controls_enabled = false
 	enemy.controls_enabled = false
 	enemy.set("defeated", result == "決着成功")
+	enemy.set_physics_process(false)
 	_message.hide()
 	_completion.show()
 	_hint.text = "%s！　ステージ6をクリアしました" % result
+	_effect_left = 1.2
+	if DisplayServer.accessibility_should_reduce_animation() != 1:
+		var card: PanelContainer = _completion.get("card")
+		card.pivot_offset = card.size * 0.5
+		card.scale = Vector2.ONE * 0.94
+		card.modulate.a = 0.0
+		var tween := create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(card, "scale", Vector2.ONE, 0.4)
+		tween.tween_property(card, "modulate:a", 1.0, 0.4)
 
 
 func _update_camera() -> void:
@@ -529,9 +592,13 @@ func _update_hud() -> void:
 	_status.text = "部屋 %02d/%02d　重力 %s　 捕獲時の失敗率 %3d%%　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [room_index + 1, ROOM.ROOM_COUNT, direction, chance, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), pursuit]
 	_stamina.max_value = player.wall_stamina_max
 	_stamina.value = player.get_wall_stamina()
+	_condition.text = "回復低下 %.1f秒" % player.recovery_slow_left if player.recovery_slow_left > 0.0 else ""
+	if player.movement_slow_left > 0.0:
+		_condition.text += "　減速 %.1f秒" % player.movement_slow_left
+	_condition.modulate = Color("ffdc78")
 	$HUD/Progress.visible = completed or room_index == ROOM.FINAL_ROOM
 	if not completed and room_index == ROOM.FINAL_ROOM:
-		_hint.text = "決着 %d/%d　 対峙あと%d秒　 鍵 %d/2　 封鎖 %s" % [defeat_hits, defeat_hits_required, ceili(maxf(0.0, escape_seconds - escape_elapsed)), room.keys_collected, "通電済→檻で敵を怯ませる→制御盤" if room.seal_button.is_pressed() else "左の金の台へ重箱"]
+		_hint.text = "決着 %d/%d　 対峙あと%d秒　 鍵 %d/2　 封鎖 %s" % [defeat_hits, defeat_hits_required, ceili(maxf(0.0, escape_seconds - escape_elapsed)), room.keys_collected, "通電済→檻で敵を怯ませる→制御盤" if room.seal_button.is_pressed() else "奥の金の台へ重箱"]
 	_enemy_indicator.visible = enemy.get("active") and not room.visible_area.grow(80).has_point(enemy.position) and not completed
 	var offset := enemy.position - camera.position
 	_enemy_indicator.text = "追跡者 %s　%s" % [("→" if offset.x > 0 else "←") if absf(offset.x) > absf(offset.y) else ("↓" if offset.y > 0 else "↑"), pursuit]
@@ -549,20 +616,20 @@ func _update_hud() -> void:
 	action_panel.visible = not completed and _intro_left <= 0.0
 	$HUD/Progress.position.y = action_panel.position.y - $HUD/Progress.size.y - 12
 	_enemy_indicator.position.y = ($HUD/Progress.position.y if $HUD/Progress.visible else action_panel.position.y) - 34
-	if _respawn_grace > 0.0:
-		player.modulate.a = 0.55 + 0.45 * absf(sin(_respawn_grace * 24.0))
+	if maxf(_respawn_grace, _hit_grace) > 0.0:
+		player.modulate.a = 0.55 + 0.45 * absf(sin(maxf(_respawn_grace, _hit_grace) * 24.0))
 	else:
 		player.modulate.a = 1.0
 
 
 func _help_text() -> String:
 	var text := "追跡者の終域 — 全13部屋\nUMA妖怪エイリアン　星間山荒・大赤斑\n"
-	text += "長針3連射、扇形5本、追尾トゲ6個、山なりの長針10本、短針18連射、灰の雨36本を状況に応じて使います。遠くへ逃げると灰雲で進路を先読みします。連射は見えている動きへゆっくり狙いを変えます。攻撃後の隙には掴まれません。\n屋根の下や傘は頭上の雨を防ぎ、箱は飛行針を受け止めます。ダッシュ中は傘が閉じます。地面の棘先は盾では防げません。\n敵は壁越しに忍者の位置を知りません。見失うと最後に見た場所を探し、やがて巡回します。画面外の行動もメッセージに表示します。\n地形に刺さった針の露出した後端へ箱を投げると固定足場になります。灰と連射の破片は数秒で崩れますが、箱で作った足場は残ります。全ての棘は敵に無効。箱の投擲は有効です。\n\n道中の到着スイッチは隔壁を開きます。開いた通路を走り抜けると次の部屋へ進み、敵は壁を破って追ってきます。\n\n"
+	text += "長針3連射、扇形5本、追尾トゲ6個、山なりの長針10本、短針18連射、灰の雨36本を状況に応じて使います。遠くへ逃げると灰雲で進路を先読みします。連射は見えている動きへゆっくり狙いを変えます。攻撃後の隙には掴まれません。\n屋根の下や傘は頭上の雨を防ぎ、箱は飛行針を受け止めます。ダッシュ中は傘が閉じます。地形に残った針の先端に触れるとスタミナ15%減と1秒間の減速です。回復低下中は着地しても徐々に回復します。\n敵は壁越しに忍者の位置を知りません。見失うと最後に見た場所を探し、やがて巡回します。画面外の行動もメッセージに表示します。\n地形に刺さった針の露出した後端へ箱を投げると固定足場になります。灰と連射の破片は数秒で崩れますが、箱で作った足場は残ります。全ての棘は敵に無効。箱の投擲は有効です。\n\n道中の到着スイッチは隔壁を開きます。開いた通路を走り抜けると次の部屋へ進み、敵は壁を破って追ってきます。\n\n"
 	if room_index == ROOM.FINAL_ROOM:
-		text += "どれか一つでクリア。\n決着：怯んでいない敵へ箱を%d回当てる。\n封鎖：重箱を左のくぼみの金の台へ置いて通電→敵を檻へ誘い箱を当てる→怯んでいる間に右の高台の足跡を自分で踏む。箱を置くだけ・制御盤に先に乗って待つだけでは封鎖しません。\n逃走：同じ区画の敵と%d秒対峙し、左右の高所の鍵を2つ取って最も右上の到着台へ。見失わせても解除は進み、捕獲では時間を数え直します。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
+		text += "どれか一つでクリア。\n決着：怯んでいない敵へ箱を%d回当てる。\n封鎖：逃走出口の下の区画へ進む。近くの重箱をくぼみの金の台へ置いて通電→右の檻へ敵を誘い箱を当てる→怯んでいる間に左の高台の制御盤を自分で踏む。箱を置くだけ・制御盤に先に乗って待つだけでは封鎖しません。\n逃走：同じ区画の敵と%d秒対峙し、左右の高所の鍵を2つ取って最も右上の到着台へ。見失わせても解除は進み、捕獲では時間を数え直します。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
 	text += "この部屋の進め方\n" + ROOM.HINTS[room_index]
-	text += "\n\n物体と捕獲\n金の輪が供給場所です。スイッチに置いた箱と固定した箱を敵は取りません。敵が物を持つ間も掴まれません。投擲・飛行弾はスタミナを3分の1減らし、こちらの箱は敵を2秒止めます。\n掴む予告から離れると避けられます。捕獲時の失敗率はスタミナ満タン0%、半分50%、空100%。失敗しても現在の部屋から再挑戦します。"
-	text += "\n\n復帰と操作\n落下・トゲでは自分だけ入口へ戻り、敵・箱・残る針・雲・目標の進捗を維持します。スタート付近の地形に刺さった針は0.6秒で消え、箱を固定した足場は残ります。R / Startか下のやり直しでは部屋全体を初期化します。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
+	text += "\n\n物体と捕獲\n金の輪が供給場所です。スイッチに置いた箱と固定した箱を敵は取りません。敵が物を持つ間も掴まれません。投擲・飛行弾はスタミナを3分の1減らし、被弾後は4秒間回復が遅くなります。追加被弾で2秒ずつ、最大8秒まで延長します。通常時の着地は即時全回復です。こちらの箱は敵を2秒止めます。\n掴む予告から離れると避けられます。捕獲時の失敗率はスタミナ満タン0%、半分50%、空100%。捕獲失敗か攻撃によるスタミナ切れでゲームオーバーとなり、ステージ選択へ戻ります。"
+	text += "\n\n復帰と操作\n落下・固定棘・移動棘では自分だけ入口へ戻り、敵・箱・残る針・雲・目標の進捗を維持します。スタート付近の地形に刺さった針は0.6秒で消え、箱を固定した足場は残ります。R / Startか下のやり直しでは部屋全体を初期化しますが、残っている回復低下と減速は維持します。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
 	return text
 
 
@@ -598,6 +665,25 @@ func set_help_visible(value: bool) -> void:
 func _return_to_select() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/stage_select.tscn")
+
+
+func retry_room() -> void:
+	if not _game_over_pending:
+		player.respawn(true, true)
+
+
+func _draw_effects() -> void:
+	if DisplayServer.accessibility_should_reduce_animation() == 1:
+		return
+	var pulse := clampf(_effect_left / 1.2, 0.0, 1.0)
+	if pulse <= 0.0:
+		return
+	var center := get_viewport_rect().size * 0.5
+	for index in 16:
+		var direction := Vector2.RIGHT.rotated(TAU * index / 16.0)
+		var at := center + direction * (70.0 + (1.0 - pulse) * 330.0)
+		_effects.draw_line(at, at + direction * (20.0 + (1.0 - pulse) * 90.0), Color(1.0, 0.84, 0.38, pulse * 0.7), 3.0, true)
+		_effects.draw_circle(at, 3.0 * pulse, Color(1.0, 0.96, 0.77, pulse))
 
 
 func _exit_tree() -> void:
@@ -669,7 +755,7 @@ func _build_hud() -> void:
 	_help.get_node("Rows/Hints").hide()
 	_help.get_node("Rows/Actions/Resume").pressed.connect(func(): set_help_visible(false))
 	_help.get_node("Rows/Actions/Retry").text = "部屋全体をやり直す"
-	_help.get_node("Rows/Actions/Retry").pressed.connect(func(): set_help_visible(false); player.respawn())
+	_help.get_node("Rows/Actions/Retry").pressed.connect(func(): set_help_visible(false); retry_room())
 	_help.get_node("Rows/Actions/Return").pressed.connect(_return_to_select)
 
 
@@ -765,8 +851,7 @@ func _update_needles(delta: float) -> void:
 		var from: Vector2 = needle.flight_start + player.position - _previous_player
 		if _segment_hits_rect(from, needle.flight_end, _actor_rect(player).grow(3.0)):
 			if _hit_grace <= 0.0 and _respawn_grace <= 0.0:
-				player.apply_stun(0.2, (needle.flight_end - needle.flight_start).normalized() * 140.0, player.wall_stamina_max / 3.0)
-				_hit_grace = 0.75
+				_damage_player(player.wall_stamina_max / 3.0, (needle.flight_end - needle.flight_start).normalized() * 140.0)
 			needle.queue_free()
 		elif needle.blocked and not was_blocked:
 			blocked_shots += 1

@@ -18,7 +18,7 @@ var _step_frames := 1
 var _sample_at := 30
 var _recent_launch := -100
 var _record_label := "full-escape"
-const OUTPUT := "res://deliverables/stage6-pressure-update"
+const OUTPUT := "res://deliverables/stage6-fatigue-update"
 
 func _initialize() -> void:
 	_run.call_deferred()
@@ -70,7 +70,15 @@ func _run() -> void:
 			print("TRAVERSE_BEGIN ", number + 1, " attempt=", attempt + 1)
 			events.append({"time": ticks / 60.0, "room": number + 1, "attempt": attempt + 1, "event": "begin"})
 			passed = await _play_room(number)
-			if not passed and not stage._game_over_pending:
+			if not passed and (not is_instance_valid(stage) or stage._game_over_pending):
+				print("DEFEAT_SAMPLES ", samples.slice(maxi(0, samples.size() - 5)))
+				if is_instance_valid(stage):
+					_save_record(selected)
+				push_error("Game over in room %d: the stage now returns to selection; this run must restart from room one" % (number + 1))
+				await _step(85)
+				quit(1)
+				return
+			if not passed:
 				for settle in 30:
 					if stage.room_index > number or stage.completed:
 						passed = true
@@ -94,9 +102,7 @@ func _run() -> void:
 		quit(1)
 		return
 	print("STAGE_6_PLAYTHROUGH_OK live=%s inputs=%d jumps=%d retries=%d" % [_live, ticks, jumps, failures])
-	DirAccess.make_dir_recursive_absolute(OUTPUT)
-	var record := {"label": _record_label, "room_count": stage.ROOM.ROOM_COUNT, "frames": ticks, "jumps": jumps, "retries": failures, "ending": stage.ending, "shots_fired": stage.shots_fired, "clouds_cast": stage.clouds_cast, "blocked_shots": stage.blocked_shots, "practice_start": selected + 1, "samples": samples, "events": events}
-	FileAccess.open(OUTPUT + "/playthrough-" + _record_label + ".json", FileAccess.WRITE).store_string(JSON.stringify(record))
+	_save_record(selected)
 	_release()
 	if stage.completed:
 		await _step(180)
@@ -108,6 +114,12 @@ func _run() -> void:
 	OS.delay_msec(100) # Let the audio thread release the final arrival chime before shutdown.
 	await _step(3)
 	quit()
+
+
+func _save_record(selected: int) -> void:
+	DirAccess.make_dir_recursive_absolute(OUTPUT)
+	var record := {"label": _record_label, "room_count": stage.ROOM.ROOM_COUNT, "frames": ticks, "jumps": jumps, "retries": failures, "ending": stage.ending, "game_over": stage._game_over_pending, "shots_fired": stage.shots_fired, "clouds_cast": stage.clouds_cast, "blocked_shots": stage.blocked_shots, "practice_start": selected + 1, "samples": samples, "events": events}
+	FileAccess.open(OUTPUT + "/playthrough-" + _record_label + ".json", FileAccess.WRITE).store_string(JSON.stringify(record))
 
 func _play_room(number: int) -> bool:
 	if stage.room_index != number:
@@ -241,7 +253,9 @@ func _acquire(kind: String) -> bool:
 			if stage.room_index != stage.ROOM.FINAL_ROOM and not stage.room.exit_open and item.position.x > stage.room.passage_gate.position.x:
 				continue
 			if item.carry_name == kind and item.carrier == null and not (item.carry_name in ["OBJECT", "HEAVY"] and stage.room.item_on_switch(item)) and not is_instance_valid(item.pinned_to) and item.linear_velocity.length() < 160.0:
-				if kind == "OBJECT" and stage.room_index == stage.ROOM.FINAL_ROOM and (OS.get_cmdline_user_args().has("--defeat") or OS.get_cmdline_user_args().has("--seal")) and (item.position.y < 1240.0 or item.position.y > 1325.0 or item.position.x < 800.0 or item.position.x > 1460.0):
+				var box_min: float = stage.room.cage.position.x - 600.0 if OS.get_cmdline_user_args().has("--seal") else 800.0
+				var box_max: float = stage.room.cage.end.x + 100.0 if OS.get_cmdline_user_args().has("--seal") else 1460.0
+				if kind == "OBJECT" and stage.room_index == stage.ROOM.FINAL_ROOM and (OS.get_cmdline_user_args().has("--defeat") or OS.get_cmdline_user_args().has("--seal")) and (item.position.y < 1240.0 or item.position.y > 1325.0 or item.position.x < box_min or item.position.x > box_max):
 					continue
 				var distance: float = stage.player.position.distance_squared_to(item.position)
 				if distance < nearest:
@@ -250,7 +264,8 @@ func _acquire(kind: String) -> bool:
 		if chosen == null:
 			await _step(50)
 			continue
-		if not await _navigate(chosen.position + Vector2(-35, 18), 600):
+		var travel_frames: int = maxi(600, ceili(stage.player.position.distance_to(chosen.position) / stage.player.move_speed * 60.0) + 300)
+		if not await _navigate(chosen.position + Vector2(-35, 18), travel_frames):
 			return false
 		if stage.player.get_held_object() != null and stage.player.get_held_object().carry_name != kind:
 			_hold = false
@@ -308,8 +323,8 @@ func _defeat_boss() -> bool:
 			return true
 		if not await _acquire("OBJECT"):
 			return false
-		# Use the cage roof as cover and restock a ground-level box.
-		if not await _navigate(Vector2(1300, 1294), 600):
+		# Fight under the fixed roof next to a ground-level box supply.
+		if not await _navigate(Vector2(950, 1294), 600):
 			return false
 		for frame in 300:
 			if stage._game_over_pending:
@@ -344,7 +359,7 @@ func _seal_boss() -> bool:
 	await _step(25)
 	if not stage.room.seal_button.is_pressed() or not await _acquire("OBJECT"):
 		return false
-	if not await _navigate(Vector2(1530, 1294), 700):
+	if not await _navigate(Vector2(stage.room.cage.end.x + 70.0, 1294), 700):
 		return false
 	_release_movement()
 	var ready := false
@@ -362,7 +377,7 @@ func _seal_boss() -> bool:
 	print("SEAL_STUN ", stage.enemy.position, " left=", stage.enemy.stun_left)
 	_ground_run = false
 	_jump_left = 0
-	if not await _navigate(Vector2(1700, 1214), 300):
+	if not await _navigate(Vector2(stage.room.seal_console.x + 170, 1294), 300):
 		return false
 	if not await _navigate(stage.room.seal_console - Vector2(0, 26), 300, true):
 		return false
@@ -486,6 +501,11 @@ func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 			dash = true
 			movement = (-down if climbing and absf(along) < 70.0 else (tangent * signf(along) - down).normalized()) if danger else (delta.normalized() if climbing else tangent * signf(along))
 			_dash_left = 20
+		# The hanging wall has a walking gap underneath; jumping presses into its side.
+		if initial_room == 11 and point == Vector2(1450, 910) and actor.position.x > 1060 and actor.position.x < 1360:
+			jump = false
+			dash = false
+			movement = Vector2.RIGHT
 		_input("move_left", movement.x < -0.1)
 		_input("move_right", movement.x > 0.1)
 		_input("move_up", movement.y < -0.1)

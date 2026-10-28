@@ -395,7 +395,7 @@ func _capture_results() -> void:
 	stage.player._wall_stamina = 0.0
 	stage._capture()
 	await _step(90)
-	_check(current_scene == stage and not stage._game_over_pending and stage.player.position == stage.room.spawn, "A failed capture retries the current room without losing the stage")
+	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn" and not paused, "A failed capture returns to stage selection after defeat feedback")
 
 
 func _put_weight(at: Vector2, scene: PackedScene) -> void:

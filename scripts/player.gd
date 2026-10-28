@@ -51,6 +51,8 @@ var _parachute_grace_left := 0.0
 var gravity_direction := 1
 var stun_left := 0.0
 var stamina_recovery_left := 0.0
+var recovery_slow_left := 0.0
+var movement_slow_left := 0.0
 var facing_direction := 1
 var _coyote_left := 0.0
 var _jump_buffer_left := 0.0
@@ -93,6 +95,9 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	stamina_recovery_left = maxf(0.0, stamina_recovery_left - delta)
+	if controls_enabled:
+		recovery_slow_left = maxf(0.0, recovery_slow_left - delta)
+		movement_slow_left = maxf(0.0, movement_slow_left - delta)
 	if stun_left > 0.0:
 		stun_left = maxf(0.0, stun_left - delta)
 		if controls_enabled:
@@ -102,7 +107,7 @@ func _physics_process(delta: float) -> void:
 	if not controls_enabled:
 		return
 	if _just_pressed("reset"):
-		respawn()
+		respawn(true, true)
 		return
 	var grounded := _contacts_valid and is_on_floor()
 	var on_wall := _contacts_valid and is_on_wall()
@@ -177,8 +182,12 @@ func _physics_process(delta: float) -> void:
 	_contacts_valid = true
 	if is_on_floor() and not grounded:
 		_refill_on_landing()
-	elif is_on_floor() and stamina_recovery_left <= 0.0 and _wall_stamina < wall_stamina_max:
-		_refill_on_landing()
+	if is_on_floor() and stamina_recovery_left <= 0.0 and _wall_stamina < wall_stamina_max:
+		if recovery_slow_left > 0.0:
+			_wall_stamina = minf(wall_stamina_max, _wall_stamina + wall_stamina_max * 0.1 * delta)
+			_grab_exhausted = _wall_stamina <= 0.0
+		else:
+			_refill_on_landing()
 	if use_default_respawn_bounds and (global_position.y < -260.0 or global_position.y > 980.0):
 		respawn()
 	_notify_resources()
@@ -254,7 +263,7 @@ func _try_jump(grounded: bool, on_wall: bool) -> void:
 func _refill_on_landing() -> void:
 	if get_held_object() != null:
 		_held.refill_extra_jump()
-	if stamina_recovery_left <= 0.0:
+	if stamina_recovery_left <= 0.0 and recovery_slow_left <= 0.0:
 		_wall_stamina = wall_stamina_max
 		_grab_exhausted = false
 	_dash_ready = true
@@ -262,7 +271,7 @@ func _refill_on_landing() -> void:
 
 func refill_movement_resources() -> void:
 	_dash_ready = true
-	if stamina_recovery_left <= 0.0:
+	if stamina_recovery_left <= 0.0 and recovery_slow_left <= 0.0:
 		_wall_stamina = wall_stamina_max
 		_grab_exhausted = false
 	_notify_resources()
@@ -491,6 +500,15 @@ func apply_stun(duration: float, impulse := Vector2.ZERO, stamina_damage := 0.0)
 	_notify_resources()
 
 
+func apply_attack_damage(amount: float, ground_needle := false) -> void:
+	_wall_stamina = maxf(0.0, _wall_stamina - amount)
+	stamina_recovery_left = 0.0
+	recovery_slow_left = minf(8.0, recovery_slow_left + 2.0 if recovery_slow_left > 0.0 else 4.0)
+	if ground_needle:
+		movement_slow_left = 1.0
+	_notify_resources()
+
+
 func set_gravity_direction(direction: int) -> void:
 	if direction not in [-2, -1, 1, 2] or direction == gravity_direction:
 		return
@@ -515,7 +533,7 @@ func set_respawn_position(location: Vector2) -> void:
 	_spawn_position = location
 
 
-func respawn(reset_objects := true) -> void:
+func respawn(reset_objects := true, preserve_attack_state := false) -> void:
 	for object in _separating_objects.duplicate():
 		_clear_object_separation(object)
 	if get_held_object() != null and not reset_objects:
@@ -523,6 +541,9 @@ func respawn(reset_objects := true) -> void:
 	_held = null
 	stun_left = 0.0
 	stamina_recovery_left = 0.0
+	if not preserve_attack_state:
+		recovery_slow_left = 0.0
+		movement_slow_left = 0.0
 	_parachute_grace_left = 0.0
 	if reset_objects:
 		for object in get_tree().get_nodes_in_group("grabbable"):
@@ -584,7 +605,7 @@ func get_available_extra_jump_count() -> int:
 
 
 func get_effective_move_speed() -> float:
-	return move_speed * (_held.move_multiplier if get_held_object() != null else 1.0)
+	return move_speed * (_held.move_multiplier if get_held_object() != null else 1.0) * (0.7 if movement_slow_left > 0.0 else 1.0)
 
 
 func get_effective_acceleration(grounded: bool) -> float:

@@ -138,8 +138,15 @@ func _boss() -> void:
 	stage._load_room(stage.ROOM.FINAL_ROOM)
 	await _step(2)
 	_check(stage.room.doors.is_empty(), "The final room starts directly in the arena")
-	_check(stage.room.exit_position.distance_to(stage.room.cage.get_center()) > 2500, "Sealing and escape are spatially separate")
+	_check(absf(stage.room.exit_position.x - stage.room.cage.get_center().x) < 500 and stage.room.cage.position.y > stage.room.exit_position.y + 600, "The cage is in the lower area beneath the distant escape gate")
 	_check(stage.room.escape_keys.size() == 2 and stage.room.escape_keys[0].position.distance_to(stage.room.escape_keys[1].position) > 2000, "Escape requires two distant keys")
+	stage.player.position = stage.room.exit_position - Vector2(0, 150)
+	stage.enemy.position = stage.room.spawn
+	stage.enemy.active = true
+	stage._physics_process(0.5)
+	_check(stage.escape_elapsed > 0.0, "Waiting on the locked exit case still advances the confrontation timer")
+	stage.enemy.active = false
+	stage.escape_elapsed = 0.0
 	var weight: Grabbable = stage.room.HEAVY.instantiate()
 	weight.position = stage.room.seal_button.position - Vector2(0, 50)
 	stage.room.get_node("Items").add_child(weight)
@@ -189,9 +196,8 @@ func _capture_retry() -> void:
 	_check(stage._game_over_pending, "A failed capture starts the room-loss feedback")
 	stage.get_node("PauseMenu").open()
 	stage.get_node("PauseMenu").retry()
-	var generation: int = stage._generation
 	await _step(85)
-	_check(not stage._game_over_pending and stage.player.controls_enabled and stage._generation == generation, "Manual retry cancels a stale capture timer without a second reset")
+	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn" and not paused, "A failed capture finishes its defeat feedback and returns to selection even after a direct retry")
 
 
 func _step(count := 1) -> void:

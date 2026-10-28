@@ -62,7 +62,10 @@ func _update_hints_button() -> void:
 
 func retry() -> void:
 	resume()
-	stage.find_child("Player", true, false).respawn()
+	if stage.has_method("retry_room"):
+		stage.retry_room()
+	else:
+		stage.find_child("Player", true, false).respawn()
 
 
 func confirm_return() -> void:

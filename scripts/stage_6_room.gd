@@ -34,7 +34,7 @@ const HINTS := [
 	"手前の扉は軽い箱、奥の扉は重い箱をそれぞれのスイッチへ置いて開きます。一つの箱を先へ持ち去ると開門条件を失うので、台に置いた箱は残してください。\n追ってきた敵には予備の箱を投げ、高い足場へ逃げて運搬する時間を作れます。二つ目の扉の先は床ばねで上がり、緑と紫をつないで動くトゲの上を渡ります。",
 	"金の重量スイッチは「開門」ではなく「封鎖」です。箱を載せると対応する縞の扉が閉まるので、進路と敵の位置を確かめて使ってください。箱を外せば開け直せます。\n先へ進むときは傘を持って斜めの上昇気流へ入り、足場の横から上へ回り込みます。↑ゲートで天井側へ移り、最後の↓ゲートから出口へ着地してください。",
 	"ステージ4と同じ四面の棘ブロックです。点線の端で折り返すので、広い踊り場で動きを見てから渡ります。\n敵は棘を歩けます。追尾トゲは受け壁へ誘い、刺さった先端を箱で覆うと近道になります。壁の裏へ回り込むと、敵は最後に見た場所を探します。",
-	"3通りの決着を選べます。前座の重量扉はありません。\n決着：敵の予告をかわし、隙に箱を6回当てます。封鎖：左の金の台へ重箱を置いて通電し、敵を檻へ誘導。箱で怯ませてから離れた高台の足跡の制御盤へ移り、自分で踏みます。先に乗ったまま待っても作動しません。\n逃走：左右の高所にある鍵を2つ取り、敵と20秒対峙してから最も右上の出口へ。檻と出口は離れています。"
+	"3通りの決着を選べます。前座の重量扉はありません。\n決着：敵の予告をかわし、隙に箱を6回当てます。封鎖：逃走出口の下にある奥の装置へ向かい、くぼみの金の台へ重箱を置いて通電。敵を檻へ誘導し、箱で怯ませたら左の高台の制御盤を自分で踏みます。先に乗ったまま待っても作動しません。\n逃走：左右の高所にある鍵を2つ取り、敵と20秒対峙してから最も右上の出口へ。上段は逃走、下段は封じ込めです。"
 ]
 
 var number := 0
@@ -426,28 +426,28 @@ func _build_final() -> void:
 	prepared = true
 	chase_delay = 2.5
 	preferred_item = "JUMP"
-	_floor(0, 640, 1320)
-	_floor(640, 120, 1400)
-	_floor(760, 4840, 1320)
-	battle_arena = Rect2(28, 180, 5544, 1200)
+	_floor(0, 4420, 1320)
+	_floor(4420, 120, 1400)
+	_floor(4540, 1060, 1320)
+	battle_arena = Rect2(28, 28, 5544, 1352)
 	_supply(LIGHT, Vector2(900, 1280))
-	_supply(HEAVY, Vector2(250, 1280))
+	_supply(HEAVY, Vector2(4350, 1280))
 	_supply(LIGHT, Vector2(2250, 1280))
 	_supply(LIGHT, Vector2(2540, 1280))
 	_supply(LIGHT, Vector2(3750, 1280))
 	_supply(CREATURE, Vector2(520, 1130))
 	# Preparing power does not close the cage. The player must reach the remote console.
-	cage = Rect2(1100, 1020, 360, 300)
-	_block(Rect2(1100, 990, 360, 30))
-	cage_doors.append(_block(Rect2(1068, 1020, 30, 300)))
-	cage_doors.append(_block(Rect2(1462, 1020, 30, 300)))
+	cage = Rect2(5040, 1020, 360, 300)
+	_block(Rect2(5040, 990, 360, 30))
+	cage_doors.append(_block(Rect2(5008, 1020, 30, 300)))
+	cage_doors.append(_block(Rect2(5402, 1020, 30, 300)))
 	for door in cage_doors:
 		_set_door(door, false)
 	# A recessed tray keeps passing actors from pushing the prepared weight off its switch.
-	seal_button = _button(Vector2(700, 1400), 8.0)
+	seal_button = _button(Vector2(4480, 1400), 8.0)
 	seal_button.pressed_changed.connect(func(_pressed): queue_redraw())
-	seal_console = Vector2(1900, 1180)
-	_platforms([Rect2(1560, 1240, 220, 30), Rect2(1870, 1180, 300, 30)])
+	seal_console = Vector2(5000, 1240)
+	_platforms([Rect2(4950, 1240, 130, 30)])
 	# Separate left and right escape keys require crossing the arena, not waiting by the cage.
 	_platforms([Rect2(430, 1160, 230, 30), Rect2(690, 1020, 220, 30), Rect2(1030, 860, 220, 30), Rect2(620, 700, 250, 30), Rect2(1170, 780, 230, 30), Rect2(1530, 700, 230, 30), Rect2(1910, 710, 230, 30), Rect2(2310, 860, 230, 30), Rect2(2740, 710, 230, 30), Rect2(3150, 580, 260, 30), Rect2(3420, 680, 380, 30), Rect2(3910, 530, 220, 30)])
 	_floor(4180, 300, 420)
@@ -461,13 +461,14 @@ func _build_final() -> void:
 	_block(Rect2(3150, 360, 260, 24))
 	_block(Rect2(5260, 80, 220, 24))
 	_block(Rect2(3630, 1060, 540, 30))
+	_block(Rect2(4260, 1060, 650, 28))
 	_supply(UMBRELLA, Vector2(2010, 1280))
 	_supply(UMBRELLA, Vector2(4020, 1280))
-	_supply(LIGHT, Vector2(4740, 1280))
+	_supply(LIGHT, Vector2(4750, 1280))
 	_crystal(Vector2(4690, 340), 0)
 	_crystal(Vector2(5060, 260), 1)
 	_supply(CREATURE, Vector2(2390, 820))
-	_supply(LIGHT, Vector2(1970, 1140))
+	_supply(LIGHT, Vector2(5000, 1200))
 	_crystal(Vector2(900, 780), 1)
 	_crystal(Vector2(1450, 660), 0)
 	_crystal(Vector2(2240, 650), 1)
@@ -806,7 +807,12 @@ func _draw() -> void:
 		draw_rect(cage, Color(1, 0.8, 0.3, 0.07))
 		var wire_start := seal_button.position + Vector2(0, 20)
 		var wire_end := Vector2(cage.end.x, cage.position.y - 15)
-		draw_polyline(PackedVector2Array([wire_start, Vector2(wire_start.x, wire_end.y), wire_end]), Color(1, 0.8, 0.3, 0.65), 4)
+		var powered: bool = seal_button.is_pressed()
+		var light := Color("86e7a4") if _seal_triggered else Color("ffdc78")
+		draw_polyline(PackedVector2Array([wire_start, Vector2(wire_start.x, wire_end.y), wire_end]), light if powered else Color(1, 0.8, 0.3, 0.25), 4)
+		if powered and not _seal_triggered:
+			var spark := Vector2(wire_start.x, lerpf(wire_start.y, wire_end.y, fposmod(_elapsed * 0.7, 1.0)))
+			draw_circle(spark, 7, light)
 		for x in range(int(cage.position.x), int(cage.end.x), 24):
 			draw_line(Vector2(x, cage.position.y), Vector2(x, cage.end.y), Color(1, 0.8, 0.3, 0.25), 3)
 		ArtDraw.ellipse(self, seal_console, Vector2(60, 9), Color("86e7a4") if seal_button.is_pressed() else Color("9b9baa"), 3)
