@@ -16,6 +16,7 @@ func _run() -> void:
 	stage.set_physics_process(false)
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
+	await _pickup_layout_and_hint()
 	await _boundary_breaches()
 	await _impact_and_box()
 	await _pin_safety()
@@ -81,6 +82,95 @@ func _boundary_breaches() -> void:
 		_check(stage.enemy.position.x > 55, "Room %d's enemy actually walks through the broken boundary wall" % number)
 	stage.player.respawn()
 	_check(stage.room.entrance_wall.visible and not stage.enemy.visuals.visible and stage._entry_left > 0.0, "A full retry restores the wall breach sequence")
+
+
+func _pickup_layout_and_hint() -> void:
+	for number in stage.ROOM.ROOM_COUNT:
+		stage._load_room(number)
+		var crystals: Array = stage.room.get_children().filter(func(child): return child.get_script() == preload("res://scripts/refill_crystal.gd"))
+		var spaced := true
+		for index in crystals.size():
+			for other in range(index + 1, crystals.size()):
+				var gap: float = crystals[index].position.distance_to(crystals[other].position)
+				spaced = spaced and gap >= (240.0 if crystals[index].refill_kind == crystals[other].refill_kind else 160.0)
+		_check(spaced, "Room %d separates refills so one pickup does not collect a cluster" % (number + 1))
+		for box in stage.room.supplies.filter(func(supply): return supply.scene == stage.room.LIGHT):
+			for umbrella in stage.room.supplies.filter(func(supply): return supply.scene == stage.room.UMBRELLA):
+				_check(absf(box.at.y - umbrella.at.y) > 60.0 or absf(box.at.x - umbrella.at.x) >= 200.0, "Room %d separates box and umbrella supply choices" % (number + 1))
+	await _fresh()
+	for kind in ["OBJECT", "PARACHUTE"]:
+		var item: Grabbable
+		for child in stage.room.get_node("Items").get_children():
+			if child.carry_name == kind and child.position.x > 700 and child.position.x < 1200:
+				item = child
+		item.freeze = true
+		stage.player.position = item.position + Vector2(70 if kind == "PARACHUTE" else -70, 0)
+		await _step(2)
+		stage._update_grab_hint()
+		_check(stage._grab_target == item and stage._grab_frame.visible and stage._grab_hint.visible, "A nearby %s is highlighted as the real pickup target" % kind)
+		_check(stage._grab_hint.text == "掴む：" + ("箱" if kind == "OBJECT" else "傘"), "The pickup label identifies %s" % kind)
+		Input.action_press("wall_grab")
+		stage.player._update_grab_input()
+		_check(stage.player.get_held_object() == item, "The grab input picks up the highlighted %s" % kind)
+		stage._update_grab_hint()
+		_check(not stage._grab_frame.visible and not stage._grab_hint.visible, "Holding the target hides the pickup hint")
+		Input.action_release("wall_grab")
+		stage.player.release_grab()
+		item.queue_free()
+		await _step(2)
+	var object: Grabbable = stage.room.LIGHT.instantiate()
+	object.position = Vector2(500, -400)
+	stage.room.get_node("Items").add_child(object)
+	object.freeze = true
+	stage.player.position = object.position - Vector2(60, 0)
+	await _step(2)
+	for gravity in [1, -1, 2, -2]:
+		stage.player.set_gravity_direction(gravity)
+		object.rotation = gravity * 0.17
+		stage._update_grab_hint()
+		_check(stage._grab_target == object and stage._grab_frame.points.size() == 4, "The pickup frame works in gravity %d" % gravity)
+		var corner: Vector2 = object.collider.global_transform * (-(object.collider.shape.size * 0.5 + Vector2(6, 6)))
+		_check(stage._grab_frame.to_global(stage._grab_frame.points[0]).distance_to(corner) < 0.01, "The frame follows the object's rotated collider")
+		_check(stage._grab_hint.position.x >= 16.0 and stage._grab_hint.position.y >= 120.0 and stage._grab_hint.get_rect().end.x <= 1264.0, "The pickup label stays inside the viewport and below the HUD")
+	stage.player.stun_left = 0.2
+	stage._update_grab_hint()
+	_check(not stage._grab_hint.visible, "Stun hides the unusable pickup hint")
+	stage.player.stun_left = 0.0
+	paused = true
+	stage._update_grab_hint()
+	_check(not stage._grab_hint.visible, "Pausing hides the pickup hint")
+	paused = false
+	stage.player.controls_enabled = false
+	stage._update_grab_hint()
+	_check(not stage._grab_hint.visible, "Disabled controls hide the pickup hint")
+	stage.player.controls_enabled = true
+	stage.player.position += Vector2(300, 0)
+	stage.enemy.position = object.position - Vector2(60, 0)
+	await _step(2)
+	stage.enemy._pickup_left = 0.0
+	_check(stage.enemy.get_grab_candidate() == object, "The enemy uses the same eligible pickup query")
+	stage.enemy._pickup_left = 1.0
+	_check(stage.enemy.get_grab_candidate() == null and not stage.enemy.try_begin_grab(object), "The shared query preserves enemy pickup cooldown")
+	stage.enemy._pickup_left = 0.0
+	object.pinned_to = stage.room.entrance_wall
+	stage._update_grab_hint()
+	_check(not stage._grab_hint.visible and not stage.enemy.can_begin_grab(object), "Pinned platforms cannot be highlighted or picked up")
+	stage._load_room(1)
+	stage.room.set_physics_process(false)
+	var switch_box: Grabbable = stage.room.get_node("Items").get_child(0)
+	switch_box.freeze = true
+	switch_box.position = stage.room.doors[0].button.position - Vector2(0, 35)
+	stage.enemy.position = switch_box.position - Vector2(50, 0)
+	stage.player.position = Vector2(1800, 350)
+	var spare: Grabbable = stage.room.LIGHT.instantiate()
+	spare.position = stage.enemy.position - Vector2(65, 0)
+	stage.room.get_node("Items").add_child(spare)
+	spare.freeze = true
+	stage.enemy._pickup_left = 0.0
+	await _step(2)
+	_check(stage.room.item_on_switch(switch_box) and not stage.enemy.can_begin_grab(switch_box), "The enemy leaves the box operating the weight switch")
+	_check(stage.enemy.get_grab_candidate() == spare and stage.enemy.try_begin_grab(spare), "The enemy can still choose the next eligible object")
+	await _fresh()
 
 
 func _fresh() -> void:

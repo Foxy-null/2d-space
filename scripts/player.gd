@@ -611,6 +611,14 @@ func _update_grab_input() -> void:
 		return
 	if not _pressed("wall_grab") or is_dashing():
 		return
+	var object := get_grab_candidate()
+	if object != null:
+		try_begin_grab(object)
+
+
+func get_grab_candidate() -> Grabbable:
+	if get_held_object() != null or is_dashing():
+		return null
 	# A direct shape query is synchronous (no Area enter/exit delivery delay).
 	var shape := CircleShape2D.new()
 	shape.radius = grab_range
@@ -625,12 +633,13 @@ func _update_grab_input() -> void:
 			candidates.append(hit.collider)
 	candidates.sort_custom(func(a: Grabbable, b: Grabbable): return global_position.distance_squared_to(a.global_position) < global_position.distance_squared_to(b.global_position))
 	for object in candidates:
-		if try_begin_grab(object):
-			break
+		if can_begin_grab(object):
+			return object
+	return null
 
 
-func try_begin_grab(object: Grabbable) -> bool:
-	if get_held_object() != null or is_dashing() or not is_instance_valid(object) or is_instance_valid(object.carrier) or is_instance_valid(object.pinned_to):
+func can_begin_grab(object: Grabbable) -> bool:
+	if get_held_object() != null or is_dashing() or not is_instance_valid(object) or object.is_queued_for_deletion() or is_instance_valid(object.carrier) or is_instance_valid(object.pinned_to):
 		return false
 	if _wall_grabbing and not _just_pressed("wall_grab"):
 		return false
@@ -642,6 +651,12 @@ func try_begin_grab(object: Grabbable) -> bool:
 	var query := PhysicsRayQueryParameters2D.create(global_position, object.global_position, 0xFFFFFFFF, [get_rid(), object.get_rid()])
 	query.hit_from_inside = true
 	if not get_world_2d().direct_space_state.intersect_ray(query).is_empty():
+		return false
+	return true
+
+
+func try_begin_grab(object: Grabbable) -> bool:
+	if not can_begin_grab(object):
 		return false
 	_held = object
 	_clear_object_separation(object)

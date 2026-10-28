@@ -101,8 +101,10 @@ func _ready() -> void:
 			_floor(1450, 470, 700)
 			_platforms([Rect2(580, 650, 110, 28), Rect2(1000, 650, 140, 28), Rect2(1280, 540, 130, 28)])
 			_supply(LIGHT, Vector2(260, 780))
-			_supply(LIGHT, Vector2(930, 780))
-			_supply(UMBRELLA, Vector2(930, 780))
+			_supply(LIGHT, Vector2(1070, 780))
+			_supply(UMBRELLA, Vector2(850, 780))
+			_crystal(Vector2(630, 610), 0)
+			_crystal(Vector2(1340, 445), 1)
 			_block(Rect2(1500, 500, 280, 24))
 			# The gap's receiving wall accepts needles without blocking the normal route.
 			_block(Rect2(760, 740, 28, 80))
@@ -123,7 +125,7 @@ func _ready() -> void:
 			_bumper(Vector2(2150, 390))
 			_hazard(Rect2(1940, 750, 80, 70), Vector2(160, 0), 4.0)
 			_hazard(Rect2(2580, 730, 90, 90))
-			_crystal(Vector2(1030, 460), 1)
+			_crystal(Vector2(1650, 555), 1)
 			_crystal(Vector2(2030, 440), 0)
 			_crystal(Vector2(2390, 510), 1)
 			exit_position = Vector2(2860, 820)
@@ -183,7 +185,7 @@ func _ready() -> void:
 			_gate(Vector2(410, 680), -1)
 			_gate(Vector2(1450, 280), 1)
 			_crystal(Vector2(930, 390), 0)
-			_crystal(Vector2(1220, 310), 1)
+			_crystal(Vector2(1110, 250), 1)
 			_crystal(Vector2(1210, 400), 0)
 			_supply(LIGHT, Vector2(250, 780))
 			_hazard(Rect2(600, 140, 110, 70))
@@ -226,7 +228,7 @@ func _ready() -> void:
 			_crystal(Vector2(2410, 290), 0)
 			_crystal(Vector2(2060, 120), 1)
 			_crystal(Vector2(2060, 280), 0)
-			_crystal(Vector2(2420, 280), 1)
+			_crystal(Vector2(2410, 100), 1)
 			_hazard(Rect2(2250, 630, 100, 330))
 			_block(Rect2(970, 320, 40, 500))
 			_block(Rect2(1320, 0, 40, 390))
@@ -326,10 +328,6 @@ func _ready() -> void:
 		platform.add_child(crack)
 	if number != FINAL_ROOM:
 		_build_extension()
-		for index in range(1, route.size(), 3):
-			_crystal(route[index] - Vector2(0, 40), 0)
-		for index in range(2, route.size(), 3):
-			_crystal(route[index] - Vector2(0, 65), 1)
 	# Break a section of the enclosing wall when the enemy follows into the next room.
 	if number > 0:
 		enemy_spawn = Vector2(-50, spawn.y)
@@ -366,7 +364,7 @@ func _build_extension() -> void:
 	passage_rect = Rect2(size.x - 180, floor_y - 150, 100, 180)
 	var start := old_width + 40
 	_supply(LIGHT, Vector2(start + 60, floor_y - 40))
-	_supply(UMBRELLA, Vector2(start + 160, floor_y - 40))
+	_supply(UMBRELLA, Vector2(start + 300, floor_y - 40))
 	_supply(CREATURE, Vector2(start + 650, floor_y - 40))
 	# A covered lower route trades speed for shelter; the upper route carries refills.
 	_platforms([Rect2(start + 200, floor_y - 160, 250, 28), Rect2(start + 500, floor_y - 230, 220, 28)])
@@ -464,7 +462,7 @@ func _build_final() -> void:
 	_block(Rect2(5260, 80, 220, 24))
 	_block(Rect2(3630, 1060, 540, 30))
 	_supply(UMBRELLA, Vector2(2010, 1280))
-	_supply(UMBRELLA, Vector2(3820, 1280))
+	_supply(UMBRELLA, Vector2(4020, 1280))
 	_supply(LIGHT, Vector2(4740, 1280))
 	_crystal(Vector2(4690, 340), 0)
 	_crystal(Vector2(5060, 260), 1)

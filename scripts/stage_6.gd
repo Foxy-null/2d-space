@@ -53,6 +53,10 @@ var _shake_left := 0.0
 var shots_fired := 0
 var clouds_cast := 0
 var blocked_shots := 0
+var _grab_frame: Line2D
+var _grab_outline: Line2D
+var _grab_hint: Label
+var _grab_target: Grabbable
 
 
 func _ready() -> void:
@@ -91,6 +95,22 @@ func _ready() -> void:
 	_world.add_child(camera)
 	camera.make_current()
 	_build_hud()
+	_grab_frame = Line2D.new()
+	_grab_frame.name = "GrabTarget"
+	_grab_frame.width = 7.0
+	_grab_frame.default_color = Color("102034")
+	_grab_frame.closed = true
+	_grab_frame.z_index = 20
+	_world.add_child(_grab_frame)
+	_grab_outline = Line2D.new()
+	_grab_outline.width = 3.0
+	_grab_outline.default_color = Color("9cfff0")
+	_grab_outline.closed = true
+	_grab_frame.add_child(_grab_outline)
+	_grab_hint = _text("", 20)
+	_grab_hint.name = "GrabHint"
+	_grab_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	$HUD.add_child(_grab_hint)
 	_enemy_indicator = _text("", 18)
 	_enemy_indicator.position = Vector2(25, 510)
 	$HUD.add_child(_enemy_indicator)
@@ -173,6 +193,39 @@ func _load_room(index: int) -> void:
 	_update_camera()
 	camera.reset_smoothing()
 	_update_hud()
+
+
+func _process(_delta: float) -> void:
+	_update_grab_hint()
+
+
+func _update_grab_hint() -> void:
+	_grab_target = null
+	if not get_tree().paused and not _loading and not transitioning and not completed and player.controls_enabled and player.stun_left <= 0.0:
+		_grab_target = player.get_grab_candidate()
+	_grab_frame.visible = _grab_target != null
+	_grab_hint.visible = _grab_frame.visible
+	if _grab_target == null:
+		return
+	var shape := _grab_target.collider.shape as RectangleShape2D
+	var half := shape.size * 0.5 + Vector2(6, 6)
+	var points := PackedVector2Array()
+	var bounds := Rect2()
+	var canvas := get_viewport().get_canvas_transform()
+	for corner in [-half, Vector2(half.x, -half.y), half, Vector2(-half.x, half.y)]:
+		var point: Vector2 = _grab_target.collider.global_transform * corner
+		points.append(_grab_frame.to_local(point))
+		var screen: Vector2 = canvas * point
+		bounds = Rect2(screen, Vector2.ZERO) if points.size() == 1 else bounds.expand(screen)
+	_grab_frame.points = points
+	_grab_outline.points = points
+	_grab_hint.text = "掴む：" + {"OBJECT": "箱", "HEAVY": "重い箱", "PARACHUTE": "傘", "JUMP": "相棒"}.get(_grab_target.carry_name, "物体")
+	_grab_hint.reset_size()
+	var bottom: float = ($HUD/Progress.position.y if $HUD/Progress.visible else _action.get_parent().position.y) - 8.0
+	var y := bounds.position.y - _grab_hint.size.y - 8.0
+	if y < 120.0:
+		y = bounds.end.y + 8.0
+	_grab_hint.position = Vector2(clampf(bounds.get_center().x - _grab_hint.size.x * 0.5, 16.0, get_viewport_rect().size.x - _grab_hint.size.x - 16.0), clampf(y, 120.0, bottom - _grab_hint.size.y))
 
 
 func _physics_process(delta: float) -> void:

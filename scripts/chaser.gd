@@ -287,8 +287,8 @@ func get_movement_input() -> Vector2:
 	return _movement
 
 
-func try_begin_grab(object: Grabbable) -> bool:
-	return _pickup_left <= 0.0 and (not is_instance_valid(course) or not course.item_on_switch(object)) and super.try_begin_grab(object)
+func can_begin_grab(object: Grabbable) -> bool:
+	return _pickup_left <= 0.0 and super.can_begin_grab(object) and (not is_instance_valid(course) or not course.item_on_switch(object))
 
 
 func _pressed(action: StringName) -> bool:
