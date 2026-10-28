@@ -12,7 +12,7 @@ var course_model := -1
 var course_origin := 0.0
 var course_reversed := false
 var course_prefix := ""
-const MORE_SOURCES := [[8, 9], [5, 3], [2, 1], [4, 8], [2, 3], [6, 5]]
+const MORE_SOURCES := [[8], [5, 3], [2, 1], [4, 8], [2, 3], [6, 5]]
 
 
 func _initialize() -> void:
@@ -190,7 +190,9 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4, 5, 2, 7, 5, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4, 0, 2, 7, 5, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		if index == 9:
+			_check(actions.get("launch_spring", 0) == 1 and actions.get("air_jump", 0) == 2 and actions.get("wall_jump", 0) == 0, "The shortened tenth room uses the real Spring entry and both Boots instead of repeating wall kicks")
 		_check(actions.get("dash", 0) == ([0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 2, 0, 1, 1, 1, 2, 2, 2, 2, 3, 4, 0, 0, 2, 2, 1, 2, 1, 1, 3, 2, 0, 1, 2, 0, 2, 1][index]), "The real inputs use each course's intended Dash resources")
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
@@ -321,8 +323,11 @@ func _room_seven_course() -> void:
 
 func _room_eight_course(jump_delay: int = 20) -> void:
 	var air_before: int = actions.get("air_jump", 0)
-	await _kick_gate(240, -1)
-	await _cross_ceiling_pit(330, 470)
+	if stage.room_index == 9:
+		await _room_ten_entry()
+	else:
+		await _kick_gate(240, -1)
+		await _cross_ceiling_pit(330, 470)
 	_drive("move_right")
 	await _until(func(): return player.is_on_floor() and _x() >= 760 and _x() < 800, 180, "Reach the upper rest before the two-crystal descent")
 	_release_inputs()
@@ -342,6 +347,25 @@ func _room_eight_course(jump_delay: int = 20) -> void:
 	_drive("move_right")
 	await _until(func(): return player.gravity_direction == 1 and _x() > 900, 110, "The extended descent reaches Down gravity")
 	_check(actions.get("air_jump", 0) - air_before == 2, "The upper course spends both separate crystal jumps")
+
+
+func _room_ten_entry() -> void:
+	var springs_before: int = actions.get("launch_spring", 0)
+	_drive("move_right")
+	await _until(func(): return player.gravity_direction == -1 and _fifth_floor("A_MiddleCeiling"), 240, "The actual Spring launches through Up and lands beyond the first ceiling gap")
+	_release_inputs()
+	await _step(20)
+	var rest := player.position
+	await _step(180)
+	_check(player.position.distance_to(rest) < 2 and player.is_on_floor() and player.is_dash_ready(), "The Spring landing allows three input-free seconds and recovers Dash")
+	_check(actions.get("launch_spring", 0) == springs_before + 1, "The new entry uses one actual launch from its Spring")
+	for entry in [["A_ExitJumpCrystal", 12.0], ["A_SecondJumpCrystal", 12.0], ["A_DownGate", 7.0]]:
+		var shape: CollisionShape2D = stage.rooms.get_child(9).get_node(entry[0] + "/CollisionShape2D")
+		var bounds := shape.get_global_transform_with_canvas() * shape.shape.get_rect().grow(entry[1])
+		_check(root.get_visible_rect().grow(-4).encloses(bounds), "The next actual Boots and Down ink fit the viewport from the new rest")
+		for path in ["HUD/Margin/Panel", "HUD/PauseButton", "HUD/Status"]:
+			var panel: Control = stage.get_node(path)
+			_check(not panel.is_visible_in_tree() or not panel.get_global_rect().grow(4).intersects(bounds), "The next actual Boots and Down stay clear of visible HUD " + path)
 
 
 func _room_nine_course() -> void:
@@ -689,11 +713,11 @@ func _connect_composite_signals() -> void:
 
 func _composite_course(index: int, rest_frames := 180) -> void:
 	_connect_composite_signals()
-	for part in 2:
+	for part in MORE_SOURCES[index - 9].size():
 		_set_part(index, part)
 		await _part_course()
 		if failed: return
-		if part == 0:
+		if part < MORE_SOURCES[index - 9].size() - 1:
 			_drive("move_right")
 			await _until(func(): return _x() >= 1140 and player.is_on_floor() and player.gravity_direction == 1, 220, "Reach the real rest between the two challenges")
 			_release_inputs()
