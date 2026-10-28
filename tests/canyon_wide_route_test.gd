@@ -169,9 +169,10 @@ func _spike_retry() -> void:
 func _fall_from_branch() -> void:
 	var before := respawns
 	var left: bool = stage.rooms.get_child(stage.room_index).get_meta("exit_left", false)
+	var started_on_floor := player.is_on_floor()
 	for frame in 240:
 		_release_inputs()
-		Input.action_press("move_right" if left else "move_left")
+		Input.action_press("move_right" if left and not started_on_floor else "move_left")
 		Input.action_press("move_down")
 		if player.is_dash_ready(): Input.action_press("dash")
 		await _step()

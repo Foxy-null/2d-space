@@ -161,9 +161,10 @@ func _take_branch(strength: float = 1.0) -> void:
 
 func _fall_from_branch() -> void:
 	var before := respawns
+	var started_on_floor := player.is_on_floor()
 	for frame in 240:
 		_release_inputs()
-		Input.action_press("move_left" if stage.room_index == 15 else "move_right")
+		Input.action_press("move_left" if started_on_floor or stage.room_index == 15 else "move_right")
 		Input.action_press("move_down")
 		if player.is_dash_ready(): Input.action_press("dash")
 		await _step()
