@@ -67,7 +67,7 @@ func _ready() -> void:
 	_set_checkpoint()
 	player.respawn()
 	camera.make_current()
-	_update_hud()
+	set_hints_visible(false)
 
 
 func _physics_process(delta: float) -> void:
@@ -152,6 +152,12 @@ func _on_respawned() -> void:
 func set_hints_visible(value: bool) -> void:
 	hints_visible = value
 	$HUD/Hint.visible = value
+	for room in rooms.get_children():
+		room.get_node("ExitLabel").visible = value
+		var checkpoint := room.get_node_or_null("Checkpoint")
+		if checkpoint != null: checkpoint.visible = value
+		room.get_node("CarryHint").hide()
+	_update_hud()
 
 
 func _on_completed() -> void:
@@ -211,7 +217,7 @@ func _update_hud() -> void:
 		icon.texture = target.get_node("Visuals/Body").sprite_frames.get_frame_texture("default", 0)
 		icon.scale = Vector2.ONE * (42.0 / icon.texture.get_width())
 	var prompt: Label = room.get_node("CarryHint")
-	prompt.visible = not completed and not carrying and player.global_position.distance_to(creature.global_position) < 140.0
+	prompt.visible = hints_visible and not completed and not carrying and player.global_position.distance_to(creature.global_position) < 140.0
 	prompt.position = creature.position + Vector2(-65, -85)
 	if room_index == rooms.get_child_count() - 1 and not completed:
 		var should_lock := not _carry_requirement_met()
