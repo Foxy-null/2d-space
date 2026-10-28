@@ -67,9 +67,11 @@ func _fresh(index: int) -> void:
 	player.respawn()
 	await _step(4)
 	actions.clear()
+	flips.clear()
 	respawns = 0
 	wind_contacts = 0
 	player.movement_action.connect(func(action): actions[action] = actions.get(action, 0) + 1)
+	player.gravity_changed.connect(func(inverted): flips.append(-1 if inverted else 1))
 	player.respawned.connect(func(): respawns += 1)
 	if index == 8:
 		stage.rooms.get_child(index).get_node("ExitUpdraft").body_entered.connect(func(body):
@@ -131,6 +133,8 @@ func _scroll_detour() -> void:
 
 func _negative_routes() -> void:
 	# Finite input sweeps complement the uninterrupted nine-room playthrough.
+	await _tailwind_entry_comparisons()
+	if failed: return
 	await _underwall_bypass()
 	if failed: return
 	for index in [6, 7, 8]:
@@ -151,7 +155,8 @@ func _negative_routes() -> void:
 					await _step()
 					reached_exit = reached_exit or (_x() > 1050 and player.is_on_floor() and player.gravity_direction == 1 and player.position.y > 500)
 					if respawns > 0 or reached_exit or stage.cleared.has(index): break
-				_check(not reached_exit and not stage.cleared.has(index), "Entrance Dash, outer walls and ordinary climbs cannot reach the exit landing without the transfers")
+				var used_tailwind_course: bool = index == 8 and wind_contacts > 0 and flips == [-1, 1]
+				_check(used_tailwind_course or (not reached_exit and not stage.cleared.has(index)), "Entrance alternatives must use the tailwind and both gates or fail before the exit")
 				negative_trials += 1
 				if failed: return
 
@@ -182,6 +187,41 @@ func _negative_routes() -> void:
 				_check(not reached_exit and not stage.cleared.has(7) and actions.get("air_jump", 0) < 2, "Eight-direction Dash and wall grips cannot replace either required extra jump")
 				negative_trials += 1
 				if failed: return
+
+
+func _tailwind_entry_comparisons() -> void:
+	for strength in [1.0, 0.8]:
+		stick = strength
+		for mode in ["wind_off", "no_jump", "diagonal_without_wind", "up_dash_climb_without_wind"]:
+			await _fresh(8)
+			if mode != "no_jump": stage.rooms.get_child(8).get_node("ExitUpdraft").wind_acceleration = 0.0
+			_drive("move_right")
+			await _until(func(): return player.is_on_floor() and _x() >= 288, 180, "Reach the same native takeoff for the tailwind comparison")
+			if mode == "up_dash_climb_without_wind":
+				_release_inputs()
+				Input.action_press("move_up")
+				Input.action_press("dash")
+				await _step(10)
+				Input.action_release("dash")
+				_drive("move_right", true)
+				Input.action_press("move_up")
+			elif mode != "no_jump": await _jump()
+			if mode == "diagonal_without_wind":
+				await _step(20)
+				Input.action_press("move_up")
+				Input.action_press("dash")
+				await _step()
+				Input.action_release("move_up")
+				Input.action_release("dash")
+			var inverted := false
+			for frame in 260:
+				await _step()
+				inverted = inverted or player.gravity_direction == -1
+				if respawns > 0 or inverted or stage.cleared.has(8): break
+			_check(respawns == 1 and not inverted and not stage.cleared.has(8), "The real wind/Jump omission and diagonal-Dash alternative fail before Up: " + mode)
+			negative_trials += 1
+			if failed: return
+	stick = 1.0
 
 
 func _recoveries() -> void:

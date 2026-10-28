@@ -190,7 +190,9 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 4, 0, 2, 3, 3, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 1, 0, 2, 3, 3, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		if index == 8:
+			_check(actions.get("jump", 0) == 2 and flips == [-1, 1], "The ninth room connects a tailwind Jump to one return kick without repeating the gravity cycle")
 		if index == 9:
 			_check(actions.get("launch_spring", 0) == 1 and actions.get("air_jump", 0) == 2 and actions.get("wall_jump", 0) == 0, "The shortened tenth room uses the real Spring entry and both Boots instead of repeating wall kicks")
 		if index == 11:
@@ -419,14 +421,15 @@ func _room_thirteen_descent(jump_delay: int = 20) -> void:
 
 
 func _room_nine_course() -> void:
-	await _kick_gate(280, -1)
-	await _cross_ceiling_pit(320, 450)
-	await _kick_gate(580, 1)
 	_drive("move_right")
-	await _until(func(): return player.is_on_floor() and _x() > 580, 120, "Rest before the final floor crossing")
+	await _until(func(): return player.is_on_floor() and _x() >= 288, 180, "Reach the tailwind takeoff before the marked floor edge")
 	await _jump()
-	await _kick_gate(840, -1)
-	await _cross_ceiling_pit(850, 980)
+	await _until(func(): return player.gravity_direction == -1, 90, "The tailwind carries the ordinary Jump into the distant Up")
+	_release_inputs()
+	await _until(func(): return player.is_on_floor(), 120, "The momentum ends on the safe inverted ceiling beyond the wind")
+	var rest := player.position
+	await _step(180)
+	_check(player.gravity_direction == -1 and player.is_on_floor() and player.position.distance_to(rest) < 2 and player.is_dash_ready() and player.get_wall_stamina() > 2.9, "The ceiling allows three input-free seconds with full movement resources")
 	await _kick_gate(1100, 1, "DownGate")
 
 
@@ -476,7 +479,7 @@ func _verify_shortcuts() -> void:
 
 
 func _verify_middle_gate_mantle() -> void:
-	for index in [3, 8]:
+	for index in [3]:
 		_release_inputs()
 		stage._set_room(index, false)
 		player.respawn()
