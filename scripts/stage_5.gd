@@ -229,6 +229,11 @@ func set_hints_visible(value: bool) -> void:
 	for room in rooms.get_children():
 		room.get_node("Route").visible = value
 		room.get_node("ExitLabel").visible = value
+		var entrance: Label = room.get_node_or_null("EntranceLabel")
+		if entrance != null: entrance.visible = value
+		for wind in room.get_node("Winds").get_children():
+			var direction: Label = wind.get_node_or_null("Direction")
+			if direction != null: direction.visible = value
 	_update_route()
 
 
