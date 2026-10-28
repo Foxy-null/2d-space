@@ -395,14 +395,70 @@ func _mandatory_used() -> bool:
 		0: return actions.has("launch_spring") and actions.has("return_spring") and kicks >= 2
 		1: return actions.has("bumper") and kicks >= 3
 		2: return actions.get("air_jump", 0) >= 1 and flips.size() >= 2
-		3, 8: return flips.size() >= 4 and kicks >= 4
+		3:
+			if stage.room_index == 12: return flips.size() >= 4 and kicks >= 2 and actions.has("dash")
+			return flips.size() >= 4 and kicks >= 4
+		8: return flips.size() >= 4 and kicks >= 4
 		4: return actions.has("exit_spring") and flips.size() >= 2
 		5: return actions.has("spring") and flips.size() >= 4 and kicks >= 5
 		7: return actions.get("air_jump", 0) >= 2 and flips.size() >= 2 and (stage.room_index != 9 or actions.has("launch_spring"))
 	return false
 
 
+func _thirteenth_descent_negatives() -> void:
+	var previous_strength := stick
+	for strength in [1.0, 0.8]:
+		stick = strength
+		await _approach_part(12, 0)
+		var down_hits := [0]
+		stage.rooms.get_child(12).get_node("A_MiddleDownGate").body_entered.connect(func(body):
+			if body == player: down_hits[0] += 1
+		)
+		await _kick_gate(280, -1)
+		await _cross_ceiling_pit(320, 450)
+		_drive("move_right")
+		await _until(func(): return player.is_on_wall() and _x() > 555, 120, "Reach the actual ceiling wall before MiddleDown")
+		_drive("move_right", true, true)
+		await _until(func(): return respawns > 0 or player.gravity_direction == 1 or _x() > 625, 180, "Attempt the previously successful underside mantle")
+		_check(down_hits[0] == 1 and player.gravity_direction == 1 and respawns == 0 and actions.get("dash", 0) == 0, "The enlarged native MiddleDown catches the real grab descent before it can mantle underneath")
+		negatives += 1
+		if failed:
+			stick = previous_strength
+			return
+		for use_wall in [false, true]:
+			await _approach_part(12, 0)
+			await _kick_gate(280, -1)
+			await _cross_ceiling_pit(320, 450)
+			await _kick_gate(580, 1)
+			_drive("move_right")
+			await _until(func(): return player.is_on_floor() and _x() > 580, 120, "Reach the real middle floor before the second Up")
+			await _jump()
+			await _kick_gate(840, -1)
+			await _cross_ceiling_pit(850, 1020)
+			_drive("move_right")
+			await _until(func(): return _x() >= (1110 if use_wall else 1020) and player.is_on_floor(), 120, "Reach the actual final ceiling before the no-Dash comparison")
+			_release_inputs()
+			await _step(20)
+			await _jump()
+			if use_wall:
+				_drive("move_right", true, true)
+				await _until(func(): return respawns > 0 or player.is_on_wall(), 120, "Attempt the previously successful exit-wall substitute")
+				_check(respawns == 1 and player.position.distance_to(stage.rooms.get_child(12).get_node("Spawn").global_position) < 5, "Native wall spikes return the no-Dash attempt to its checkpoint before a barrier grip")
+			else:
+				await _step(120)
+				_check(respawns == 0 and player.gravity_direction == -1 and player.is_on_floor(), "An ordinary inverted Jump falls back to the same ceiling without entering Down")
+			_check(actions.get("dash", 0) == 0 and not stage.cleared.has(12), "Neither a plain Jump nor the exit wall substitutes for the downward Dash")
+			negatives += 1
+			if failed:
+				stick = previous_strength
+				return
+	stick = previous_strength
+
+
 func _negative_routes(indices: Array = [9, 10, 11, 12, 13, 14]) -> void:
+	if 12 in indices:
+		await _thirteenth_descent_negatives()
+		if failed: return
 	if 13 in indices:
 		# The deeper lower alcove must not reopen the old underside refill route.
 		await _approach_part(13, 0)
@@ -447,16 +503,12 @@ func _negative_routes(indices: Array = [9, 10, 11, 12, 13, 14]) -> void:
 				if failed: return
 			print("GRAVITY_MORE_ENTRANCE_PROBES room=%d part=%d trials=%d" % [index + 1, part + 1, negatives])
 	# New upper chambers still require both independent crystal jumps.
-	for index in [9, 12]:
+	for index in [9]:
 		if index not in indices: continue
 		for extras in [0, 1]:
 			for direction in _directions():
-				await _approach_part(index, 0 if index == 9 else 1)
-				if index == 9:
-					await _room_ten_entry()
-				else:
-					await _kick_gate(240, -1)
-					await _cross_ceiling_pit(330, 470)
+				await _approach_part(index, 0)
+				await _room_ten_entry()
 				_drive("move_right")
 				await _until(func(): return player.is_on_floor() and _x() >= 760, 180, "Reach the upper takeoff by its real entrance route")
 				_release_inputs()
