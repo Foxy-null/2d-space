@@ -1,5 +1,7 @@
 extends Node2D
 
+const ENTRY_STEP = preload("res://scenes/room_entry_step.tscn")
+
 const TITLES := [
 	"針穴の反射", "横風の狙撃", "風の境目", "三連反射", "逆風を裂く", "天井返し",
 	"吹き落とす風", "折り返す航路", "壁からの一撃", "暴走する追い風", "嵐の五連鎖", "暴風の六連鎖",
@@ -66,6 +68,12 @@ func _ready() -> void:
 	goal.set_progress(0, 0, "", "", false)
 	for index in rooms.get_child_count():
 		var room := rooms.get_child(index)
+		if room.get_meta("exit_left", false):
+			var step := ENTRY_STEP.instantiate()
+			room.add_child(step)
+			var floor_collision: CollisionShape2D = room.get_node("Entrance/Collision")
+			var floor_top: float = room.to_local(floor_collision.to_global(floor_collision.shape.get_rect().position)).y
+			step.position = Vector2(float(room.get_meta("room_width", ROOM_WIDTH)) - 16, floor_top - 36)
 		for bumper_index in room.get_node("Bumpers").get_child_count():
 			room.get_node("Bumpers").get_child(bumper_index).launched.connect(_on_bumper.bind(index, bumper_index))
 		for hazard in room.get_node("Hazards").get_children():
@@ -173,6 +181,7 @@ func _transition_to_next() -> void:
 
 
 func _on_respawned() -> void:
+	player.facing_direction = -1 if rooms.get_child(room_index).get_meta("exit_left", false) else 1
 	goal.reset_for_respawn()
 	if not completed:
 		next_bumper = 0
