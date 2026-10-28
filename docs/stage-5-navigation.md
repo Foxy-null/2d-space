@@ -1,5 +1,7 @@
 # ステージ5の左向き入口
 
+部屋移動でキャラが一時的に見えなくなるカメラ移動は、[ステージ4・5共通の改善記録](room-transition-camera.md)で扱う。
+
 2026-10-28。[Issue #185](https://github.com/Foxy-null/2d-space/issues/185)。Celesteの一次資料と[合意した設計方針](stage-3-navigation.md)に従い、入口の背後と進行側の空間で方向を伝える。
 
 ## 確認した問題

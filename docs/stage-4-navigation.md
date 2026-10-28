@@ -1,5 +1,7 @@
 # ステージ4の入口と経路の読みやすさ
 
+部屋移動でキャラが一時的に見えなくなるカメラ移動は、[ステージ4・5共通の改善記録](room-transition-camera.md)で扱う。
+
 2026-10-28。[Issue #186](https://github.com/Foxy-null/2d-space/issues/186)。[調査と合意した方針](stage-3-navigation.md)に従い、進行方向を変える入口でも安全に出発できる地形にする。
 
 ## 確認した問題
