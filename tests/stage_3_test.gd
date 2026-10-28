@@ -12,7 +12,7 @@ var course_model := -1
 var course_origin := 0.0
 var course_reversed := false
 var course_prefix := ""
-const MORE_SOURCES := [[8], [5, 3], [2], [4], [2], [6, 5]]
+const MORE_SOURCES := [[8], [5, 3], [2], [4], [2], [6]]
 
 
 func _initialize() -> void:
@@ -190,7 +190,7 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 1, 0, 2, 3, 3, 3, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 1, 0, 2, 3, 3, 3, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
 		if index == 8:
 			_check(actions.get("jump", 0) == 2 and flips == [-1, 1], "The ninth room connects a tailwind Jump to one return kick without repeating the gravity cycle")
 		if index == 9:
@@ -201,6 +201,8 @@ func _run() -> void:
 			_check(actions.get("wall_jump", 0) == 3 and actions.get("air_jump", 0) == 0 and actions.get("jump_crystal", 0) == 0, "The shortened thirteenth room ends with a downward Dash instead of repeating the Boots course")
 		if index == 13:
 			_check(actions.get("wall_jump", 0) == 3 and actions.has("bumper") and actions.get("jump_crystal", 0) == 0 and flips == [-1, 1], "The shortened fourteenth room keeps its leftward wall transfers and bumper without repeating the crystal course")
+		if index == 14:
+			_check(actions.has("spring") and actions.get("exit_spring", 0) == 0 and flips == [-1, 1], "The shortened fifteenth room links its inverted Spring and horizontal Dash through one Down")
 		_check(actions.get("dash", 0) == ([0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 2, 1, 1, 0, 1, 2, 2, 2, 2, 3, 4, 0, 0, 2, 2, 1, 2, 1, 1, 3, 2, 0, 1, 2, 0, 2, 1][index]), "The real inputs use each course's intended Dash resources")
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
@@ -433,6 +435,24 @@ func _room_nine_course() -> void:
 	await _step(180)
 	_check(player.gravity_direction == -1 and player.is_on_floor() and player.position.distance_to(rest) < 2 and player.is_dash_ready() and player.get_wall_stamina() > 2.9, "The ceiling allows three input-free seconds with full movement resources")
 	await _kick_gate(1100, 1, "DownGate")
+
+
+func _room_fifteen_course() -> void:
+	await _kick_gate(260, -1)
+	_release_inputs()
+	await _until(func(): return player.gravity_direction == -1 and player.is_on_floor(), 180, "The first Up leads to the safe ceiling before the Spring")
+	await _step(20)
+	var rest := player.position
+	await _step(180)
+	_check(player.gravity_direction == -1 and player.is_on_floor() and player.position.distance_to(rest) < 2 and player.is_dash_ready() and player.get_wall_stamina() > 2.9, "The Spring approach allows three input-free seconds with full resources")
+	_drive("move_right")
+	await _until(func(): return actions.has("spring"), 180, "The real inverted Spring launches toward the moving Down")
+	_check(player.is_dash_ready(), "The Spring restores the Dash for the exit crossing")
+	await _until(func(): return player.gravity_direction == 1, 120, "The real Spring reaches Down without spending the crossing Dash")
+	Input.action_press("dash")
+	await _step()
+	Input.action_release("dash")
+	_drive("move_right")
 
 
 func _verify_shortcuts() -> void:
@@ -840,11 +860,7 @@ func _part_course() -> void:
 			await _cross_ceiling_pit(330, 470)
 			await _cross_floating_spring()
 		5:
-			await _kick_gate(260, -1)
-			await _kick_pair(true, -10, true)
-			await _kick_gate(960, -1, "MovingUpGate")
-			await _cross_ceiling_pit(970, 1070)
-			await _kick_gate(1110, 1, "DownGate")
+			await _room_fifteen_course()
 		7: await _room_eight_course(jump_spacing)
 		8: await _room_nine_course()
 
