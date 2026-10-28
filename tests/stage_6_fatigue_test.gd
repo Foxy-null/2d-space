@@ -50,6 +50,12 @@ func _run() -> void:
 	await _step(3)
 	_check(actor.get_wall_stamina() == 3.0, "Instant ground recovery returns when fatigue ends")
 	actor.set_physics_process(false)
+	stage._load_room(6)
+	actor._wall_stamina = 0.000005
+	stage._hit_grace = 0.0
+	stage._respawn_grace = 0.0
+	stage._damage_player(0.000001, Vector2.ZERO, true)
+	_check(actor.get_wall_stamina() > 0.0 and not stage._game_over_pending, "A tiny positive remainder after damage is not rounded into defeat")
 	actor._wall_stamina = 0.0
 	_check(not stage._game_over_pending, "Using all stamina on movement is not itself a defeat")
 	stage._hit_grace = 0.0
@@ -58,8 +64,24 @@ func _run() -> void:
 	_check(stage._game_over_pending and paused and not actor.controls_enabled, "An actual hit at zero stamina starts a frozen defeat transition")
 	_check(stage._stamina.value == 0.0, "The defeat HUD shows the fatal stamina loss immediately")
 	await _step(80)
-	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn" and not paused, "Defeat actually returns to the unpaused selection scene")
-	_check(current_scene.get_viewport().gui_get_focus_owner().name == "Stage6", "Stage six is selected for the next attempt")
+	_check(current_scene == stage and stage.room_index == 6 and not paused, "Defeat resumes the same room instead of restarting the stage")
+	_check(actor.position == stage.room.spawn and actor.controls_enabled and not stage._game_over_pending, "The player resumes at the room checkpoint without another input")
+	_check(actor.get_wall_stamina() == actor.wall_stamina_max and actor.recovery_slow_left == 0.0 and actor.movement_slow_left == 0.0, "Defeat restores stamina and clears the attack conditions")
+	_check(stage._fade.color.a == 0.0 and not stage._message.visible and stage._stamina.value == actor.wall_stamina_max, "Defeat darkness and messages clear and the restored stamina is displayed")
+	_check(stage.get_node("PauseMenu").is_processing_input() and not stage.get_node("HUD/HelpButton").disabled and not stage.get_node("HUD/PauseButton").disabled, "Pause and help are usable again after defeat")
+	stage.set_help_visible(true)
+	_check(paused and stage.help_visible, "Help can actually open after the checkpoint restart")
+	stage.set_help_visible(false)
+	stage.get_node("PauseMenu").open()
+	_check(paused and stage.get_node("PauseMenu").overlay.visible, "Pause can actually open after the checkpoint restart")
+	stage.get_node("PauseMenu").resume()
+	stage._hit_grace = 0.0
+	stage._respawn_grace = 0.0
+	actor._wall_stamina = 0.5
+	stage._damage_player(1.0)
+	_check(stage._game_over_pending, "A fatal flying attack uses the same defeat path")
+	await _step(80)
+	_check(current_scene == stage and stage.room_index == 6 and actor.get_wall_stamina() == actor.wall_stamina_max and not paused, "Repeated defeats from different attacks keep the checkpoint and restore control")
 	await _fresh()
 	actor = stage.player
 	var directions: Array[Vector2] = [Vector2.DOWN]
@@ -83,7 +105,8 @@ func _run() -> void:
 		await _step()
 	_check(is_instance_valid(stage) and stage._game_over_pending, "Sustained contact drains faster than ground recovery and cannot be tanked indefinitely")
 	await _step(80)
-	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Residual-needle stamina loss uses the same defeat exit")
+	_check(current_scene == stage and not stage._game_over_pending and not paused and actor.controls_enabled, "Residual-needle defeat automatically resumes the current checkpoint")
+	_check(stage.room.needles.get_child_count() == 0 and actor.get_wall_stamina() == actor.wall_stamina_max and stage._respawn_grace > 0.0, "Checkpoint restart removes old needles and restores health with spawn protection")
 	print("STAGE_6_FATIGUE_TEST_OK (%d checks)" % checks)
 	quit()
 

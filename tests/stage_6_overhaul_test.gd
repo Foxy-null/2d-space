@@ -214,8 +214,11 @@ func _capture_retry() -> void:
 	_check(stage._game_over_pending, "A failed capture starts the room-loss feedback")
 	stage.get_node("PauseMenu").open()
 	stage.get_node("PauseMenu").retry()
+	var generation: int = stage._generation
 	await _step(85)
-	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn" and not paused, "A failed capture finishes its defeat feedback and returns to selection even after a direct retry")
+	_check(current_scene == stage and stage.room_index == stage.ROOM.FINAL_ROOM and not paused and not stage._game_over_pending and stage._generation == generation + 1, "A failed capture restarts only the final room once, even after a direct retry")
+	_check(stage.player.get_wall_stamina() == stage.player.wall_stamina_max and not stage.enemy.active and stage.defeat_hits == 0 and stage.escape_elapsed == 0.0 and stage.room.keys_collected == 0, "Final-room defeat resets the encounter with full player stamina")
+	_check(not stage.get_node("PauseMenu").overlay.visible and stage.player.controls_enabled, "Checkpoint restart closes a directly opened pause overlay and resumes control")
 
 
 func _step(count := 1) -> void:

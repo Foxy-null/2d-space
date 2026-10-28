@@ -43,6 +43,7 @@ func _run() -> void:
 		if selected >= 0 and selected != number:
 			continue
 		var passed := false
+		var checkpoint_restarted := false
 		for attempt in 16:
 			if selected < 0 and stage.room_index > number:
 				passed = true
@@ -53,13 +54,12 @@ func _run() -> void:
 			_ground_run = false
 			if selected >= 0 and attempt == 0:
 				stage._load_room(number)
-			elif attempt > 0:
-				while stage._game_over_pending:
-					await _step()
+			elif attempt > 0 and not checkpoint_restarted:
 				Input.action_press("reset")
 				await _step()
 				Input.action_release("reset")
 				await _step(3)
+			checkpoint_restarted = false
 			while stage._intro_left > 0.0:
 				await _step()
 			_recent_launch = -100
@@ -70,15 +70,17 @@ func _run() -> void:
 			print("TRAVERSE_BEGIN ", number + 1, " attempt=", attempt + 1)
 			events.append({"time": ticks / 60.0, "room": number + 1, "attempt": attempt + 1, "event": "begin"})
 			passed = await _play_room(number)
-			if not passed and (not is_instance_valid(stage) or stage._game_over_pending):
+			if not passed and not is_instance_valid(stage):
 				print("DEFEAT_SAMPLES ", samples.slice(maxi(0, samples.size() - 5)))
-				if is_instance_valid(stage):
-					_save_record(selected)
-				push_error("Game over in room %d: the stage now returns to selection; this run must restart from room one" % (number + 1))
-				await _step(85)
+				push_error("Stage scene was unexpectedly removed in room %d" % (number + 1))
 				quit(1)
 				return
 			if not passed:
+				if stage._game_over_pending:
+					events.append({"time": ticks / 60.0, "room": number + 1, "event": "checkpoint_defeat"})
+					while stage._game_over_pending:
+						await _step()
+					checkpoint_restarted = true
 				for settle in 30:
 					if stage.room_index > number or stage.completed:
 						passed = true

@@ -5,9 +5,6 @@ func _ready() -> void:
 	if get_tree().get_meta("focus_gallery", false):
 		get_tree().remove_meta("focus_gallery")
 		$Margin/Content/Gallery.grab_focus.call_deferred()
-	elif get_tree().get_meta("focus_stage_six", false):
-		get_tree().remove_meta("focus_stage_six")
-		$Margin/Content/Stages/Stage6.grab_focus.call_deferred()
 	else:
 		$Margin/Content/Stages/Stage1.grab_focus.call_deferred()
 

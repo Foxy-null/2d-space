@@ -12,9 +12,6 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	_check(STAGE.capture_probability(3, 3) == 0.0, "Full stamina has zero capture failure risk")
-	_check(is_equal_approx(STAGE.capture_probability(1.5, 3), 0.5), "Half stamina has a 50% capture failure risk")
-	_check(STAGE.capture_probability(0, 3) == 1.0 and STAGE.capture_probability(-1, 3) == 1.0, "Empty stamina always loses a capture")
 	_check(STAGE._segment_hits_rect(Vector2(-200, 0), Vector2(200, 0), Rect2(-10, -10, 20, 20)), "Fast crossings cannot skip projectile/hazard contact")
 	_check(not STAGE._segment_hits_rect(Vector2(-200, 40), Vector2(200, 40), Rect2(-10, -10, 20, 20)), "Near misses do not count as hits")
 	await _new_stage()
@@ -378,7 +375,7 @@ func _capture_results() -> void:
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
 	stage._update_hud()
-	_check(stage._status.text.contains("捕獲時の失敗率   0%"), "The HUD reports zero failure risk at full stamina")
+	_check(stage._status.text.contains("捕獲をしのげる"), "The HUD describes the deterministic capture result")
 	var stock: Grabbable = stage.room.get_node("Items").get_child(0)
 	_place(stage.player, Vector2(450, 794))
 	_place(stage.enemy, stock.position - Vector2(80, 0))
@@ -392,10 +389,15 @@ func _capture_results() -> void:
 	await _step(20)
 	_check(not stage._game_over_pending and stage._immunity_left > 1.8 and stage.player.velocity.length() > 400, "A surviving capture throws the player back and grants recapture grace")
 	_check(not stage._capture_pending, "The same capture resolves only once")
+	for stamina in [1.5, 0.05, 0.000001]:
+		stage.player._wall_stamina = stamina
+		stage._capture()
+		await _step(20)
+		_check(not stage._game_over_pending and not stage._capture_pending and stage.player.get_wall_stamina() > 0.0, "Any positive stamina survives capture, including a tiny remaining amount")
 	stage.player._wall_stamina = 0.0
 	stage._capture()
 	await _step(90)
-	_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn" and not paused, "A failed capture returns to stage selection after defeat feedback")
+	_check(current_scene == stage and not paused and stage.player.position == stage.room.spawn and stage.player.controls_enabled and not stage._game_over_pending, "A failed capture automatically resumes at the current room checkpoint")
 
 
 func _put_weight(at: Vector2, scene: PackedScene) -> void:

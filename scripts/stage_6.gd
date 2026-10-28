@@ -355,17 +355,12 @@ func _on_player_respawned() -> void:
 	camera.reset_smoothing()
 
 
-static func capture_probability(stamina: float, maximum: float) -> float:
-	return 1.0 - clampf(stamina / maximum, 0.0, 1.0) if maximum > 0.0 else 1.0
-
-
 func _capture() -> void:
 	if _capture_pending or enemy.get_held_object() != null:
 		return
 	_capture_pending = true
 	escape_elapsed = 0.0
-	var probability := capture_probability(player.get_wall_stamina(), player.wall_stamina_max)
-	if randf() < probability:
+	if player.get_wall_stamina() <= 0.0:
 		_game_over()
 		return
 	var generation := _generation
@@ -426,7 +421,7 @@ func _game_over(reason := "捕獲されました") -> void:
 	$HUD/HelpButton.disabled = true
 	$HUD/PauseButton.disabled = true
 	get_tree().paused = true
-	_message.text = reason + "\nステージ選択へ戻ります"
+	_message.text = reason + "\nこの部屋のチェックポイントからやり直します"
 	_message.show()
 	_effect_left = 1.2
 	if DisplayServer.accessibility_should_reduce_animation() != 1:
@@ -434,8 +429,14 @@ func _game_over(reason := "捕獲されました") -> void:
 	await get_tree().create_timer(1.2, true).timeout
 	if not is_inside_tree() or completed or generation != _generation:
 		return
-	get_tree().set_meta("focus_stage_six", true)
-	_return_to_select()
+	_game_over_pending = false
+	$PauseMenu.resume()
+	$PauseMenu.set_process_input(true)
+	$HUD/HelpButton.disabled = false
+	$HUD/PauseButton.disabled = false
+	_fade.color.a = 0.0
+	player.respawn()
+	_update_hud()
 
 
 func _damage_player(amount: float, impulse := Vector2.ZERO, ground_needle := false) -> void:
@@ -445,7 +446,7 @@ func _damage_player(amount: float, impulse := Vector2.ZERO, ground_needle := fal
 		player.apply_stun(0.2, impulse)
 	player.apply_attack_damage(amount, ground_needle)
 	_hit_grace = 0.75
-	if player.get_wall_stamina() <= 0.00001:
+	if player.get_wall_stamina() <= 0.0:
 		_game_over("攻撃でスタミナが尽きました")
 
 
@@ -586,10 +587,10 @@ func _update_camera() -> void:
 
 
 func _update_hud() -> void:
-	var chance := roundi(capture_probability(player.get_wall_stamina(), player.wall_stamina_max) * 100)
+	var capture_status := "捕獲注意（スタミナ0）" if player.get_wall_stamina() <= 0.0 else "捕獲をしのげる"
 	var direction: String = {1: "↓", -1: "↑", 2: "→", -2: "←"}[player.gravity_direction]
 	var pursuit: String = {"pursuit": "追跡中", "search": "探索中", "patrol": "見失った"}[enemy.get("awareness")] if enemy.get("active") else ("追跡まで %.1f秒" % _chase_delay if _chase_delay >= 0 else "準備中")
-	_status.text = "部屋 %02d/%02d　重力 %s　 捕獲時の失敗率 %3d%%　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [room_index + 1, ROOM.ROOM_COUNT, direction, chance, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), pursuit]
+	_status.text = "部屋 %02d/%02d　重力 %s　 %s　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [room_index + 1, ROOM.ROOM_COUNT, direction, capture_status, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), pursuit]
 	_stamina.max_value = player.wall_stamina_max
 	_stamina.value = player.get_wall_stamina()
 	_condition.text = "回復低下 %.1f秒" % player.recovery_slow_left if player.recovery_slow_left > 0.0 else ""
@@ -628,7 +629,7 @@ func _help_text() -> String:
 	if room_index == ROOM.FINAL_ROOM:
 		text += "どれか一つでクリア。\n決着：怯んでいない敵へ箱を%d回当てる。\n封鎖：逃走出口の下の区画へ進む。近くの重箱をくぼみの金の台へ置いて通電→右の檻へ敵を誘い箱を当てる→怯んでいる間に左の高台の制御盤を自分で踏む。箱を置くだけ・制御盤に先に乗って待つだけでは封鎖しません。\n逃走：同じ区画の敵と%d秒対峙し、左右の高所の鍵を2つ取って最も右上の到着台へ。見失わせても解除は進み、捕獲では時間を数え直します。\n\n" % [defeat_hits_required, ceili(escape_seconds)]
 	text += "この部屋の進め方\n" + ROOM.HINTS[room_index]
-	text += "\n\n物体と捕獲\n金の輪が供給場所です。スイッチに置いた箱と固定した箱を敵は取りません。敵が物を持つ間も掴まれません。投擲・飛行弾はスタミナを3分の1減らし、被弾後は4秒間回復が遅くなります。追加被弾で2秒ずつ、最大8秒まで延長します。通常時の着地は即時全回復です。こちらの箱は敵を2秒止めます。\n掴む予告から離れると避けられます。捕獲時の失敗率はスタミナ満タン0%、半分50%、空100%。捕獲失敗か攻撃によるスタミナ切れでゲームオーバーとなり、ステージ選択へ戻ります。"
+	text += "\n\n物体と捕獲\n金の輪が供給場所です。スイッチに置いた箱と固定した箱を敵は取りません。敵が物を持つ間も掴まれません。投擲・飛行弾はスタミナを3分の1減らし、被弾後は4秒間回復が遅くなります。追加被弾で2秒ずつ、最大8秒まで延長します。通常時の着地は即時全回復です。こちらの箱は敵を2秒止めます。\n掴む予告から離れると避けられます。スタミナが少しでも残っていれば捕獲をしのぎ、投げ返されます。スタミナ0での捕獲か、攻撃によるスタミナ切れでは、演出後にこの部屋のチェックポイントから自動でやり直します。スタミナと状態異常を回復し、敵・針・部屋の仕掛けも初期状態へ戻します。"
 	text += "\n\n復帰と操作\n落下・固定棘・移動棘では自分だけ入口へ戻り、敵・箱・残る針・雲・目標の進捗を維持します。スタート付近の地形に刺さった針は0.6秒で消え、箱を固定した足場は残ります。R / Startか下のやり直しでは部屋全体を初期化しますが、残っている回復低下と減速は維持します。横重力では↑↓で壁沿いを歩き、Space / A・×で重力に逆らって跳びます。荷物を置けばShiftで壁登りができます。"
 	return text
 
