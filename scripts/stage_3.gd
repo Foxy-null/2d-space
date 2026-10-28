@@ -104,7 +104,10 @@ func _physics_process(delta: float) -> void:
 	var right := collision.to_global(collision.shape.get_rect().end).x + player.safe_margin
 	var left_edge := collision.to_global(collision.shape.get_rect().position).x - player.safe_margin
 	var exit_left := _exit_direction(room) < 0
-	var reached_exit := left_edge <= left if exit_left else right >= left + width
+	var exit_collision: CollisionShape2D = room.get_node("ExitBarrier/Collision")
+	var exit_bounds := exit_collision.shape.get_rect()
+	var exit_x := exit_collision.to_global(exit_bounds.position if exit_left else exit_bounds.end).x
+	var reached_exit := left_edge <= exit_x if exit_left else right >= exit_x
 	var left_entrance := player.global_position.x > left + width if exit_left else player.global_position.x < left
 	if reached_exit and room_index < rooms.get_child_count() - 1 and cleared.has(room_index):
 		_transition_to(room_index + 1)
