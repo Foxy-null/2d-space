@@ -6,6 +6,8 @@ extends CanvasLayer
 var _tutorial_index := 0
 var _tutorial_hints_visible := false
 var _last_extra_count := -1
+var _compact_wanted_bottom := false
+var _compact_applied_bottom := false
 
 
 func _ready() -> void:
@@ -14,6 +16,8 @@ func _ready() -> void:
 	_on_carry_changed("NONE")
 	player.gravity_changed.connect(_on_gravity_changed)
 	player.resources_changed.connect(_on_resources_changed)
+	if compact_mode:
+		_apply_compact_layout(false)
 	_on_gravity_changed(player.gravity_direction < 0)
 	_on_resources_changed(player.get_wall_stamina(), player.wall_stamina_max, player.is_dash_ready(), player.is_air_jump_ready())
 	if tutorial_mode:
@@ -23,19 +27,24 @@ func _ready() -> void:
 
 func _on_gravity_changed(is_inverted: bool) -> void:
 	if compact_mode:
-		$Status.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT if is_inverted else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 24)
-		$Margin/Panel.size_flags_vertical = Control.SIZE_SHRINK_END if is_inverted else Control.SIZE_SHRINK_BEGIN
-		$Margin.add_theme_constant_override("margin_bottom", 104 if is_inverted else 0)
-		$PauseButton.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT if is_inverted else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 48 if is_inverted else 24)
-		$PauseButton.position.x = 24
-		if not is_inverted:
-			$PauseButton.position.y = 38
-			$Status.position.y = 90
+		_compact_wanted_bottom = is_inverted
 		return
 	if tutorial_mode:
 		$Margin/Panel/Rows/Gravity.text = "重力：天井へ ↑" if is_inverted else "重力：床へ ↓"
 		return
 	$Margin/Panel/Rows/Gravity.text = "GRAVITY: UP" if is_inverted else "GRAVITY: DOWN"
+
+
+func _apply_compact_layout(bottom: bool) -> void:
+	_compact_applied_bottom = bottom
+	$Status.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT if bottom else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 24)
+	$Margin/Panel.size_flags_vertical = Control.SIZE_SHRINK_END if bottom else Control.SIZE_SHRINK_BEGIN
+	$Margin.add_theme_constant_override("margin_bottom", 104 if bottom else 0)
+	$PauseButton.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT if bottom else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 48 if bottom else 24)
+	$PauseButton.position.x = 24
+	if not bottom:
+		$PauseButton.position.y = 38
+		$Status.position.y = 90
 
 
 func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool, air_jump_ready: bool) -> void:
@@ -103,6 +112,12 @@ func show_lesson_progress(text: String, done: bool) -> void:
 
 
 func _process(_delta: float) -> void:
+	if compact_mode and _compact_wanted_bottom != _compact_applied_bottom:
+		var compact_player := get_node(player_path) as PlayerController
+		var screen_y := compact_player.get_global_transform_with_canvas().origin.y
+		# Leave room for the rotating player and held umbrella before moving the HUD.
+		if (_compact_wanted_bottom and screen_y <= 460.0) or (not _compact_wanted_bottom and screen_y >= 304.0):
+			_apply_compact_layout(_compact_wanted_bottom)
 	if not tutorial_mode or _tutorial_index < 5:
 		return
 	var player := get_node(player_path) as PlayerController

@@ -16,16 +16,16 @@ func _run() -> void:
 			await _fresh(16)
 			stage.set_hints_visible(hints)
 			observe_course = true
-			await _third_entry(16)
 			observe_view = true
+			await _third_entry(16)
 			_check(respawns == 0 and player.is_on_floor() and player.gravity_direction == -1, "The real entrance reaches the inverted ceiling and rests safely for three seconds")
 			_rest_view()
 			if failed: return
 			observe_view = false
 			await _retry()
 			_check(stage.room_index == 16 and not stage.cleared.has(16) and player.gravity_direction == 1 and player.is_dash_ready() and stage.hints_visible == hints, "Actual R restores the normal entrance while keeping the selected hint state")
-			await _third_entry(16)
 			observe_view = true
+			await _third_entry(16)
 			_rest_view()
 			if failed: return
 			await _third_vertical(Vector2.DOWN, 20, 1)
@@ -47,6 +47,7 @@ func _run() -> void:
 
 func _rest_view() -> void:
 	var room: Node2D = stage.rooms.get_child(16)
+	_check(stage.get_node("HUD/Status").position.y > 360, "The HUD reaches its original lower layout before the real ceiling rest")
 	for path in ["DownGate", "DownGate/Arrow", "DashCrystal"]:
 		_check(room.get_node(path).is_visible_in_tree(), "The next real action remains visible with either hint state: " + path)
 	# Include the gate's 13px ink stroke and the Crystal's drawn side marks.
