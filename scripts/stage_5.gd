@@ -226,6 +226,7 @@ func _on_hazard(body: Node2D) -> void:
 func set_hints_visible(value: bool) -> void:
 	hints_visible = value
 	$HUD/Hint.visible = value
+	goal.get_node("Bubble").visible = value
 	for room in rooms.get_children():
 		room.get_node("Route").visible = value
 		room.get_node("ExitLabel").visible = value

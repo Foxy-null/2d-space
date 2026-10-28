@@ -29,6 +29,7 @@ var _hint_occluded := false
 
 
 func _ready() -> void:
+	$Bubble.visibility_changed.connect(queue_redraw)
 	set_hints_visible(false)
 	if not mission_required:
 		locked = false
