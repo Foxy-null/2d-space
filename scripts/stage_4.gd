@@ -100,7 +100,7 @@ func _camera_position() -> Vector2:
 		if room_index == 26 and player.position.y < 1000 and player.position.x-room.position.x < 550: offset_y = -160.0
 		if room_index == 28 and player.position.y > 1000 and player.position.y < 1700: offset_y = -140.0
 		if room_index == 27 and player.position.y > 1700:
-			offset_y = -160.0
+			offset_y = -200.0
 			bottom += 80.0
 		if not player.is_on_floor(): offset_y = clampf(offset_y + maxf(0.0, player.velocity.y) * 0.25, -300.0, -80.0)
 	if room_index == 30 and player.position.x-room.position.x < 700 and player.position.y < 1400: offset_y = 60.0

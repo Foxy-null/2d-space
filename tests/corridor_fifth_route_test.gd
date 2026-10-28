@@ -37,12 +37,7 @@ func _run() -> void:
 			var before := deaths
 			var started := Engine.get_physics_frames()
 			actions.clear()
-			if section == 27:
-				var shape: CollisionShape2D = stage.rooms.get_child(section).get_node("Bumper/CollisionShape2D")
-				var bumper: Rect2 = shape.get_global_transform_with_canvas()*shape.shape.get_rect()
-				print("FIFTH_FIRST_BUMPER rect=",bumper," camera=",stage.camera.position," target=",stage._camera_position())
-				_check(root.get_visible_rect().encloses(bumper), "The whole real first bumper is visible before dropping from the entrance")
-				for path in ["Info","PauseButton","Hint"]:_check(not stage.get_node("HUD/"+path).get_global_rect().intersects(bumper), "The first physical rebound remains clear of shown HUD")
+			if section == 27: _fifth_entrance_view()
 			await _fifth_capture("room%d_entrance" % (section+1))
 			_check(await traverse_fifth(section, true, profile[1]), "The real new entrance reaches its safe intermediate rest")
 			if failed:return
@@ -124,3 +119,34 @@ func _fifth_mechanic_view(section: int) -> void:
 	_check(root.get_visible_rect().encloses(bounds), "The actual next mechanic or a broad safe landing surface is visible from the stationary observation rest")
 	for path in ["Info","PauseButton","Hint"]:
 		_check(not stage.get_node("HUD/"+path).get_global_rect().intersects(bounds), "Shown HUD panels leave the next real mechanic or landing visible")
+
+
+func _fifth_entrance_view() -> void:
+	var room: Node2D = stage.rooms.get_child(27)
+	var bumper: CollisionShape2D = room.get_node("Bumper/CollisionShape2D")
+	var sprite: AnimatedSprite2D = player.get_node("Visuals/Body")
+	var size := sprite.sprite_frames.get_frame_texture(sprite.animation, sprite.frame).get_size()
+	# Radius 31 + 1.5px ink, scaled by 2; grow(1) also covers AA.
+	var targets: Array[Rect2] = [
+		bumper.get_global_transform_with_canvas() * bumper.shape.get_rect().grow(1),
+		room.get_global_transform_with_canvas() * Rect2(room.walls[0].position, Vector2(220, 24)).grow(2),
+		sprite.get_global_transform_with_canvas() * Rect2(-size * 0.5, size),
+	]
+	var original_hints: bool = stage.hints_visible
+	for hints in [false, true]:
+		stage.set_hints_visible(hints)
+		var panels: Array[Rect2] = []
+		for path in ["HUD/Info", "HUD/PauseButton"]:
+			var panel: Control = stage.get_node(path)
+			if panel.is_visible_in_tree(): panels.append(panel.get_global_rect())
+		var hint: Label = stage.get_node("HUD/Hint")
+		if hint.is_visible_in_tree():
+			# The full-width Hint Label is transparent outside its single left-aligned line.
+			var text_size := hint.get_theme_font("font").get_string_size(hint.text, HORIZONTAL_ALIGNMENT_LEFT, -1, hint.get_theme_font_size("font_size"))
+			panels.append(hint.get_global_transform() * Rect2(Vector2.ZERO, text_size).grow(maxf(2, hint.get_theme_constant("outline_size"))))
+		for index in targets.size():
+			_check(root.get_visible_rect().grow(-4).encloses(targets[index]), "Entrance bumper ink/AA, next 220px of landing and full player artwork have four pixels of viewport clearance (target %d, hints %s): %s" % [index, hints, targets[index]])
+			if failed: return
+			for panel in panels:
+				_check(not panel.grow(4).intersects(targets[index]), "Visible entrance HUD artwork has four pixels of target clearance (target %d, hints %s)" % [index, hints])
+	stage.set_hints_visible(original_hints)
