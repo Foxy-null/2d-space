@@ -12,7 +12,7 @@ var course_model := -1
 var course_origin := 0.0
 var course_reversed := false
 var course_prefix := ""
-const MORE_SOURCES := [[8], [5, 3], [2], [4], [2, 3], [6, 5]]
+const MORE_SOURCES := [[8], [5, 3], [2], [4], [2], [6, 5]]
 
 
 func _initialize() -> void:
@@ -190,7 +190,7 @@ func _run() -> void:
 		if index >= 2:
 			var room: Node2D = stage.rooms.get_child(index)
 			_check(room.get_node("ReturnBridge").visible and not room.get_node("ReturnBridge/Collision").disabled and not room.get_node("PitWarning").visible, "Clearing the room fills its pit and hides its warning")
-		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 1, 0, 2, 3, 3, 4, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
+		_check(actions.get("wall_jump", 0) >= [2, 3, 1, 4, 1, 5, 3, 1, 1, 0, 2, 3, 3, 3, 6, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 4][index], "Each route keeps its wall-kick challenges in room %d" % (index + 1))
 		if index == 8:
 			_check(actions.get("jump", 0) == 2 and flips == [-1, 1], "The ninth room connects a tailwind Jump to one return kick without repeating the gravity cycle")
 		if index == 9:
@@ -199,7 +199,9 @@ func _run() -> void:
 			_check(actions.get("wall_jump", 0) == 3 and actions.has("bumper") and not actions.has("launch_spring") and not actions.has("return_spring") and flips == [-1, 1], "The shortened twelfth room connects its Up Dash to the wall transfers and bumper without repeating the Spring course")
 		if index == 12:
 			_check(actions.get("wall_jump", 0) == 3 and actions.get("air_jump", 0) == 0 and actions.get("jump_crystal", 0) == 0, "The shortened thirteenth room ends with a downward Dash instead of repeating the Boots course")
-		_check(actions.get("dash", 0) == ([0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 2, 1, 1, 1, 1, 2, 2, 2, 2, 3, 4, 0, 0, 2, 2, 1, 2, 1, 1, 3, 2, 0, 1, 2, 0, 2, 1][index]), "The real inputs use each course's intended Dash resources")
+		if index == 13:
+			_check(actions.get("wall_jump", 0) == 3 and actions.has("bumper") and actions.get("jump_crystal", 0) == 0 and flips == [-1, 1], "The shortened fourteenth room keeps its leftward wall transfers and bumper without repeating the crystal course")
+		_check(actions.get("dash", 0) == ([0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 2, 1, 1, 0, 1, 2, 2, 2, 2, 3, 4, 0, 0, 2, 2, 1, 2, 1, 1, 3, 2, 0, 1, 2, 0, 2, 1][index]), "The real inputs use each course's intended Dash resources")
 		_check(flips.has(-1) and flips.has(1), "Room %d uses both gravity directions" % (index + 1))
 		if index in [3, 5]:
 			_check(flips.count(-1) == 2 and flips.count(1) == 2, "Later rooms use two intended cycles without an accidental return flip")
@@ -763,7 +765,7 @@ func _reset_course() -> void:
 func _set_part(index: int, part: int) -> void:
 	course_model = MORE_SOURCES[index - 9][part] - 1
 	course_reversed = index in [10, 13]
-	course_origin = (1280 if part == 0 else 0) if course_reversed else part * 1280
+	course_origin = (1280 if index == 10 and part == 0 else 0) if course_reversed else part * 1280
 	course_prefix = "A_" if part == 0 else "B_"
 
 

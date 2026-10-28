@@ -1,18 +1,12 @@
-[gd_scene load_steps=34 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain_art.gd" id="A_art_terrain"]
 
 [ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="A_5_gate"]
 [ext_resource type="PackedScene" path="res://scenes/pinball_spring.tscn" id="A_9_pinball"]
 [ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="A_spikes"]
-[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="B_art_terrain"]
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
 
-[ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="B_5_gate"]
-[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="B_6_goal"]
-
-[ext_resource type="PackedScene" path="res://scenes/jump_crystal.tscn" id="B_10_jump_crystal"]
-
-[ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="B_spikes"]
 [ext_resource type="PackedScene" path="res://scenes/scroll_collectible.tscn" id="scroll"]
 
 [ext_resource type="Script" path="res://scripts/scroll_marker.gd" id="marker"]
@@ -52,54 +46,25 @@ size = Vector2(36, 380)
 [sub_resource type="RectangleShape2D" id="A_Shape_ExitCeiling_Room2"]
 size = Vector2(390, 40)
 
-[sub_resource type="RectangleShape2D" id="B_Shape_15"]
-size = Vector2(350, 80)
-
-[sub_resource type="RectangleShape2D" id="B_Shape_16"]
-size = Vector2(330, 240)
-
-[sub_resource type="RectangleShape2D" id="B_Shape_17"]
-size = Vector2(36, 220)
-
-[sub_resource type="RectangleShape2D" id="B_Shape_22"]
-size = Vector2(48, 96)
-
-[sub_resource type="RectangleShape2D" id="B_Shape_ExitFloor_Room3"]
-size = Vector2(340, 80)
-
-[sub_resource type="RectangleShape2D" id="B_Shape_ReturnBridge_Room3"]
-size = Vector2(590, 80)
-
-[sub_resource type="RectangleShape2D" id="B_Shape_ExitCeiling_Room3"]
-size = Vector2(330, 240)
-
-[sub_resource type="RectangleShape2D" id="B_Shape_FinalCeiling_Room3"]
-size = Vector2(60, 40)
-
-[sub_resource type="RectangleShape2D" id="B_Room3ExitWall"]
-size = Vector2(20, 550)
-
 [sub_resource type="RectangleShape2D" id="ExitShape"]
 size = Vector2(28, 1080)
 
 [node name="Room14" type="Node2D"]
 metadata/exit_left = true
-metadata/room_width = 2560.0
+metadata/room_width = 1280.0
 metadata/room_top = 0.0
 metadata/room_bottom = 840.0
-metadata/return_bridges = PackedStringArray("ApproachBridge", "ReturnBridge")
-metadata/pit_warnings = PackedStringArray("ApproachPitWarning", "PitWarning")
 
-metadata/return_retract = PackedStringArray("A_LeftKickWall", "A_KickStep", "A_RightKickWall", "A_KickLanding", "A_UpGate", "A_StepUnderside", "A_WallTip", "A_LandingUnderside", "A_ExitKickWall", "A_DownGate", "B_FloorSpikes", "B_LaunchWall", "B_UpGate", "B_ExitKickWall", "B_DownGate", "B_ExitWallSpikes")
+metadata/return_retract = PackedStringArray("A_LeftKickWall", "A_KickStep", "A_RightKickWall", "A_KickLanding", "A_UpGate", "A_StepUnderside", "A_WallTip", "A_LandingUnderside", "A_ExitKickWall", "A_DownGate")
 
 [node name="Spawn" type="Marker2D" parent="."]
-position = Vector2(2488, 614)
+position = Vector2(1208, 614)
 
 [node name="Return" type="Marker2D" parent="."]
 position = Vector2(230, 614)
 
 [node name="A_Floor" type="StaticBody2D" parent="."]
-position = Vector2(2360, 680)
+position = Vector2(1080, 680)
 
 [node name="Collision" type="CollisionShape2D" parent="A_Floor"]
 shape = SubResource("A_Shape_7")
@@ -116,7 +81,7 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="A_ExitFloor" type="StaticBody2D" parent="."]
-position = Vector2(1470, 680)
+position = Vector2(190, 680)
 
 [node name="Collision" type="CollisionShape2D" parent="A_ExitFloor"]
 shape = SubResource("A_Room2ExitFloor")
@@ -126,27 +91,27 @@ script = ExtResource("A_art_terrain")
 polygon = PackedVector2Array(190, -40, -190, -40, -190, 40, 190, 40)
 color = Color(0.12, 0.19, 0.34, 1)
 
-[node name="ApproachBridge" type="StaticBody2D" parent="."]
+[node name="ReturnBridge" type="StaticBody2D" parent="."]
 visible = false
-position = Vector2(1910, 680)
+position = Vector2(630, 680)
 
-[node name="Collision" type="CollisionPolygon2D" parent="ApproachBridge"]
+[node name="Collision" type="CollisionPolygon2D" parent="ReturnBridge"]
 polygon = PackedVector2Array(-250, -40, -90, -40, -90, 20, -60, 20, -60, 100, 0, 100, 0, 20, 30, 20, 30, -40, 250, -40, 250, 140, -250, 140)
 disabled = true
 
-[node name="Visual" type="Polygon2D" parent="ApproachBridge"]
+[node name="Visual" type="Polygon2D" parent="ReturnBridge"]
 script = ExtResource("A_art_terrain")
 polygon = PackedVector2Array(-250, -40, -90, -40, -90, 20, -60, 20, -60, 100, 0, 100, 0, 20, 30, 20, 30, -40, 250, -40, 250, 140, -250, 140)
 color = Color(0.12, 0.19, 0.34, 1)
 
-[node name="ApproachPitWarning" type="Line2D" parent="."]
+[node name="PitWarning" type="Line2D" parent="."]
 points = PackedVector2Array(-376, 640, -400, 640, -400, 840, -900, 840, -900, 640, -924, 640)
 width = 2.0
 default_color = Color(1, 0.57, 0.3, 0.8)
-position = Vector2(2560, 0)
+position = Vector2(1280, 0)
 
 [node name="A_EntryCeiling" type="StaticBody2D" parent="."]
-position = Vector2(2330, 60)
+position = Vector2(1050, 60)
 
 [node name="Collision" type="CollisionShape2D" parent="A_EntryCeiling"]
 shape = SubResource("A_Shape_8")
@@ -163,7 +128,7 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="A_MiddleCeiling" type="StaticBody2D" parent="."]
-position = Vector2(1805, 60)
+position = Vector2(525, 60)
 
 [node name="Collision" type="CollisionShape2D" parent="A_MiddleCeiling"]
 shape = SubResource("A_Shape_ExitCeiling_Room2")
@@ -180,7 +145,7 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="A_ExitCeilingPitWarning" type="Node2D" parent="."]
-position = Vector2(2560, 0)
+position = Vector2(1280, 0)
 
 [node name="EntryLip" type="Line2D" parent="A_ExitCeilingPitWarning"]
 points = PackedVector2Array(-926, 80, -950, 80, -950, 0)
@@ -195,7 +160,7 @@ default_color = Color(1, 0.57, 0.3, 0.8)
 antialiased = true
 
 [node name="A_CeilingPitWarning" type="Node2D" parent="."]
-position = Vector2(2560, 0)
+position = Vector2(1280, 0)
 
 [node name="EntryLip" type="Line2D" parent="A_CeilingPitWarning"]
 points = PackedVector2Array(-436, 80, -460, 80, -460, 0)
@@ -210,7 +175,7 @@ default_color = Color(1, 0.57, 0.3, 0.8)
 antialiased = true
 
 [node name="A_LeftKickWall" type="StaticBody2D" parent="."]
-position = Vector2(2142, 590)
+position = Vector2(862, 590)
 
 [node name="Collision" type="CollisionShape2D" parent="A_LeftKickWall"]
 shape = SubResource("A_Shape_9")
@@ -227,7 +192,7 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="A_KickStep" type="StaticBody2D" parent="."]
-position = Vector2(2098, 250)
+position = Vector2(818, 250)
 
 [node name="Collision" type="CollisionShape2D" parent="A_KickStep"]
 shape = SubResource("A_Shape_10")
@@ -244,7 +209,7 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="A_RightKickWall" type="StaticBody2D" parent="."]
-position = Vector2(1960, 295)
+position = Vector2(680, 295)
 
 [node name="Collision" type="CollisionShape2D" parent="A_RightKickWall"]
 shape = SubResource("A_Shape_11")
@@ -261,7 +226,7 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="A_KickLanding" type="StaticBody2D" parent="."]
-position = Vector2(1916, 386)
+position = Vector2(636, 386)
 
 [node name="Collision" type="CollisionShape2D" parent="A_KickLanding"]
 shape = SubResource("A_Shape_12")
@@ -278,14 +243,14 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="A_UpGate" parent="." instance=ExtResource("A_5_gate")]
-position = Vector2(2380, 360)
+position = Vector2(1100, 360)
 target_gravity = -1
 
 [node name="CollisionShape2D" parent="A_UpGate" index="0"]
 shape = SubResource("A_Room2UpGate")
 
 [node name="A_StepUnderside" parent="." instance=ExtResource("A_spikes")]
-position = Vector2(2098, 264)
+position = Vector2(818, 264)
 stage_group = &"stage_three"
 room_number = 13
 travel = Vector2(-0, 0)
@@ -293,7 +258,7 @@ ceiling_strip = true
 strip_half_width = 20.0
 
 [node name="A_WallTip" parent="." instance=ExtResource("A_spikes")]
-position = Vector2(1960, 510)
+position = Vector2(680, 510)
 stage_group = &"stage_three"
 room_number = 13
 travel = Vector2(-0, 0)
@@ -301,7 +266,7 @@ ceiling_strip = true
 strip_half_width = 10.0
 
 [node name="A_LandingUnderside" parent="." instance=ExtResource("A_spikes")]
-position = Vector2(2008, 400)
+position = Vector2(728, 400)
 stage_group = &"stage_three"
 room_number = 13
 travel = Vector2(-0, 0)
@@ -309,7 +274,7 @@ ceiling_strip = true
 strip_half_width = 30.0
 
 [node name="A_ExitKickWall" type="StaticBody2D" parent="."]
-position = Vector2(1482, 270)
+position = Vector2(202, 270)
 
 [node name="Collision" type="CollisionShape2D" parent="A_ExitKickWall"]
 shape = SubResource("A_Shape_ExitKickWall")
@@ -326,7 +291,7 @@ default_color = Color(0.4, 0.75, 0.9, 0.65)
 antialiased = true
 
 [node name="A_DownGate" parent="." instance=ExtResource("A_5_gate")]
-position = Vector2(1590, 500)
+position = Vector2(310, 500)
 target_gravity = 1
 
 [node name="CollisionShape2D" parent="A_DownGate" index="0"]
@@ -336,232 +301,13 @@ shape = SubResource("A_Shape_13")
 polygon = PackedVector2Array(24, -48, -24, -48, -24, 48, 24, 48)
 
 [node name="A_CeilingBumper" parent="." instance=ExtResource("A_9_pinball")]
-position = Vector2(1620, 180)
+position = Vector2(340, 180)
 minimum_bounce_speed = 850.0
 maximum_bounce_speed = 1000.0
 
-[node name="B_FloorSpikes" parent="." instance=ExtResource("B_spikes")]
-position = Vector2(635, 680)
-rotation = -3.14159265
-travel = Vector2(-0, 0)
-room_number = 13
-ceiling_strip = true
-strip_half_width = 295.0
-stage_group = &"stage_three"
-
-[node name="B_EntryFloor" type="StaticBody2D" parent="."]
-position = Vector2(1105, 680)
-
-[node name="Collision" type="CollisionShape2D" parent="B_EntryFloor"]
-shape = SubResource("B_Shape_15")
-
-[node name="Visual" type="Polygon2D" parent="B_EntryFloor"]
-script = ExtResource("B_art_terrain")
-polygon = PackedVector2Array(175, -40, -175, -40, -175, 40, 175, 40)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="Edge" type="Line2D" parent="B_EntryFloor"]
-points = PackedVector2Array(175, -40, -175, -40)
-width = 2.0
-default_color = Color(0.4, 0.75, 0.9, 0.65)
-antialiased = true
-
-[node name="B_ExitFloor" type="StaticBody2D" parent="."]
-position = Vector2(170, 680)
-
-[node name="Collision" type="CollisionShape2D" parent="B_ExitFloor"]
-shape = SubResource("B_Shape_ExitFloor_Room3")
-
-[node name="Visual" type="Polygon2D" parent="B_ExitFloor"]
-script = ExtResource("B_art_terrain")
-polygon = PackedVector2Array(170, -40, -170, -40, -170, 40, 170, 40)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="Edge" type="Line2D" parent="B_ExitFloor"]
-points = PackedVector2Array(170, -40, -170, -40)
-width = 2.0
-default_color = Color(0.4, 0.75, 0.9, 0.65)
-antialiased = true
-
-[node name="ReturnBridge" type="StaticBody2D" parent="."]
-visible = false
-position = Vector2(635, 680)
-
-[node name="Collision" type="CollisionShape2D" parent="ReturnBridge"]
-shape = SubResource("B_Shape_ReturnBridge_Room3")
-disabled = true
-
-[node name="Visual" type="Polygon2D" parent="ReturnBridge"]
-script = ExtResource("B_art_terrain")
-polygon = PackedVector2Array(295, -40, -295, -40, -295, 40, 295, 40)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="Edge" type="Line2D" parent="ReturnBridge"]
-points = PackedVector2Array(295, -40, -295, -40)
-width = 2.0
-default_color = Color(0.55, 1, 0.75, 0.65)
-antialiased = true
-
-[node name="PitWarning" type="Node2D" parent="."]
-z_index = 1
-position = Vector2(1280, 0)
-
-[node name="EntryLip" type="Line2D" parent="PitWarning"]
-points = PackedVector2Array(-326, 640, -350, 640, -350, 712)
-width = 2.0
-default_color = Color(1, 0.57, 0.3, 0.8)
-antialiased = true
-
-[node name="ExitLip" type="Line2D" parent="PitWarning"]
-points = PackedVector2Array(-964, 640, -940, 640, -940, 712)
-width = 2.0
-default_color = Color(1, 0.57, 0.3, 0.8)
-antialiased = true
-
-[node name="B_EntryCeiling" type="StaticBody2D" parent="."]
-position = Vector2(1115, -40)
-
-[node name="Collision" type="CollisionShape2D" parent="B_EntryCeiling"]
-shape = SubResource("B_Shape_16")
-
-[node name="Visual" type="Polygon2D" parent="B_EntryCeiling"]
-script = ExtResource("B_art_terrain")
-polygon = PackedVector2Array(165, -120, -165, -120, -165, 120, 165, 120)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="Edge" type="Line2D" parent="B_EntryCeiling"]
-points = PackedVector2Array(165, 120, -165, 120)
-width = 2.0
-default_color = Color(0.4, 0.75, 0.9, 0.65)
-antialiased = true
-
-[node name="B_MiddleCeiling" type="StaticBody2D" parent="."]
-position = Vector2(645, -40)
-
-[node name="Collision" type="CollisionShape2D" parent="B_MiddleCeiling"]
-shape = SubResource("B_Shape_ExitCeiling_Room3")
-
-[node name="Visual" type="Polygon2D" parent="B_MiddleCeiling"]
-script = ExtResource("B_art_terrain")
-polygon = PackedVector2Array(165, -120, -165, -120, -165, 120, 165, 120)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="Edge" type="Line2D" parent="B_MiddleCeiling"]
-points = PackedVector2Array(165, 120, -165, 120)
-width = 2.0
-default_color = Color(0.4, 0.75, 0.9, 0.65)
-antialiased = true
-
-[node name="B_ExitCeiling" type="StaticBody2D" parent="."]
-position = Vector2(190, 60)
-
-[node name="Collision" type="CollisionShape2D" parent="B_ExitCeiling"]
-shape = SubResource("B_Shape_FinalCeiling_Room3")
-
-[node name="Visual" type="Polygon2D" parent="B_ExitCeiling"]
-script = ExtResource("B_art_terrain")
-polygon = PackedVector2Array(30, -20, -30, -20, -30, 20, 30, 20)
-color = Color(0.12, 0.19, 0.34, 1)
-
-[node name="Edge" type="Line2D" parent="B_ExitCeiling"]
-points = PackedVector2Array(30, 20, -30, 20)
-width = 2.0
-default_color = Color(0.4, 0.75, 0.9, 0.65)
-antialiased = true
-
-[node name="B_ExitCeilingPitWarning" type="Node2D" parent="."]
-position = Vector2(1280, 0)
-
-[node name="EntryLip" type="Line2D" parent="B_ExitCeilingPitWarning"]
-points = PackedVector2Array(-776, 80, -800, 80, -800, 0)
-width = 2.0
-default_color = Color(1, 0.57, 0.3, 0.8)
-antialiased = true
-
-[node name="ExitLip" type="Line2D" parent="B_ExitCeilingPitWarning"]
-points = PackedVector2Array(-1084, 80, -1060, 80, -1060, 0)
-width = 2.0
-default_color = Color(1, 0.57, 0.3, 0.8)
-antialiased = true
-
-[node name="B_CeilingPitWarning" type="Node2D" parent="."]
-position = Vector2(1280, 0)
-
-[node name="EntryLip" type="Line2D" parent="B_CeilingPitWarning"]
-points = PackedVector2Array(-306, 80, -330, 80, -330, 0)
-width = 2.0
-default_color = Color(1, 0.57, 0.3, 0.8)
-antialiased = true
-
-[node name="ExitLip" type="Line2D" parent="B_CeilingPitWarning"]
-points = PackedVector2Array(-494, 80, -470, 80, -470, 0)
-width = 2.0
-default_color = Color(1, 0.57, 0.3, 0.8)
-antialiased = true
-
-[node name="B_LaunchWall" type="StaticBody2D" parent="."]
-position = Vector2(1022, 530)
-
-[node name="Collision" type="CollisionShape2D" parent="B_LaunchWall"]
-shape = SubResource("B_Shape_17")
-
-[node name="Visual" type="Polygon2D" parent="B_LaunchWall"]
-script = ExtResource("B_art_terrain")
-polygon = PackedVector2Array(18, -110, -18, -110, -18, 110, 18, 110)
-color = Color(0.24, 0.38, 0.56, 1)
-
-[node name="Edge" type="Line2D" parent="B_LaunchWall"]
-points = PackedVector2Array(18, -110, -18, -110)
-width = 2.0
-default_color = Color(0.4, 0.75, 0.9, 0.65)
-antialiased = true
-
-[node name="B_UpGate" parent="." instance=ExtResource("B_5_gate")]
-position = Vector2(1130, 420)
-target_gravity = -1
-
-[node name="B_ExitKickWall" type="StaticBody2D" parent="."]
-position = Vector2(430, 195)
-
-[node name="Collision" type="CollisionShape2D" parent="B_ExitKickWall"]
-shape = SubResource("B_Room3ExitWall")
-
-[node name="Visual" type="Polygon2D" parent="B_ExitKickWall"]
-script = ExtResource("B_art_terrain")
-polygon = PackedVector2Array(10, -275, -10, -275, -10, 275, 10, 275)
-color = Color(0.24, 0.38, 0.56, 1)
-
-[node name="Edge" type="Line2D" parent="B_ExitKickWall"]
-points = PackedVector2Array(10, -275, -10, -275)
-width = 2.0
-default_color = Color(0.4, 0.75, 0.9, 0.65)
-antialiased = true
-
-[node name="B_DownGate" parent="." instance=ExtResource("B_5_gate")]
-position = Vector2(340, 500)
-target_gravity = 1
-
-[node name="CollisionShape2D" parent="B_DownGate" index="0"]
-shape = SubResource("B_Shape_22")
-
-[node name="Glow" parent="B_DownGate" index="1"]
-polygon = PackedVector2Array(24, -48, -24, -48, -24, 48, 24, 48)
-
-[node name="Goal" parent="." instance=ExtResource("B_6_goal")]
+[node name="Goal" parent="." instance=ExtResource("goal")]
 position = Vector2(130, 640)
 mission_required = false
-
-[node name="B_ExitJumpCrystal" parent="." instance=ExtResource("B_10_jump_crystal")]
-position = Vector2(500, 195)
-
-[node name="B_ExitWallSpikes" parent="." instance=ExtResource("B_spikes")]
-position = Vector2(440, 190)
-rotation = -1.57079633
-travel = Vector2(-0, 0)
-room_number = 13
-ceiling_strip = true
-strip_half_width = 280.0
-stage_group = &"stage_three"
 
 [node name="ExitBarrier" type="StaticBody2D" parent="."]
 position = Vector2(14, 420)
@@ -574,20 +320,13 @@ script = ExtResource("terrain")
 polygon = PackedVector2Array(-14, -540, 14, -540, 14, 540, -14, 540)
 color = Color(0.35, 0.92, 1, 0.2)
 
-[node name="ExitHint" type="Label" parent="." groups=["stage_3_hints"]]
-visible = false
-offset_left = 2205.0
-offset_top = 675.0
-text = "到着台に乗ると出口が開く"
-mouse_filter = 2
-
 [node name="ScrollMark" type="Node2D" parent="."]
-position = Vector2(1880, 480)
+position = Vector2(600, 480)
 scale = Vector2(0.45, 0.45)
 modulate = Color(1, 1, 1, 0.75)
 script = ExtResource("marker")
 
 [node name="DetourScroll" parent="." instance=ExtResource("scroll")]
-position = Vector2(1880, 710)
+position = Vector2(600, 710)
 stage_id = "gravity"
 scroll_id = "left_depth_04"
