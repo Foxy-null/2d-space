@@ -27,7 +27,7 @@ func _run() -> void:
 			more_drive(-1000)
 			await more_jump()
 			await step(20)
-		_drive(Vector2.LEFT*room.travel_direction+ (Vector2.UP if section==26 else Vector2.ZERO))
+		_drive(Vector2.LEFT*room.travel_direction+ (Vector2.UP if section==26 or room.travel_direction==-1 else Vector2.ZERO))
 		await _pulse("dash")
 		for frame in 180:
 			if deaths!=before:break
