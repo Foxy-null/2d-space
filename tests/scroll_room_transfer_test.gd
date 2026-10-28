@@ -59,8 +59,9 @@ func _backtrack(scene: String) -> void:
 	var scroll := _pickup(stage, player, id)
 	await _step(3)
 	stage.call("_transition_to", 0)
-	_check(scroll._follower == player and stage.room_index == 0, scene + ": leftward room transfer also preserves the follower")
+	_check(scroll._follower == player and stage.transitioning, scene + ": leftward room transfer also preserves the follower")
 	await _step(80)
+	_check(stage.room_index == 0, scene + ": backtracking reaches the preceding room after its transition")
 	_check(progress.has_scroll("gravity", id), scene + ": the right-side return entrance secures the carried scroll")
 
 

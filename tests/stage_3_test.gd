@@ -203,26 +203,8 @@ func _run() -> void:
 		if index < stage.rooms.get_child_count() - 1:
 			if index == 0:
 				await _toggle_hints()
-			if index in [17, 19]:
-				var before_return := respawns
-				await _third_walk(72)
-				_check(respawns == before_return, "The newest left-facing course physically returns right without a retry")
-			if index in [10, 13]:
-				var before_return := respawns
-				await _return_more_to_exit()
-				_check(respawns == before_return, "The new left-facing route returns right without a retry")
-			if index == 6:
-				var before_return := respawns
-				await _return_seven_to_exit()
-				_check(respawns == before_return, "The left-folding course returns right without a retry")
 			_check(not stage.completed, "The former final room and intermediate additions never end the stage")
-			Input.action_press("move_right")
-			await _until(func(): return stage.room_index == index + 1, 150, "Cross the open exit")
-			_check(stage.transitioning and not player.controls_enabled, "Camera slides freeze controls")
-			_release_inputs()
-			await _step(25)
-			_check(not stage.transitioning and player.controls_enabled, "Controls resume after the camera slide")
-			_check(stage.camera.position == stage._camera_position(), "Camera settles on the next room")
+			await _cross_room_boundary()
 			if index == 0:
 				_check_hints(true)
 				await _toggle_hints()
@@ -243,7 +225,7 @@ func _run() -> void:
 	player.global_position.y = float(final_room.get_meta("room_bottom"))+60
 	await _step(3)
 	_check(stage.room_index == final_index and player.global_position.y < float(final_room.get_meta("room_bottom")), "Falling below the actual final room retries its entrance")
-	player.global_position.x = final_room.global_position.x - 5
+	player.global_position.x = final_room.global_position.x + float(final_room.get_meta("room_width")) + 5
 	await _step(25)
 	_check(stage.room_index == final_index-1 and player.position.distance_to(stage.rooms.get_child(final_index-1).get_node("Return").global_position)<5, "Backtracking uses the actual preceding room's right entrance")
 	_check(bridge.visible and not bridge.get_node("Collision").disabled, "Backtracking preserves the return bridge")
@@ -304,6 +286,30 @@ func _run() -> void:
 	quit(1 if failed else 0)
 
 
+func _cross_room_boundary(forward := true) -> void:
+	var index: int = stage.room_index
+	var room: Node2D = stage.rooms.get_child(index)
+	var target := index + (1 if forward else -1)
+	var direction: int = stage._exit_direction(room) * (1 if forward else -1)
+	_release_inputs()
+	Input.action_press("move_right" if direction > 0 else "move_left", para_strength)
+	if player.get_held_object() != null:
+		Input.action_press("wall_grab")
+	for frame in 1000:
+		if stage.room_index != index or failed:
+			break
+		Input.action_release("jump")
+		if player.is_on_floor() and player.is_on_wall():
+			Input.action_press("jump")
+		await _step()
+	_check(stage.room_index == target, "The real room boundary follows the course direction")
+	_check(stage.transitioning and not player.controls_enabled, "The short room transition freezes controls")
+	_release_inputs()
+	await _step(25)
+	_check(not stage.transitioning and player.controls_enabled, "Controls resume after the short transition")
+	_check(stage.camera.position == stage._camera_position(), "The next room opens at its actual checkpoint")
+
+
 func _room_seven_course() -> void:
 	await _room_two_wall_course()
 	_drive("move_right")
@@ -311,25 +317,6 @@ func _room_seven_course() -> void:
 	await _jump()
 	await _until(func(): return _x() > 960, 200, "The left-facing ceiling route crosses its real bumper")
 	await _kick_gate(1060, 1, "", true)
-
-
-func _return_seven_to_exit() -> void:
-	_drive("move_left")
-	await _until(func(): return _x() < 780 and player.is_on_floor(), 200, "Reach the small permanent scroll opening in the return bridge")
-	await _jump()
-	await _until(func(): return _x() < 570 and player.is_on_floor(), 120, "An ordinary jump keeps the optional branch off the main return")
-	_drive("move_left", true)
-	await _until(func(): return (_x() < 470 and player.is_wall_grabbing()) or _x() < 90, 300, "Reach the return wall before its low overhang")
-	if _x() >= 90:
-		await _until(func(): return player.position.y < 360, 100, "Climb below the return overhang spikes")
-		_drive("move_right", true)
-		await _jump()
-		await _until(func(): return player.is_wall_grabbing() and _x() > 550, 100, "Kick onto the clear opposing return wall")
-		await _until(func(): return player.position.y < 140, 120, "Climb above the overhang before returning right")
-		_drive("move_left", true)
-		await _jump()
-	await _until(func(): return _x() < 90, 500, "The left-folding course returns along the restored floor and walls to its right-hand exit")
-	_release_inputs()
 
 
 func _room_eight_course(jump_delay: int = 20) -> void:
@@ -759,18 +746,6 @@ func _part_course() -> void:
 		8: await _room_nine_course()
 
 
-func _return_more_to_exit() -> void:
-	_reset_course()
-	_drive("move_right")
-	if stage.room_index == 13:
-		await _until(func(): return _x() >= 1790 and player.is_on_floor(), 420, "Reach the permanent lower-scroll opening after arrival")
-		await _jump()
-		await _until(func(): return _x() > 1960 and player.is_on_floor(), 120, "An ordinary jump crosses the optional opening without collecting its scroll")
-		_drive("move_right")
-	await _until(func(): return _x() > 2460, 650, "The cleared left-facing room opens a physical floor return to the right exit")
-	_release_inputs()
-
-
 func _key(code: Key) -> void:
 	var event := InputEventKey.new()
 	event.keycode = code
@@ -1081,7 +1056,8 @@ func _para_walk(target: float, limit := 600) -> void:
 func _para_grab() -> void:
 	var room: Node2D=stage.rooms.get_child(stage.room_index)
 	var creature: Node2D=room.get_node("Parachute")
-	await _para_walk(creature.position.x+(-40 if _para_x()<creature.position.x else 40))
+	var approach: float = creature.position.x+(-40 if _para_x()<creature.position.x else 40)
+	await _para_walk(clampf(approach, 54, float(room.get_meta("room_width", 1280.0))-54))
 	_release_inputs()
 	Input.action_press("wall_grab")
 	await _step()
@@ -1159,7 +1135,6 @@ func _para_course(index: int) -> void:
 	await _para_walk([2000,1000,900,2000][index-21])
 	if failed: return
 	await _para_goal()
-	if index in [22,23]: await _para_walk(2258)
 	var seconds := float(Engine.get_physics_frames()-start)/60.0
 	_check(seconds<30 and respawns==before_respawns,"The real course finishes without death within thirty seconds (%.2fs)"%seconds)
 	_check(flips.has(-1) and flips.has(1),"The real route uses both gravity directions")
@@ -1409,33 +1384,15 @@ func _fifth_course(index: int, entered := false) -> void:
 	await _fifth_capture("room_%d_exit_floor" % [index+1])
 	await _fifth_goal()
 	if failed: return
-	if index in [26,28,30]:
-		await _fifth_return_right()
-		await _fifth_capture("room_%d_right_return" % [index+1])
 	if failed: return
 	var seconds := float(Engine.get_physics_frames()-start)/60.0
-	_check(respawns == before and seconds < 30, "The complete real course and left-facing return finish without death within thirty seconds (%.2fs)" % seconds)
+	_check(respawns == before and seconds < 30, "The complete real course reaches its arrival without death within thirty seconds (%.2fs)" % seconds)
 	_check(flips.has(-1) and flips.has(1), "Each new main route physically uses both gravity directions")
 	print("GRAVITY_FIFTH_%d %.2fs axis=%.1f gap=%d dash=%d crystal=%d kicks=%d" % [index+1,seconds,para_strength,para_gap,actions.get("dash",0),actions.get("fifth_crystal",0),actions.get("wall_jump",0)])
 
 
 func _fifth_capture(_name: String) -> void:
 	pass
-
-
-func _fifth_return_right() -> void:
-	var target := 2240.0 if stage.room_index==30 or (stage.room_index==34 and player.get_held_object()!=null) else 2258.0
-	for frame in 650:
-		_para_drive(target,stage.room_index==30)
-		if absf(_para_x()-target)<4 and absf(player.velocity.x)<35 and player.is_on_floor():
-			_release_inputs()
-			if player.get_held_object()!=null: Input.action_press("wall_grab")
-			return
-		# The genuinely thrown umbrella may settle in the opened lane; actual Grab picks it up again.
-		if player.is_on_floor() and player.is_on_wall(): await _jump()
-		await _step()
-		if failed: return
-	_check(false,"The actual left-facing return crosses the opened bridge and any real thrown object")
 
 
 func _fifth_goal() -> void:
@@ -1601,9 +1558,6 @@ func _sixth_course(index: int) -> void:
 		_:
 			_check(false,"The requested native sixth room has a real driver")
 	await _fifth_goal()
-	if index in [32,33,34,36]:
-		await _fifth_return_right()
-		await _sixth_capture("room_%d_right_return" % [index+1])
 	var seconds := float(Engine.get_physics_frames()-started)/60.0
 	_check(respawns==before and stage.cleared.has(index) and seconds<30,"The actual native route reaches its arrival within thirty seconds without death")
 	_check(flips.has(-1) and flips.has(1),"The mandatory route really uses both gravities and leaves all scrolls optional")

@@ -85,7 +85,7 @@ metadata/pit_warnings = PackedStringArray("ApproachPitWarning", "PitWarning")
 position = Vector2(72, 614)
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(2512, 614)
+position = Vector2(2530, 614)
 
 [node name="A_Floor" type="StaticBody2D" parent="."]
 position = Vector2(200, 680)

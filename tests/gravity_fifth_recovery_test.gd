@@ -58,11 +58,7 @@ func _fifth_seams() -> void:
 	monitor_view = false
 	await _para_course(24)
 	_check(not stage.completed,"The former room25 final remains intermediate after its actual route")
-	await _para_walk(3040)
-	_para_drive(3120)
-	await _until(func(): return stage.room_index==25,180,"Walk through the real old25/new26 exit")
-	_release_inputs()
-	await _step(25)
+	await _cross_room_boundary()
 	_fifth_connect()
 	for index in range(25,31):
 		actions.clear()
@@ -70,23 +66,14 @@ func _fifth_seams() -> void:
 		_check(stage.room_index==index and player.gravity_direction==1 and player.is_dash_ready() and player.get_held_object()==null and player.controls_enabled, "A real forward transfer restores this room's resources and native entrance")
 		await _fifth_course(index)
 		if index<30:
-			_para_drive(2350)
-			await _until(func(): return stage.room_index==index+1,180,"Walk through each actual new forward boundary")
-			_release_inputs()
-			await _step(25)
+			await _cross_room_boundary()
 	_check(not stage.completed and stage.cleared.size()==7,"The actual old25-plus-six route stays intermediate before the new room32")
 	for index in range(30,24,-1):
 		var before_transfer := respawns
-		for frame in 700:
-			if stage.room_index==index-1: break
-			_para_drive(-20)
-			if player.is_on_floor() and player.is_on_wall(): await _jump()
-			await _step()
-		_release_inputs()
-		await _step(25)
-		_check(stage.room_index==index-1 and stage.cleared.has(index-1) and not stage.transitioning and player.controls_enabled and respawns==before_transfer+1 and not stage.get_node("HUD/Completion").visible, "Every opened left return reaches the real preceding right entrance and hides completion")
+		await _cross_room_boundary(false)
+		_check(stage.room_index==index-1 and stage.cleared.has(index-1) and not stage.transitioning and player.controls_enabled and respawns==before_transfer+1 and not stage.get_node("HUD/Completion").visible, "Every entrance-side return reaches the preceding arrival checkpoint and hides completion")
 		await _retry()
-		_check(player.position.distance_to(player._spawn_position)<5 and player.gravity_direction==1, "Retry after a physical left transfer uses the preceding room's native Return marker")
+		_check(player.position.distance_to(player._spawn_position)<5 and player.gravity_direction==1, "Retry after physical backtracking uses the preceding room's native Return marker")
 
 
 func _check_fifth_return_markers() -> void:

@@ -41,6 +41,7 @@ size = Vector2(28, 1500)
 size = Vector2(28, 1500)
 
 [node name="Room34" type="Node2D"]
+metadata/exit_left = true
 metadata/room_width = 2304.0
 metadata/camera_margin_x = 32.0
 metadata/room_top = 0.0
@@ -149,7 +150,7 @@ polygon = PackedVector2Array(-475.0, -20.0, 475.0, -20.0, 475.0, 20.0, -475.0, 2
 position = Vector2(2232, 1174)
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(2232, 1174)
+position = Vector2(500, 1174)
 
 [node name="Goal" parent="." instance=ExtResource("goal")]
 position = Vector2(400, 1200)
@@ -168,7 +169,7 @@ script = ExtResource("terrain")
 polygon = PackedVector2Array(-1152.0, -20.0, 1152.0, -20.0, 1152.0, 20.0, -1152.0, 20.0)
 
 [node name="ExitBarrier" type="StaticBody2D" parent="."]
-position = Vector2(2290.0, 750.0)
+position = Vector2(14, 750.0)
 
 [node name="Collision" type="CollisionShape2D" parent="ExitBarrier"]
 shape = SubResource("ExitBarrierShape")

@@ -108,6 +108,7 @@ func _native_scroll_transfer() -> void:
 	_check(scroll._follower == stage.player and not scroll._secured, "A real overlap starts the native pending scroll")
 	stage._on_arrival(0)
 	stage._transition_to(1)
+	await _step(12)
 	_check(not stage.rooms.get_child(0).can_process() and scroll.can_process() and scroll.is_visible_in_tree(), "A pending scroll stays active and visible after its room stops")
 	await _step(80)
 	_check(scroll._secured and progress.has_scroll(scroll.stage_id, scroll.scroll_id), "The native scroll secures on the next room's safe landing")

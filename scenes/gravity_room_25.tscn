@@ -175,7 +175,7 @@ room_number = 24
 position = Vector2(72, 1254)
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(3000, 1774)
+position = Vector2(2600, 1774)
 
 [node name="Parachute" parent="." instance=ExtResource("para")]
 position = Vector2(222, 1250)

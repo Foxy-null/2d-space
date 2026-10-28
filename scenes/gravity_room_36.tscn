@@ -283,7 +283,7 @@ polygon = PackedVector2Array(-582.0, -12.0, 582.0, -12.0, 582.0, 12.0, -582.0, 1
 position = Vector2(200, 1074)
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(2090, 1074)
+position = Vector2(2100, 1074)
 
 [node name="Goal" parent="." instance=ExtResource("goal")]
 position = Vector2(2200, 1100)

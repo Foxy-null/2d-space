@@ -108,7 +108,7 @@ position = Vector2(72, 1274)
 
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(2232, 1274)
+position = Vector2(2100, 1274)
 
 
 [node name="ReturnBridge" type="StaticBody2D" parent="."]

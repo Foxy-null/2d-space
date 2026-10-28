@@ -27,8 +27,6 @@ func _run() -> void:
 			if failed: break
 			await _reach_goal()
 			await _capture("room_%d_arrival" % (index + 1))
-			if index == 6:
-				await _return_seven_to_exit()
 			var seconds := float(Engine.get_physics_frames() - started) / 60.0
 			_check(respawns == 0 and stage.cleared.has(index) and seconds < 30, "The real entrance route clears within thirty seconds without death")
 			_check(index != 8 or wind_contacts > 0, "The final route really crosses its wind")
@@ -210,16 +208,11 @@ func _room_six_seam() -> void:
 	stage._set_room(5, true)
 	stage._on_arrival(5)
 	stage._set_room(6, false)
+	player.respawn()
 	await _step(2)
-	Input.action_press("move_left")
-	await _until(func(): return stage.room_index == 5, 90, "The former final boundary allows actual leftward backtracking")
-	_release_inputs()
-	await _step(25)
+	await _cross_room_boundary(false)
 	_check(player.position.distance_to(stage.rooms.get_child(5).get_node("Return").global_position) < 12, "Returning from the new room uses the former final room's safe right entrance")
-	Input.action_press("move_right")
-	await _until(func(): return stage.room_index == 6, 90, "The same seam opens forward again after the prior arrival")
-	_release_inputs()
-	await _step(25)
+	await _cross_room_boundary()
 	_check(stage.cleared.has(6) and not stage.completed, "The former final room stays intermediate in both directions")
 
 
