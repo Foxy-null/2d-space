@@ -56,7 +56,7 @@ func _run() -> void:
 	_sixth_connect()
 	_check_hints(false)
 	_check_help(false)
-	_check_status(false)
+	_check_status()
 	await _key(KEY_ESCAPE)
 	_check_help(true)
 	_check_hints(false)
@@ -129,7 +129,7 @@ func _run() -> void:
 			2:
 				await _kick_gate(240, -1)
 				await _cross_ceiling_pit(330, 470)
-				_check_status(true)
+				_check_status()
 				await _click(stage.get_node("HUD/PauseButton"))
 				_check_help(true)
 				await _click(stage.get_node("PauseMenu/Overlay/Center/Panel/Rows/Menu/Hints"))
@@ -568,7 +568,7 @@ func _kick_gate(wall_x: int, target: int, moving_gate: String = "", from_air := 
 	Input.action_release("move_up")
 	Input.action_release("move_down")
 	await _until(func(): return player.gravity_direction == target, 70, "A wall kick must enter the gravity gate")
-	_check_status(target < 0)
+	_check_status()
 	_drive("move_right")
 
 
@@ -782,12 +782,12 @@ func _check_help(expected: bool) -> void:
 	_check((root.gui_get_focus_owner() != null) == expected, "Only the open help menu owns keyboard and controller focus")
 
 
-func _check_status(inverted: bool) -> void:
+func _check_status() -> void:
 	var status: Control = stage.get_node("HUD/Status")
 	var gauge: ProgressBar = stage.get_node("HUD/Status/Rows/Stamina")
-	_check((status.position.y > 360) == inverted, "Resources switch to the side opposite gravity in the same frame")
-	_check((stage.get_node("HUD/Margin/Panel/Rows/Title").get_global_rect().position.y > 360) == inverted, "The room count and title switch sides with the stamina gauge")
-	_check((stage.get_node("HUD/PauseButton").position.y > 360) == inverted, "The help trigger switches sides with the stamina gauge")
+	var bottom := status.position.y > 360
+	_check((stage.get_node("HUD/Margin/Panel/Rows/Title").get_global_rect().position.y > 360) == bottom, "The room title stays on the same side as the stamina gauge during the delayed layout change")
+	_check((stage.get_node("HUD/PauseButton").position.y > 360) == bottom, "The help trigger stays on the same side as the stamina gauge")
 	_check(is_equal_approx(gauge.value, player.get_wall_stamina()) and is_equal_approx(gauge.max_value, player.wall_stamina_max), "The stamina gauge displays the actual remaining resource")
 	_check(not stage.get_node("HUD/Status/Rows/Resources").text.contains("秒") and not stage.get_node("HUD/Margin/Panel/Rows/Gravity").visible, "Stamina seconds and gravity text are absent")
 
