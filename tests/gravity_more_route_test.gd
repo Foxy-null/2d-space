@@ -399,7 +399,7 @@ func _mandatory_used() -> bool:
 			return flips.size() >= 4 and kicks >= 4
 		8: return flips.size() >= 4 and kicks >= 4
 		4: return actions.has("exit_spring") and flips.size() >= 2
-		5: return actions.has("spring") and flips.size() >= 4 and kicks >= 5
+		5: return actions.has("spring") and actions.has("dash") and flips == [-1, 1]
 		7: return actions.get("air_jump", 0) >= 2 and flips.size() >= 2 and (stage.room_index != 9 or actions.has("launch_spring"))
 	return false
 
@@ -509,7 +509,61 @@ func _thirteenth_descent_negatives() -> void:
 	stick = previous_strength
 
 
+func _fifteenth_transfer_negatives() -> void:
+	var previous_strength := stick
+	var previous_para_strength := para_strength
+	for strength in [1.0, 0.8]:
+		stick = strength
+		para_strength = strength
+		for mode in ["spring_off_jump", "spring_off_down_dash", "spring_avoid_diagonal", "no_final_dash"]:
+			await _approach_part(14, 0)
+			await _kick_gate(260, -1)
+			_release_inputs()
+			await _until(func(): return player.gravity_direction == -1 and player.is_on_floor(), 180, "Reach the native ceiling before testing the Spring transfer")
+			await _step(200)
+			if mode == "no_final_dash":
+				_drive("move_right")
+				await _until(func(): return actions.has("spring"), 180, "Use the actual Spring before omitting the crossing Dash")
+				await _until(func(): return player.gravity_direction == 1, 120, "The real Spring reaches the moving Down")
+			else:
+				if mode.begins_with("spring_off"):
+					stage.rooms.get_child(14).get_node("A_CeilingSpring").set_deferred("monitoring", false)
+					await _step()
+					_drive("move_right")
+					await _until(func(): return _x() >= 500 and player.is_on_floor(), 180, "Reach the native ceiling end without a Spring launch")
+				else:
+					await _para_walk(400)
+					var gate: Area2D = stage.rooms.get_child(14).get_node("A_DownGate")
+					await _until(func(): return gate.position.x >= 610 and gate.position.x <= 615 and gate.get("_toward_b"), 200, "Wait before the Spring for the known exit-side bypass phase")
+				_drive("move_right")
+				await _jump()
+				if mode != "spring_off_jump":
+					await _step(28 if mode == "spring_avoid_diagonal" else 20)
+					if mode == "spring_off_down_dash": _release_inputs()
+					Input.action_press("move_down")
+					Input.action_press("dash")
+					await _step()
+					Input.action_release("dash")
+					Input.action_release("move_down")
+			_drive("move_right")
+			var reached := false
+			for frame in 240:
+				await _step()
+				if respawns > 0: break
+				if player.gravity_direction == 1: _drive("move_right", true)
+				reached = player.gravity_direction == 1 and player.is_on_floor() and _x() > 800 and player.position.y > 500
+				if reached or stage.cleared.has(14): break
+			_check(respawns == 1 and not reached and not stage.cleared.has(14), "Spring omission and consumed crossing Dash cannot reach or mantle the real exit floor: " + mode)
+			negatives += 1
+			if failed: return
+	stick = previous_strength
+	para_strength = previous_para_strength
+
+
 func _negative_routes(indices: Array = [9, 10, 11, 12, 13, 14]) -> void:
+	if 14 in indices:
+		await _fifteenth_transfer_negatives()
+		if failed: return
 	if 11 in indices:
 		await _twelfth_entry_negatives()
 		if failed: return
