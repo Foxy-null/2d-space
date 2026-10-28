@@ -29,6 +29,9 @@ func _run() -> void:
 			await _fresh_para(index)
 			await _para_course(index)
 			_check(progress.get_count("gravity")==0,"The main course leaves every optional scroll untouched")
+			if index == 22:
+				await _cross_room_boundary()
+				_check(stage.room_index == 23, "The shortened left exit follows actual umbrella and inverted-wind arrival")
 			if index == 24:
 				_check(not stage.completed, "The former twenty-fifth final is now intermediate")
 				monitor_view = false
@@ -102,6 +105,10 @@ func _step(count: int = 1) -> void:
 		var shape: CollisionShape2D=player.get_node("CollisionShape2D")
 		var body := Rect2(shape.get_global_transform_with_canvas()*shape.shape.get_rect().position,shape.shape.get_rect().size)
 		_check(root.get_visible_rect().encloses(body),"The full player remains in the camera throughout the actual route")
+		var carried: Grabbable = player.get_held_object()
+		if stage.room_index == 22 and carried != null:
+			var lintel: CollisionShape2D = stage.rooms.get_child(22).get_node("ExitLintel/Collision")
+			_check(not (lintel.global_transform * lintel.shape.get_rect()).intersects(carried.collider.global_transform * carried.collider.shape.get_rect()), "The carried umbrella clears the exit lintel during actual movement")
 		var panels: Array[Control] = [stage.get_node("HUD/Margin/Panel"),stage.get_node("HUD/PauseButton"),stage.get_node("HUD/Status")]
 		var card: PanelContainer=stage.get_node("HUD/Completion").card
 		panels.append(card)

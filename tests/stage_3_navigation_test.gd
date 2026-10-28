@@ -50,7 +50,10 @@ func _run() -> void:
 			await _capture_navigation(index, "arrival")
 			if index < stage.rooms.get_child_count()-1:
 				para_strength = strength
+				var started := Engine.get_physics_frames()
 				await _cross_room_boundary()
+				if index == 22:
+					_check(Engine.get_physics_frames()-started < 110, "Room23 exits at the arrival floor instead of crossing empty space")
 				_check(stage.cleared.has(index), "Forward passage preserves the actual cleared room")
 			else:
 				Input.action_press("move_left", strength)
