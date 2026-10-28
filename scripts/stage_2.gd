@@ -133,6 +133,7 @@ func _camera_target_y() -> float:
 	if checkpoint_index == 16 and player.position.x < 100.0 and player.position.y > checkpoints.get_child(16).position.y - 640.0:
 		return clampf(checkpoints.get_child(16).position.y - 300.0, $Goal.position.y - 240.0, 360.0)
 	var look_up := 300.0 if checkpoint_index >= 12 else (260.0 if checkpoint_index == 8 else (160.0 if checkpoint_index == 11 else (120.0 if checkpoint_index == 3 else 80.0)))
+	if checkpoint_index == 16 and player.position.y < checkpoints.get_child(16).position.y - 400.0: look_up = 225.0
 	# バネに乗る前に、反射板と最初の着地点を見せる。
 	if checkpoint_index in [7, 10] or (checkpoint_index == 11 and player.position.y < -9920.0):
 		look_up = 300.0

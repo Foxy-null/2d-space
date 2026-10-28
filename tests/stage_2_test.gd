@@ -848,6 +848,9 @@ func _more_bounce(launch: float, bumper_name: String, target: Vector2) -> void:
 	for frame in 180:
 		_horizontal(bumper.position.x)
 		await _step()
+		if bumper_name == "More17Bumper" and upper_bounces == 0:
+			var bounds := bumper.get_global_transform_with_canvas() * Rect2(-34, -34, 68, 68)
+			_check(root.get_visible_rect().grow(-4).encloses(bounds), "The next bumper stays fully visible throughout the actual approach")
 		if upper_bounces > 0: break
 	_check(upper_bounces == 1 and player.velocity.y < -1000, "The real suspended bumper reflects the descent upward")
 	_horizontal(target.x)
