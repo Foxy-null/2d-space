@@ -29,10 +29,7 @@ func _run() -> void:
 			await _fifth_course(index)
 			if index==30:
 				_check(not stage.completed,"The former room31 final remains an intermediate arrival")
-				_para_drive(2350)
-				await _until(func(): return stage.room_index==31,180,"The former final physically transfers into native room32")
-				_release_inputs()
-				await _step(25)
+				await _cross_room_boundary()
 				_check(player.position.distance_to(stage.rooms.get_child(31).get_node("Spawn").global_position)<5 and player.gravity_direction==1 and player.controls_enabled,"The real old31/new32 seam settles at the next checkpoint")
 			_check(progress.get_count("gravity") == 0, "The mandatory route leaves all optional scrolls untouched")
 	_release_inputs()

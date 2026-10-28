@@ -53,7 +53,7 @@ size = Vector2(140, 40)
 position = Vector2(72, 614)
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(1232, 614)
+position = Vector2(1250, 614)
 
 [node name="EntryFloor" type="StaticBody2D" parent="."]
 position = Vector2(310, 680)

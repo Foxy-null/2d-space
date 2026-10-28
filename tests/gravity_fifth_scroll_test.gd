@@ -27,7 +27,7 @@ func _run() -> void:
 				if after:
 					actions.clear()
 					flips.clear()
-					await _para_walk(72)
+					if index == 29: await _para_walk(72)
 				await _fifth_scroll_pickup(index)
 				if after: await _fifth_capture("room_%d_scroll_after_arrival" % [index+1])
 				await _fifth_scroll_secure(index)
@@ -110,11 +110,11 @@ func _fifth_pending_death(index: int) -> void:
 	for area in stage.rooms.get_child(index).find_children("*","Area2D",true,false):
 		if area is SpikeBlock: area.player_hit.connect(func(): hits[0]+=1,CONNECT_ONE_SHOT)
 	if index==29:
-		await _para_dash(Vector2.LEFT)
+		await _para_dash(Vector2.RIGHT)
 		await _until(func(): return not player.is_dashing(),30,"The real lateral escape Dash finishes")
 	for frame in 650:
 		if respawns>before: break
-		_para_drive(140 if index==27 else 50)
+		_para_drive(140 if index==27 else 370)
 		await _step()
 	_check(respawns>before,"Actual branch movement reaches native spikes before a new static confirmation")
 	_release_inputs()

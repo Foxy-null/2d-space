@@ -63,35 +63,23 @@ func _sixth_seams() -> void:
 	_check_sixth_returns()
 	await _fifth_course(30)
 	_check(not stage.completed,"The actual former room31 final remains intermediate")
-	_para_drive(2350)
-	await _until(func(): return stage.room_index==31,180,"Walk through the real old31/new32 exit")
-	_release_inputs()
-	await _step(25)
+	await _cross_room_boundary()
 	for index in range(31,37):
 		actions.clear()
 		flips.clear()
 		_check(stage.room_index==index and player.gravity_direction==1 and player.is_dash_ready() and player.get_held_object()==null and player.controls_enabled,"The real forward transfer restores this room's native entrance and resources")
 		await _sixth_course(index)
 		if index<36:
-			_para_drive(2350)
-			await _until(func(): return stage.room_index==index+1,180,"Walk through each actual new forward boundary")
-			_release_inputs()
-			await _step(25)
+			await _cross_room_boundary()
 	_check(stage.completed and stage.cleared.size()==7,"Only the actual room37 final completes this continuous old31-plus-six course")
 	for index in range(36,30,-1):
 		var before := respawns
-		for frame in 900:
-			if stage.room_index==index-1: break
-			_para_drive(-20)
-			if player.is_on_floor() and player.is_on_wall(): await _jump()
-			await _step()
-		_release_inputs()
-		await _step(25)
-		_check(stage.room_index==index-1 and stage.cleared.has(index-1) and not stage.transitioning and player.controls_enabled and respawns==before+1 and not stage.get_node("HUD/Completion").visible,"Each opened left return makes one normal transfer to the preceding right entrance")
+		await _cross_room_boundary(false)
+		_check(stage.room_index==index-1 and stage.cleared.has(index-1) and not stage.transitioning and player.controls_enabled and respawns==before+1 and not stage.get_node("HUD/Completion").visible,"Each entrance-side return makes one normal transfer to the preceding arrival checkpoint")
 		var entrance: Marker2D = stage.rooms.get_child(index-1).get_node("Return")
-		_check(player.position.distance_to(entrance.global_position)<5,"The actual left transfer stays at its real Return after twenty-five frames")
+		_check(player.position.distance_to(entrance.global_position)<5,"Actual backtracking stays at its real Return after twenty-five frames")
 		await _retry()
-		_check(player.position.distance_to(entrance.global_position)<5 and player.gravity_direction==1,"R after a physical left transfer uses the preceding native Return")
+		_check(player.position.distance_to(entrance.global_position)<5 and player.gravity_direction==1,"R after physical backtracking uses the preceding native Return")
 	_check(progress.get_count("gravity")==0,"The complete mandatory seam route leaves all ten native scrolls untouched")
 
 

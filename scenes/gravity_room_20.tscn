@@ -42,6 +42,7 @@ size = Vector2(2304, 40)
 size = Vector2(28, 1200)
 
 [node name="Room20" type="Node2D"]
+metadata/exit_left = true
 metadata/room_width = 2304.0
 metadata/room_bottom = 1200.0
 metadata/third_mirror = true
@@ -180,7 +181,7 @@ position = Vector2(2232, 1074)
 
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(2232, 1074)
+position = Vector2(204, 1074)
 
 
 [node name="ReturnBridge" type="StaticBody2D" parent="."]
@@ -213,7 +214,7 @@ mission_required = false
 
 
 [node name="ExitBarrier" type="StaticBody2D" parent="."]
-position = Vector2(2290, 600.0)
+position = Vector2(14, 600.0)
 
 
 [node name="Collision" type="CollisionShape2D" parent="ExitBarrier"]

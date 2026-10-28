@@ -296,7 +296,7 @@ script = ExtResource("mark")
 position = Vector2(72, 1574)
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(2090, 1574)
+position = Vector2(2100, 1574)
 
 [node name="Goal" parent="." instance=ExtResource("goal")]
 position = Vector2(2200, 1600)

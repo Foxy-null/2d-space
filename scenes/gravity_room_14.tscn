@@ -83,6 +83,7 @@ size = Vector2(20, 550)
 size = Vector2(28, 1080)
 
 [node name="Room14" type="Node2D"]
+metadata/exit_left = true
 metadata/room_width = 2560.0
 metadata/room_top = 0.0
 metadata/room_bottom = 840.0
@@ -95,7 +96,7 @@ metadata/return_retract = PackedStringArray("A_LeftKickWall", "A_KickStep", "A_R
 position = Vector2(2488, 614)
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(2512, 614)
+position = Vector2(230, 614)
 
 [node name="A_Floor" type="StaticBody2D" parent="."]
 position = Vector2(2360, 680)
@@ -563,7 +564,7 @@ strip_half_width = 280.0
 stage_group = &"stage_three"
 
 [node name="ExitBarrier" type="StaticBody2D" parent="."]
-position = Vector2(2546, 420)
+position = Vector2(14, 420)
 
 [node name="Collision" type="CollisionShape2D" parent="ExitBarrier"]
 shape = SubResource("ExitShape")

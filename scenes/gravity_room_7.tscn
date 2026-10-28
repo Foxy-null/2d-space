@@ -51,6 +51,7 @@ size = Vector2(36, 380)
 size = Vector2(390, 40)
 
 [node name="Room7" type="Node2D"]
+metadata/exit_left = true
 metadata/room_bottom = 840.0
 metadata/return_retract = PackedStringArray("WallTip")
 
@@ -58,7 +59,7 @@ metadata/return_retract = PackedStringArray("WallTip")
 position = Vector2(1208, 614)
 
 [node name="Return" type="Marker2D" parent="."]
-position = Vector2(1232, 614)
+position = Vector2(230, 614)
 
 [node name="Floor" type="StaticBody2D" parent="."]
 position = Vector2(1080, 680)
@@ -295,7 +296,7 @@ shape = SubResource("Shape_13")
 polygon = PackedVector2Array(24, -48, -24, -48, -24, 48, 24, 48)
 
 [node name="ExitBarrier" type="StaticBody2D" parent="."]
-position = Vector2(1266, 480)
+position = Vector2(14, 480)
 
 [node name="Collision" type="CollisionShape2D" parent="ExitBarrier"]
 shape = SubResource("Shape_14")
