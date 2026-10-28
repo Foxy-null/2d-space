@@ -127,8 +127,11 @@ func _transition_to_next() -> void:
 	room_index += 1
 	_set_checkpoint()
 	player.respawn(true)
-	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(camera, "position", _camera_position(), 0.28)
+	camera.position = _camera_position()
+	camera.reset_smoothing()
+	_update_hud()
+	var tween := create_tween()
+	tween.tween_interval(0.28)
 	await tween.finished
 	transitioning = false
 	player.controls_enabled = true
@@ -173,7 +176,7 @@ func _update_hud() -> void:
 	var room := rooms.get_child(room_index)
 	$HUD/Info.position = Vector2(580, 620) if room_index in [1, 4, 8, 12, 17] else Vector2(24, 620 if room_index == 0 else (100 if room_index == 11 else 40))
 	if room_index == 15: $HUD/Info.position = Vector2(24, 80)
-	if room_index == 16: $HUD/Info.position = Vector2(180, 620)
+	if room_index == 16: $HUD/Info.position = Vector2(300, 620)
 	$HUD/Info.size.x = 436.0 if room_index >= 18 else 676.0
 	if room_index >= 18:
 		$HUD/Info.position = Vector2(760, 620)

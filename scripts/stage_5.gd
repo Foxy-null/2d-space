@@ -172,8 +172,11 @@ func _transition_to_next() -> void:
 	room_index += 1
 	_set_checkpoint()
 	player.respawn(true)
-	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(camera, "position", _camera_position(), 0.28)
+	camera.position = _camera_position()
+	camera.reset_smoothing()
+	_update_hud()
+	var tween := create_tween()
+	tween.tween_interval(0.28)
 	await tween.finished
 	transitioning = false
 	player.controls_enabled = true
