@@ -65,6 +65,7 @@ func _ready() -> void:
 	player.respawn()
 	camera.make_current()
 	_update_hud()
+	set_hints_visible(false)
 
 
 func _physics_process(delta: float) -> void:
@@ -176,6 +177,7 @@ func _on_respawned() -> void:
 func set_hints_visible(value: bool) -> void:
 	hints_visible = value
 	$HUD/Hint.visible = value
+	$Goal/Bubble.visible = value
 	for hint in $Hints.get_children():
 		hint.visible = value
 

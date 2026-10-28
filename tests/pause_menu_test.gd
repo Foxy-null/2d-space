@@ -16,6 +16,8 @@ func _run() -> void:
 		var stage := current_scene
 		var player: PlayerController = stage.get_node("Player")
 		var pause := stage.get_node("PauseMenu")
+		var final_goal: ArrivalSwitch = stage.get_node("Goal") if scene == "stage_2" else (stage.goal if scene == "stage_5" else null)
+		if final_goal != null: _check(not final_goal.get_node("Bubble").visible, "Final arrivals start without an instruction bubble when hints are off")
 		_check(not paused and not pause.overlay.visible, scene + ": starts unpaused")
 		await _key(KEY_H)
 		await _joy(JOY_BUTTON_Y)
@@ -43,8 +45,10 @@ func _run() -> void:
 		if hint_button.visible:
 			await _click(hint_button)
 			_check(paused and stage.hints_visible and hint_button.text == "ヒントを隠す", "Hints toggle while staying paused")
+			if final_goal != null: _check(final_goal.get_node("Bubble").visible, "The actual paused hint control reveals the final arrival instruction")
 			await _click(hint_button)
 			_check(paused and not stage.hints_visible and hint_button.text == "ヒントを表示", "Hints can be hidden again")
+			if final_goal != null: _check(not final_goal.get_node("Bubble").visible, "The actual paused hint control hides the final arrival instruction again")
 		player.set_gravity_direction(-1)
 		await _step(2)
 		var panel: Control = pause.get_node("Overlay/Center/Panel")
@@ -87,10 +91,16 @@ func _run() -> void:
 		_check(player.global_position.distance_to(checkpoint) < 35 and player.gravity_direction == 1, "Retry uses the current checkpoint and restores gravity")
 		if hint_button.visible:
 			_check(stage.hints_visible, "Retry preserves the hint preference")
+			if final_goal != null: _check(final_goal.get_node("Bubble").visible, "Retry keeps the final arrival instruction in the chosen hint state")
 		await _key(KEY_ESCAPE)
 		await _click(pause.menu.get_node("Return"))
 		await _click(pause.confirmation.get_node("Return"))
 		_check(not paused and current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Confirming returns to an unpaused selection screen")
+		if scene in ["stage_2", "stage_5"]:
+			change_scene_to_file("res://scenes/%s.tscn" % scene)
+			await _step(4)
+			var reentered_goal: ArrivalSwitch = current_scene.get_node("Goal") if scene == "stage_2" else current_scene.goal
+			_check(not current_scene.hints_visible and not reentered_goal.get_node("Bubble").visible, "Reentering the actual stage restores the default instruction-free final arrival")
 	await _check_world_pause()
 	await _check_transitions()
 	await _check_completion_input()
