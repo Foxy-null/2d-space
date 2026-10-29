@@ -40,11 +40,11 @@ func _process(delta: float) -> void:
 	var held := player.get_held_object() != null
 	var moving := absf(Input.get_axis("move_left", "move_right")) > 0.1 and absf(player.velocity.x) > 15.0
 	var next: StringName = &"idle"
-	if not player.controls_enabled:
-		next = &"carry_idle" if held else &"idle"
-	elif player.is_dashing():
+	if player.is_dashing():
 		next = &"carry_idle" if held else &"jump"
 		rotation = local_facing * 0.3 if absf(player.velocity.x) > 1.0 else 0.0
+	elif not player.controls_enabled and grounded:
+		next = &"carry_idle" if held else &"idle"
 	elif held:
 		next = &"carry_walk" if grounded and moving else &"carry_idle"
 	elif player.is_wall_grabbing():
