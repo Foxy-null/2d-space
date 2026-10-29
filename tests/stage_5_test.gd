@@ -198,7 +198,7 @@ func _steer_to(target: Vector2, ceiling: bool = false, strength: float = 1.0) ->
 	if absf(error) > 3:
 		Input.action_press("move_right" if error > 0 else "move_left", strength)
 	if player.is_on_floor() and stage.next_bumper == 0 and absf(_x() - stage.rooms.get_child(stage.room_index).get_node("Spawn").position.x) > 45:
-		Input.action_press("jump")
+		FullJumpInput.press(player)
 	var needs_dash := player.position.y > target.y - 70 and player.velocity.y > 0 and absf(dx) > 75
 	if ceiling:
 		needs_dash = target.y < player.position.y and absf(dx) < 30
@@ -231,7 +231,8 @@ func _x() -> float:
 
 func _release_inputs() -> void:
 	for action in ["move_left", "move_right", "move_up", "move_down", "jump", "dash", "wall_grab", "reset"]:
-		Input.action_release(action)
+		if action != "jump" or not FullJumpInput.is_holding():
+			Input.action_release(action)
 	if is_instance_valid(player) and player.get_held_object()!=null: Input.action_press("wall_grab")
 
 
@@ -273,9 +274,9 @@ func _repeat_wide_third(strength: float, dash_delay: int, bumper_index: int = 2)
 	var before := respawns
 	var repeated: Array[bool] = []
 	bumper.launched.connect(func(_body): repeated.append(true), CONNECT_ONE_SHOT)
-	Input.action_press("jump")
+	FullJumpInput.press(player)
 	await _step()
-	Input.action_release("jump")
+	FullJumpInput.release_after_apex(player)
 	for frame in dash_delay:
 		_steer_to(bumper.position - Vector2(0,62), false, strength)
 		await _step()
@@ -401,7 +402,7 @@ func _inverted_finish(strength: float, delay: int = 20) -> void:
 			if player.gravity_direction > 0:
 				target = room.get_node("Goal").position.x if index==stage.rooms.get_child_count()-1 else room.get_node("Exit").position.x
 			_entry_horizontal(target,strength)
-			if index==stage.rooms.get_child_count()-1 and player.gravity_direction>0 and player.is_on_floor() and _x()>target-90 and _x()<target-70: Input.action_press("jump")
+			if index==stage.rooms.get_child_count()-1 and player.gravity_direction>0 and player.is_on_floor() and _x()>target-90 and _x()<target-70: FullJumpInput.press(player)
 		await _step()
 		if frame % 120 == 0 and OS.get_cmdline_user_args().has("--trace"): print("INV_LAST p=",Vector2(_x(),player.position.y)," v=",player.velocity," next=",stage.next_bumper," g=",player.gravity_direction)
 		if not captured_down and player.gravity_direction==1 and not stage.transitioning and respawns==before:
@@ -551,9 +552,9 @@ func _inverted_snapshot(label: String) -> void:
 
 
 func _pulse(action: String) -> void:
-	Input.action_press(action)
+	FullJumpInput.press_action(action, player)
 	await _step()
-	Input.action_release(action)
+	FullJumpInput.release_action(action, player)
 
 
 func _applications_boots_begin(strength: float, delay: int) -> void:

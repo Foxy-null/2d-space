@@ -26,7 +26,7 @@ func _run() -> void:
 		_check(paused and pause.overlay.visible, scene + ": Esc pauses")
 		_check(root.gui_get_focus_owner() == pause.menu.get_node("Resume"), "Resume initially owns focus")
 		var hint_button: Button = pause.menu.get_node("Hints")
-		_check(hint_button.visible == (scene in ["tutorial", "stage_2", "stage_3", "stage_4", "stage_5"]), "Hide the whole hint button when no toggle is provided")
+		_check(hint_button.visible == (scene in ["stage_2", "stage_3", "stage_4", "stage_5"]), "Hide the whole hint button when no toggle is provided")
 		var before := player.position
 		var velocity := player.velocity
 		Input.action_press("move_right")
@@ -75,7 +75,9 @@ func _run() -> void:
 		await _click(stage.get_node("UI/Toolbar/PauseButton" if scene == "environment_preview" else "HUD/PauseButton"))
 		_check(paused, "The mouse entry opens pause")
 		# Retrying must also work with an established checkpoint, not only the spawn.
-		if scene == "tutorial" or scene == "stage_3":
+		if scene == "tutorial":
+			stage._enter_room(1, false)
+		elif scene == "stage_3":
 			stage._set_room(1, false)
 		elif scene == "stage_2":
 			stage._set_checkpoint(2)
@@ -148,7 +150,7 @@ func _check_world_pause() -> void:
 
 
 func _check_transitions() -> void:
-	for scene in ["tutorial", "stage_3", "stage_4", "stage_5"]:
+	for scene in ["stage_3", "stage_4", "stage_5"]:
 		change_scene_to_file("res://scenes/%s.tscn" % scene)
 		await _step(3)
 		var stage := current_scene

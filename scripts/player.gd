@@ -10,6 +10,7 @@ signal movement_action(action: String)
 signal object_released(object: Grabbable, was_thrown: bool)
 
 @export var wall_actions_enabled := true
+@export var wall_jump_enabled := true
 @export var dash_enabled := true
 @export var use_default_respawn_bounds := true
 
@@ -30,6 +31,7 @@ var _parachute_grace_left := 0.0
 @export var gravity_acceleration := 1900.0
 @export var max_fall_speed := 900.0
 @export var jump_speed := 650.0
+@export_range(0.1, 0.9) var jump_release_ratio := 0.4
 # A shallow kick loses height before steering can return to the same wall.
 @export var wall_jump_speed := 720.0
 @export var wall_jump_up_speed := 560.0
@@ -51,6 +53,8 @@ var gravity_direction := 1
 var facing_direction := 1
 var _coyote_left := 0.0
 var _jump_buffer_left := 0.0
+var _buffered_jump_source := &"jump"
+var _variable_jump_source := &""
 var _spawn_position := Vector2.ZERO
 var _wall_grabbing := false
 var _last_wall_normal := Vector2.ZERO
@@ -122,6 +126,7 @@ func _physics_process(delta: float) -> void:
 	var wants_wall_grab := wall_actions_enabled and Input.is_action_pressed("wall_grab") and on_wall and get_held_object() == null
 	if Input.is_action_just_pressed("jump") or (not wants_wall_grab and not is_dashing() and not (dash_enabled and Input.is_action_pressed("dash")) and Input.is_action_just_pressed("jump_up")):
 		_jump_buffer_left = jump_buffer_time
+		_buffered_jump_source = &"jump" if Input.is_action_just_pressed("jump") else &"jump_up"
 	else:
 		_jump_buffer_left = maxf(_jump_buffer_left - delta, 0.0)
 	_coyote_left = coyote_time if grounded else maxf(_coyote_left - delta, 0.0)
@@ -139,6 +144,7 @@ func _physics_process(delta: float) -> void:
 				_grab_exhausted = true
 				_wall_grabbing = false
 		if _wall_grabbing:
+			_variable_jump_source = &""
 			_last_wall_normal = wall_normal
 			velocity = Vector2(-_last_wall_normal.x * wall_stick_speed, climb_axis * wall_climb_speed)
 		else:
@@ -157,6 +163,7 @@ func _physics_process(delta: float) -> void:
 				velocity += down * (wall_slide_speed - minf(falling_speed, max_fall_speed))
 		_apply_parachute()
 		_try_jump(grounded, on_wall)
+		_apply_variable_jump()
 		var was_wall_grabbing := _wall_grabbing
 		_move_player()
 		if was_wall_grabbing and not is_on_wall() and climb_axis * gravity_direction < -0.5 and Input.is_action_pressed("wall_grab"):
@@ -175,6 +182,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _start_dash(grounded: bool) -> void:
+	_variable_jump_source = &""
 	_impact_frame = -2
 	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	if direction.is_zero_approx():
@@ -224,7 +232,7 @@ func _try_jump(grounded: bool, on_wall: bool) -> void:
 		else:
 			velocity.y = -gravity_direction * get_effective_jump_speed()
 			movement_action.emit("jump")
-	elif wall_actions_enabled and on_wall:
+	elif wall_actions_enabled and wall_jump_enabled and on_wall:
 		velocity = Vector2(get_wall_normal().x * wall_jump_speed, -gravity_direction * wall_jump_up_speed)
 		movement_action.emit("wall_jump")
 	elif _air_jump_ready:
@@ -238,7 +246,19 @@ func _try_jump(grounded: bool, on_wall: bool) -> void:
 		return
 	_wall_grabbing = false
 	_superdash_left = 0.0
+	_variable_jump_source = _buffered_jump_source
 	_consume_jump()
+	_apply_variable_jump()
+
+
+func _apply_variable_jump() -> void:
+	if _variable_jump_source == &"":
+		return
+	if velocity.y * gravity_direction >= 0.0:
+		_variable_jump_source = &""
+	elif not Input.is_action_pressed(_variable_jump_source):
+		velocity.y *= jump_release_ratio
+		_variable_jump_source = &""
 
 
 func _refill_on_landing() -> void:
@@ -257,6 +277,7 @@ func refill_movement_resources() -> void:
 
 
 func launch_from_spring(launch_velocity: Vector2) -> void:
+	_variable_jump_source = &""
 	_parachute_grace_left = parachute_launch_grace
 	_dash_left = 0.0
 	_dash_direction = Vector2.ZERO
@@ -447,6 +468,7 @@ func set_gravity_direction(direction: int) -> void:
 	if next_direction == gravity_direction:
 		return
 	gravity_direction = next_direction
+	_variable_jump_source = &""
 	if not is_dashing():
 		velocity.y = 0.0
 	_coyote_left = 0.0
@@ -466,6 +488,7 @@ func set_respawn_position(location: Vector2) -> void:
 
 
 func respawn(room_transfer: bool = false) -> void:
+	_variable_jump_source = &""
 	room_transfer_in_progress = room_transfer
 	for object in _separating_objects.duplicate():
 		_clear_object_separation(object)
@@ -524,6 +547,7 @@ func _try_mantle() -> void:
 	if not test_move(global_transform, motion):
 		global_position += motion
 		velocity = Vector2.ZERO
+		movement_action.emit("mantle")
 
 
 func get_held_object() -> Grabbable:

@@ -40,7 +40,8 @@ func _check(ok: bool, message: String) -> void:
 
 func _release() -> void:
 	for action in ["move_left", "move_right", "move_up", "move_down", "wall_grab", "jump", "dash"]:
-		Input.action_release(action)
+		if action != "jump" or not FullJumpInput.is_holding():
+			Input.action_release(action)
 
 
 func _check_signage() -> void:
@@ -142,9 +143,9 @@ func _run() -> void:
 	await _step(3)
 	_check(crystal.visible and player.position.y < -30000, "R restores crystals at the latest checkpoint")
 	var camera_before: float = stage.camera.position.y
-	Input.action_press("jump")
+	FullJumpInput.press(player)
 	await _step(1)
-	Input.action_release("jump")
+	FullJumpInput.release_after_apex(player)
 	await _step(8)
 	_check(stage.camera.position.y < camera_before and absf(stage.camera.position.y - camera_before) < 150, "Camera scrolls smoothly during ascent")
 	stage.get_node("PauseMenu").open()
@@ -199,9 +200,9 @@ func _wall_course(grab_delay: int = 0, dash_delay: int = 20) -> void:
 		await _step()
 	_release()
 	await _step(12)
-	Input.action_press("jump")
+	FullJumpInput.press(player)
 	await _step()
-	Input.action_release("jump")
+	FullJumpInput.release_after_apex(player)
 	await _step(dash_delay)
 	Input.action_press("move_up")
 	Input.action_press("dash")
@@ -313,9 +314,9 @@ func _dash_launch() -> void:
 	_release()
 	await _step(12)
 	Input.action_press("move_right")
-	Input.action_press("jump")
+	FullJumpInput.press(player)
 	await _step()
-	Input.action_release("jump")
+	FullJumpInput.release_after_apex(player)
 	await _step(26)
 	Input.action_press("move_up")
 	Input.action_press("dash")
@@ -350,18 +351,18 @@ func _extra_jump_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
 			_release()
 			await _step(12)
 		Input.action_press("move_left" if leg == 1 else "move_right")
-		Input.action_press("jump")
+		FullJumpInput.press(player)
 		await _step()
-		Input.action_release("jump")
+		FullJumpInput.release_after_apex(player)
 		for frame in jump_delay:
 			if leg == 0:
 				Input.action_release("move_right")
 			await _step()
 		var crystal := stage.get_node("Items/Item%d" % (5 + leg))
 		_check(not crystal.visible and player.is_air_jump_ready(), "The first jump collects the visible boot")
-		Input.action_press("jump")
+		FullJumpInput.press(player)
 		await _step()
-		Input.action_release("jump")
+		FullJumpInput.release_after_apex(player)
 		for frame in dash_delay:
 			if leg == 0:
 				Input.action_release("move_right")
@@ -416,13 +417,13 @@ func _companion_course(jump_delay: int = 20, dash_delay: int = 20) -> void:
 		_release()
 		Input.action_press("wall_grab")
 		await _step(12)
-		Input.action_press("jump")
+		FullJumpInput.press(player)
 		await _step()
-		Input.action_release("jump")
+		FullJumpInput.release_after_apex(player)
 		await _step(jump_delay)
-		Input.action_press("jump")
+		FullJumpInput.press(player)
 		await _step()
-		Input.action_release("jump")
+		FullJumpInput.release_after_apex(player)
 		await _step(dash_delay)
 		Input.action_press("move_up")
 		Input.action_press("dash")
@@ -486,9 +487,9 @@ func _finale_course(spring_delay: int = 40, jump_delay: int = 20, route: String 
 		await _step(4)
 		Input.action_press("move_left")
 	if route != "dash":
-		Input.action_press("jump")
+		FullJumpInput.press(player)
 		await _step()
-		Input.action_release("jump")
+		FullJumpInput.release_after_apex(player)
 		await _step(jump_delay)
 	if route != "jump":
 		Input.action_press("move_up")
@@ -502,7 +503,7 @@ func _finale_course(spring_delay: int = 40, jump_delay: int = 20, route: String 
 			Input.action_release("move_right")
 			if absf(player.position.x - 360) > 10:
 				Input.action_press("move_left" if player.position.x > 360 else "move_right")
-			Input.action_release("jump")
+			FullJumpInput.release_after_apex(player)
 		await _step()
 		if stage.checkpoint_index == 6:
 			break
@@ -651,9 +652,9 @@ func _land_on(target_x: float, target_y: float, limit: int = 180) -> void:
 
 
 func _upper_pulse(action: String) -> void:
-	Input.action_press(action)
+	FullJumpInput.press_action(action, player)
 	await _step()
-	Input.action_release(action)
+	FullJumpInput.release_action(action, player)
 
 
 func _upper_dash() -> void:
@@ -908,8 +909,8 @@ func _more_course(section: int) -> void:
 			await _land_on(-100, -22346, 240)
 			for frame in 240:
 				_horizontal(-400)
-				Input.action_release("jump")
-				if player.is_on_floor() and player.is_on_wall(): Input.action_press("jump")
+				FullJumpInput.release_after_apex(player)
+				if player.is_on_floor() and player.is_on_wall(): FullJumpInput.press(player)
 				if player.position.x < -345: _horizontal(player.position.x)
 				await _step()
 				if stage.checkpoint_index == 18: break

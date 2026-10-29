@@ -186,6 +186,7 @@ func set_hints_visible(value: bool) -> void:
 
 func _on_completed() -> void:
 	completed = true
+	CollectionProgress.mark_cleared("tower")
 	$HUD/Completion.show()
 	$Goal.set_progress(0, 0, "", "", true)
 

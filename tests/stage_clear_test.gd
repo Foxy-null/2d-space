@@ -8,8 +8,9 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	for number in range(1, 6):
-		var path := "res://scenes/tutorial.tscn" if number == 1 else "res://scenes/stage_%d.tscn" % number
+	# The new first stage's full-screen ending has its own actual-input route test.
+	for number in range(2, 6):
+		var path := "res://scenes/stage_%d.tscn" % number
 		change_scene_to_file(path)
 		await _step(4)
 		var stage := current_scene
@@ -21,12 +22,7 @@ func _run() -> void:
 		# Isolate completion UI from traversal; stage traversal has separate real-input tests.
 		stage.set_physics_process(false)
 		stage.player.set_physics_process(false)
-		if number == 1:
-			stage._set_room(15, false)
-			for key in stage.STEPS[15]:
-				stage.seen[key] = true
-			stage._on_arrival(15)
-		elif number == 4:
+		if number == 4:
 			stage.room_index = stage.rooms.get_child_count() - 1
 			var room: Node2D = stage.rooms.get_child(stage.room_index)
 			stage.player.position = room.position + Vector2(110, room.entrance_top - 26)

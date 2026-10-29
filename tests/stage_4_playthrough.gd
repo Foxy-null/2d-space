@@ -18,7 +18,8 @@ func step(count: int = 1) -> void:
 
 func release() -> void:
 	for action in ["move_left", "move_right", "move_up", "move_down", "wall_grab", "jump", "dash"]:
-		Input.action_release(action)
+		if action != "jump" or not FullJumpInput.is_holding():
+			Input.action_release(action)
 
 func traverse(section: int, stop_at_rest := false) -> bool:
 	if section >= 30: return await traverse_sixth(section, stop_at_rest)
@@ -71,13 +72,13 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 			elif player.is_on_floor():
 				steer_to(190 - x)
 				if x > 180:
-					Input.action_press("jump")
+					FullJumpInput.press(player)
 					cooldown = 10
 			else:
 				steer_to(450 - x)
 				if cooldown == 0 and player.velocity.y > -40:
 					if player.get_available_extra_jump_count() > 0:
-						Input.action_press("jump")
+						FullJumpInput.press(player)
 						cooldown = 10
 					elif player.is_dash_ready():
 						Input.action_release("move_right")
@@ -105,13 +106,13 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 					var kick := int(player.get_wall_normal().x)
 					if safe_launch(room, Vector2(kick * 720, -560), kick, 24):
 						direction = kick
-						Input.action_press("jump")
+						FullJumpInput.press(player)
 						cooldown = 10
 					else:
 						direction = -kick
 				Input.action_press("move_right" if direction == 1 else "move_left", steering_strength)
 				if player.is_on_floor() and cooldown == 0:
-					Input.action_press("jump")
+					FullJumpInput.press(player)
 					cooldown = 10
 		else:
 			var target: Rect2 = room.walls[waypoint] if waypoint < room.walls.size() else Rect2(1200 if section == stage.rooms.get_child_count() - 1 else 1250, 420 if section == stage.rooms.get_child_count() - 1 else room.exit_top, 40, 30)
@@ -125,13 +126,13 @@ func traverse(section: int, stop_at_rest := false) -> bool:
 			var exiting: bool = waypoint >= room.walls.size() and section < stage.rooms.get_child_count() - 1 and x > 1200
 			if not exiting and player.is_on_floor() and cooldown == 0 and absf(dx) > 35 and not (section == 0 and waypoint == 1) and (waypoint < room.walls.size() or (section == 4 and x < room.walls[0].end.x + 20) or player.position.y + 26 > target.position.y + 5):
 				if safe_launch(room, Vector2(player.velocity.x, -650), int(signf(dx)), 48 if section == 4 or (section == 1 and waypoint == 1) else 32):
-					Input.action_press("jump")
+					FullJumpInput.press(player)
 					cooldown = 10
 				else:
 					Input.action_release("move_left")
 					Input.action_release("move_right")
 			elif not exiting and not player.is_on_floor() and player.velocity.y > -40 and cooldown == 0 and player.get_available_extra_jump_count() > 0 and (player.position.y + 26 > target.position.y - 35 or (section == 7 and waypoint == 3)):
-				Input.action_press("jump")
+				FullJumpInput.press(player)
 				cooldown = 12
 			elif section == 6 and not player.is_on_floor() and player.velocity.y > -40 and cooldown == 0 and player.is_dash_ready() and player.position.y + 26 > target.position.y + 200:
 				Input.action_release("move_right")
@@ -176,13 +177,13 @@ func island_leap(extra_delay := 20, dash_delay := 20, strength := 1.0, section :
 		if player.position.x >= room.position.x + 225:
 			break
 		if not await _island_step(1, before): return false
-	Input.action_press("jump")
+	FullJumpInput.press(player)
 	if not await _island_step(1, before): return false
-	Input.action_release("jump")
+	FullJumpInput.release_after_apex(player)
 	if not await _island_step(extra_delay, before): return false
-	Input.action_press("jump")
+	FullJumpInput.press(player)
 	if not await _island_step(1, before): return false
-	Input.action_release("jump")
+	FullJumpInput.release_after_apex(player)
 	if not await _island_step(dash_delay, before): return false
 	Input.action_release("move_right")
 	Input.action_press("move_up", strength)
@@ -279,9 +280,9 @@ func more_walk(target: float) -> bool:
 
 
 func more_jump() -> void:
-	Input.action_press("jump")
+	FullJumpInput.press(player)
 	await step()
-	Input.action_release("jump")
+	FullJumpInput.release_after_apex(player)
 
 
 func more_combo(launch: float, target: Rect2, gap: int, boot_gap: int = -1, dash_gap: int = -1) -> bool:
@@ -342,7 +343,7 @@ func more_flight(target: Rect2, allow_actions := true, finishing := false) -> bo
 		cooldown = maxi(cooldown - 1, 0)
 		if allow_actions and not player.is_on_floor() and player.velocity.y > -40 and cooldown == 0:
 			if player.get_available_extra_jump_count() > 0 and (player.position.y + 26 > target.position.y - 35 or absf(dx) > 180):
-				Input.action_press("jump")
+				FullJumpInput.press(player)
 				cooldown = 12
 			elif player.is_dash_ready() and player.position.y + 26 > target.position.y + 50:
 				Input.action_release("move_left")
@@ -401,11 +402,11 @@ func more_shaft(room: Node2D) -> bool:
 			cooldown = maxi(0, cooldown - 1)
 			if player.is_on_wall() and cooldown == 0:
 				direction = int(player.get_wall_normal().x)
-				Input.action_press("jump")
+				FullJumpInput.press(player)
 				cooldown = 10
 			Input.action_press("move_right" if direction == 1 else "move_left", steering_strength)
 			if player.is_on_floor() and cooldown == 0:
-				Input.action_press("jump")
+				FullJumpInput.press(player)
 				cooldown = 10
 			elif player.is_dash_ready() and _more_x() > 230 and player.position.y < room.walls[0].position.y + 180:
 				Input.action_release("move_left")
@@ -531,11 +532,11 @@ func wide_shaft(target: Rect2) -> bool:
 			cooldown = maxi(0, cooldown - 1)
 			if player.is_on_wall() and cooldown == 0:
 				direction = int(player.get_wall_normal().x)
-				Input.action_press("jump")
+				FullJumpInput.press(player)
 				cooldown = 10
 			Input.action_press("move_right" if direction == 1 else "move_left", steering_strength)
 			if player.is_on_floor() and cooldown == 0:
-				Input.action_press("jump")
+				FullJumpInput.press(player)
 				cooldown = 10
 			elif player.is_dash_ready() and _more_x() > target.position.x - 40 and player.position.y < target.position.y + 180:
 				Input.action_release("move_left")

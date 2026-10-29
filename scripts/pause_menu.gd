@@ -4,11 +4,31 @@ extends CanvasLayer
 @onready var overlay: Control = $Overlay
 @onready var menu: VBoxContainer = $Overlay/Center/Panel/Rows/Menu
 @onready var confirmation: VBoxContainer = $Overlay/Center/Panel/Rows/Confirmation
+var was_paused := false
 
 
 func _ready() -> void:
+	var skip := Button.new()
+	skip.name = "SkipCinematic"
+	skip.text = "演出をスキップ"
+	skip.custom_minimum_size.y = 56
+	menu.add_child(skip)
+	menu.move_child(skip, 1)
+	skip.hide()
+	skip.pressed.connect(skip_cinematic)
+	var settings := Button.new()
+	settings.name = "InputSettings"
+	settings.text = "操作設定"
+	settings.custom_minimum_size.y = 56
+	menu.add_child(settings)
+	menu.move_child(settings, 4)
+	settings.pressed.connect(InputSettings.open_settings)
 	menu.get_node("Hints").visible = stage.has_method("set_hints_visible")
 	DisplaySettings.bind_button(menu.get_node("Fullscreen"))
+	_refresh_focus()
+
+
+func _refresh_focus() -> void:
 	for container in [menu, confirmation]:
 		var buttons: Array = container.get_children().filter(func(child): return child is Button and child.visible and not child.disabled)
 		for index in buttons.size():
@@ -38,6 +58,9 @@ func _input(event: InputEvent) -> void:
 
 
 func open() -> void:
+	was_paused = get_tree().paused
+	menu.get_node("SkipCinematic").visible = stage.has_method("can_skip_cinematic") and stage.can_skip_cinematic()
+	_refresh_focus()
 	overlay.show()
 	menu.show()
 	confirmation.hide()
@@ -49,7 +72,7 @@ func open() -> void:
 func resume() -> void:
 	overlay.hide()
 	get_viewport().gui_release_focus()
-	get_tree().paused = false
+	get_tree().paused = was_paused
 
 
 func toggle_hints() -> void:
@@ -64,7 +87,14 @@ func _update_hints_button() -> void:
 
 func retry() -> void:
 	resume()
+	get_tree().paused = false
 	stage.get_node("Player").respawn()
+
+
+func skip_cinematic() -> void:
+	if stage.has_method("can_skip_cinematic") and stage.can_skip_cinematic():
+		resume()
+		stage.skip_cinematic()
 
 
 func confirm_return() -> void:
