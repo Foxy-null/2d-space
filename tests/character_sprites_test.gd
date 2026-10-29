@@ -39,9 +39,9 @@ func _run() -> void:
 	Input.action_release("move_right")
 	Input.action_press("jump")
 	await _step(2)
-	Input.action_release("jump")
 	_check(sprite.animation == &"jump", "Jump ascent")
 	await _step(25)
+	Input.action_release("jump")
 	_check(sprite.animation == &"fall", "Descent follows velocity, not a fixed timeline")
 	for gravity in [1, -1]:
 		player.respawn()

@@ -35,6 +35,7 @@ var _clear_layers: Array[TextureRect] = []
 var _return_button: Button
 
 @onready var player: PlayerController = $Player
+@onready var ninja: AnimatedSprite2D = $Player/Visuals/Body
 
 
 func _ready() -> void:
@@ -69,6 +70,17 @@ func _build_room(index: int) -> void:
 		var body := StaticBody2D.new()
 		var collision := CollisionPolygon2D.new()
 		collision.polygon = polygon
+		body.add_child(collision)
+		room.add_child(body)
+	for plank in TutorialLandscape.one_way_platforms(index):
+		var body := StaticBody2D.new()
+		body.name = "WoodPlatform%d" % room.get_child_count()
+		body.position = plank.get_center()
+		var collision := CollisionShape2D.new()
+		var shape := RectangleShape2D.new()
+		shape.size = plank.size
+		collision.shape = shape
+		collision.one_way_collision = true
 		body.add_child(collision)
 		room.add_child(body)
 	for hazard in TutorialLandscape.spikes(index):
@@ -191,6 +203,7 @@ func _on_respawned() -> void:
 	_wall_mantled = false
 	_wall_guide_done = false
 	player.controls_enabled = true
+	ninja.set_process(true)
 	player.dash_enabled = false
 	bridge.reset()
 	_fade.color.a = 0.0
@@ -288,6 +301,8 @@ func _start_slow() -> void:
 	_slow_velocity = player.velocity
 	_slow_bridge_time = bridge.elapsed
 	player.controls_enabled = false
+	ninja.set_process(false)
+	ninja.play("bonk")
 
 
 func _process(delta: float) -> void:
@@ -359,6 +374,7 @@ func _input(event: InputEvent) -> void:
 		return
 	get_viewport().set_input_as_handled()
 	phase = Phase.LANDING
+	ninja.set_process(true)
 	player.dash_enabled = true
 	player._start_dash(false)
 	get_tree().paused = false

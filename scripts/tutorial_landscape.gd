@@ -8,6 +8,7 @@ const LEFT_FLOORS: Array[float] = [760.0, 900.0, 620.0]
 const RIGHT_FLOORS: Array[float] = [680.0, 520.0, 580.0]
 const CASTLE := preload("res://assets/tutorial/castle.png")
 const ROCKET := preload("res://assets/tutorial/rocket.png")
+const BOARD := preload("res://assets/tutorial/bridge-board.png")
 const SOIL := Color("b28b5c")
 const GRASS := Color("b7d97a")
 
@@ -26,10 +27,9 @@ static func landforms(index: int) -> Array[PackedVector2Array]:
 			forms.append(PackedVector2Array([Vector2(1390, 710), Vector2(1610, 710), Vector2(1610, 680), Vector2(1800, 680), Vector2(1800, 900), Vector2(1390, 900)]))
 		1:
 			forms.append(PackedVector2Array([Vector2(0, 900), Vector2(160, 900), Vector2(160, 730), Vector2(330, 730), Vector2(330, 1000), Vector2(0, 1000)]))
-			forms.append(PackedVector2Array([Vector2(510, 650), Vector2(600, 650), Vector2(600, 560), Vector2(720, 560), Vector2(720, 1000), Vector2(510, 1000)]))
+			forms.append(PackedVector2Array([Vector2(600, 560), Vector2(720, 560), Vector2(720, 1000), Vector2(600, 1000)]))
 			forms.append(PackedVector2Array([Vector2(900, 290), Vector2(1090, 290), Vector2(1090, 610), Vector2(900, 610)]))
 			forms.append(PackedVector2Array([Vector2(890, 850), Vector2(1080, 850), Vector2(1080, 1000), Vector2(890, 1000)]))
-			forms.append(PackedVector2Array([Vector2(1250, 820), Vector2(1280, 820), Vector2(1280, 1000), Vector2(1250, 1000)]))
 			forms.append(PackedVector2Array([Vector2(1450, 760), Vector2(1650, 760), Vector2(1650, 1000), Vector2(1450, 1000)]))
 			forms.append(PackedVector2Array([Vector2(1760, 840), Vector2(1900, 840), Vector2(1900, 760), Vector2(2050, 760), Vector2(2050, 680), Vector2(2190, 680), Vector2(2190, 1000), Vector2(1760, 1000)]))
 			forms.append(PackedVector2Array([Vector2(2240, 520), Vector2(2400, 520), Vector2(2400, 1000), Vector2(2240, 1000)]))
@@ -41,6 +41,15 @@ static func landforms(index: int) -> Array[PackedVector2Array]:
 
 static func bridge_sections() -> Array[Vector2]:
 	return [Vector2(320, 1100), Vector2(1320, 1940), Vector2(2160, 2420), Vector2(2600, 2680)]
+
+
+static func one_way_platforms(index: int) -> Array[Rect2]:
+	match index:
+		0:
+			return [Rect2(1330, 710, 60, 12)]
+		1:
+			return [Rect2(510, 650, 90, 12), Rect2(1220, 820, 110, 12)]
+	return []
 
 
 static func spikes(index: int) -> Array[Rect2]:
@@ -94,6 +103,8 @@ func _draw() -> void:
 		var outline := polygon.duplicate()
 		outline.append(polygon[0])
 		draw_polyline(outline, Color.BLACK, 3, true)
+	for plank in one_way_platforms(room_index):
+		draw_texture_rect(BOARD, plank, false)
 	for hazard in spikes(room_index):
 		for x in range(int(hazard.position.x), int(hazard.end.x), 17):
 			var triangle := PackedVector2Array([Vector2(x, hazard.end.y), Vector2(x + 8, hazard.position.y), Vector2(x + 17, hazard.end.y), Vector2(x, hazard.end.y)])

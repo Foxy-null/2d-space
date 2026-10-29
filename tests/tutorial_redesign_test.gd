@@ -75,6 +75,7 @@ func _run() -> void:
 	await _until(func(): return progress.has_scroll("tutorial", progress.TUTORIAL_SCROLL), 90, "scroll secures after a safe landing")
 	await _capture("room2-scroll")
 	await _jump_at(1070)
+	await _capture("room2-planks")
 	await _jump_at(1628)
 	await _climb(2090)
 	await _walk(2165)
@@ -141,11 +142,13 @@ func _run() -> void:
 	_hold("jump")
 	await _until(func(): return stage.phase == tutorial.Phase.WAIT, 160, "Natural slowdown reaches the mandatory stop")
 	_check(paused and Engine.time_scale == 1.0 and stage.bridge.tip_collapsed, "Natural slowdown freezes a collapsed tip without leaving a global slow time scale")
+	_check(player.get_node("Visuals/Body").animation == &"bonk", "The frozen fall keeps the existing head-impact sprite")
 	await _capture("dash-wait-natural")
 	_release()
 	stage.get_node("PauseMenu").open()
 	stage.get_node("PauseMenu").retry()
 	_check(not paused and stage.phase == tutorial.Phase.RUN and player.controls_enabled and not stage.bridge.tip_collapsed, "Retry from input wait restores normal time, controls and bridge")
+	_check(player.get_node("Visuals/Body").animation != &"bonk" and player.get_node("Visuals/Body").is_processing(), "Retry restores the normal pose updates")
 	stage._enter_room(2, false)
 	await _step(5)
 	await _jump_at(1084)
@@ -156,6 +159,7 @@ func _run() -> void:
 	if failed:
 		_finish()
 		return
+	_check(player.get_node("Visuals/Body").animation == &"bonk", "The existing head-impact pose is visible as slowdown begins")
 	await _capture("bridge-slow")
 	_event("dash", true)
 	await _key(KEY_ESCAPE)
@@ -164,6 +168,7 @@ func _run() -> void:
 	await _key(KEY_ENTER)
 	await _step(2)
 	_check(stage.phase == tutorial.Phase.WAIT and paused, "Skipping slowdown reaches mandatory input wait")
+	_check(player.get_node("Visuals/Body").animation == &"bonk", "Skipped slowdown also freezes the existing head-impact pose")
 	_check(not stage.player.controls_enabled, "Input wait cannot move the player")
 	_hold("move_up")
 	await _step(2)
@@ -208,6 +213,8 @@ func _run() -> void:
 	dash_key.physical_keycode = KEY_X
 	dash_key.pressed = true
 	Input.parse_input_event(dash_key)
+	await _step(2)
+	_check(player.get_node("Visuals/Body").animation == &"jump", "A successful cinematic dash returns to the jumping pose")
 	await _until(func(): return stage.completed, 160, "Fresh up-right dash guarantees safe landing")
 	dash_key.pressed = false
 	Input.parse_input_event(dash_key)

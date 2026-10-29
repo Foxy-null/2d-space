@@ -28,7 +28,7 @@ Godot 4.7.2 Stable、Windows、60Hzで確認した。描画はOpenGL 3.3 / NVIDI
 python tests/run_checks.py --godot /path/to/godot --smoke --render --timeout 240 tutorial_redesign_test.gd variable_jump_test.gd game_progress_test.gd phase1_movement_test.gd phase2_environment_test.gd phase3_grab_test.gd input_settings_test.gd input_settings_pause_test.gd display_settings_test.gd collection_progress_test.gd pause_menu_test.gd stage_select_test.gd stage_clear_test.gd arrival_retry_test.gd scroll_room_transfer_test.gd gimmick_retry_contact_test.gd stage_2_test.gd stage_3_test.gd stage_4_test.gd stage_5_test.gd
 ```
 
-## 確認結果
+## 初回改修の確認結果
 
 主要20本が成功。タイトル・選択・全5面の起動確認も成功した。
 
@@ -59,3 +59,20 @@ python tests/run_checks.py --godot /path/to/godot --smoke --render --timeout 240
 ![3レイヤーのクリア画面](screenshots/tutorial-stage-1/clear.png)
 
 実機ゲームパッドの接続、初見ユーザーの難度評価、60Hz以外、OSの動きの抑制の実通知は未確認。ゲームパッド操作はGodotの入力イベント、機種別表記はデバイス名ごとの関数で確認した。橋とロケットの絵は仕様どおり仮素材であり、完成テクスチャへの差し替えを待つ。
+
+## 落下姿勢と薄い木板の追加修正
+
+追加要望に合わせ、橋の減速開始から入力待ちまで、既存の頭打ち姿勢 `bonk` をそのまま表示するようにした。姿勢更新だけを止め、正解ダッシュ・やり直しで再開する。新しい画像・アニメーション名・専用の再利用処理は追加していない。操作を制限した着地演出でも、ダッシュと空中移動に対応する通常の姿勢を表示する。
+
+構成図の薄い張り出し・細い台3箇所は、厚さ12pxの木の片面足場にした。第2室では対応する土の張り出しと細い柱を取り除き、板の下に空間を残す。Godot標準の `one_way_collision` を使い、下から通過して上から着地できる。既存の橋用仮画像を薄く表示し、新しい画像は作っていない。追加で示された参考画像は保存せず、特徴だけを [差し替えガイド](tutorial-stage-1/asset-replacement-guide.md)に記録した。
+
+```sh
+python tests/run_checks.py --godot /path/to/godot --render tutorial_platforms_test.gd tutorial_redesign_test.gd character_sprites_test.gd
+```
+
+- 木板の実物理テスト16項目成功。全3枚で下からの通過、頭をぶつけないこと、上からの着地、着地後45フレーム立ち続けられることを確認した。
+- 第1面の実入力テスト112項目、描画あり123項目成功。通常の減速とメニュー経由の省略、入力待ち、やり直し、正解ダッシュでの姿勢も確認した。
+- 既存のキャラクタースプライトテスト成功。可変ジャンプ導入後の下降確認は、最大ジャンプを保持してから下降する入力に更新した。
+- 共通の移動テスト411項目成功。
+
+![細い柱に代わる木の片面足場](screenshots/tutorial-stage-1/room2-planks.png)
