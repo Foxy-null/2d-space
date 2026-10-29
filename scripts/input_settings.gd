@@ -1,4 +1,5 @@
 extends CanvasLayer
+signal bindings_changed
 ## Independent of stage contents. Only gameplay actions are persisted.
 const SAVE_PATH := "user://input_settings.cfg"
 var save_path := SAVE_PATH
@@ -15,6 +16,7 @@ var waiting_slot := 0
 var keyboard := true
 var was_paused := false
 var previous_focus: Control
+var active_device := -1
 
 func _ready() -> void:
 	layer = 100
@@ -68,6 +70,14 @@ func close_settings() -> void:
 		previous_focus.grab_focus()
 
 func _input(event: InputEvent) -> void:
+	var next_device := active_device
+	if (event is InputEventKey or event is InputEventMouseButton) and event.is_pressed():
+		next_device = -1
+	elif (event is InputEventJoypadButton and event.pressed) or (event is InputEventJoypadMotion and absf(event.axis_value) > 0.55):
+		next_device = event.device
+	if next_device != active_device:
+		active_device = next_device
+		bindings_changed.emit()
 	if panel.visible and waiting_action != "" and event is InputEventMouseButton and event.pressed:
 		var mouse := InputEventMouseButton.new()
 		mouse.button_index = event.button_index
@@ -161,7 +171,7 @@ func _refresh() -> void:
 		body.remove_child(scroll)
 		scroll.queue_free()
 		_build_controller_layout()
-	_label("変更は自動保存されます。ゲーム内の操作説明は初期配置の表記です。", body)
+	_label("変更は自動保存されます。第1ステージの案内は実際の割り当てに切り替わります。", body)
 	var footer := HBoxContainer.new()
 	body.add_child(footer)
 	_button("このタブを初期設定に戻す", footer, reset_current_device)
@@ -308,9 +318,66 @@ func save_settings() -> Error:
 	for action in ACTIONS:
 		config.set_value("bindings", action, InputMap.action_get_events(action))
 	var result := config.save(save_path)
+	bindings_changed.emit()
 	if result != OK and is_instance_valid(status):
 		status.text = "設定を保存できませんでした。今回の起動中のみ適用されます。"
 	return result
+
+
+func binding_label(action: String) -> String:
+	for event in InputMap.action_get_events(action):
+		if active_device < 0 and (event is InputEventKey or event is InputEventMouseButton):
+			return _binding_text(event)
+		if active_device >= 0 and event is InputEventJoypadButton:
+			return pad_button_label(event.button_index, Input.get_joy_name(active_device))
+		if active_device >= 0 and event is InputEventJoypadMotion:
+			if event.axis in [JOY_AXIS_TRIGGER_LEFT, JOY_AXIS_TRIGGER_RIGHT]:
+				var name := Input.get_joy_name(active_device)
+				if _is_sony(name):
+					return "L2" if event.axis == JOY_AXIS_TRIGGER_LEFT else "R2"
+				if "xbox" in name.to_lower() or "xinput" in name.to_lower():
+					return "LT" if event.axis == JOY_AXIS_TRIGGER_LEFT else "RT"
+				if "nintendo" in name.to_lower() or "switch" in name.to_lower():
+					return "ZL" if event.axis == JOY_AXIS_TRIGGER_LEFT else "ZR"
+				return "左トリガー" if event.axis == JOY_AXIS_TRIGGER_LEFT else "右トリガー"
+			return "スティック"
+	return "未割り当て"
+
+
+static func _is_sony(device_name: String) -> bool:
+	var lower := device_name.to_lower()
+	return "sony" in lower or "playstation" in lower or "dualsense" in lower or "dualshock" in lower or "ps4" in lower or "ps5" in lower
+
+
+static func pad_button_label(index: int, device_name: String) -> String:
+	if index < 4:
+		if _is_sony(device_name):
+			return ["×", "○", "□", "△"][index]
+		var lower := device_name.to_lower()
+		if "xbox" in lower or "xinput" in lower:
+			return ["A", "B", "X", "Y"][index]
+		if "nintendo" in lower or "switch" in lower:
+			return ["B", "A", "Y", "X"][index]
+		return ["下ボタン", "右ボタン", "左ボタン", "上ボタン"][index]
+	return PAD_NAMES[index] if index < PAD_NAMES.size() else "ボタン %d" % index
+
+
+func has_custom_settings() -> bool:
+	for action in ACTIONS:
+		if var_to_str(InputMap.action_get_events(action)) != var_to_str(defaults[action]):
+			return true
+	return false
+
+
+func restore_defaults() -> Error:
+	for action in ACTIONS:
+		InputMap.action_erase_events(action)
+		for event in defaults[action]:
+			InputMap.action_add_event(action, event.duplicate())
+	waiting_action = ""
+	var error := save_settings()
+	_refresh()
+	return error
 
 func load_settings() -> void:
 	var config := ConfigFile.new()

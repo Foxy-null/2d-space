@@ -190,6 +190,7 @@ func _on_arrival(index: int) -> void:
 	cleared[index] = true
 	if index == rooms.get_child_count() - 1:
 		completed = true
+		CollectionProgress.mark_cleared("gravity")
 	_update_room()
 
 

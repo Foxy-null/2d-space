@@ -167,6 +167,7 @@ func _on_completed() -> void:
 	if not _carry_requirement_met():
 		return
 	completed = true
+	CollectionProgress.mark_cleared("companion")
 	$HUD/Completion.card.position = Vector2(24, 180)
 	$HUD/Completion.show()
 	goal.set_progress(0, 0, "", "", true)

@@ -368,7 +368,7 @@ func _test_jumps() -> void:
 	while player.is_dashing():
 		await _step()
 	await _step()
-	_check(not player.is_air_jump_ready() and player.velocity.y < -600, "dash jump buffer survives to air jump")
+	_check(not player.is_air_jump_ready() and player.velocity.y < -200 and player.velocity.y > -400, "released dash-buffered jump survives as a short air jump")
 
 
 func _test_crystal() -> void:

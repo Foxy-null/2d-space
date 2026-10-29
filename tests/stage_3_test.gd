@@ -257,9 +257,9 @@ func _run() -> void:
 	for frame in 180:
 		if _x() < 820 and player.is_on_floor():
 			break
-		Input.action_release("jump")
+		FullJumpInput.release_after_apex(player)
 		if player.is_on_floor() and player.is_on_wall():
-			Input.action_press("jump")
+			FullJumpInput.press(player)
 		await _step()
 	_check(stage.room_index == 4 and _x() < 820 and player.is_on_floor(), "Backtrack over the arrival switch onto the return bridge")
 	_drive("move_right")
@@ -268,9 +268,10 @@ func _run() -> void:
 	_release_inputs()
 	await _key(KEY_ESCAPE)
 	_check_help(true)
-	await _key(KEY_DOWN)
-	await _key(KEY_DOWN)
-	await _key(KEY_DOWN)
+	for move in 8:
+		if root.gui_get_focus_owner() == stage.get_node("PauseMenu").menu.get_node("Return"):
+			break
+		await _key(KEY_DOWN)
 	await _key(KEY_ENTER)
 	_check(paused and stage.get_node("PauseMenu").confirmation.visible, "Return waits for confirmation")
 	await _key(KEY_UP)
@@ -310,9 +311,9 @@ func _cross_room_boundary(forward := true) -> void:
 	for frame in 1000:
 		if stage.room_index != index or failed:
 			break
-		Input.action_release("jump")
+		FullJumpInput.release_after_apex(player)
 		if player.is_on_floor() and player.is_on_wall():
-			Input.action_press("jump")
+			FullJumpInput.press(player)
 		await _step()
 	_check(stage.room_index == target, "The real room boundary follows the course direction")
 	_check(stage.transitioning and not player.controls_enabled, "The short room transition freezes controls")
@@ -709,11 +710,11 @@ func _reach_goal() -> void:
 			await _step(20)
 			_check(goal.is_pressed() and stage.cleared.has(0), "The arrival press completes after resuming")
 			break
-		Input.action_release("jump")
+		FullJumpInput.release_after_apex(player)
 		if _x() >= 1140:
 			Input.action_release("move_left" if _mirrored() else "move_right")
 		elif player.is_on_floor() and player.is_on_wall():
-			Input.action_press("jump")
+			FullJumpInput.press(player)
 		await _step()
 	_release_inputs()
 	if stage.room_index == 0:
@@ -732,9 +733,9 @@ func _drive(direction: String, grab := false, inverted := false) -> void:
 
 
 func _jump() -> void:
-	Input.action_press("jump")
+	FullJumpInput.press(player)
 	await _step()
-	Input.action_release("jump")
+	FullJumpInput.release_after_apex(player)
 
 
 func _retry() -> void:
@@ -969,7 +970,8 @@ func _step(count: int = 1) -> void:
 
 func _release_inputs() -> void:
 	for action in ["move_left", "move_right", "move_up", "move_down", "jump", "jump_up", "dash", "wall_grab", "reset"]:
-		Input.action_release(action)
+		if action != "jump" or not FullJumpInput.is_holding():
+			Input.action_release(action)
 
 
 func _check(condition: bool, message: String) -> void:

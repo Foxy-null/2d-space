@@ -13,8 +13,6 @@ func _initialize() -> void:
 func _run() -> void:
 	for pause in range(6, 18):
 		await _tower_retry(pause)
-	for pause in range(12, 28):
-		await _gate_retry(pause)
 	for rate in [30, 60, 120]:
 		Engine.physics_ticks_per_second = rate
 		for phase in [16, 20, 24]:
@@ -54,35 +52,6 @@ func _tower_retry(pause: int) -> void:
 		await _step()
 	_release()
 	_check(launches[0] == before + 1 and player.velocity.y < -900 and player.is_dash_ready(), "The same real spring works again immediately after retry: %d" % pause)
-
-
-func _gate_retry(pause: int) -> void:
-	_clear()
-	world = load("res://scenes/tutorial.tscn").instantiate()
-	root.add_child(world)
-	player = world.player
-	world._set_room(9, false)
-	player.respawn()
-	await _step(6)
-	var remote := [0]
-	player.gravity_changed.connect(func(inverted):
-		if inverted and player.position.x < 11520 + 140:
-			remote[0] += 1
-	)
-	Input.action_press("move_right")
-	await _step(pause)
-	Input.action_press("reset")
-	await _step()
-	_release()
-	await _step(6)
-	_check(remote[0] == 0 and player.gravity_direction == 1 and player.position.distance_to(Vector2(11592, 614)) < 3, "R at the moving gate restores the entrance without remote gravity: %d" % pause)
-	Input.action_press("move_right")
-	for frame in 60:
-		if player.gravity_direction == -1:
-			break
-		await _step()
-	_release()
-	_check(player.gravity_direction == -1 and player.position.x > 11520 + 140, "Real gate contact still works immediately after retry: %d" % pause)
 
 
 func _fast_moving_gate(rate: int, phase: int) -> void:

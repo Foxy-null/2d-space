@@ -103,3 +103,16 @@ func load_settings() -> void:
 	if fullscreen is bool and fullscreen:
 		get_window().mode = Window.MODE_FULLSCREEN
 	mode_changed.emit(_button_text())
+
+
+func has_custom_settings() -> bool:
+	return is_fullscreen() or windowed_size != Vector2i(1280, 720)
+
+
+func restore_defaults() -> Error:
+	windowed_size = Vector2i(1280, 720)
+	if available:
+		save_timer.stop()
+		_restore_window()
+	mode_changed.emit(_button_text())
+	return save_settings()

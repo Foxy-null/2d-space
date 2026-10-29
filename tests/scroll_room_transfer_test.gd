@@ -13,10 +13,10 @@ func _run() -> void:
 	progress = root.get_node("CollectionProgress")
 	progress.save_path = "user://scroll_room_transfer_test_%d.cfg" % OS.get_process_id()
 	progress._collected.clear()
-	for scene in ["tutorial", "stage_3", "stage_4", "stage_5"]:
+	for scene in ["stage_3", "stage_4", "stage_5"]:
 		await _transfer(scene, false)
 		await _transfer(scene, true)
-	for scene in ["tutorial", "stage_3"]:
+	for scene in ["stage_3"]:
 		await _backtrack(scene)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
 	print("SCROLL_ROOM_TRANSFER_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])

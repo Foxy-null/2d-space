@@ -13,13 +13,13 @@ func _ready() -> void:
 		var content := VBoxContainer.new()
 		content.name = "Content"
 		content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		content.add_theme_constant_override("separation", 12)
+		content.add_theme_constant_override("separation", 8)
 		card.add_child(content)
 		content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		content.offset_left = 16
 		content.offset_right = -16
-		content.offset_top = 24
-		content.offset_bottom = -24
+		content.offset_top = 20
+		content.offset_bottom = -20
 		var number := Label.new()
 		number.text = lines[0]
 		number.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -27,16 +27,25 @@ func _ready() -> void:
 		var art := Control.new()
 		art.name = "Art"
 		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		art.custom_minimum_size = Vector2(160, 120)
+		art.custom_minimum_size = Vector2(160, 88)
 		art.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		content.add_child(art)
 		art.draw.connect(_draw_card.bind(art, index))
 		var title := Label.new()
 		title.name = "Title"
+		title.add_theme_font_size_override("font_size", 18)
 		title.text = lines[1]
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		content.add_child(title)
 		var stage_id: String = CollectionProgress.STAGE_IDS[index]
+		var cleared := Label.new()
+		cleared.name = "Cleared"
+		cleared.add_theme_font_size_override("font_size", 18)
+		cleared.text = "✓ クリア済み" if CollectionProgress.is_cleared(stage_id) else "未クリア"
+		cleared.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cleared.add_theme_color_override("font_color", Color("a2ffd0") if CollectionProgress.is_cleared(stage_id) else Color("a8bac9"))
+		content.add_child(cleared)
+		card.accessibility_name += "、" + cleared.text
 		var collected := CollectionProgress.get_count(stage_id)
 		var total: int = CollectionProgress.TOTALS[stage_id]
 		var collection := HBoxContainer.new()
@@ -54,6 +63,7 @@ func _ready() -> void:
 		collection.add_child(icon)
 		var count := Label.new()
 		count.name = "Count"
+		count.add_theme_font_size_override("font_size", 18)
 		count.text = "%d / %d" % [collected, total]
 		collection.add_child(count)
 		card.accessibility_name += "、巻物 %d / %d" % [collected, total]

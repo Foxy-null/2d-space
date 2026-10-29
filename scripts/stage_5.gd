@@ -240,6 +240,7 @@ func set_hints_visible(value: bool) -> void:
 
 func _on_completed() -> void:
 	completed = true
+	CollectionProgress.mark_cleared("canyon")
 	target_marker.hide()
 	$HUD/Completion.show()
 	goal.set_progress(0, 0, "", "", true)
