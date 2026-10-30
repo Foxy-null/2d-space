@@ -19,10 +19,10 @@ func _run() -> void:
 	await _step(25)
 	_check(current_scene.scene_file_path == "res://scenes/tutorial.tscn", "First New Game enters Stage 1 directly")
 	await _return_from_stage()
-	for index in 5:
+	for index in 6:
 		var menu := current_scene
 		var cards := menu.get_node("Margin/Content/Stages")
-		_check(cards.get_child_count() == 5, "All five stages remain selectable")
+		_check(cards.get_child_count() == 6, "All six stages remain selectable")
 		for card in cards.get_children():
 			_check(not card.disabled and root.get_visible_rect().encloses(card.get_global_rect()), "Every unlocked stage card fits the screen")
 			for child in card.get_node("Content").get_children():

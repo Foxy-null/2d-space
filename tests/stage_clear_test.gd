@@ -9,7 +9,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	# The new first stage's full-screen ending has its own actual-input route test.
-	for number in range(2, 6):
+	for number in range(2, 7):
 		var path := "res://scenes/stage_%d.tscn" % number
 		change_scene_to_file(path)
 		await _step(4)
@@ -20,6 +20,8 @@ func _run() -> void:
 		await _joy(JOY_BUTTON_Y)
 		_check(current_scene == stage, "Return shortcuts before completion do not leave the stage")
 		# Isolate completion UI from traversal; stage traversal has separate real-input tests.
+		if number == 6:
+			stage.set_help_visible(false)
 		stage.set_physics_process(false)
 		stage.player.set_physics_process(false)
 		if number == 4:
@@ -28,6 +30,9 @@ func _run() -> void:
 			stage.player.position = room.position + Vector2(110, room.entrance_top - 26)
 			_check(stage.player.try_begin_grab(room.get_node("Items/JumpCreature")), "Stage 4 completion fixture carries the final companion")
 			stage._on_completed()
+		elif number == 6:
+			stage._complete("決着成功")
+			_check(root.get_node("CollectionProgress").is_cleared("chaser"), "Stage 6 completion persists its clear flag")
 		elif number == 2:
 			stage._on_completed()
 		elif number == 5:
@@ -53,7 +58,7 @@ func _run() -> void:
 		await _click(completion.return_button)
 		_check(current_scene == stage and paused, "Y and the notice's button cannot bypass pause")
 		await _key(KEY_ENTER)
-		_check(current_scene == stage and not paused, "Enter resumes the paused game without leaving")
+		_check(current_scene == stage and not paused, "Enter resumes the paused game without leaving stage %d" % number)
 		if OS.get_cmdline_user_args().has("--screenshots"):
 			RenderingServer.force_draw()
 			root.get_texture().get_image().save_png("res://.godot/clear_stage_%d.png" % number)

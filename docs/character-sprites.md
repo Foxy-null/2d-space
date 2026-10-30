@@ -106,3 +106,8 @@ Godot 4.7.2で全10テストが成功。保持物の持ち手とデモの配置�
 ![赤い和傘を保持して浮上する実際の画面](screenshots/characters/red-umbrella-carry.png)
 
 [動作プレビューGIF](screenshots/characters/preview.gif)には、歩行、ジャンプ・Dash、和傘での浮上、生物を持った追加ジャンプを収録した。
+
+
+## ステージ6の敵
+
+UMA妖怪エイリアン「星間山荒・大赤斑」は別の6姿勢と針2種類を使用する。忍者の画像や色変更シェーダーと分け、動作と大きさを調整した。割り当て・補正の記録は [敵と針の仕様](enemy-star-mountain.md) を参照。

@@ -47,6 +47,7 @@ func _run() -> void:
 		select.get_node("Fullscreen"),
 		root.get_node("InputSettings").launcher,
 		select.get_node("Margin/Content/Stages/Stage5"),
+		select.get_node("Margin/Content/Stages/Stage6"),
 	]:
 		_check(not select_demo_btn.get_global_rect().intersects(node.get_global_rect()), "Demo button does not overlap " + node.name)
 
@@ -104,6 +105,22 @@ func _run() -> void:
 	_check(not paused and is_equal_approx(Engine.time_scale, 1.0), "Forced title return unpauses tree and restores time scale")
 	_check(not root.get_node("InputSettings").panel.visible, "Forced title return closes open settings panel")
 	_check(demo.enabled, "Demo mode remains ON after forced return to title")
+
+	change_scene_to_file("res://scenes/stage_6.tscn")
+	await _step(4)
+	demo.idle_timeout = 0.2
+	demo.warning_duration = 10.0
+	current_scene._game_over()
+	await _step(90)
+	_check(demo.warning_active and paused and current_scene._game_over_pending, "The idle warning keeps Stage 6 defeat recovery paused")
+	await _key(KEY_SPACE)
+	await _step(3)
+	_check(not demo.warning_active and not paused and not current_scene._game_over_pending, "Dismissing the warning lets checkpoint recovery finish without leaving a stale pause")
+	demo.warning_duration = 0.3
+	current_scene._game_over()
+	await _until(func(): return current_scene != null and current_scene.scene_file_path == "res://scenes/start_screen.tscn", 90, "Idle timeout can leave Stage 6 during defeat recovery")
+	await _step(45)
+	_check(not paused and current_scene.scene_file_path == "res://scenes/start_screen.tscn", "A freed Stage 6 cannot restore an old pause after title return")
 
 	# Restore defaults
 	demo.idle_timeout = demo.DEFAULT_IDLE_TIMEOUT

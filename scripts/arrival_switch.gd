@@ -19,6 +19,7 @@ const CAP_SEAT_Y := SEAT_Y + 12.0
 
 var locked := true
 var pressing := false
+var activator: PlayerController
 var _pressed := false
 var _step := "jump"
 var _unlock_fx := 1.0
@@ -69,10 +70,12 @@ func set_progress(remaining: int, total: int, step: String, objective: String, c
 	queue_redraw()
 
 
-func reset_for_respawn() -> void:
-	if _pressed:
+func reset_for_respawn(reset_pressed := false) -> void:
+	if _pressed and not reset_pressed:
 		return
+	_pressed = false
 	pressing = false
+	activator = null
 	cap.position.y = 0.0
 	queue_redraw()
 
@@ -97,12 +100,13 @@ func _physics_process(delta: float) -> void:
 		return
 	if not pressing:
 		for body in get_overlapping_bodies():
-			if not body is PlayerController or not body.controls_enabled or body.gravity_direction != 1 or not body.is_on_floor():
+			if not body is PlayerController or not body.is_in_group("player") or not body.controls_enabled or body.gravity_direction != 1 or not body.is_on_floor():
 				continue
 			# Cached slide contacts can still point to this cap after a respawn.
 			var contact := KinematicCollision2D.new()
 			if body.test_move(body.global_transform, Vector2.DOWN, contact) and contact.get_collider() == cap and contact.get_normal().dot(Vector2.UP) > 0.8:
 				pressing = true
+				activator = body
 	if pressing:
 		cap.position.y = move_toward(cap.position.y, TRAVEL, TRAVEL / PRESS_TIME * delta)
 		queue_redraw()
@@ -231,6 +235,9 @@ func _draw_icon(step: String) -> void:
 			ArtDraw.ellipse(self, Vector2(0, 12), Vector2(24, 9), ArtDraw.GOLD)
 			ArtDraw.footprints(self, Vector2(0, 12), 0.5)
 			_arrow(Vector2(0, -27), Vector2(0, 3), GOLD)
+		"escape":
+			draw_arc(Vector2.ZERO, 23, 0, TAU, 40, GOLD, 4, true)
+			draw_polyline(PackedVector2Array([Vector2(0, -15), Vector2.ZERO, Vector2(12, 7)]), Color.WHITE, 4, true)
 		"button_on", "button_off", "throw_button":
 			_box(Rect2(-23, 9, 46, 12), Color("92919a"), INK, 4)
 			ArtDraw.cube_mark(self, Vector2(0, -10), 1.1)

@@ -73,7 +73,7 @@ def main():
         run('import', ['--editor', '--import'])
         if not failed:
             if args.smoke:
-                for scene in ('start_screen', 'stage_select', 'tutorial', 'stage_2', 'stage_3', 'stage_4', 'stage_5'):
+                for scene in ('start_screen', 'stage_select', 'tutorial', 'stage_2', 'stage_3', 'stage_4', 'stage_5', 'stage_6', 'gallery'):
                     run('smoke-' + scene, ['--scene', 'res://scenes/' + scene + '.tscn', '--quit-after', '6'])
             for check in args.checks:
                 path = check if check.startswith('res://') else 'res://tests/' + check

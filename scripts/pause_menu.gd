@@ -58,6 +58,8 @@ func _input(event: InputEvent) -> void:
 
 
 func open() -> void:
+	if stage.has_method("set_help_visible") and stage.help_visible:
+		stage.set_help_visible(false)
 	was_paused = get_tree().paused
 	menu.get_node("SkipCinematic").visible = stage.has_method("can_skip_cinematic") and stage.can_skip_cinematic()
 	_refresh_focus()
@@ -88,7 +90,10 @@ func _update_hints_button() -> void:
 func retry() -> void:
 	resume()
 	get_tree().paused = false
-	stage.get_node("Player").respawn()
+	if stage.has_method("retry_room"):
+		stage.retry_room()
+	else:
+		stage.find_child("Player", true, false).respawn()
 
 
 func skip_cinematic() -> void:

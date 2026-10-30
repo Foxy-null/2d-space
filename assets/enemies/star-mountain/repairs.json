@@ -1,0 +1,43 @@
+{
+	"defeated": {
+		"holes": 0,
+		"pixels": [],
+		"source": "sozai6",
+		"strays": 0
+	},
+	"descend": {
+		"holes": 0,
+		"pixels": [],
+		"source": "sozai5",
+		"strays": 0
+	},
+	"idle": {
+		"holes": 0,
+		"pixels": [],
+		"source": "sozai15",
+		"strays": 0
+	},
+	"jump": {
+		"holes": 1,
+		"pixels": [
+			[
+				56,
+				224
+			]
+		],
+		"source": "sozai4",
+		"strays": 0
+	},
+	"walk-a": {
+		"holes": 0,
+		"pixels": [],
+		"source": "sozai22",
+		"strays": 0
+	},
+	"walk-b": {
+		"holes": 0,
+		"pixels": [],
+		"source": "sozai3",
+		"strays": 0
+	}
+}

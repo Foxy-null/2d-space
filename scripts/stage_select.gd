@@ -27,7 +27,7 @@ func _ready() -> void:
 		var art := Control.new()
 		art.name = "Art"
 		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		art.custom_minimum_size = Vector2(160, 88)
+		art.custom_minimum_size = Vector2(140, 88)
 		art.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		content.add_child(art)
 		art.draw.connect(_draw_card.bind(art, index))
@@ -53,6 +53,7 @@ func _ready() -> void:
 		collection.alignment = BoxContainer.ALIGNMENT_CENTER
 		collection.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		content.add_child(collection)
+		collection.visible = total > 0
 		var icon := Control.new()
 		icon.custom_minimum_size = Vector2(24, 28)
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -66,7 +67,8 @@ func _ready() -> void:
 		count.add_theme_font_size_override("font_size", 18)
 		count.text = "%d / %d" % [collected, total]
 		collection.add_child(count)
-		card.accessibility_name += "、巻物 %d / %d" % [collected, total]
+		if total > 0:
+			card.accessibility_name += "、巻物 %d / %d" % [collected, total]
 	var first_stage: Button = $Margin/Content/Stages/Stage1
 	var launcher: Button = InputSettings.launcher
 	var demo_button: Button = $DemoMode
@@ -83,7 +85,7 @@ func _ready() -> void:
 	$ReturnTitle.focus_neighbor_left = $ReturnTitle.get_path_to(launcher)
 	$ReturnTitle.focus_neighbor_right = $ReturnTitle.get_path_to(demo_button)
 	launcher.focus_neighbor_right = launcher.get_path_to($ReturnTitle)
-	launcher.focus_neighbor_top = launcher.get_path_to($Margin/Content/Preview)
+	launcher.focus_neighbor_top = launcher.get_path_to($Margin/Content/Gallery)
 	launcher.focus_neighbor_bottom = launcher.get_path_to(first_stage)
 	$ReturnTitle.focus_next = $ReturnTitle.get_path_to(launcher)
 	launcher.focus_previous = launcher.get_path_to($ReturnTitle)
@@ -92,11 +94,15 @@ func _ready() -> void:
 	if not $Fullscreen.disabled:
 		launcher.focus_next = launcher.get_path_to($Fullscreen)
 		first_stage.focus_previous = first_stage.get_path_to($Fullscreen)
-	first_stage.grab_focus.call_deferred()
+	if get_tree().get_meta("focus_gallery", false):
+		get_tree().remove_meta("focus_gallery")
+		$Margin/Content/Gallery.grab_focus.call_deferred()
+	else:
+		first_stage.grab_focus.call_deferred()
 
 
 func _draw_card(canvas: Control, index: int) -> void:
-	canvas.draw_set_transform(canvas.size * 0.5)
+	canvas.draw_set_transform(canvas.size * 0.5, 0.0, Vector2.ONE * 0.85)
 	var pose := &"jump"
 	var ninja_position := Vector2(-44, -50)
 	match index:
@@ -133,6 +139,10 @@ func _draw_card(canvas: Control, index: int) -> void:
 				ArtDraw.arrow(canvas, Vector2(-72, y), Vector2(-18, y), ArtDraw.CYAN, 2.5)
 			ArtDraw.arrow(canvas, Vector2(-20, 10), Vector2(20, -13), ArtDraw.GOLD)
 			ninja_position = Vector2(-12, -8)
+		5:
+			ArtDraw.box(canvas, Rect2(-70, 43, 140, 12), ArtDraw.CREAM)
+			ArtDraw.arrow(canvas, Vector2(-36, -2), Vector2(42, -2), ArtDraw.CORAL)
+			ninja_position = Vector2(-70, -42)
 	canvas.draw_texture_rect(NINJA.get_frame_texture(pose, 0), Rect2(ninja_position, Vector2(80, 80)), false)
 	canvas.draw_set_transform(Vector2.ZERO)
 
@@ -169,3 +179,11 @@ func _start_stage_four() -> void:
 
 func _start_stage_five() -> void:
 	get_tree().change_scene_to_file("res://scenes/stage_5.tscn")
+
+
+func _start_stage_six() -> void:
+	get_tree().change_scene_to_file("res://scenes/stage_6.tscn")
+
+
+func _gallery() -> void:
+	get_tree().change_scene_to_file("res://scenes/gallery.tscn")

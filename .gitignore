@@ -6,3 +6,5 @@ Thumbs.db
 deliverables/
 docs/screenshots/art-review/round-*/*.png
 docs/screenshots/art-review/round-*/*.mp4
+# 旧版でGodotが生成した同名ファイルとの更新時の衝突を防ぐ。
+/tests/gallery_test.gd.uid

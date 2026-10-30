@@ -17,10 +17,12 @@ func _run() -> void:
 	_check(progress.start_new_game() == OK and progress.has_save(), "New Game creates a resumable zero-progress save")
 	_check(progress.collect_scroll("tutorial", progress.TUTORIAL_SCROLL) == OK, "New tutorial scroll saves")
 	_check(progress.mark_cleared("tutorial") == OK, "Clear saves at the actual stage endpoint")
+	_check(progress.mark_cleared("chaser") == OK, "Stage 6 clear is accepted by the shared save")
 	_check(progress.collect_scroll("tower", "keep_tower") == OK, "Other-stage collection saves independently")
 	var reloaded := Progress.new()
 	reloaded.load_progress()
 	_check(reloaded.has_save() and reloaded.is_cleared("tutorial") and reloaded.get_count("tutorial") == 1 and reloaded.get_count("tower") == 1, "New process state restores clear marks and collections")
+	_check(reloaded.is_cleared("chaser"), "Stage 6 clear survives reloading")
 	reloaded.free()
 	var original_save_path: String = progress.save_path
 	progress.save_path = "user://missing-clear-parent/progress.cfg"
@@ -44,6 +46,7 @@ func _run() -> void:
 	inputs.save_path = old_input_path
 	_check(progress.start_new_game() == OK, "Full reset commits successfully")
 	_check(not progress.is_cleared("tutorial") and progress.get_count("tutorial") == 0 and progress.get_count("tower") == 0, "Reset clears every stage and collectible")
+	_check(not progress.is_cleared("chaser"), "New Game also resets Stage 6")
 	_check(not inputs.has_custom_settings() and not display.has_custom_settings(), "Reset includes input and display settings")
 	reloaded = Progress.new()
 	reloaded.load_progress()

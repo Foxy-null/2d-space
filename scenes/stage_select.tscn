@@ -78,7 +78,7 @@ focus_neighbor_top = NodePath("../../../../ReturnTitle")
 focus_neighbor_right = NodePath("../Stage2")
 focus_neighbor_left = NodePath("../Stage1")
 focus_neighbor_bottom = NodePath("../../Preview")
-custom_minimum_size = Vector2(200, 280)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -89,7 +89,7 @@ focus_neighbor_top = NodePath("../../../../ReturnTitle")
 focus_neighbor_right = NodePath("../Stage3")
 focus_neighbor_left = NodePath("../Stage1")
 focus_neighbor_bottom = NodePath("../../Preview")
-custom_minimum_size = Vector2(200, 280)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -97,7 +97,7 @@ text = "02\n星のぼりの塔"
 
 [node name="Stage3" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(200, 280)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -108,7 +108,7 @@ text = "03\n壁キックと重力"
 
 [node name="Stage4" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(200, 280)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -119,21 +119,39 @@ text = "04\n星渡りの回廊"
 
 [node name="Stage5" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(200, 280)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage4")
-focus_neighbor_right = NodePath("../Stage5")
+focus_neighbor_right = NodePath("../Stage6")
 focus_neighbor_bottom = NodePath("../../Preview")
 text = "05\n暴風バンパー峡谷"
+
+[node name="Stage6" type="Button" parent="Margin/Content/Stages"]
+focus_neighbor_top = NodePath("../../../../ReturnTitle")
+focus_neighbor_left = NodePath("../Stage5")
+focus_neighbor_right = NodePath("../Stage6")
+focus_neighbor_bottom = NodePath("../../Preview")
+custom_minimum_size = Vector2(172, 280)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+text = "06\n追跡者の終域"
 
 [node name="Preview" type="Button" parent="Margin/Content"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 focus_neighbor_top = NodePath("../Stages/Stage1")
-focus_neighbor_bottom = NodePath("../../../ReturnTitle")
+focus_neighbor_bottom = NodePath("../Gallery")
 text = "背景・ギミックを見る"
+
+[node name="Gallery" type="Button" parent="Margin/Content"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+focus_neighbor_top = NodePath("../Preview")
+focus_neighbor_bottom = NodePath("../../../ReturnTitle")
+text = "キャラクターと道具の図鑑"
 
 [node name="Controls" type="Label" parent="Margin/Content"]
 layout_mode = 2
@@ -151,7 +169,7 @@ offset_right = -532.0
 offset_bottom = 122.0
 grow_horizontal = 0
 focus_neighbor_left = NodePath(".")
-focus_neighbor_top = NodePath("../Margin/Content/Preview")
+focus_neighbor_top = NodePath("../Margin/Content/Gallery")
 focus_neighbor_bottom = NodePath("../Margin/Content/Stages/Stage1")
 focus_next = NodePath("../Margin/Content/Stages/Stage1")
 text = "全画面 [F11]"
@@ -166,7 +184,7 @@ offset_top = 48.0
 offset_right = -64.0
 offset_bottom = 122.0
 grow_horizontal = 0
-focus_neighbor_top = NodePath("../Margin/Content/Preview")
+focus_neighbor_top = NodePath("../Margin/Content/Gallery")
 focus_neighbor_bottom = NodePath("../Margin/Content/Stages/Stage1")
 text = "タイトルに戻る"
 
@@ -175,11 +193,12 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -290.0
-offset_top = 132.0
-offset_right = -64.0
-offset_bottom = 206.0
+offset_left = -516.0
+offset_top = 100.0
+offset_right = -316.0
+offset_bottom = 180.0
 grow_horizontal = 0
+theme_override_font_sizes/font_size = 18
 text = "体験モード: OFF"
 
 [connection signal="pressed" from="ReturnTitle" to="." method="_return_to_title"]
@@ -195,3 +214,7 @@ text = "体験モード: OFF"
 [connection signal="pressed" from="Margin/Content/Stages/Stage4" to="." method="_start_stage_four"]
 
 [connection signal="pressed" from="Margin/Content/Stages/Stage5" to="." method="_start_stage_five"]
+
+[connection signal="pressed" from="Margin/Content/Stages/Stage6" to="." method="_start_stage_six"]
+
+[connection signal="pressed" from="Margin/Content/Gallery" to="." method="_gallery"]

@@ -1,0 +1,106 @@
+{
+  "idle": {
+    "source": "sozai15",
+    "anchor": [
+      100,
+      228
+    ],
+    "reference_height": 227
+  },
+  "walk-a": {
+    "source": "sozai22",
+    "anchor": [
+      136,
+      240
+    ],
+    "reference_height": 241
+  },
+  "walk-b": {
+    "source": "sozai3",
+    "anchor": [
+      154,
+      238
+    ],
+    "reference_height": 238
+  },
+  "jump": {
+    "source": "sozai4",
+    "anchor": [
+      153,
+      273
+    ],
+    "reference_height": 275
+  },
+  "descend": {
+    "source": "sozai5",
+    "anchor": [
+      212,
+      339
+    ],
+    "reference_height": 351
+  },
+  "defeated": {
+    "source": "sozai6",
+    "anchor": [
+      149,
+      150
+    ],
+    "reference_height": 227
+  },
+  "idle-left": {
+    "source": "sozai156",
+    "anchor": [
+      101,
+      228
+    ],
+    "reference_height": 227
+  },
+  "carry-a": {
+    "source": "sozai7",
+    "anchor": [
+      212,
+      339
+    ],
+    "reference_height": 351
+  },
+  "carry-b": {
+    "source": "sozai8",
+    "anchor": [
+      212,
+      339
+    ],
+    "reference_height": 351
+  },
+  "dash": {
+    "source": "sozai9",
+    "anchor": [
+      276,
+      334
+    ],
+    "reference_height": 245
+  },
+  "superdash": {
+    "source": "sozai10_-_",
+    "anchor": [
+      245,
+      347
+    ],
+    "reference_height": 275
+  },
+  "wall-climb": {
+    "source": "sozai11",
+    "anchor": [
+      153,
+      273
+    ],
+    "reference_height": 275
+  },
+  "throwback": {
+    "source": "sozai12",
+    "anchor": [
+      550,
+      446
+    ],
+    "reference_height": 227
+  }
+}
