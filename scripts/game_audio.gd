@@ -46,6 +46,8 @@ func _ready() -> void:
 	scroll_touch.volume_db = -4.0
 	music.finished.connect(_on_music_finished)
 	get_tree().scene_changed.connect(reset_scene)
+	# The initial scene does not emit scene_changed; wait until it is loaded.
+	reset_scene.call_deferred()
 	get_tree().node_added.connect(_connect_button)
 	for button in get_tree().root.find_children("*", "BaseButton", true, false):
 		_connect_button(button)
@@ -85,6 +87,8 @@ func reset_scene() -> void:
 	_cleared = false
 	_quiet = null
 	var scene := get_tree().current_scene
+	if scene == null:
+		return
 	var family: String = STAGE_TRACKS.get(scene.scene_file_path, "")
 	if not family.is_empty():
 		_quiet = TRACKS[family][1]

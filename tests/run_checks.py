@@ -77,7 +77,10 @@ def main():
                     run('smoke-' + scene, ['--scene', 'res://scenes/' + scene + '.tscn', '--quit-after', '6'])
             for check in args.checks:
                 path = check if check.startswith('res://') else 'res://tests/' + check
-                run(Path(check).stem, ['--script', path])
+                arguments = ['--script', path]
+                if Path(check).stem == 'game_audio_test':
+                    arguments += ['--scene', 'res://scenes/start_screen.tscn']
+                run(Path(check).stem, arguments)
             if args.render:
                 run('render', ['--script', 'res://tests/tutorial_redesign_test.gd', '--', '--capture', str(output)], render=True)
     return 1 if failed else 0
