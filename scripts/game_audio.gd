@@ -19,6 +19,12 @@ const TRACKS := {
 var music := AudioStreamPlayer.new()
 var jump := AudioStreamPlayer.new()
 var dash := AudioStreamPlayer.new()
+var ui_move := AudioStreamPlayer.new()
+var ui_select := AudioStreamPlayer.new()
+var menu_open := AudioStreamPlayer.new()
+var scroll_touch := AudioStreamPlayer.new()
+var scroll_collect := AudioStreamPlayer.new()
+var _ui_move_frame := -1
 var _quiet: AudioStream
 var _cleared := false
 
@@ -26,18 +32,56 @@ var _cleared := false
 func _ready() -> void:
 	# The first stage pauses gameplay during its clear screen and dash prompt.
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(music)
-	add_child(jump)
-	add_child(dash)
+	for player in [music, jump, dash, ui_move, ui_select, menu_open, scroll_touch, scroll_collect]:
+		add_child(player)
 	jump.stream = preload("res://assets/audio/jump.wav")
 	dash.stream = preload("res://assets/audio/dash.wav")
+	ui_move.stream = preload("res://assets/audio/ui-move.wav")
+	ui_select.stream = preload("res://assets/audio/ui-select.wav")
+	menu_open.stream = preload("res://assets/audio/menu-open.wav")
+	scroll_touch.stream = preload("res://assets/audio/scroll-touch.wav")
+	scroll_collect.stream = preload("res://assets/audio/scroll-collect.wav")
+	ui_move.volume_db = -4.0
+	menu_open.volume_db = -4.0
+	scroll_touch.volume_db = -4.0
 	music.finished.connect(_on_music_finished)
 	get_tree().scene_changed.connect(reset_scene)
+	get_tree().node_added.connect(_connect_button)
+	for button in get_tree().root.find_children("*", "BaseButton", true, false):
+		_connect_button(button)
+
+
+func _connect_button(node: Node) -> void:
+	if node is BaseButton and not node.pressed.is_connected(_play_ui_select):
+		node.focus_entered.connect(_play_ui_move.bind(node))
+		node.mouse_entered.connect(_play_ui_move.bind(node))
+		node.pressed.connect(_play_ui_select)
+
+
+func _play_ui_move(button: BaseButton) -> void:
+	if button.disabled or not button.is_visible_in_tree() or _ui_move_frame == Engine.get_process_frames():
+		return
+	_ui_move_frame = Engine.get_process_frames()
+	ui_move.play()
+
+
+func _play_ui_select() -> void:
+	ui_move.stop()
+	_ui_move_frame = Engine.get_process_frames()
+	ui_select.play()
+
+
+func play_menu_open() -> void:
+	ui_move.stop()
+	_ui_move_frame = Engine.get_process_frames()
+	menu_open.play()
 
 
 func reset_scene() -> void:
 	jump.stop()
 	dash.stop()
+	scroll_touch.stop()
+	scroll_collect.stop()
 	_cleared = false
 	_quiet = null
 	var scene := get_tree().current_scene

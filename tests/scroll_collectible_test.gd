@@ -18,6 +18,7 @@ var world: Node2D
 var player: PlayerController
 var scroll: Area2D
 var progress: Node
+var audio: Node
 var checks := 0
 var failed := false
 
@@ -28,6 +29,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	progress = root.get_node("CollectionProgress")
+	audio = root.get_node("GameAudio")
 	var original_path: String = progress.save_path
 	var original_records: Dictionary = progress._collected.duplicate(true)
 	progress.save_path = test_save
@@ -57,19 +59,29 @@ func _airborne_and_secured() -> void:
 	_fixture("landing")
 	await _step(6)
 	_check(scroll._follower == player and not _has("landing"), "Airborne contact follows without securing the scroll")
+	_check(audio.scroll_touch.playing and not audio.scroll_collect.playing, "Contact plays only the touch sound before landing")
+	audio.scroll_touch.stop()
+	scroll._on_body_entered(player)
+	_check(not audio.scroll_touch.playing, "Repeated contact while following does not replay the touch sound")
 	var creature: Grabbable = load("res://scenes/jump_creature.tscn").instantiate()
 	creature.position = player.position + Vector2(42, 0)
 	world.add_child(creature)
 	Input.action_press("wall_grab")
 	await _step(5)
 	_check(player.get_held_object() == creature and scroll._follower == player, "A pending scroll leaves the companion holding slot available")
-	await _step(65)
+	for frame in 65:
+		await _step()
+		if scroll._secured:
+			break
 	_check(_has("landing") and scroll._secured and scroll.modulate.a < 0.5, "A safe landing saves once and leaves a faint scroll at its original position")
+	_check(audio.scroll_collect.playing, "Saving the scroll plays the distinct acquisition pop")
 	_check(scroll.position.is_equal_approx(scroll._origin), "The secured marker stays at the collectible location")
+	audio.scroll_collect.stop()
 	player.respawn()
 	scroll.reset_for_respawn()
 	await _step(3)
 	_check(scroll._secured and progress.get_count("gravity") == 1, "Retry and repeated contact preserve a secured scroll without adding another")
+	_check(not audio.scroll_collect.playing and not audio.scroll_touch.playing, "A secured scroll does not replay either sound")
 	var duplicate: Area2D = load("res://scenes/scroll_collectible.tscn").instantiate()
 	duplicate.stage_id = "gravity"
 	duplicate.scroll_id = "landing"
@@ -77,12 +89,14 @@ func _airborne_and_secured() -> void:
 	world.add_child(duplicate)
 	await _step(20)
 	_check(duplicate._secured and duplicate.modulate.a < 0.5 and progress.get_count("gravity") == 1, "A reloaded collected scroll starts faint and cannot be counted again")
+	_check(not audio.scroll_collect.playing and not audio.scroll_touch.playing, "Loading an already collected scroll is silent")
 
 
 func _retry(manual: bool) -> void:
 	var id := "manual_retry" if manual else "death"
 	_fixture(id)
 	await _step(6)
+	audio.scroll_touch.stop()
 	player.set_respawn_position(Vector2(700, 80))
 	if manual:
 		Input.action_press("reset")
@@ -92,6 +106,7 @@ func _retry(manual: bool) -> void:
 		player.respawn()
 	# Simulate an already queued Area notification after the actual teleport.
 	scroll._on_body_entered(player)
+	_check(not audio.scroll_touch.playing, "A stale contact after retry does not play a touch sound")
 	await _step(40)
 	_check(not _has(id) and scroll._follower == null and scroll.position.is_equal_approx(scroll._origin), "Unsecured scroll returns after %s and rejects a stale enter notification" % id)
 
@@ -208,6 +223,7 @@ func _save_failure() -> void:
 	progress.save_path = "user://scroll_missing_%d/collection.cfg" % Time.get_ticks_usec()
 	await _step(70)
 	_check(not _has("save_failure") and not scroll._secured and scroll._follower == player, "A failed save leaves the scroll pending and the collectible available")
+	_check(not audio.scroll_collect.playing, "A failed save does not play a false acquisition sound")
 	progress.save_path = test_save
 	await _step(20)
 	_check(_has("save_failure") and scroll._secured, "A successful save retry secures the scroll")
@@ -215,6 +231,8 @@ func _save_failure() -> void:
 
 func _fixture(id: String, start_y: float = 80, rigid_floor: bool = false) -> void:
 	_clear()
+	audio.scroll_touch.stop()
+	audio.scroll_collect.stop()
 	world = Node2D.new()
 	root.add_child(world)
 	var floor_body := _support(Vector2(500, 320), Vector2(1000, 40), rigid_floor)
