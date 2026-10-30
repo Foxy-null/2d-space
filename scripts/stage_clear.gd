@@ -63,6 +63,8 @@ func _sync_visibility() -> void:
 	if not is_instance_valid(card):
 		return
 	card.visible = is_visible_in_tree()
+	if card.visible:
+		GameAudio.play_clear()
 
 
 func _input(event: InputEvent) -> void:
