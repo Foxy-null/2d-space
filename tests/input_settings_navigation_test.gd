@@ -126,7 +126,7 @@ func _check_pad_graph() -> void:
 			edges[source][str(button)] = target
 			if not reached.has(target):
 				queue.append(path + [button])
-	var expected := 8 if current_scene.get_node("Fullscreen").disabled else 9
+	var expected := 9 if current_scene.get_node("Fullscreen").disabled else 10
 	_check(reached.has(str(settings.launcher.get_path())) and reached.size() == expected, "The complete D-pad graph includes every enabled menu entry")
 	print("INPUT_SETTINGS_PAD_GRAPH ", JSON.stringify(edges))
 

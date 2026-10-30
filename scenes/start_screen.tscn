@@ -107,4 +107,17 @@ animation = &"idle"
 
 [node name="Effects" type="Node2D" parent="."]
 
+[node name="DemoMode" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -290.0
+offset_top = 48.0
+offset_right = -64.0
+offset_bottom = 122.0
+grow_horizontal = 0
+theme_override_styles/focus = SubResource("Style_title_focus")
+text = "体験モード: OFF"
+
 [connection signal="pressed" from="Center/Content/Start" to="." method="_start"]

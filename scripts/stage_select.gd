@@ -69,11 +69,19 @@ func _ready() -> void:
 		card.accessibility_name += "、巻物 %d / %d" % [collected, total]
 	var first_stage: Button = $Margin/Content/Stages/Stage1
 	var launcher: Button = InputSettings.launcher
+	var demo_button: Button = $DemoMode
+	DemoMode.bind_button(demo_button)
 	DisplaySettings.bind_button($Fullscreen)
+	$Fullscreen.focus_neighbor_left = $Fullscreen.get_path_to(demo_button)
 	$Fullscreen.focus_neighbor_right = $Fullscreen.get_path_to(launcher)
 	$Fullscreen.focus_previous = $Fullscreen.get_path_to(launcher)
-	launcher.focus_neighbor_left = launcher.get_path_to($Fullscreen) if not $Fullscreen.disabled else NodePath(".")
+	launcher.focus_neighbor_left = launcher.get_path_to($Fullscreen) if not $Fullscreen.disabled else launcher.get_path_to(demo_button)
+	demo_button.focus_neighbor_top = demo_button.get_path_to($ReturnTitle)
+	demo_button.focus_neighbor_bottom = demo_button.get_path_to($Margin/Content/Stages/Stage5)
+	demo_button.focus_neighbor_left = demo_button.get_path_to(launcher)
+	demo_button.focus_neighbor_right = demo_button.get_path_to($Fullscreen) if not $Fullscreen.disabled else demo_button.get_path_to($ReturnTitle)
 	$ReturnTitle.focus_neighbor_left = $ReturnTitle.get_path_to(launcher)
+	$ReturnTitle.focus_neighbor_right = $ReturnTitle.get_path_to(demo_button)
 	launcher.focus_neighbor_right = launcher.get_path_to($ReturnTitle)
 	launcher.focus_neighbor_top = launcher.get_path_to($Margin/Content/Preview)
 	launcher.focus_neighbor_bottom = launcher.get_path_to(first_stage)

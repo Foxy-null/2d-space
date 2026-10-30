@@ -170,6 +170,18 @@ focus_neighbor_top = NodePath("../Margin/Content/Preview")
 focus_neighbor_bottom = NodePath("../Margin/Content/Stages/Stage1")
 text = "タイトルに戻る"
 
+[node name="DemoMode" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -290.0
+offset_top = 132.0
+offset_right = -64.0
+offset_bottom = 206.0
+grow_horizontal = 0
+text = "体験モード: OFF"
+
 [connection signal="pressed" from="ReturnTitle" to="." method="_return_to_title"]
 
 [connection signal="pressed" from="Margin/Content/Stages/Stage1" to="." method="_start_tutorial"]
