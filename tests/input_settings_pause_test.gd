@@ -21,6 +21,7 @@ func _run() -> void:
 		change_scene_to_file("res://scenes/%s.tscn" % scene)
 		await _step(5)
 		var stage := current_scene
+		if stage.has_node("StageIntro"): await stage.get_node("StageIntro").tree_exited
 		var player: PlayerController = stage.get_node("Player")
 		var pause_menu = stage.get_node("PauseMenu")
 		await _key(KEY_F10, 12)
@@ -68,6 +69,7 @@ func _run() -> void:
 func _capture_and_pad_close(settings: Node) -> void:
 	change_scene_to_file("res://scenes/tutorial.tscn")
 	await _step(5)
+	await current_scene.get_node("StageIntro").tree_exited
 	var pause_menu = current_scene.get_node("PauseMenu")
 	await _key(KEY_F10)
 	var grid: GridContainer = settings.body.find_children("*", "GridContainer", true, false)[0]

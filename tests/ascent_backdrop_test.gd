@@ -12,6 +12,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_2.tscn")
 	await _step(4)
 	var stage := current_scene
+	await stage.get_node("StageIntro").tree_exited
 	var backdrop := stage.get_node("Background/Stars")
 	stage.set_physics_process(false)
 	stage.player.set_physics_process(false)

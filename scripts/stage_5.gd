@@ -83,6 +83,7 @@ func _ready() -> void:
 	camera.make_current()
 	set_hints_visible(false)
 	_update_hud()
+	StageIntro.play(self, player, camera)
 
 
 func _physics_process(delta: float) -> void:

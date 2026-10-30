@@ -26,6 +26,7 @@ func _run() -> void:
 	current_scene.get_node("Margin/Content/Stages/Stage4").pressed.emit()
 	await step(5)
 	stage = current_scene
+	await stage.get_node("StageIntro").tree_exited
 	player = stage.player
 	player.respawned.connect(func(): deaths += 1)
 	player.movement_action.connect(func(action): actions[action] = actions.get(action, 0) + 1)

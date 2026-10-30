@@ -28,6 +28,7 @@ func _run() -> void:
 	player = stage.player
 	player.respawned.connect(func(): respawns += 1)
 	await _step(5)
+	await stage.get_node("StageIntro").tree_exited
 	_check(not stage._bubble.visible, "The first room has no jump explanation")
 	_check(player.wall_actions_enabled and not player.wall_jump_enabled and not player.dash_enabled, "Climbing is available from the start; wall kick and early dash are not")
 	await _capture("room1-start")

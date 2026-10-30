@@ -61,7 +61,7 @@ func open() -> void:
 	if stage.has_method("set_help_visible") and stage.help_visible:
 		stage.set_help_visible(false)
 	was_paused = get_tree().paused
-	menu.get_node("SkipCinematic").visible = stage.has_method("can_skip_cinematic") and stage.can_skip_cinematic()
+	menu.get_node("SkipCinematic").visible = stage.has_node("StageIntro") or (stage.has_method("can_skip_cinematic") and stage.can_skip_cinematic())
 	_refresh_focus()
 	overlay.show()
 	menu.show()
@@ -97,7 +97,10 @@ func retry() -> void:
 
 
 func skip_cinematic() -> void:
-	if stage.has_method("can_skip_cinematic") and stage.can_skip_cinematic():
+	if stage.has_node("StageIntro"):
+		resume()
+		stage.get_node("StageIntro").finish()
+	elif stage.has_method("can_skip_cinematic") and stage.can_skip_cinematic():
 		resume()
 		stage.skip_cinematic()
 

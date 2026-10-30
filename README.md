@@ -62,6 +62,8 @@ Godot 4.7.2 StableのStandard版で `project.godot` をインポートし、F5�
 
 ポーズ中は再開、操作設定、やり直し、表示切替、ステージ選択への帰還を選べます。ヒントを持つステージではヒントも切り替えられます。
 
+全6ステージの入場時は、キャラ周辺だけを円形に見せ、1.4倍に拡大して0.5秒間停止します。その後0.2秒で通常の画面に戻し、戻り始めに操作と敵・ギミックの動きを再開します。カメラはステージ内に収まる範囲でキャラへ寄せます。死亡・リトライ・部屋移動では再生せず、ステージ6は敵紹介の後に再生します。「動きを減らす」設定では拡大と復帰アニメーションを省きます。
+
 映像演出を省略するときは、一度ポーズメニューを開いて「演出をスキップ」を選びます。第1面の減速を省略してもダッシュ入力待ちは残り、ダッシュや着地そのものは省略できません。[共通スキップ仕様](docs/cinematic-skip.md)に境界を記録しています。
 
 ## 素材の差し替え
@@ -75,7 +77,7 @@ Godot 4.7.2 StableのStandard版で `project.godot` をインポートし、F5�
 Python 3の標準ライブラリだけで、作業コピーと検証専用の保存先を作って実行できます。実際のプレイデータには書き込みません。Godotの実行ファイルを指定してください。
 
 ```sh
-python tests/run_checks.py --godot /path/to/godot --smoke --render game_audio_test.gd tutorial_redesign_test.gd variable_jump_test.gd game_progress_test.gd stage_select_test.gd
+python tests/run_checks.py --godot /path/to/godot --smoke --render stage_intro_test.gd game_audio_test.gd tutorial_redesign_test.gd variable_jump_test.gd game_progress_test.gd stage_select_test.gd
 python tests/run_checks.py --godot /path/to/godot --timeout 240 stage_2_test.gd stage_3_test.gd stage_4_test.gd stage_5_test.gd
 ```
 
