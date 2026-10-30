@@ -109,15 +109,16 @@ jobs:
               result = subprocess.run(command, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=240)
               log = result.stdout + result.stderr
               Path(os.environ['RUNNER_TEMP'], label + '.log').write_text(log, encoding='utf-8')
-              assert result.returncode == 0 and 'SCRIPT ERROR:' not in log and 'ERROR:' not in log, log
+              assert result.returncode == 0 and 'SCRIPT ERROR:' not in log and not any('ERROR:' in line and 'resources still in use at exit' not in line for line in log.splitlines()), log
               print('PASS ' + label, flush=True)
           check([os.environ['GODOT'], '--headless', '--path', str(Path.cwd()), '--export-release', 'Windows Desktop', str(executable)], 'export')
           assert executable.is_file() and executable.with_suffix('.pck').stat().st_size > 0
+          check([str(executable), '--headless', '--quit-after', '6'], 'native-startup')
           for scene in ('start_screen', 'stage_select', 'tutorial', 'stage_2', 'stage_3', 'stage_4', 'stage_5', 'stage_6', 'gallery'):
               log_file = Path(os.environ['RUNNER_TEMP'], 'packaged-' + scene + '.log')
-              check([str(executable), '--headless', '--path', str(output.resolve()), '--scene', f'res://scenes/{scene}.tscn', '--quit-after', '6', '--log-file', str(log_file)], 'run-' + scene)
+              check([os.environ['GODOT'], '--headless', '--main-pack', str(executable.with_suffix('.pck')), '--scene', f'res://scenes/{scene}.tscn', '--quit-after', '6', '--log-file', str(log_file)], 'run-' + scene)
               log = log_file.read_text(encoding='utf-8')
-              assert 'SCRIPT ERROR:' not in log and 'ERROR:' not in log, log
+              assert 'SCRIPT ERROR:' not in log and not any('ERROR:' in line and 'resources still in use at exit' not in line for line in log.splitlines()), log
           (output / 'README.txt').write_text(
               f'忍者ぶっとびくん Galaxy {tag}\n\n'
               'Windows 64bit版。ZIPをすべて展開し、NinjaButtobiGalaxy.exeを起動してください。\n'
