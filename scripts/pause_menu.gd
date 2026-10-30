@@ -68,6 +68,7 @@ func open() -> void:
 	confirmation.hide()
 	_update_hints_button()
 	get_tree().paused = true
+	GameAudio.play_menu_open()
 	menu.get_node("Resume").grab_focus()
 
 
