@@ -1,207 +1,351 @@
 extends Node2D
 
-const SECTION_HEIGHT := 720.0
-const START_Y := 640.0
-const TITLES := ["壁をつないで", "バネで上へ", "空中ダッシュの連鎖", "追加ジャンプの階段", "生物と登る", "空中の分かれ道", "壁から空中のつなぎ", "バネの左折り返し", "靴と相棒でジグザグ", "相棒と壁キック", "横風と反射", "大きな折り返し", "壁から長い回廊へ", "逆風の反射と左折り返し", "運んで横断し壁へ", "壁から二段の空中資源へ", "反射と追加ジャンプの横断", "左の壁から風の入口へ", "傘で風を渡る", "壁の上から空中を継ぐ", "バネと靴で左へ", "反射から次のバネへ", "相棒と靴から壁へ", "風の上から下を回る", "反射から上の空中資源へ", "投げて登り再び運ぶ", "回復を取りに折り返す", "張り出しの下から", "反射から風を越える", "滑空から上昇風へ", "上空の折り返し", "壁の上の相棒", "回復からバネへ", "反射と壁の頂上"]
-const HINTS := [
-	"Shiftで目の前の壁を掴んで上へ。広い足場で休み、ジャンプと上ダッシュで次の旗へ。",
-	"バネで上昇。空中で左右を調整し、次の足場へ着地しよう。",
-	"空中の緑のクリスタルでダッシュ回復。上へのダッシュをつなごう。",
-	"紫の靴で追加ジャンプ。上昇が止まるころにもう一度跳び、上ダッシュで足場へ。",
-	"緑の生物をShiftで保持すると追加ジャンプ。追加ジャンプと上ダッシュで足場へ。",
-	"入口のバネから上ダッシュ。緑のダッシュ回復か紫の追加ジャンプをつないで次の旗へ。",
-	"広い入口から壁を登り、休憩から回復ダッシュへ。運んだ相棒も使える。",
-	"右のバネで左の休憩へ。小さなバネから次の旗を目指そう。",
-	"靴と相棒の追加ジャンプを重ね、右上の棚から左へ折り返そう。",
-	"相棒を持って壁から壁へ。上の休憩から追加ジャンプとダッシュをつなごう。",
-	"バネで反射板の上へ回り込み、反射後は横風を見て左の旗へ。",
-	"靴で右へ渡り、バネから回復ダッシュや相棒の追加ジャンプで左の次の旗へ。",
-	"壁の上から回復ダッシュ。長い棚を右へ進み、バネで次の旗へ。",
-	"バネから反射板の上へ。広い棚を左へ横断し、次のバネへ。",
-	"相棒と靴の追加ジャンプで二度渡り、相棒を置いて左の壁を登ろう。",
-	"相棒を持って壁キック。上の棚から相棒ジャンプと回復ダッシュへ。",
-	"反射で左の棚へ。相棒と靴を重ねて右のバネへ渡ろう。",
-	"靴と相棒で左の棚へ。相棒を置いて壁を登り、バネと回復ダッシュで次の旗へ。",
-	"傘で上昇風へ入り、右の棚で休む。バネから次の風へ入り、左の旗へ滑空しよう。",
-	"壁を登って回復ダッシュへ。広い棚から右の旗へ渡ろう。",
-	"バネで左上へ。靴のジャンプで上の旗へ。",
-	"バネで丸い反射の上へ。右の棚に着地して次のバネへ。",
-	"相棒と靴で左の棚へ。対向壁を登り、上の旗へ。",
-	"傘で風へ。左上で休み、左下の棚から靴で折り返そう。",
-	"バネと反射で上の棚へ。回復ダッシュで次の旗へ。",
-	"相棒を上へ運び、壁を登って再取得。右の棚へ渡ろう。",
-	"左の回復や運んだ相棒で上の棚へ。右の壁を登ろう。",
-	"張り出しの下からバネへ。上で休み、次の壁へ。",
-	"反射板の上へ回り込み、左の風と靴をつないで旗へ。",
-	"傘で左下へ滑空。向こうの風から右上へ。",
-	"靴から反射へ。回復をつないで次の旗へ。",
-	"壁を登り、上の相棒と左上の旗へ。",
-	"左の回復や運んだ相棒で棚へ。バネで右上へ。",
-	"靴から反射し、棚の先の壁へ。上のバネで到着台へ。",
-]
+enum Phase { RUN, WALK, BOARD, FADE, CLEAR_INTRO, CLEAR }
+const CLEAR_IMAGES := [preload("res://assets/ui/stage_1_clear/background.png"), preload("res://assets/ui/stage_1_clear/rocket.png"), preload("res://assets/ui/stage_1_clear/text.png")]
+const HINTS := ["壁を登り、トゲを越えて右上へ。", "右のバネから壁キックとダッシュで上へ。", "中央のトゲを越えて右へ。左には寄り道。", "青い板は乗ると崩れます。足場をつないで上へ。", "床と空中のトゲを見て、右へ渡ろう。", "バネの上昇から柱を越えて、右上へ。", "ロケットへ近づこう。", "空中でダッシュを回復して、巻物を持ち帰ろう。", "崩れる板を渡り、右上の巻物へ。", "赤いバンパーで跳ね、右上の巻物へ。"]
 
-var checkpoint_index := 0
+var room_index := 0
+var phase := Phase.RUN
 var completed := false
 var hints_visible := false
-var peak_y := START_Y
+var rooms: Node2D
+var camera: Camera2D
+var _phase_elapsed := 0.0
+var _clear_motion_time := 0.0
+var _clear_accept_ready := false
+var _death_pending := false
+var _leaving := false
+var _info: Label
+var _hint: Label
+var _fade: ColorRect
+var _clear_art: Control
+var _clear_layers: Array[TextureRect] = []
+var _return_button: Button
 
 @onready var player: PlayerController = $Player
-@onready var camera: Camera2D = $Camera2D
-@onready var checkpoints: Node2D = $Checkpoints
 
 
 func _ready() -> void:
 	player.get_node("Camera2D").enabled = false
 	player.respawned.connect(_on_respawned)
-	$Goal.activated.connect(_on_completed)
-	$Goal.set_progress(0, 0, "", "", false)
-	for point in checkpoints.get_children():
-		var sign := Node2D.new()
-		sign.name = "Sign"
-		point.add_child(sign)
-		sign.draw.connect(_draw_checkpoint.bind(sign, point.get_index()))
-		point.get_node("Label").add_theme_color_override("font_color", ArtDraw.CREAM if point.get_index() >= 19 else ArtDraw.INK)
-	_set_checkpoint(0)
-	player.respawn()
+	rooms = Node2D.new()
+	rooms.name = "Rooms"
+	rooms.z_index = -10
+	rooms.process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_child(rooms)
+	for index in 10:
+		_build_room(index)
+	camera = Camera2D.new()
+	camera.name = "Camera2D"
+	camera.process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_child(camera)
 	camera.make_current()
-	_update_hud()
-	set_hints_visible(false)
+	var sky := CanvasLayer.new()
+	sky.name = "Sky"
+	sky.layer = -20
+	sky.process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_child(sky)
+	var backdrop := preload("res://scripts/ascent_backdrop.gd").new()
+	backdrop.name = "Backdrop"
+	sky.add_child(backdrop)
+	_build_ui()
+	_enter_room(0, Vector2(100, 614))
 	StageIntro.play(self, player, camera)
 
 
-func _physics_process(delta: float) -> void:
-	# 更新は着地時のみ。通過しただけでは復帰地点を変えない。
-	if player.is_on_floor():
-		for index in range(checkpoint_index + 1, checkpoints.get_child_count()):
-			var point: Vector2 = checkpoints.get_child(index).position
-			if absf(player.position.x - point.x) < 130.0 and absf(player.position.y - (point.y - 26.0)) < 6.0:
-				_set_checkpoint(index)
-	peak_y = minf(peak_y, player.position.y)
-	# 最高到達点からの大きな落下、または復帰地点より下への落下で再開。
-	var checkpoint_y: float = checkpoints.get_child(checkpoint_index).position.y
-	var checkpoint_fall_margin := 420.0 if checkpoint_index == 29 else 180.0
-	if player.position.y > minf(checkpoint_y + checkpoint_fall_margin, peak_y + SECTION_HEIGHT - 80.0):
-		player.die()
-		return
-	var target_y := _camera_target_y()
-	camera.position.x = lerpf(camera.position.x, _camera_target_x(), 1.0 - exp(-8.0 * delta))
-	camera.position.y = lerpf(camera.position.y, target_y, 1.0 - exp(-8.0 * delta))
-	_update_hud()
+func _build_room(index: int) -> void:
+	var room := Node2D.new()
+	room.name = "Room%d" % (index + 1)
+	room.position = TowerLandscape.origin(index)
+	rooms.add_child(room)
+	var landscape := TowerLandscape.new()
+	landscape.room_index = index
+	room.add_child(landscape)
+	for polygon in TowerLandscape.landforms(index):
+		var body := StaticBody2D.new()
+		var collision := CollisionPolygon2D.new()
+		collision.polygon = polygon
+		body.add_child(collision)
+		room.add_child(body)
+	var spikes := Area2D.new()
+	spikes.name = "Spikes"
+	spikes.collision_layer = 0
+	for triangle in TowerLandscape.spike_triangles(index):
+		var collision := CollisionPolygon2D.new()
+		collision.polygon = triangle
+		spikes.add_child(collision)
+	room.add_child(spikes)
+	spikes.body_entered.connect(func(body):
+		if body == player and room_index == index and phase == Phase.RUN:
+			_queue_death()
+	)
+	for rect in TowerLandscape.planks(index):
+		var plank := CrumblingPlatform.new()
+		plank.position = rect.position
+		plank.size = rect.size
+		plank.player = player
+		room.add_child(plank)
+	for spring in TowerLandscape.springs(index):
+		var object := preload("res://scenes/spring.tscn").instantiate()
+		object.position = Vector2(spring.x, spring.y)
+		object.spring_speed = spring.z
+		room.add_child(object)
+	for location in TowerLandscape.crystals(index):
+		var crystal := preload("res://scenes/refill_crystal.tscn").instantiate()
+		crystal.position = location
+		room.add_child(crystal)
+	if TowerLandscape.SCROLLS.has(index):
+		var scroll := preload("res://scenes/scroll_collectible.tscn").instantiate() as ScrollCollectible
+		scroll.name = "Scroll"
+		scroll.position = TowerLandscape.SCROLLS[index]
+		scroll.stage_id = "tower"
+		scroll.scroll_id = TowerLandscape.SCROLL_IDS[index]
+		room.add_child(scroll)
+	if index == 9:
+		var bumper := preload("res://scenes/pinball_spring.tscn").instantiate()
+		bumper.name = "Bumper"
+		bumper.position = Vector2(1360, 690)
+		bumper.minimum_bounce_speed = 1200
+		bumper.maximum_bounce_speed = 1450
+		room.add_child(bumper)
 
 
-func _camera_target_x() -> float:
-	if checkpoint_index >= 19:
-		var lead := -340.0 if checkpoint_index == 20 else (-200.0 if checkpoint_index in [22, 23] else 100.0)
-		if checkpoint_index == 25: lead = 450.0
-		if checkpoint_index == 33 and player.position.y < -42300: lead = -250.0
-		if checkpoint_index == 29: lead = 450.0 if player.position.y < -37300.0 else -450.0
-		if checkpoint_index == 20 and player.position.y < -25680.0: lead = 100.0
-		if checkpoint_index == 21 and player.position.y < -27200.0 and player.position.x > 1000.0: lead = 400.0
-		if checkpoint_index == 23 and player.position.y > -30350.0: lead = 0.0
-		return clampf(player.position.x + lead, -2600.0 if checkpoint_index >= 29 else -2000.0, 2400.0)
-	if checkpoint_index == 18:
-		var lead := 0.0
-		if player.position.y < -24000.0:
-			if player.position.x > 400.0: lead = -450.0
-		elif player.position.y < -23100.0 and player.position.x < 400.0:
-			lead = 100.0
-		return clampf(player.position.x + lead, -800.0, 1400.0)
-	if checkpoint_index >= 12:
-		var lead := 240.0 if checkpoint_index == 17 or (checkpoint_index in [13, 16] and player.position.x >= 100.0) else 0.0
-		if checkpoint_index == 16 and player.position.y < checkpoints.get_child(16).position.y - 640.0: lead = 0.0
-		return clampf(player.position.x - lead, -800.0, 1400.0)
-	if checkpoint_index not in [2, 7, 11]:
-		return 640.0
-	# 寄り道の着地点を、踏切やバネに触れる前に見せる。
-	var follow_from := 600.0 if checkpoint_index == 7 else 360.0
-	return clampf(640.0 + (player.position.x - follow_from) * 3.0, 0.0, 640.0)
+func _build_ui() -> void:
+	var hud := CanvasLayer.new()
+	hud.name = "HUD"
+	hud.layer = 10
+	add_child(hud)
+	_info = Label.new()
+	_info.position = Vector2(24, 18)
+	_info.add_theme_font_size_override("font_size", 19)
+	_info.add_theme_color_override("font_outline_color", Color.BLACK)
+	_info.add_theme_constant_override("outline_size", 5)
+	hud.add_child(_info)
+	_hint = Label.new()
+	_hint.position = Vector2(24, 50)
+	_hint.add_theme_color_override("font_outline_color", Color.BLACK)
+	_hint.add_theme_constant_override("outline_size", 4)
+	hud.add_child(_hint)
+	var pause := Button.new()
+	pause.name = "PauseButton"
+	pause.focus_mode = Control.FOCUS_NONE
+	pause.text = "ポーズ [Esc]"
+	pause.position = Vector2(1060, 18)
+	pause.size = Vector2(196, 44)
+	pause.pressed.connect($PauseMenu.open)
+	hud.add_child(pause)
+	var ending := CanvasLayer.new()
+	ending.layer = 20
+	add_child(ending)
+	_fade = ColorRect.new()
+	_fade.size = Vector2(1280, 720)
+	_fade.color = Color(0, 0, 0, 0)
+	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ending.add_child(_fade)
+	_clear_art = Control.new()
+	_clear_art.size = Vector2(1280, 720)
+	_clear_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ending.add_child(_clear_art)
+	for texture in CLEAR_IMAGES:
+		var image := TextureRect.new()
+		image.texture = texture
+		image.size = Vector2(1280, 720)
+		image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_clear_art.add_child(image)
+		_clear_layers.append(image)
+	_return_button = Button.new()
+	_return_button.text = "ステージ選択へ"
+	_return_button.position = Vector2(450, 626)
+	_return_button.size = Vector2(380, 62)
+	_return_button.theme = preload("res://assets/ui/menu-theme.tres")
+	_return_button.pressed.connect(_return_to_select)
+	ending.add_child(_return_button)
+	_clear_art.hide()
+	_return_button.hide()
+	set_hints_visible(false)
 
 
-func _camera_target_y() -> float:
-	if checkpoint_index >= 19:
-		var upper_glide := checkpoint_index == 23 and player.position.y < -30350.0
-		var offset := 0.0 if upper_glide else -300.0 + maxf(player.velocity.y, 0.0) * 0.2
-		if checkpoint_index == 27 and player.position.y > -34400.0: offset = -80.0
-		if checkpoint_index == 29: offset = 40.0 if player.position.y < -37300.0 else 80.0
-		return clampf(player.position.y + offset, $Goal.position.y - 280.0, 360.0)
-	if checkpoint_index == 18:
-		var offset := -80.0
-		if player.position.y < -23150.0 and (player.position.x < 500.0 or player.position.y < -24280.0):
-			offset = 100.0
-		elif player.position.y > -23050.0 and player.position.y < -22800.0:
-			offset = -260.0
-		return clampf(player.position.y + offset, checkpoints.get_child(19).position.y - 280.0, 360.0)
-	# 左上の任意枝では床と帰路を残し、主経路の上段棚では再び追従する。
-	if checkpoint_index == 16 and player.position.x < 100.0 and player.position.y > checkpoints.get_child(16).position.y - 640.0:
-		return clampf(checkpoints.get_child(16).position.y - 300.0, $Goal.position.y - 240.0, 360.0)
-	var look_up := 300.0 if checkpoint_index >= 12 else (260.0 if checkpoint_index == 8 else (160.0 if checkpoint_index == 11 else (120.0 if checkpoint_index == 3 else 80.0)))
-	if checkpoint_index == 16 and player.position.y < checkpoints.get_child(16).position.y - 400.0: look_up = 225.0
-	# バネに乗る前に、反射板と最初の着地点を見せる。
-	if checkpoint_index in [7, 10] or (checkpoint_index == 11 and player.position.y < -9920.0):
-		look_up = 300.0
-	return clampf(player.position.y - look_up, $Goal.position.y - 240.0, 360.0)
-
-
-func _set_checkpoint(index: int) -> void:
-	checkpoint_index = index
-	var point: Vector2 = checkpoints.get_child(index).position
-	player.set_respawn_position(point + Vector2(0, -28))
-	for child in checkpoints.get_children():
-		var mark := "↺ " if child.get_index() == index else ("✓ " if child.get_index() < index else "")
-		child.get_node("Label").text = mark + "%02d" % (child.get_index() + 1)
-		child.get_node("Sign").queue_redraw()
-
-
-func _draw_checkpoint(canvas: Node2D, index: int) -> void:
-	var reached := index <= checkpoint_index
-	var color := ArtDraw.GOLD if index == checkpoint_index else ArtDraw.MINT
-	ArtDraw.box(canvas, Rect2(-106, -5, 20, 5), ArtDraw.CREAM, 1)
-	canvas.draw_line(Vector2(-96, -47), Vector2(-96, -3), ArtDraw.INK, 6, true)
-	canvas.draw_line(Vector2(-96, -47), Vector2(-96, -3), ArtDraw.CREAM, 2, true)
-	var flag := PackedVector2Array([Vector2(-96, -47), Vector2(-63, -36), Vector2(-96, -25)])
-	if reached:
-		ArtDraw.polygon(canvas, flag, color)
-	else:
-		flag.append(flag[0])
-		canvas.draw_polyline(flag, ArtDraw.INK, 5, true)
-		canvas.draw_polyline(flag, ArtDraw.CREAM, 2, true)
-	ArtDraw.footprints(canvas, Vector2(0, 5), 0.5)
+func _enter_room(index: int, spawn: Vector2) -> void:
+	room_index = index
+	for room in rooms.get_children():
+		room.visible = room.get_index() == index
+		room.process_mode = Node.PROCESS_MODE_PAUSABLE if room.visible else Node.PROCESS_MODE_DISABLED
+	player.set_respawn_position(TowerLandscape.origin(index) + spawn)
+	player.respawn(true)
+	_update_camera()
 
 
 func _on_respawned() -> void:
-	$Goal.reset_for_respawn()
-	for crystal in $Items.get_children():
-		if crystal.has_method("reset_for_respawn") and not crystal is Grabbable:
-			crystal.reset_for_respawn()
-	peak_y = player.position.y
-	camera.position = Vector2(_camera_target_x(), _camera_target_y())
-	camera.reset_smoothing()
+	if completed:
+		GameAudio.reset_scene()
+	completed = false
+	phase = Phase.RUN
+	_phase_elapsed = 0.0
+	_clear_motion_time = 0.0
+	_death_pending = false
+	_clear_accept_ready = false
+	player.controls_enabled = true
+	player.visuals.modulate.a = 1.0
+	get_tree().paused = false
+	for object in rooms.get_child(room_index).get_children():
+		if object.has_method("reset_for_respawn"):
+			object.reset_for_respawn()
+	GameAudio.set_quiet(room_index >= 7)
+	if is_instance_valid(_fade):
+		_fade.color.a = 0.0
+		_clear_art.hide()
+		_return_button.hide()
+	_update_camera()
+
+
+func _menu_active() -> bool:
+	return $PauseMenu.overlay.visible or InputSettings.panel.visible
+
+
+func _physics_process(delta: float) -> void:
+	if _menu_active():
+		return
+	if phase == Phase.WALK:
+		var target := TowerLandscape.origin(6).x + 1272
+		player.velocity.x = minf(150, maxf(0, target - player.position.x) / delta)
+		player.velocity.y += player.gravity_acceleration * delta
+		player._move_player()
+		if absf(player.position.x - target) < 2:
+			phase = Phase.BOARD
+			_phase_elapsed = 0
+	elif phase == Phase.RUN:
+		var local := player.position - TowerLandscape.origin(room_index)
+		for connection in TowerLandscape.CONNECTIONS:
+			for side in [0, 3]:
+				if connection[side] == room_index and connection[side + 1].has_point(local):
+					var destination: int = 3 - side
+					_enter_room(connection[destination], connection[destination + 2])
+					return
+		if local.y > TowerLandscape.SIZES[room_index].y + 60 or local.y < -100 or local.x < -80 or local.x > TowerLandscape.SIZES[room_index].x + 80:
+			_queue_death()
+		elif room_index == 6 and local.x >= 1030 and player.is_on_floor():
+			phase = Phase.WALK
+			_phase_elapsed = 0
+			player.controls_enabled = false
+			player.velocity = Vector2.ZERO
+	_update_camera()
+
+
+func _queue_death() -> void:
+	if _death_pending:
+		return
+	_death_pending = true
+	_finish_death.call_deferred()
+
+
+func _finish_death() -> void:
+	if _death_pending and phase == Phase.RUN:
+		player.die()
+
+
+func _process(delta: float) -> void:
+	if _menu_active():
+		return
+	_phase_elapsed += delta
+	match phase:
+		Phase.BOARD:
+			player.visuals.modulate.a = maxf(0, 1 - _phase_elapsed / 0.35)
+			if _phase_elapsed >= 0.35:
+				_complete()
+		Phase.FADE:
+			_fade.color.a = minf(1, _phase_elapsed / 0.45)
+			if _phase_elapsed >= 0.45:
+				_start_clear_intro()
+		Phase.CLEAR_INTRO:
+			_clear_art.modulate.a = minf(1, _phase_elapsed / 0.65)
+			if _phase_elapsed >= 0.65:
+				_show_clear()
+		Phase.CLEAR:
+			if not Input.is_action_pressed("ui_accept") and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+				_clear_accept_ready = true
+				_return_button.disabled = false
+				if get_viewport().gui_get_focus_owner() == null:
+					_return_button.grab_focus()
+	if phase in [Phase.CLEAR_INTRO, Phase.CLEAR] and DisplayServer.accessibility_should_reduce_animation() != 1:
+		_clear_motion_time += delta
+		_clear_layers[0].position.x = sin(_clear_motion_time * 0.35) * 2
+		_clear_layers[1].position.y = sin(_clear_motion_time * 1.3) * 6
+		_clear_layers[2].position.y = sin(_clear_motion_time * 0.55) * 2
+	_info.text = "星のぼりの塔　%s　　巻物 %d / 4　　ダッシュ %s　壁 %.1f" % [TowerLandscape.TITLES[room_index], CollectionProgress.get_count("tower"), "●" if player.is_dash_ready() else "○", player.get_wall_stamina()]
 
 
 func set_hints_visible(value: bool) -> void:
 	hints_visible = value
-	$HUD/Hint.visible = value
-	$Goal/Bubble.visible = value
-	for hint in $Hints.get_children():
-		hint.visible = value
+	if is_instance_valid(_hint):
+		_hint.text = HINTS[room_index]
+		_hint.visible = value
 
 
-func _on_completed() -> void:
+func _update_camera() -> void:
+	if not is_instance_valid(camera):
+		return
+	var origin := TowerLandscape.origin(room_index)
+	var size: Vector2 = TowerLandscape.SIZES[room_index]
+	camera.position = Vector2(clampf(player.position.x, origin.x + 640, origin.x + size.x - 640), clampf(player.position.y, origin.y + 360, origin.y + size.y - 360))
+	camera.reset_smoothing()
+	set_hints_visible(hints_visible)
+
+
+func _complete() -> void:
 	completed = true
 	CollectionProgress.mark_cleared("tower")
-	$HUD/Completion.show()
-	$Goal.set_progress(0, 0, "", "", true)
+	phase = Phase.FADE
+	_phase_elapsed = 0
+	player.velocity = Vector2.ZERO
+	player.controls_enabled = false
+	get_tree().paused = true
 
 
-func _update_hud() -> void:
-	$HUD/Info.position = Vector2(24, 620) if checkpoint_index >= 19 else Vector2(24, 16)
-	if checkpoint_index == 22 or checkpoint_index >= 25 or (checkpoint_index == 21 and player.position.y < -27200.0):
-		$HUD/Info.position.y = 16
-	if checkpoint_index == 33 and player.position.y < -42300: $HUD/Info.position.y = 250
-	$HUD/Info/Rows/Title.text = "星のぼりの塔　%02d / %02d" % [checkpoint_index + 1, checkpoints.get_child_count()]
-	$HUD/Info/Rows/Status.text = "高度 %dm　ダッシュ %s　追加ジャンプ %d" % [maxi(0, int((START_Y - player.position.y) / 10.0)), "●" if player.is_dash_ready() else "○", player.get_available_extra_jump_count()]
-	$HUD/Info/Rows/Stamina.value = player.get_wall_stamina()
-	$HUD/Hint.position.y = 16 if checkpoint_index == 19 or (checkpoint_index == 24 and player.position.y < -31700.0) else 110
-	if checkpoint_index == 29 and (player.position.x < -1000.0 or player.position.y < -37300.0): $HUD/Hint.position.y = 560
-	if checkpoint_index >= 31: $HUD/Hint.position.y = 140 if checkpoint_index == 31 else 180
-	$HUD/Hint.text = TITLES[checkpoint_index] + "：" + HINTS[checkpoint_index]
+func _start_clear_intro() -> void:
+	GameAudio.play_clear()
+	phase = Phase.CLEAR_INTRO
+	_phase_elapsed = 0
+	_clear_art.modulate.a = 0
+	_clear_art.show()
+
+
+func _show_clear() -> void:
+	if not completed:
+		_complete()
+	GameAudio.play_clear()
+	phase = Phase.CLEAR
+	_phase_elapsed = 0
+	_fade.color.a = 1
+	_clear_art.modulate.a = 1
+	_clear_art.show()
+	_clear_accept_ready = false
+	_return_button.disabled = true
+	_return_button.show()
+
+
+func can_skip_cinematic() -> bool:
+	return phase in [Phase.WALK, Phase.BOARD, Phase.FADE, Phase.CLEAR_INTRO]
+
+
+func skip_cinematic() -> void:
+	if can_skip_cinematic():
+		_show_clear()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if phase == Phase.CLEAR and _clear_accept_ready and not _menu_active() and event.is_action_pressed("ui_accept") and not event.is_echo():
+		get_viewport().set_input_as_handled()
+		_return_to_select()
+
+
+func _return_to_select() -> void:
+	if _leaving or not _clear_accept_ready:
+		return
+	_leaving = true
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/stage_select.tscn")
+
+
+func _exit_tree() -> void:
+	if phase != Phase.RUN:
+		get_tree().paused = false

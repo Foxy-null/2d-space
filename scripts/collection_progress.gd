@@ -4,7 +4,8 @@ signal progress_changed
 
 const STAGE_IDS := ["tutorial", "tower", "gravity", "companion", "canyon", "chaser"]
 const TUTORIAL_SCROLL := "castle_summit_01"
-const TOTALS := {"tutorial": 1, "tower": 8, "gravity": 10, "companion": 12, "canyon": 12, "chaser": 0}
+const TOWER_SCROLLS := ["spring_alcove", "crystal_cavern", "crumbling_cavern", "bumper_cavern"]
+const TOTALS := {"tutorial": 1, "tower": 4, "gravity": 10, "companion": 12, "canyon": 12, "chaser": 0}
 var save_path := "user://collection_progress.cfg"
 var _collected: Dictionary = {}
 var _cleared: Array[String] = []
@@ -66,7 +67,7 @@ func mark_cleared(stage_id: String) -> Error:
 
 func _commit(scrolls: Dictionary, cleared: Array[String]) -> Error:
 	var config := ConfigFile.new()
-	config.set_value("progress", "version", 2)
+	config.set_value("progress", "version", 3)
 	config.set_value("progress", "started", true)
 	config.set_value("progress", "cleared", cleared)
 	for stage in STAGE_IDS:
@@ -89,8 +90,11 @@ func load_progress() -> void:
 	var config := ConfigFile.new()
 	if config.load(save_path) != OK:
 		return
+	var old_tower: bool = config.get_value("progress", "version", 1) != 3
 	var collected: Dictionary = {}
 	for stage in STAGE_IDS:
+		if stage == "tower" and old_tower:
+			continue
 		var scrolls = config.get_value(stage, "scrolls", [])
 		if not scrolls is Array:
 			continue
@@ -105,7 +109,7 @@ func load_progress() -> void:
 	var saved_clears = config.get_value("progress", "cleared", [])
 	if saved_clears is Array:
 		for stage in saved_clears:
-			if stage is String and stage in STAGE_IDS and stage not in cleared:
+			if stage is String and stage in STAGE_IDS and stage not in cleared and not (stage == "tower" and old_tower):
 				cleared.append(stage)
 	_collected = collected
 	_cleared = cleared
@@ -163,4 +167,4 @@ func start_new_game() -> Error:
 
 
 func _valid_id(stage_id: String, scroll_id: String) -> bool:
-	return stage_id in STAGE_IDS and not scroll_id.strip_edges().is_empty() and scroll_id.length() <= 128 and (stage_id != "tutorial" or scroll_id == TUTORIAL_SCROLL)
+	return stage_id in STAGE_IDS and not scroll_id.strip_edges().is_empty() and scroll_id.length() <= 128 and (stage_id != "tutorial" or scroll_id == TUTORIAL_SCROLL) and (stage_id != "tower" or scroll_id in TOWER_SCROLLS)

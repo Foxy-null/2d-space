@@ -28,13 +28,13 @@ func _tower_retry(pause: int) -> void:
 	world = load("res://scenes/stage_2.tscn").instantiate()
 	root.add_child(world)
 	player = world.player
-	world._set_checkpoint(1)
-	player.respawn()
+	world._enter_room(1, Vector2(950, 614))
 	await _step(6)
 	var launches := [0, 0]
-	world.get_node("Items/Item19").launched.connect(func(body):
+	var spring: Area2D = world.rooms.get_child(1).find_children("*", "Area2D", false, false).filter(func(node): return node.has_signal("launched"))[0]
+	spring.launched.connect(func(body):
 		launches[0] += 1
-		if body.position.x < 930:
+		if body.position.x < TowerLandscape.origin(1).x + 1030:
 			launches[1] += 1
 	)
 	Input.action_press("move_right")
@@ -43,7 +43,7 @@ func _tower_retry(pause: int) -> void:
 	await _step()
 	_release()
 	await _step(6)
-	_check(launches[1] == 0 and player.position.distance_to(Vector2(900, -106)) < 3 and absf(player.velocity.y) < 1, "R at spring contact restores the entrance without a remote launch: %d" % pause)
+	_check(launches[1] == 0 and player.position.distance_to(TowerLandscape.origin(1) + Vector2(950, 614)) < 3 and absf(player.velocity.y) < 1, "R at spring contact restores the entrance without a remote launch: %d" % pause)
 	var before: int = launches[0]
 	Input.action_press("move_right")
 	for frame in 40:

@@ -36,7 +36,7 @@ Godot 4.7.2 StableのStandard版で `project.godot` をインポートし、F5�
 | 面 | 内容 | 巻物 |
 | --- | --- | --- |
 | 1：チュートリアル | 城から始まる3部屋。移動・ジャンプ・壁登りの後、崩れる橋で右上ダッシュを学ぶ | 1 |
-| 2：星のぼりの塔 | 全34区間を上昇するコース。壁、ばね、空中資源と相棒をつなぐ | 8 |
+| 2：星のぼりの塔 | 主経路7室と寄り道3室。壁キック、ばね、崩れる青い薄板をつなぎ、ロケットへ登る | 4 |
 | 3：壁キックと重力 | 全37部屋。床と天井を切り替え、壁キックと風を使う | 10 |
 | 4：星渡りの回廊 | 全36部屋。相棒を出口へ運び、投げ渡しや持ち替えを使う | 12 |
 | 5：暴風バンパー峡谷 | 全34部屋。風と184個のバンパーを使う高難度コース | 12 |
@@ -46,9 +46,11 @@ Godot 4.7.2 StableのStandard版で `project.godot` をインポートし、F5�
 
 ![第1面の開始地点](docs/screenshots/tutorial-stage-1/room1-start.png)
 
-第1面のクリア画面は決定で選択へ戻ります。ステージ2〜5は既存の小さなクリア通知を表示し、そのまま練習を続けられます。ステージ6も小さな通知を表示し、決着後は操作を止めます。Enter・通知のボタン・Y/△で選択へ戻れます。全6面でクリア印を保存します。
+第1・第2面のクリア画面は決定で選択へ戻ります。第2面ではロケットへ近づくと忍者が自動で歩いて乗り込み、暗転からクリア画面へ進みます。ステージ3〜5は小さなクリア通知を表示し、そのまま練習を続けられます。ステージ6も小さな通知を表示し、決着後は操作を止めます。Enter・通知のボタン・Y/△で選択へ戻れます。全6面でクリア印を保存します。
 
 確定した巻物とクリア印は終了後も残ります。巻物は触れた時点では仮取得で、安全な静止床へ0.2秒着地すると確定します。部屋・途中のチェックポイントは保存しません。
+
+第2面の青い薄板は下から通れず、乗って0.5秒で崩れ、崩壊後2秒で復活します。巻物は薄板の上では確定しません。部屋を行き来でき、最後に入った入口からやり直せます。寄り道3室ではA静版、主経路ではA通常版を流します。旧第2面の8本とクリア印は新コースへ引き継がず、他ステージの記録と設定は保ちます。
 
 ![全6面のステージ選択とクリア印](docs/screenshots/stage-selection.png)
 
@@ -81,6 +83,7 @@ Python 3の標準ライブラリだけで、作業コピーと検証専用の保
 ```sh
 python tests/run_checks.py --godot /path/to/godot --smoke --render stage_intro_test.gd game_audio_test.gd tutorial_redesign_test.gd variable_jump_test.gd game_progress_test.gd stage_select_test.gd
 python tests/run_checks.py --godot /path/to/godot --timeout 240 stage_2_test.gd stage_3_test.gd stage_4_test.gd stage_5_test.gd
+python tests/run_checks.py --godot /path/to/godot --timeout 120 stage_2_route_test.gd ascent_backdrop_test.gd
 ```
 
 `--render` は描画ありの第1面通しテストを行い、スクリーンショットを `deliverables/tutorial-validation/` へ保存します。Windowsでは描画用ウィンドウを非表示で起動します。描画にはOpenGLの利用できる環境が必要です。結果と確認範囲は [実装・検証記録](docs/tutorial-stage-1-implementation.md)を参照してください。
