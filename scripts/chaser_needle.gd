@@ -1,5 +1,7 @@
 extends Node2D
 
+signal embedded(at: Vector2, dangerous: bool)
+
 const TEXTURES := [
 	preload("res://assets/enemies/star-mountain/originals/sozai_a.png"),
 	preload("res://assets/enemies/star-mountain/originals/sozai_b.png"),
@@ -30,6 +32,7 @@ var picture: Sprite2D
 var neutral_left := 0.65
 var launch_straight_left := 0.2
 var tracking_left := 2.5
+var impact_left := 0.0
 
 
 func _ready() -> void:
@@ -62,6 +65,9 @@ func is_dangerous() -> bool:
 
 
 func advance(delta: float, player: PlayerController) -> void:
+	if impact_left > 0.0:
+		impact_left = maxf(0.0, impact_left - delta)
+		queue_redraw()
 	flew = false
 	previous_tip = tip_position()
 	if stuck:
@@ -165,6 +171,7 @@ func stick(at: Vector2, normal: Vector2, body: CollisionObject2D) -> void:
 		_set_picture(false)
 	if body is Grabbable:
 		previous_tip = tip_position()
+		embedded.emit(global_position, false)
 		return
 	if course.spawn_area.has_point(tip_position()):
 		temporary = true
@@ -180,6 +187,9 @@ func stick(at: Vector2, normal: Vector2, body: CollisionObject2D) -> void:
 	surface.add_child(collision)
 	add_child(surface)
 	previous_tip = tip_position()
+	impact_left = 0.3
+	queue_redraw()
+	embedded.emit(global_position, true)
 
 
 func pin_box(box: Grabbable, player: PlayerController) -> bool:
@@ -210,7 +220,19 @@ func pin_box(box: Grabbable, player: PlayerController) -> bool:
 	box.global_position = at
 	PhysicsServer2D.body_set_state(box.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, box.global_transform)
 	pinned_box = box
+	queue_redraw()
 	return true
+
+
+func _draw() -> void:
+	if not stuck or not is_dangerous():
+		return
+	var tip := Vector2(-length, 0)
+	# Match the exposed-tip damage rule; the shaft keeps its original artwork.
+	ArtDraw.polygon(self, PackedVector2Array([tip - Vector2(3, 0), tip + Vector2(14, -7), tip + Vector2(10, 0), tip + Vector2(14, 7)]), ArtDraw.CORAL, 2.0)
+	if impact_left > 0.0 and DisplayServer.accessibility_should_reduce_animation() != 1:
+		var radius := 8.0 + (1.0 - impact_left / 0.3) * 20.0
+		draw_arc(Vector2.ZERO, radius, 0, TAU, 18, Color(ArtDraw.GOLD, impact_left / 0.3), 2.0, true)
 
 
 func _exit_tree() -> void:

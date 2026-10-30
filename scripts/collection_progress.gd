@@ -4,7 +4,7 @@ signal progress_changed
 
 const STAGE_IDS := ["tutorial", "tower", "gravity", "companion", "canyon", "chaser"]
 const TUTORIAL_SCROLL := "castle_summit_01"
-const TOTALS := {"tutorial": 1, "tower": 8, "gravity": 10, "companion": 12, "canyon": 12, "chaser": 0}
+const TOTALS := {"tutorial": 1, "tower": 8, "gravity": 10, "companion": 12, "canyon": 12, "chaser": 6}
 var save_path := "user://collection_progress.cfg"
 var _collected: Dictionary = {}
 var _cleared: Array[String] = []

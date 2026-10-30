@@ -24,6 +24,7 @@ var _world: Node2D
 var _backdrop: StageBackdrop
 var _status: Label
 var _stamina: ProgressBar
+var _collection: Label
 var _hint: Label
 var _help: PanelContainer
 var _message: Label
@@ -60,6 +61,16 @@ var _condition: Label
 var _effects: Node2D
 var _effect_left := 0.0
 var _fade: ColorRect
+var _notice: Label
+var _notice_left := 0.0
+var _feedback_sound: AudioStreamPlayer
+var _needle_sound: AudioStreamPlayer
+var _feedback_tones: Dictionary = {}
+var _needle_sound_left := 0.0
+var _pulse_at := Vector2.ZERO
+var _pulse_left := 0.0
+var _pulse_color := ArtDraw.GOLD
+var _had_condition := false
 
 
 func _ready() -> void:
@@ -142,6 +153,34 @@ func _ready() -> void:
 	_condition = _text("", 18)
 	_condition.position = Vector2(28, 96)
 	$HUD.add_child(_condition)
+	_notice = _text("", 21)
+	_notice.name = "PlayerNotice"
+	_notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var notice_style := StyleBoxFlat.new()
+	notice_style.bg_color = Color("14243bed")
+	notice_style.border_color = ArtDraw.GOLD
+	notice_style.set_border_width_all(1)
+	notice_style.set_corner_radius_all(6)
+	notice_style.content_margin_left = 8
+	notice_style.content_margin_right = 8
+	notice_style.content_margin_top = 4
+	notice_style.content_margin_bottom = 4
+	_notice.add_theme_stylebox_override("normal", notice_style)
+	$HUD.add_child(_notice)
+	_feedback_sound = AudioStreamPlayer.new()
+	_feedback_sound.name = "FeedbackSound"
+	_feedback_sound.volume_db = -8.0
+	$HUD.add_child(_feedback_sound)
+	_needle_sound = AudioStreamPlayer.new()
+	_needle_sound.name = "NeedleImpactSound"
+	_needle_sound.volume_db = -18.0
+	_needle_sound.max_polyphony = 3
+	_needle_sound.stream = ArrivalSwitch._sound([1250.0, 850.0])
+	$HUD.add_child(_needle_sound)
+	var tones := {"ground": [220.0, 160.0], "hurt": [160.0, 110.0], "hit": [440.0, 660.0, 880.0], "escape": [494.0, 659.0], "defeat": [196.0, 147.0, 98.0], "recover": [660.0, 880.0]}
+	for cue in tones:
+		_feedback_tones[cue] = ArrivalSwitch._sound(tones[cue])
 	_fade = ColorRect.new()
 	_fade.size = get_viewport_rect().size
 	_fade.color = Color(0.02, 0.03, 0.08, 0.0)
@@ -156,6 +195,7 @@ func _ready() -> void:
 
 func _load_room(index: int) -> void:
 	_loading = true
+	_clear_feedback()
 	_generation += 1
 	_projectiles.clear()
 	if is_instance_valid(room):
@@ -213,9 +253,62 @@ func _load_room(index: int) -> void:
 
 func _process(delta: float) -> void:
 	_update_grab_hint()
+	if not get_tree().paused:
+		_notice_left = maxf(0.0, _notice_left - delta)
+		_pulse_left = maxf(0.0, _pulse_left - delta)
+		_needle_sound_left = maxf(0.0, _needle_sound_left - delta)
+		var condition := player.recovery_slow_left > 0.0 or player.movement_slow_left > 0.0
+		if _had_condition and not condition and not completed:
+			_feedback("状態回復", ArtDraw.MINT, player.position, "recover")
+		_had_condition = condition
+	_update_player_notice()
 	if not get_tree().paused or _game_over_pending or completed:
 		_effect_left = maxf(0.0, _effect_left - delta)
 	_effects.queue_redraw()
+
+
+func _feedback(text: String, color: Color, at: Vector2, cue: String) -> void:
+	_notice.text = text
+	_notice.add_theme_color_override("font_color", color)
+	(_notice.get_theme_stylebox("normal") as StyleBoxFlat).border_color = color
+	_notice_left = 1.25
+	_pulse_at = at
+	_pulse_left = 0.4
+	_pulse_color = color
+	_feedback_sound.stream = _feedback_tones[cue]
+	_feedback_sound.play()
+	_update_player_notice()
+
+
+func _update_player_notice() -> void:
+	if _notice_left <= 0.0:
+		_notice.text = "減速・回復低下" if player.movement_slow_left > 0.0 else ("回復低下" if player.recovery_slow_left > 0.0 else "")
+		_notice.add_theme_color_override("font_color", ArtDraw.GOLD)
+		(_notice.get_theme_stylebox("normal") as StyleBoxFlat).border_color = ArtDraw.GOLD
+	_notice.visible = not _notice.text.is_empty() and not _game_over_pending and not completed and _intro_left <= 0.0
+	_notice.reset_size()
+	var screen := get_viewport().get_canvas_transform() * player.global_position
+	_notice.position = Vector2(clampf(screen.x - _notice.size.x * 0.5, 16, 1264 - _notice.size.x), clampf(screen.y - 76, 126, 560))
+
+
+func _clear_feedback() -> void:
+	_notice_left = 0.0
+	_pulse_left = 0.0
+	_needle_sound_left = 0.0
+	_had_condition = false
+	_notice.text = ""
+	_notice.hide()
+	_feedback_sound.stop()
+	_needle_sound.stop()
+	player.modulate = Color.WHITE
+
+
+func _on_needle_embedded(at: Vector2, dangerous: bool) -> void:
+	if _needle_sound_left > 0.0 or not room.visible_area.grow(80).has_point(at):
+		return
+	_needle_sound_left = 0.1
+	_needle_sound.pitch_scale = 1.0 if dangerous else 0.75
+	_needle_sound.play()
 
 
 func _update_grab_hint() -> void:
@@ -238,7 +331,7 @@ func _update_grab_hint() -> void:
 		bounds = Rect2(screen, Vector2.ZERO) if points.size() == 1 else bounds.expand(screen)
 	_grab_frame.points = points
 	_grab_outline.points = points
-	_grab_hint.text = "掴む：" + {"OBJECT": "箱", "HEAVY": "重い箱", "PARACHUTE": "傘", "JUMP": "相棒"}.get(_grab_target.carry_name, "物体")
+	_grab_hint.text = "掴む：" + _item_name(_grab_target)
 	_grab_hint.reset_size()
 	var bottom: float = ($HUD/Progress.position.y if $HUD/Progress.visible else _action.get_parent().position.y) - 8.0
 	var y := bounds.position.y - _grab_hint.size.y - 8.0
@@ -325,6 +418,7 @@ func _on_player_respawned() -> void:
 	if _loading or not is_instance_valid(room) or _game_over_pending:
 		return
 	_generation += 1
+	_clear_feedback()
 	_capture_pending = false
 	_game_over_pending = false
 	_intro_left = 0.0
@@ -370,8 +464,7 @@ func _capture() -> void:
 	player.apply_stun(0.25)
 	enemy.apply_stun(0.4)
 	enemy.set("throw_pose_left", 0.5)
-	_message.text = "捕獲をしのいだ！　投げ返し後 2秒間は再捕獲されません"
-	_message.show()
+	_feedback("捕獲失敗", ArtDraw.GOLD, player.position, "escape")
 	await get_tree().create_timer(0.25, false).timeout
 	if generation != _generation or completed or _game_over_pending:
 		return
@@ -389,9 +482,6 @@ func _capture() -> void:
 	player.apply_stun(0.3, direction * 650.0 - player.get_gravity_vector() * 220.0)
 	_immunity_left = 2.0
 	_capture_pending = false
-	await get_tree().create_timer(1.6, false).timeout
-	if generation == _generation and not completed and not _game_over_pending:
-		_message.hide()
 
 
 func _update_capture(delta: float) -> void:
@@ -411,7 +501,7 @@ func _update_capture(delta: float) -> void:
 			_capture()
 
 
-func _game_over(reason := "捕獲されました") -> void:
+func _game_over(reason := "捕獲された") -> void:
 	if _game_over_pending or completed:
 		return
 	var generation := _generation
@@ -423,11 +513,21 @@ func _game_over(reason := "捕獲されました") -> void:
 	$HUD/HelpButton.disabled = true
 	$HUD/PauseButton.disabled = true
 	get_tree().paused = true
-	_message.text = reason + "\nこの部屋のチェックポイントからやり直します"
+	_feedback("", ArtDraw.GOLD, player.position, "defeat")
+	_notice.hide()
+	_message.text = reason + "\n部屋 %02d のチェックポイントから再開" % (room_index + 1)
 	_message.show()
 	_effect_left = 1.2
 	if DisplayServer.accessibility_should_reduce_animation() != 1:
-		create_tween().tween_property(_fade, "color:a", 0.85, 1.0)
+		var curtain := ShaderMaterial.new()
+		curtain.shader = preload("res://assets/ui/stage-intro.gdshader")
+		curtain.set_shader_parameter("viewport_size", get_viewport_rect().size)
+		curtain.set_shader_parameter("center", get_viewport().get_canvas_transform() * player.global_position)
+		curtain.set_shader_parameter("radius", get_viewport_rect().size.length())
+		_fade.material = curtain
+		create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN).tween_method(func(radius: float): curtain.set_shader_parameter("radius", radius), get_viewport_rect().size.length(), 0.0, 0.85)
+	else:
+		_fade.color.a = 0.85
 	await get_tree().create_timer(1.2, true).timeout
 	var demo := get_node_or_null("/root/DemoMode")
 	if demo != null and demo.warning_active:
@@ -441,19 +541,24 @@ func _game_over(reason := "捕獲されました") -> void:
 	$HUD/HelpButton.disabled = false
 	$HUD/PauseButton.disabled = false
 	_fade.color.a = 0.0
+	_fade.material = null
 	player.respawn()
+	_feedback("チェックポイントから再開", ArtDraw.MINT, player.position, "recover")
 	_update_hud()
 
 
-func _damage_player(amount: float, impulse := Vector2.ZERO, ground_needle := false) -> void:
+func _damage_player(amount: float, impulse := Vector2.ZERO, ground_needle := false, cause := "敵のトゲ攻撃") -> void:
 	if completed or _game_over_pending or _hit_grace > 0.0 or _respawn_grace > 0.0:
 		return
 	if not ground_needle:
 		player.apply_stun(0.2, impulse)
 	player.apply_attack_damage(amount, ground_needle)
 	_hit_grace = 0.75
+	_had_condition = true
+	cause = "敵が残したトゲ" if ground_needle else cause
+	_feedback("残針に接触！ 減速・回復低下" if ground_needle else cause + "に被弾！ 回復低下", ArtDraw.CORAL, player.position, "ground" if ground_needle else "hurt")
 	if player.get_wall_stamina() <= 0.0:
-		_game_over("攻撃でスタミナが尽きました")
+		_game_over(cause + "でやられた")
 
 
 func _on_release(object: Grabbable, thrown: bool, source: PlayerController) -> void:
@@ -492,6 +597,7 @@ func _check_projectiles() -> void:
 				pinned = true
 				break
 		if pinned:
+			_feedback("箱を固定！ 足場になった", ArtDraw.MINT, object.position, "hit")
 			_projectiles.remove_at(index)
 			continue
 		if _segment_hits_rect(from, object.position, rect):
@@ -502,13 +608,18 @@ func _check_projectiles() -> void:
 						_complete("決着成功")
 				if enemy.stun_left <= 0.0:
 					enemy.apply_stun(2.0)
+					_feedback(_item_name(object) + " 命中！ 敵がひるんだ", ArtDraw.GOLD, enemy.position, "hit")
 			elif _hit_grace <= 0.0 and _respawn_grace <= 0.0:
-				_damage_player(player.wall_stamina_max / 3.0, (object.position - entry.previous).normalized() * 140)
+				_damage_player(player.wall_stamina_max / 3.0, (object.position - entry.previous).normalized() * 140, false, "敵が投げた" + _item_name(object))
 			_projectiles.remove_at(index)
 		elif object.linear_velocity.length() < 100.0:
 			_projectiles.remove_at(index)
 		else:
 			entry.previous = object.position
+
+
+static func _item_name(object: Grabbable) -> String:
+	return {"OBJECT": "箱", "HEAVY": "重い箱", "PARACHUTE": "傘", "JUMP": "相棒"}.get(object.carry_name, "道具")
 
 
 static func _segment_hits_rect(from: Vector2, to: Vector2, rect: Rect2) -> bool:
@@ -600,6 +711,7 @@ func _update_hud() -> void:
 	_status.text = "部屋 %02d/%02d　重力 %s　 %s　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [room_index + 1, ROOM.ROOM_COUNT, direction, capture_status, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), pursuit]
 	_stamina.max_value = player.wall_stamina_max
 	_stamina.value = player.get_wall_stamina()
+	_collection.text = "巻物 %d/%d" % [CollectionProgress.get_count("chaser"), CollectionProgress.TOTALS.chaser]
 	_condition.text = "回復低下 %.1f秒" % player.recovery_slow_left if player.recovery_slow_left > 0.0 else ""
 	if player.movement_slow_left > 0.0:
 		_condition.text += "　減速 %.1f秒" % player.movement_slow_left
@@ -616,7 +728,7 @@ func _update_hud() -> void:
 	if _entry_left > 0.0:
 		action = "背後の壁が崩れそうだ！ 追跡者が突破してくる"
 	elif room.exit_open and room_index != ROOM.FINAL_ROOM:
-		action += "\n隔壁が開いた！ 緑の矢印の先へ走って次の部屋へ"
+		action += "\n" + ROOM.PASSAGE_TITLES[room_index] + "：" + ROOM.PASSAGE_HINTS[room_index]
 	_action.text = "%s 敵との距離 %dpx　%s" % [side, roundi(player.position.distance_to(enemy.position)), action]
 	var action_panel := _action.get_parent() as PanelContainer
 	action_panel.reset_size()
@@ -628,6 +740,8 @@ func _update_hud() -> void:
 		player.modulate.a = 0.55 + 0.45 * absf(sin(maxf(_respawn_grace, _hit_grace) * 24.0))
 	else:
 		player.modulate.a = 1.0
+	var tint := Color("ffcf8e") if player.recovery_slow_left > 0.0 else Color.WHITE
+	player.modulate = Color(tint, player.modulate.a)
 
 
 func _help_text() -> String:
@@ -683,6 +797,12 @@ func retry_room() -> void:
 func _draw_effects() -> void:
 	if DisplayServer.accessibility_should_reduce_animation() == 1:
 		return
+	if _pulse_left > 0.0 and not _game_over_pending:
+		var at := get_viewport().get_canvas_transform() * _pulse_at
+		var progress := 1.0 - _pulse_left / 0.4
+		for index in 8:
+			var direction := Vector2.RIGHT.rotated(TAU * index / 8.0)
+			_effects.draw_line(at + direction * (12 + progress * 25), at + direction * (22 + progress * 45), Color(_pulse_color, 1.0 - progress), 3.0, true)
 	var pulse := clampf(_effect_left / 1.2, 0.0, 1.0)
 	if pulse <= 0.0:
 		return
@@ -721,6 +841,8 @@ func _build_hud() -> void:
 	gauge.add_theme_constant_override("separation", 12)
 	gauge.add_child(_text("壁スタミナ", 16))
 	gauge.add_child(_stamina)
+	_collection = _text("", 16)
+	gauge.add_child(_collection)
 	rows.add_child(gauge)
 	var help_button := Button.new()
 	help_button.position = Vector2(1018, 16)
@@ -745,9 +867,16 @@ func _build_hud() -> void:
 	_hint = _text("", 19)
 	footer.add_child(_hint)
 	_message = _text("", 27)
-	_message.position = Vector2(120, 270)
-	_message.size = Vector2(1040, 120)
+	_message.position = Vector2(370, 270)
+	_message.size = Vector2(540, 120)
 	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_message.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var message_style := StyleBoxFlat.new()
+	message_style.bg_color = Color("14243bf5")
+	message_style.border_color = ArtDraw.GOLD
+	message_style.set_border_width_all(2)
+	message_style.set_corner_radius_all(16)
+	_message.add_theme_stylebox_override("normal", message_style)
 	_message.hide()
 	hud.add_child(_message)
 	_completion = Label.new()
@@ -814,6 +943,7 @@ func _spawn_needles(origin: Vector2, directions: Array[Vector2], variant: int) -
 		needle.course = room
 		needle.shooter = enemy
 		needle.variant = 0 if variant == 4 else (1 if variant == 5 else variant)
+		needle.embedded.connect(_on_needle_embedded)
 		needle.velocity = direction if variant == 4 else direction.normalized() * [720.0, 650.0, 380.0, 660.0][needle.variant]
 		if variant == 4:
 			needle.acceleration = enemy.get_gravity_vector() * 1200.0
@@ -859,7 +989,7 @@ func _update_needles(delta: float) -> void:
 		var from: Vector2 = needle.flight_start + player.position - _previous_player
 		if _segment_hits_rect(from, needle.flight_end, _actor_rect(player).grow(3.0)):
 			if _hit_grace <= 0.0 and _respawn_grace <= 0.0:
-				_damage_player(player.wall_stamina_max / 3.0, (needle.flight_end - needle.flight_start).normalized() * 140.0)
+				_damage_player(player.wall_stamina_max / 3.0, (needle.flight_end - needle.flight_start).normalized() * 140.0, false, ["敵の長針", "敵の短針", "敵の追尾トゲ", "敵の灰の雨"][needle.variant])
 			needle.queue_free()
 		elif needle.blocked and not was_blocked:
 			blocked_shots += 1

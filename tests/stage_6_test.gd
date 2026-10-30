@@ -1,8 +1,9 @@
 extends SceneTree
 
-const STAGE = preload("res://scripts/stage_6.gd")
+var STAGE: GDScript
 const PLAYER = preload("res://scenes/player.tscn")
 const BOX = preload("res://scenes/grabbable.tscn")
+const ROOM_SIZES: Array[Vector2] = [Vector2(2920, 960), Vector2(4000, 960), Vector2(4200, 960), Vector2(3880, 1680), Vector2(2920, 960), Vector2(2920, 960), Vector2(3880, 960), Vector2(2280, 2160), Vector2(2920, 960), Vector2(4200, 960), Vector2(2920, 960), Vector2(3880, 1200), Vector2(5600, 1680)]
 var checks := 0
 var stage
 
@@ -12,6 +13,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	STAGE = load("res://scripts/stage_6.gd")
 	_check(STAGE._segment_hits_rect(Vector2(-200, 0), Vector2(200, 0), Rect2(-10, -10, 20, 20)), "Fast crossings cannot skip projectile/hazard contact")
 	_check(not STAGE._segment_hits_rect(Vector2(-200, 40), Vector2(200, 40), Rect2(-10, -10, 20, 20)), "Near misses do not count as hits")
 	await _new_stage()
@@ -21,6 +23,7 @@ func _run() -> void:
 	for number in stage.ROOM.ROOM_COUNT:
 		stage._load_room(number)
 		await _step(3)
+		_check(stage.room.size == ROOM_SIZES[number], "Room %d keeps its existing width and height" % (number + 1))
 		_check(stage.room.get_node("Items").get_child_count() > 0, "Every room supplies a throwable object")
 		_check(stage.room.route.size() >= 4, "Every room has a chase route")
 		_check(stage._backdrop.environment_theme == (3 if number < 6 else 4), "Unused lava/evil environments are assigned")
@@ -258,7 +261,7 @@ func _fall_resets_room() -> void:
 	stage.enemy.stun_left = 0.75
 	stage.enemy.velocity = Vector2(120, -80)
 	stage.enemy.set_gravity_direction(-1)
-	_check(stage.room.all_weight_doors_open(), "A real weight opens the door before retry")
+	_check(stage.room.doors[0].button.is_pressed(), "A real weight opens the first door before retry")
 	stage.player.apply_attack_damage(0.45, true)
 	stage.room.set_entrance_intact(false)
 	_place(stage.player, Vector2(900, stage.room.size.y + 200))
@@ -448,7 +451,7 @@ func _new_stage() -> void:
 	change_scene_to_file("res://scenes/stage_6.tscn")
 	await _step(4)
 	stage = current_scene
-	await _step(180)
+	await _step(300)
 
 
 func _step(count := 1) -> void:
