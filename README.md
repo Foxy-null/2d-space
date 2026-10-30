@@ -58,6 +58,8 @@ Godot 4.7.2 StableのStandard版で `project.godot` をインポートし、F5�
 
 ## ポーズと演出
 
+タイトル・ステージ選択と各ステージではBGMをループ再生します。ステージ1〜6の系統は順にC・A・B・C・A・Bです。クリア画面ではクリアSEを一度再生し、終了後に同系統の静版BGMをループ再生します。ジャンプ・ダッシュ・クリアSEの前後の無音はカットしています。[音源と割り当て](assets/audio/README.md)を参照してください。
+
 ポーズ中は再開、操作設定、やり直し、表示切替、ステージ選択への帰還を選べます。ヒントを持つステージではヒントも切り替えられます。
 
 映像演出を省略するときは、一度ポーズメニューを開いて「演出をスキップ」を選びます。第1面の減速を省略してもダッシュ入力待ちは残り、ダッシュや着地そのものは省略できません。[共通スキップ仕様](docs/cinematic-skip.md)に境界を記録しています。
@@ -73,7 +75,7 @@ Godot 4.7.2 StableのStandard版で `project.godot` をインポートし、F5�
 Python 3の標準ライブラリだけで、作業コピーと検証専用の保存先を作って実行できます。実際のプレイデータには書き込みません。Godotの実行ファイルを指定してください。
 
 ```sh
-python tests/run_checks.py --godot /path/to/godot --smoke --render tutorial_redesign_test.gd variable_jump_test.gd game_progress_test.gd stage_select_test.gd
+python tests/run_checks.py --godot /path/to/godot --smoke --render game_audio_test.gd tutorial_redesign_test.gd variable_jump_test.gd game_progress_test.gd stage_select_test.gd
 python tests/run_checks.py --godot /path/to/godot --timeout 240 stage_2_test.gd stage_3_test.gd stage_4_test.gd stage_5_test.gd
 ```
 

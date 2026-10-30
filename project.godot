@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 InputSettings="*res://scripts/input_settings.gd"
 DisplaySettings="*res://scripts/display_settings.gd"
 CollectionProgress="*res://scripts/collection_progress.gd"
+GameAudio="*res://scripts/game_audio.gd"
 DemoMode="*res://scripts/demo_mode.gd"
 
 [display]

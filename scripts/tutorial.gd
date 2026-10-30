@@ -192,6 +192,8 @@ func _enter_room(index: int, from_right: bool) -> void:
 
 
 func _on_respawned() -> void:
+	if completed:
+		GameAudio.reset_scene()
 	Engine.time_scale = 1.0
 	get_tree().paused = false
 	completed = false
@@ -419,6 +421,7 @@ func _complete() -> void:
 
 
 func _start_clear_intro() -> void:
+	GameAudio.play_clear()
 	phase = Phase.CLEAR_INTRO
 	_phase_elapsed = 0.0
 	_clear_art.modulate.a = 0.0
@@ -426,6 +429,7 @@ func _start_clear_intro() -> void:
 
 
 func _show_clear() -> void:
+	GameAudio.play_clear()
 	phase = Phase.CLEAR
 	_phase_elapsed = 0.0
 	_fade.color.a = 1.0
