@@ -196,6 +196,8 @@ func _on_respawned() -> void:
 	if completed:
 		GameAudio.reset_scene()
 	Engine.time_scale = 1.0
+	GameAudio.music.pitch_scale = 1.0
+	GameAudio.music.stream_paused = false
 	get_tree().paused = false
 	completed = false
 	phase = Phase.RUN
@@ -318,6 +320,7 @@ func _process(delta: float) -> void:
 			var progress := clampf(_phase_elapsed / SLOW_DURATION, 0, 1)
 			_place_slow(progress)
 			Engine.time_scale = 0.06 + 0.94 * pow(1.0 - progress, 2)
+			GameAudio.music.pitch_scale = Engine.time_scale
 			if progress >= 1.0:
 				_wait_for_dash()
 		Phase.CLEAR_INTRO:
@@ -356,6 +359,7 @@ func _wait_for_dash() -> void:
 		bridge.advance(missing_world_time)
 	Engine.time_scale = 1.0
 	phase = Phase.WAIT
+	GameAudio.music.stream_paused = true
 	_dash_armed = not Input.is_action_pressed("dash")
 	get_tree().paused = true
 	_update_prompt()
@@ -377,6 +381,8 @@ func _input(event: InputEvent) -> void:
 		return
 	get_viewport().set_input_as_handled()
 	phase = Phase.LANDING
+	GameAudio.music.pitch_scale = 1.0
+	GameAudio.music.stream_paused = false
 	ninja.set_process(true)
 	player.dash_enabled = true
 	player._start_dash(false)

@@ -4,6 +4,7 @@ var tutorial
 var progress
 var inputs
 var stage
+var audio
 var player: PlayerController
 var checks := 0
 var failed := false
@@ -25,6 +26,8 @@ func _run() -> void:
 	stage = load("res://scenes/tutorial.tscn").instantiate()
 	root.add_child(stage)
 	current_scene = stage
+	audio = root.get_node("GameAudio")
+	audio.reset_scene()
 	player = stage.player
 	player.respawned.connect(func(): respawns += 1)
 	await _step(5)
@@ -141,14 +144,23 @@ func _run() -> void:
 	_hold("move_right")
 	await _step(6)
 	_hold("jump")
+	await _until(func(): return stage.phase == tutorial.Phase.SLOW, 160, "Natural fall starts slowdown")
+	await _step(2)
+	_check(audio.music.pitch_scale < 1.0 and is_equal_approx(audio.music.pitch_scale, Engine.time_scale), "BGM speed and pitch follow the falling world's slowdown")
+	_check(audio.jump.pitch_scale == 1.0 and audio.dash.pitch_scale == 1.0, "The cinematic changes only BGM, leaving movement SE at normal pitch")
 	await _until(func(): return stage.phase == tutorial.Phase.WAIT, 160, "Natural slowdown reaches the mandatory stop")
 	_check(paused and Engine.time_scale == 1.0 and stage.bridge.tip_collapsed, "Natural slowdown freezes a collapsed tip without leaving a global slow time scale")
+	_check(audio.music.stream_paused, "Natural input wait pauses BGM")
+	var frozen_music_position: float = audio.music.get_playback_position()
+	await _step(10)
+	_check(is_equal_approx(audio.music.get_playback_position(), frozen_music_position), "BGM position stays frozen during input wait")
 	_check(player.get_node("Visuals/Body").animation == &"bonk", "The frozen fall keeps the existing head-impact sprite")
 	await _capture("dash-wait-natural")
 	_release()
 	stage.get_node("PauseMenu").open()
 	stage.get_node("PauseMenu").retry()
 	_check(not paused and stage.phase == tutorial.Phase.RUN and player.controls_enabled and not stage.bridge.tip_collapsed, "Retry from input wait restores normal time, controls and bridge")
+	_check(audio.music.pitch_scale == 1.0 and not audio.music.stream_paused, "Retry restores normal BGM speed and playback")
 	_check(player.get_node("Visuals/Body").animation != &"bonk" and player.get_node("Visuals/Body").is_processing(), "Retry restores the normal pose updates")
 	stage._enter_room(2, false)
 	await _step(5)
@@ -164,11 +176,16 @@ func _run() -> void:
 	await _capture("bridge-slow")
 	_event("dash", true)
 	await _key(KEY_ESCAPE)
+	var menu_pitch: float = audio.music.pitch_scale
+	await _step(3)
+	_check(not audio.music.stream_paused and is_equal_approx(audio.music.pitch_scale, menu_pitch), "The pause menu keeps BGM playing at the held cinematic speed")
 	_check(stage.get_node("PauseMenu").menu.get_node("SkipCinematic").visible, "Skip is available inside the pause menu during slowdown")
 	await _key(KEY_DOWN)
 	await _key(KEY_ENTER)
 	await _step(2)
 	_check(stage.phase == tutorial.Phase.WAIT and paused, "Skipping slowdown reaches mandatory input wait")
+	_check(audio.music.stream_paused, "Skipping slowdown also pauses BGM at input wait")
+	var wait_playback: AudioStreamPlayback = audio.music.get_stream_playback()
 	_check(player.get_node("Visuals/Body").animation == &"bonk", "Skipped slowdown also freezes the existing head-impact pose")
 	_check(not stage.player.controls_enabled, "Input wait cannot move the player")
 	_hold("move_up")
@@ -190,6 +207,7 @@ func _run() -> void:
 	_check("C" in stage._prompt.text, "Rebinding immediately updates the frozen prompt")
 	inputs.close_settings()
 	_check(paused, "Closing settings preserves the learning stop")
+	_check(audio.music.stream_paused, "Pause and settings menus preserve the input wait's BGM stop")
 	for key in inputs.keyboard_events("dash"):
 		InputMap.action_erase_event("dash", key)
 	inputs.save_settings()
@@ -204,6 +222,7 @@ func _run() -> void:
 	_event("dash", true)
 	await _step(2)
 	_check(stage.phase == tutorial.Phase.WAIT, "Wrong direction does not consume or exit the lesson")
+	_check(audio.music.stream_paused, "An invalid dash does not resume BGM")
 	Input.action_release("move_left")
 	_hold("move_right")
 	_hold("move_up")
@@ -215,6 +234,8 @@ func _run() -> void:
 	dash_key.pressed = true
 	Input.parse_input_event(dash_key)
 	await _step(2)
+	_check(audio.music.pitch_scale == 1.0 and not audio.music.stream_paused, "The accepted dash resumes BGM at normal speed")
+	_check(audio.music.get_stream_playback() == wait_playback, "The accepted dash continues the same BGM playback without restarting")
 	_check(player.get_node("Visuals/Body").animation == &"jump", "A successful cinematic dash returns to the jumping pose")
 	await _until(func(): return stage.completed, 160, "Fresh up-right dash guarantees safe landing")
 	dash_key.pressed = false
