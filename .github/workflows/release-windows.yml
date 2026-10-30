@@ -1,0 +1,156 @@
+name: Release Windows v1.0.1
+
+on:
+  push:
+    branches: [codex/release-v1.0.1]
+    paths: [.github/workflows/release-windows.yml]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-v1.0.1
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: 4.7.2
+  RELEASE_TAG: v1.0.1
+  SOURCE_SHA: 440922825de6c6796174742459e29e19cf04f9d1
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+
+      - name: Download and verify Godot and Windows templates
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib
+          import os
+          import shutil
+          import urllib.request
+          import zipfile
+
+          version = os.environ['GODOT_VERSION']
+          temporary = Path(os.environ['RUNNER_TEMP'])
+          base = f'https://github.com/godotengine/godot-builds/releases/download/{version}-stable/'
+          sums = urllib.request.urlopen(base + 'SHA512-SUMS.txt').read().decode()
+          expected = {line.split()[1].lstrip('*'): line.split()[0] for line in sums.splitlines() if line.strip()}
+          editor_name = f'Godot_v{version}-stable_win64.exe.zip'
+          templates_name = f'Godot_v{version}-stable_export_templates.tpz'
+          for name in (editor_name, templates_name):
+              archive = temporary / name
+              urllib.request.urlretrieve(base + name, archive)
+              digest = hashlib.sha512()
+              with archive.open('rb') as stream:
+                  for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                      digest.update(chunk)
+              assert digest.hexdigest() == expected[name], f'Checksum mismatch: {name}'
+          editor = temporary / 'godot'
+          with zipfile.ZipFile(temporary / editor_name) as archive:
+              archive.extractall(editor)
+          templates = Path(os.environ['APPDATA']) / 'Godot' / 'export_templates' / f'{version}.stable'
+          templates.mkdir(parents=True, exist_ok=True)
+          with zipfile.ZipFile(temporary / templates_name) as archive:
+              for name in ('version.txt', 'windows_release_x86_64.exe', 'windows_debug_x86_64.exe'):
+                  with archive.open('templates/' + name) as source, (templates / name).open('wb') as target:
+                      shutil.copyfileobj(source, target)
+          godot = editor / f'Godot_v{version}-stable_win64_console.exe'
+          assert godot.is_file(), 'Godot console executable missing'
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write(f'GODOT={godot}\n')
+
+      - name: Test scenes, gameplay, saving and settings on Windows
+        shell: pwsh
+        run: >-
+          python tests/run_checks.py --godot "$env:GODOT" --smoke --timeout 240
+          stage_intro_test.gd death_iris_test.gd game_audio_test.gd
+          tutorial_redesign_test.gd variable_jump_test.gd game_progress_test.gd
+          stage_select_test.gd collection_progress_test.gd input_settings_test.gd
+          display_settings_test.gd pause_menu_test.gd stage_2_test.gd stage_3_test.gd
+          stage_4_test.gd stage_5_test.gd stage_6_test.gd stage_2_route_test.gd
+
+      - name: Export, check the Windows executable and package
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib
+          import os
+          import shutil
+          import subprocess
+          import zipfile
+
+          tag = os.environ['RELEASE_TAG']
+          name = f'NinjaButtobiGalaxy-{tag}-windows-x86_64'
+          output = Path('builds') / name
+          output.mkdir(parents=True, exist_ok=True)
+          Path('export_presets.cfg').write_text('''[preset.0]
+          name="Windows Desktop"
+          platform="Windows Desktop"
+          runnable=true
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter="tests/*,docs/*,builds/*,deliverables/*,music-brief/*,verification/*,.github/*,.git/*"
+          [preset.0.options]
+          binary_format/architecture="x86_64"
+          binary_format/embed_pck=false
+          debug/export_console_wrapper=0
+          application/modify_resources=false
+          texture_format/s3tc_bptc=true
+          ''', encoding='utf-8')
+          executable = (output / 'NinjaButtobiGalaxy.exe').resolve()
+          def check(command, label):
+              result = subprocess.run(command, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=240)
+              log = result.stdout + result.stderr
+              Path(os.environ['RUNNER_TEMP'], label + '.log').write_text(log, encoding='utf-8')
+              assert result.returncode == 0 and 'SCRIPT ERROR:' not in log and not any('ERROR:' in line and 'resources still in use at exit' not in line for line in log.splitlines()), log
+              print('PASS ' + label, flush=True)
+          check([os.environ['GODOT'], '--headless', '--path', str(Path.cwd()), '--export-release', 'Windows Desktop', str(executable)], 'export')
+          assert executable.is_file() and executable.with_suffix('.pck').stat().st_size > 0
+          check([str(executable), '--headless', '--quit-after', '6'], 'native-startup')
+          for scene in ('start_screen', 'stage_select', 'tutorial', 'stage_2', 'stage_3', 'stage_4', 'stage_5', 'stage_6', 'gallery'):
+              log_file = Path(os.environ['RUNNER_TEMP'], 'packaged-' + scene + '.log')
+              check([os.environ['GODOT'], '--headless', '--main-pack', str(executable.with_suffix('.pck')), '--scene', f'res://scenes/{scene}.tscn', '--quit-after', '6', '--log-file', str(log_file)], 'run-' + scene)
+              log = log_file.read_text(encoding='utf-8')
+              assert 'SCRIPT ERROR:' not in log and not any('ERROR:' in line and 'resources still in use at exit' not in line for line in log.splitlines()), log
+          (output / 'README.txt').write_text(
+              f'忍者ぶっとびくん Galaxy {tag}\n\n'
+              'Windows 64bit版。ZIPをすべて展開し、NinjaButtobiGalaxy.exeを起動してください。\n'
+              '同じフォルダのNinjaButtobiGalaxy.pckも必要です。Godotのインストールは不要です。\n\n'
+              '移動: A/D・方向キー / ジャンプ: Space・W・↑\n'
+              'ダッシュ: X＋方向 / 壁掴み・物を掴む: Shift＋方向\n'
+              'やり直し: R / ポーズ: Esc / 操作設定: F10 / 全画面: F11\n'
+              'ゲームパッドにも対応しています。メニューの操作設定から変更できます。\n\n'
+              'この版では第2面が10室に変わります。旧第2面の巻物・クリア記録は引き継がれません。他ステージの記録と設定は維持します。\n\n'
+              '詳細: https://github.com/Foxy-null/2d-space\n'
+              f'ソース: {os.environ["SOURCE_SHA"]}\nGodot {os.environ["GODOT_VERSION"]} Standard\n',
+              encoding='utf-8-sig')
+          archive_path = Path(shutil.make_archive(str(output), 'zip', output.parent, output.name))
+          with zipfile.ZipFile(archive_path) as archive:
+              assert archive.testzip() is None
+              assert set(archive.namelist()) == {name + '/', *(name + '/' + file for file in ('NinjaButtobiGalaxy.exe', 'NinjaButtobiGalaxy.pck', 'README.txt'))}
+          checksum = hashlib.sha256(archive_path.read_bytes()).hexdigest()
+          Path('builds/SHA256SUMS.txt').write_text(f'{checksum}  {archive_path.name}\n', encoding='utf-8')
+          Path(os.environ['RUNNER_TEMP'], 'release-notes.md').write_text(
+              'アイリス演出（縮小・拡大）のSEを、提供音源「手裏剣を投げる.mp3」へ差し替えました。Windows（64bit）向けの更新です。第2面も主経路7室・寄り道3室の10室コースへ更新しています。旧第2面の巻物とクリア記録は引き継がれません。他ステージの記録と設定は維持します。\n\n'
+              'ZIPをすべて展開し、`NinjaButtobiGalaxy.exe`を起動してください。'
+              '同梱の`.pck`ファイルも必要です。Godotのインストールは不要です。\n\n'
+              'キーボードとゲームパッドに対応しています。操作は同梱の`README.txt`を参照してください。\n\n'
+              f'ソース: [`{os.environ["SOURCE_SHA"][:7]}`](https://github.com/Foxy-null/2d-space/commit/{os.environ["SOURCE_SHA"]})\n\n'
+              'Godot 4.7.2 Standardで書き出し、Windows上で既存テストと配布用実行ファイルのヘッドレス起動を確認しました。'
+              '画面表示とゲームパッドの実機確認は行っていません。\n', encoding='utf-8')
+
+      - name: Publish v1.0.1 with the Windows ZIP and checksum
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$env:RELEASE_TAG" "builds/NinjaButtobiGalaxy-v1.0.1-windows-x86_64.zip" "builds/SHA256SUMS.txt" --repo "$env:GITHUB_REPOSITORY" --target "$env:SOURCE_SHA" --title "忍者ぶっとびくん Galaxy v1.0.1" --notes-file "$env:RUNNER_TEMP/release-notes.md" --draft
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          gh release edit "$env:RELEASE_TAG" --repo "$env:GITHUB_REPOSITORY" --draft=false --latest
