@@ -300,8 +300,13 @@ func _just_pressed(action: StringName) -> bool:
 	return _pressed(action) and not bool(_previous.get(action, false))
 
 
+func _apply_variable_jump() -> void:
+	# Pursuit issues jump pulses and needs the full jump arc for its steering.
+	pass
+
+
 func reset_pursuit(keep_path := false) -> void:
-	respawn(false)
+	respawn(false, false)
 	defeated = false
 	_needle_variant = course.attack_patterns[0] if is_instance_valid(course) else 0
 	_technique_wait.fill(0.0)

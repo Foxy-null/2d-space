@@ -17,6 +17,11 @@ func _ready() -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if not body is PlayerController or _contacts.has(body.get_instance_id()):
 		return
+	# Retry may move the player away before a queued enter notification arrives.
+	var body_shape: CollisionShape2D = body.get_node("CollisionShape2D")
+	var previous_motion: Vector2 = -body.get_environment_velocity() * get_physics_process_delta_time()
+	if not $CollisionShape2D.shape.collide_with_motion($CollisionShape2D.global_transform, Vector2.ZERO, body_shape.shape, body_shape.global_transform, previous_motion):
+		return
 	_contacts[body.get_instance_id()] = true
 	var normal := -global_transform.y.normalized()
 	var incoming: Vector2 = body.get_environment_velocity()

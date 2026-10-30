@@ -16,6 +16,8 @@ func _run() -> void:
 		var stage := current_scene
 		var player: PlayerController = stage.get_node("Player")
 		var pause := stage.get_node("PauseMenu")
+		var final_goal: ArrivalSwitch = stage.get_node("Goal") if scene == "stage_2" else (stage.goal if scene == "stage_5" else null)
+		if final_goal != null: _check(not final_goal.get_node("Bubble").visible, "Final arrivals start without an instruction bubble when hints are off")
 		_check(not paused and not pause.overlay.visible, scene + ": starts unpaused")
 		await _key(KEY_H)
 		await _joy(JOY_BUTTON_Y)
@@ -43,8 +45,10 @@ func _run() -> void:
 		if hint_button.visible:
 			await _click(hint_button)
 			_check(paused and stage.hints_visible and hint_button.text == "ヒントを隠す", "Hints toggle while staying paused")
+			if final_goal != null: _check(final_goal.get_node("Bubble").visible, "The actual paused hint control reveals the final arrival instruction")
 			await _click(hint_button)
 			_check(paused and not stage.hints_visible and hint_button.text == "ヒントを表示", "Hints can be hidden again")
+			if final_goal != null: _check(not final_goal.get_node("Bubble").visible, "The actual paused hint control hides the final arrival instruction again")
 		player.set_gravity_direction(-1)
 		await _step(2)
 		var panel: Control = pause.get_node("Overlay/Center/Panel")
@@ -56,7 +60,7 @@ func _run() -> void:
 		_check(pause.overlay.is_ancestor_of(root.gui_get_focus_owner()), "Focus stays inside the modal")
 		await _click(pause.menu.get_node("Return"))
 		_check(current_scene == stage and paused and pause.confirmation.visible, "Returning waits for confirmation")
-		_check(pause.confirmation.get_node("Message").text.replace("\n", "") == "現在の進み具合は保存されません。戻ってもよろしいですか？", "Confirmation uses the requested wording")
+		_check(pause.confirmation.get_node("Message").text.replace("\n", "") == "部屋の進み具合は保存されません。獲得が確定した巻物は残ります。戻ってもよろしいですか？", "Confirmation distinguishes temporary room progress from saved scrolls")
 		_check(root.gui_get_focus_owner() == pause.confirmation.get_node("Cancel"), "Cancel is initially selected")
 		if scene == "stage_3" and OS.get_cmdline_user_args().has("--screenshots"):
 			RenderingServer.force_draw()
@@ -71,7 +75,9 @@ func _run() -> void:
 		await _click(stage.get_node("UI/Toolbar/PauseButton" if scene == "environment_preview" else "HUD/PauseButton"))
 		_check(paused, "The mouse entry opens pause")
 		# Retrying must also work with an established checkpoint, not only the spawn.
-		if scene == "tutorial" or scene == "stage_3":
+		if scene == "tutorial":
+			stage._enter_room(1, false)
+		elif scene == "stage_3":
 			stage._set_room(1, false)
 		elif scene == "stage_2":
 			stage._set_checkpoint(2)
@@ -87,10 +93,16 @@ func _run() -> void:
 		_check(player.global_position.distance_to(checkpoint) < 35 and player.gravity_direction == 1, "Retry uses the current checkpoint and restores gravity")
 		if hint_button.visible:
 			_check(stage.hints_visible, "Retry preserves the hint preference")
+			if final_goal != null: _check(final_goal.get_node("Bubble").visible, "Retry keeps the final arrival instruction in the chosen hint state")
 		await _key(KEY_ESCAPE)
 		await _click(pause.menu.get_node("Return"))
 		await _click(pause.confirmation.get_node("Return"))
 		_check(not paused and current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Confirming returns to an unpaused selection screen")
+		if scene in ["stage_2", "stage_5"]:
+			change_scene_to_file("res://scenes/%s.tscn" % scene)
+			await _step(4)
+			var reentered_goal: ArrivalSwitch = current_scene.get_node("Goal") if scene == "stage_2" else current_scene.goal
+			_check(not current_scene.hints_visible and not reentered_goal.get_node("Bubble").visible, "Reentering the actual stage restores the default instruction-free final arrival")
 	await _check_world_pause()
 	await _check_transitions()
 	await _check_completion_input()
@@ -107,7 +119,9 @@ func _check_world_pause() -> void:
 	var gate: Node2D = stage.get_node("MovingGate")
 	var box: RigidBody2D = stage.get_node("LightBox")
 	var background := stage.get_node("Background/Starfield")
-	crystal._on_body_entered(stage.get_node("Player"))
+	stage.get_node("Player").global_position = crystal.global_position
+	stage.get_node("Player").velocity = Vector2.ZERO
+	await _step(5)
 	box.linear_velocity = Vector2(90, -150)
 	await _step()
 	pause.open()
@@ -136,7 +150,7 @@ func _check_world_pause() -> void:
 
 
 func _check_transitions() -> void:
-	for scene in ["tutorial", "stage_3", "stage_4", "stage_5"]:
+	for scene in ["stage_3", "stage_4", "stage_5"]:
 		change_scene_to_file("res://scenes/%s.tscn" % scene)
 		await _step(3)
 		var stage := current_scene
@@ -144,6 +158,7 @@ func _check_transitions() -> void:
 			stage._transition_to_next()
 		else:
 			stage._transition_to(1)
+		var destination := Vector2(1920, stage._camera_position().y if scene == "stage_4" else 360)
 		var pause := stage.get_node("PauseMenu")
 		pause.open()
 		var camera_before: Vector2 = stage.camera.position
@@ -152,7 +167,7 @@ func _check_transitions() -> void:
 		await _click(pause.menu.get_node("Retry"))
 		await _step(30)
 		_check(not paused and not stage.transitioning and stage.player.controls_enabled, "Retry during transition finishes at the new room")
-		_check(stage.camera.position == Vector2(1920, 360), "The resumed camera reaches the checkpoint's room")
+		_check(stage.camera.position == destination, scene + ": the resumed camera reaches the checkpoint's room")
 
 
 func _check_completion_input() -> void:
@@ -162,6 +177,8 @@ func _check_completion_input() -> void:
 	var pause := stage.get_node("PauseMenu")
 	stage.get_node("HUD/Completion").show()
 	await _key(KEY_ESCAPE)
+	await _joy(JOY_BUTTON_Y)
+	_check(current_scene == stage and paused, "Completion does not intercept Y while paused")
 	await _key(KEY_DOWN)
 	await _key(KEY_ENTER)
 	_check(current_scene == stage and paused and stage.hints_visible, "Completion does not intercept Enter in pause")

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/stage_select.gd" id="1_menu"]
-[ext_resource type="Script" path="res://scripts/stage_backdrop.gd" id="2_stars"]
+[ext_resource type="Script" path="res://scripts/tutorial_landscape.gd" id="2_stars"]
 [ext_resource type="Theme" path="res://assets/ui/menu-theme.tres" id="3_theme"]
 
 [node name="StageSelect" type="Control"]
@@ -26,6 +26,15 @@ color = Color(0.018, 0.027, 0.075, 1)
 
 [node name="Starfield" type="Node2D" parent="."]
 script = ExtResource("2_stars")
+menu_background = true
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -35,13 +44,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 64
-theme_override_constants/margin_top = 40
+theme_override_constants/margin_top = 64
 theme_override_constants/margin_right = 64
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_bottom = 48
 
 [node name="Content" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 16
 
 [node name="GameTitle" type="Label" parent="Margin/Content"]
 layout_mode = 2
@@ -54,9 +63,9 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 42
 text = "ステージ選択"
 
-[node name="Description" type="Label" parent="Margin/Content"]
+[node name="Availability" type="Label" parent="Margin/Content"]
 layout_mode = 2
-text = "チュートリアルで練習して、星のぼり・暴風の峡谷・追跡者に挑戦しよう。"
+text = "どのステージからでも遊べます"
 
 [node name="Stages" type="HBoxContainer" parent="Margin/Content"]
 layout_mode = 2
@@ -69,90 +78,101 @@ focus_neighbor_top = NodePath("../../../../ReturnTitle")
 focus_neighbor_right = NodePath("../Stage2")
 focus_neighbor_left = NodePath("../Stage1")
 focus_neighbor_bottom = NodePath("../../Preview")
-custom_minimum_size = Vector2(172, 208)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-text = "ステージ 1\n\nチュートリアル\n\nプレイする"
+text = "01\nチュートリアル"
 
 [node name="Stage2" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
 focus_neighbor_right = NodePath("../Stage3")
 focus_neighbor_left = NodePath("../Stage1")
 focus_neighbor_bottom = NodePath("../../Preview")
-custom_minimum_size = Vector2(172, 208)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-text = "ステージ 2\n\n星のぼりの塔\n\nプレイする"
+text = "02\n星のぼりの塔"
 
 [node name="Stage3" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(172, 208)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage2")
 focus_neighbor_right = NodePath("../Stage4")
 focus_neighbor_bottom = NodePath("../../Preview")
-text = "ステージ 3\n\n壁キックと重力\n\nプレイする"
+text = "03\n壁キックと重力"
 
 [node name="Stage4" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(172, 208)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage3")
 focus_neighbor_right = NodePath("../Stage5")
 focus_neighbor_bottom = NodePath("../../Preview")
-text = "ステージ 4\n\n星渡りの回廊\n\nプレイする"
+text = "04\n星渡りの回廊"
 
 [node name="Stage5" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(172, 208)
+custom_minimum_size = Vector2(172, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage4")
 focus_neighbor_right = NodePath("../Stage6")
 focus_neighbor_bottom = NodePath("../../Preview")
-text = "ステージ 5\n\n暴風バンパー峡谷\n\nプレイする"
+text = "05\n暴風バンパー峡谷"
 
 [node name="Stage6" type="Button" parent="Margin/Content/Stages"]
 focus_neighbor_top = NodePath("../../../../ReturnTitle")
-custom_minimum_size = Vector2(172, 208)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
 focus_neighbor_left = NodePath("../Stage5")
 focus_neighbor_right = NodePath("../Stage6")
 focus_neighbor_bottom = NodePath("../../Preview")
-text = "ステージ 6\n\n追跡者の終域\n\nプレイする"
+custom_minimum_size = Vector2(172, 280)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+text = "06\n追跡者の終域"
 
 [node name="Preview" type="Button" parent="Margin/Content"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 focus_neighbor_top = NodePath("../Stages/Stage1")
 focus_neighbor_bottom = NodePath("../Gallery")
-text = "5つの環境を見る — 背景とギミックのプレビュー"
+text = "背景・ギミックを見る"
 
 [node name="Gallery" type="Button" parent="Margin/Content"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 focus_neighbor_top = NodePath("../Preview")
 focus_neighbor_bottom = NodePath("../../../ReturnTitle")
-text = "キャラクターと道具の図鑑 — ギャラリー"
-
-[node name="Availability" type="Label" parent="Margin/Content"]
-layout_mode = 2
-text = "ステージ1〜6は、クリア状況に関係なく自由に選べます。"
+text = "キャラクターと道具の図鑑"
 
 [node name="Controls" type="Label" parent="Margin/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.73, 0.88, 1)
 theme_override_font_sizes/font_size = 18
-text = "選択：方向キー / 十字キー / スティック　　決定：Enter / A・×　　マウスでも選べます"
+text = "← → 選択　Enter / A・× 決定　クリックで開始"
+
+[node name="Fullscreen" type="Button" parent="."]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -792.0
+offset_top = 48.0
+offset_right = -532.0
+offset_bottom = 122.0
+grow_horizontal = 0
+focus_neighbor_left = NodePath(".")
+focus_neighbor_top = NodePath("../Margin/Content/Gallery")
+focus_neighbor_bottom = NodePath("../Margin/Content/Stages/Stage1")
+focus_next = NodePath("../Margin/Content/Stages/Stage1")
+text = "全画面 [F11]"
 
 [node name="ReturnTitle" type="Button" parent="."]
 layout_mode = 1
@@ -167,6 +187,19 @@ grow_horizontal = 0
 focus_neighbor_top = NodePath("../Margin/Content/Gallery")
 focus_neighbor_bottom = NodePath("../Margin/Content/Stages/Stage1")
 text = "タイトルに戻る"
+
+[node name="DemoMode" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -516.0
+offset_top = 100.0
+offset_right = -316.0
+offset_bottom = 180.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 18
+text = "体験モード: OFF"
 
 [connection signal="pressed" from="ReturnTitle" to="." method="_return_to_title"]
 

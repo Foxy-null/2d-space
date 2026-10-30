@@ -39,7 +39,7 @@ func _run() -> void:
 		await _step(2)
 		await _capture("evil_time_%.2f" % time)
 	# Every existing room is checked with its real camera, collision and HUD.
-	for scene_path in ["res://scenes/tutorial.tscn", "res://scenes/stage_3.tscn"]:
+	for scene_path in ["res://scenes/stage_3.tscn"]:
 		change_scene_to_file(scene_path)
 		await _step(3)
 		var stage := current_scene
@@ -47,23 +47,22 @@ func _run() -> void:
 			stage._set_room(i, false)
 			stage.player.respawn()
 			await _step(8)
-			await _capture("%s_room_%02d" % ["tutorial" if stage.has_method("_mark") else "stage3", i + 1])
-			if not stage.has_method("_mark"):
-				stage.player.set_gravity_direction(-1)
-				stage.player.position.y = 100
-				stage.player.velocity = Vector2.ZERO
-				await _step(12)
-				await _capture("stage3_room_%02d_inverted" % (i + 1))
+			await _capture("stage3_room_%02d" % (i + 1))
+			stage.player.set_gravity_direction(-1)
+			stage.player.position.y = 100
+			stage.player.velocity = Vector2.ZERO
+			await _step(12)
+			await _capture("stage3_room_%02d_inverted" % (i + 1))
 	# Locked -> unlocked -> physically pressed goal, with the actual original player.
-	change_scene_to_file("res://scenes/tutorial.tscn")
+	change_scene_to_file("res://scenes/stage_3.tscn")
 	await _step(3)
-	var tutorial := current_scene
-	var goal: ArrivalSwitch = tutorial.rooms.get_child(0).get_node("Goal")
-	tutorial.player.position = goal.global_position + Vector2(0, -160)
-	tutorial.player.velocity = Vector2.ZERO
+	var stage3 := current_scene
+	var goal: ArrivalSwitch = stage3.rooms.get_child(0).get_node("Goal")
+	stage3.player.position = goal.global_position + Vector2(0, -160)
+	stage3.player.velocity = Vector2.ZERO
 	await _step(30)
 	await _capture("goal_locked")
-	tutorial._mark("jump")
+	goal.set_progress(0, 1, "jump", "ジャンプ")
 	await _step(3)
 	await _capture("goal_unlocking")
 	await _step(40)

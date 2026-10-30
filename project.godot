@@ -14,6 +14,13 @@ config/name="忍者ぶっとびくん Galaxy"
 run/main_scene="res://scenes/start_screen.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
+[autoload]
+
+InputSettings="*res://scripts/input_settings.gd"
+DisplaySettings="*res://scripts/display_settings.gd"
+CollectionProgress="*res://scripts/collection_progress.gd"
+DemoMode="*res://scripts/demo_mode.gd"
+
 [display]
 
 window/size/viewport_width=1280
@@ -21,6 +28,7 @@ window/size/viewport_height=720
 window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
 
 [input]
 

@@ -1,0 +1,113 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
+[ext_resource type="Script" path="res://scripts/scroll_marker.gd" id="marker"]
+[ext_resource type="PackedScene" path="res://scenes/scroll_collectible.tscn" id="scroll"]
+
+[sub_resource type="RectangleShape2D" id="OuterWall"]
+size = Vector2(32, 1060)
+
+[sub_resource type="RectangleShape2D" id="CourseDivider"]
+size = Vector2(28, 1000)
+
+[sub_resource type="RectangleShape2D" id="Roof"]
+size = Vector2(400, 28)
+
+[sub_resource type="RectangleShape2D" id="FirstRest"]
+size = Vector2(130, 24)
+
+[sub_resource type="RectangleShape2D" id="SecondRest"]
+size = Vector2(120, 24)
+
+[sub_resource type="RectangleShape2D" id="ThirdRest"]
+size = Vector2(130, 24)
+
+[sub_resource type="RectangleShape2D" id="ScrollRest"]
+size = Vector2(150, 24)
+
+[node name="ScrollAnnex" type="Node2D"]
+
+[node name="OuterWall" type="StaticBody2D" parent="."]
+position = Vector2(-16.0, -30.0)
+
+[node name="Collision" type="CollisionShape2D" parent="OuterWall"]
+shape = SubResource("OuterWall")
+
+[node name="Visual" type="Polygon2D" parent="OuterWall"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-16.0, -530.0, 16.0, -530.0, 16.0, 530.0, -16.0, 530.0)
+
+[node name="CourseDivider" type="StaticBody2D" parent="."]
+position = Vector2(354.0, -60.0)
+
+[node name="Collision" type="CollisionShape2D" parent="CourseDivider"]
+shape = SubResource("CourseDivider")
+
+[node name="Visual" type="Polygon2D" parent="CourseDivider"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-14.0, -500.0, 14.0, -500.0, 14.0, 500.0, -14.0, 500.0)
+
+[node name="Roof" type="StaticBody2D" parent="."]
+position = Vector2(168.0, -574.0)
+
+[node name="Collision" type="CollisionShape2D" parent="Roof"]
+shape = SubResource("Roof")
+
+[node name="Visual" type="Polygon2D" parent="Roof"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-200.0, -14.0, 200.0, -14.0, 200.0, 14.0, -200.0, 14.0)
+
+[node name="FirstRest" type="StaticBody2D" parent="."]
+position = Vector2(65.0, 442.0)
+
+[node name="Collision" type="CollisionShape2D" parent="FirstRest"]
+shape = SubResource("FirstRest")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="FirstRest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-65.0, -12.0, 65.0, -12.0, 65.0, 12.0, -65.0, 12.0)
+
+[node name="SecondRest" type="StaticBody2D" parent="."]
+position = Vector2(280.0, 222.0)
+
+[node name="Collision" type="CollisionShape2D" parent="SecondRest"]
+shape = SubResource("SecondRest")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="SecondRest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-60.0, -12.0, 60.0, -12.0, 60.0, 12.0, -60.0, 12.0)
+
+[node name="ThirdRest" type="StaticBody2D" parent="."]
+position = Vector2(65.0, 2.0)
+
+[node name="Collision" type="CollisionShape2D" parent="ThirdRest"]
+shape = SubResource("ThirdRest")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="ThirdRest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-65.0, -12.0, 65.0, -12.0, 65.0, 12.0, -65.0, 12.0)
+
+[node name="ScrollRest" type="StaticBody2D" parent="."]
+position = Vector2(265.0, -218.0)
+
+[node name="Collision" type="CollisionShape2D" parent="ScrollRest"]
+shape = SubResource("ScrollRest")
+one_way_collision = true
+
+[node name="Visual" type="Polygon2D" parent="ScrollRest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-75.0, -12.0, 75.0, -12.0, 75.0, 12.0, -75.0, 12.0)
+
+[node name="EntranceMark" type="Node2D" parent="."]
+position = Vector2(184, 480)
+scale = Vector2(0.45, 0.45)
+modulate = Color(1, 1, 1, 0.75)
+script = ExtResource("marker")
+
+[node name="Scroll" parent="." instance=ExtResource("scroll")]
+position = Vector2(252, -300)
+stage_id = "gravity"
+scroll_id = "wall_loft_01"

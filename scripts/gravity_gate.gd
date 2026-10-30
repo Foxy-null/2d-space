@@ -75,8 +75,12 @@ func reset_for_respawn() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
-	# A queued overlap from before a respawn must not change the entrance gravity.
-	if body is Node2D and global_position.distance_to(body.global_position) > ($CollisionShape2D.shape as RectangleShape2D).size.length() + 80.0:
+	if not body is PlayerController and not (body is Grabbable and body.directional_gravity_enabled):
 		return
-	if body.has_method("set_gravity_direction"):
-		body.set_gravity_direction(target_gravity)
+	# Enter notifications can arrive after retry; retain the player’s last swept contact.
+	var body_shape: CollisionShape2D = body.get_node("CollisionShape2D")
+	var motion: Vector2 = body.get_environment_velocity() if body is PlayerController else body.linear_velocity
+	var previous_motion := -motion * get_physics_process_delta_time()
+	if not $CollisionShape2D.shape.collide_with_motion($CollisionShape2D.global_transform, Vector2.ZERO, body_shape.shape, body_shape.global_transform, previous_motion):
+		return
+	body.set_gravity_direction(target_gravity)

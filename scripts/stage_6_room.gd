@@ -573,7 +573,7 @@ func reset_state() -> void:
 	_console_occupied = false
 	_seal_triggered = false
 	escape_unlocked = false
-	arrival.reset_for_respawn()
+	arrival.reset_for_respawn(true)
 	if number == FINAL_ROOM:
 		arrival.set_meta("escape_initialized", false)
 		update_escape(false)

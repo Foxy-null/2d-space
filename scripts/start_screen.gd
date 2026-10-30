@@ -6,19 +6,41 @@ var _launch_progress := 0.0
 var _starting := false
 var _intro: Tween
 var _breathing: Tween
+var _new_game_dialog: ConfirmationDialog
+var _save_error: AcceptDialog
 
 @onready var _logo: TextureRect = $Center/Content/Logo
 @onready var _start_button: Button = $Center/Content/Start
+@onready var _continue_button: Button = $Center/Content/Continue
 @onready var _controls: Label = $Center/Content/Controls
 @onready var _ninja: AnimatedSprite2D = $Mascot/Ninja
 @onready var _effects: Node2D = $Effects
+@onready var _demo_button: Button = $DemoMode
 
 
 func _ready() -> void:
-	_start_button.grab_focus.call_deferred()
+	DemoMode.bind_button(_demo_button)
+	_continue_button.disabled = not CollectionProgress.has_save()
+	_continue_button.pressed.connect(_continue)
+	_start_button.focus_neighbor_top = _start_button.get_path_to(_demo_button)
+	_demo_button.focus_neighbor_bottom = _demo_button.get_path_to(_start_button)
+	var bottom_button := _start_button if _continue_button.disabled else _continue_button
+	bottom_button.focus_neighbor_bottom = bottom_button.get_path_to(_demo_button)
+	_demo_button.focus_neighbor_top = _demo_button.get_path_to(bottom_button)
+	(_continue_button if not _continue_button.disabled else _start_button).grab_focus.call_deferred()
+	_new_game_dialog = ConfirmationDialog.new()
+	_new_game_dialog.title = "はじめから"
+	_new_game_dialog.dialog_text = "クリア状況・巻物・操作設定・画面設定を\nすべて初期化して、ステージ1から始めます。"
+	_new_game_dialog.ok_button_text = "初期化してはじめる"
+	_new_game_dialog.cancel_button_text = "戻る"
+	_new_game_dialog.confirmed.connect(_begin.bind(true))
+	add_child(_new_game_dialog)
+	_save_error = AcceptDialog.new()
+	_save_error.dialog_text = "初期化を保存できませんでした。保存先を確認して、もう一度お試しください。"
+	add_child(_save_error)
 	# OS設定を取得できない場合の戻り値は-1、動きの抑制が指定された場合は1。
 	if DisplayServer.accessibility_should_reduce_animation() == 1:
-		$Backdrop.motion_enabled = false
+		$Backdrop.set_process(false)
 		set_process(false)
 		return
 
@@ -31,14 +53,22 @@ func _ready() -> void:
 	_logo.scale = Vector2.ONE * 0.92
 	_logo.modulate.a = 0.0
 	_start_button.modulate.a = 0.0
+	_continue_button.modulate.a = 0.0
+	_demo_button.modulate.a = 0.0
+	_continue_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_start_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_demo_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_controls.modulate.a = 0.0
 	_intro = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_intro.tween_property(_logo, "modulate:a", 1.0, 0.65)
 	_intro.parallel().tween_property(_logo, "scale", Vector2.ONE, 0.65)
 	_intro.tween_interval(0.15)
 	_intro.tween_callback(_start_button.set.bind("mouse_filter", Control.MOUSE_FILTER_STOP))
+	_intro.tween_callback(_continue_button.set.bind("mouse_filter", Control.MOUSE_FILTER_STOP))
+	_intro.tween_callback(_demo_button.set.bind("mouse_filter", Control.MOUSE_FILTER_STOP))
 	_intro.tween_property(_start_button, "modulate:a", 1.0, 0.3)
+	_intro.parallel().tween_property(_continue_button, "modulate:a", 1.0, 0.3)
+	_intro.parallel().tween_property(_demo_button, "modulate:a", 1.0, 0.3)
 	_intro.parallel().tween_property(_controls, "modulate:a", 1.0, 0.25).set_delay(0.1)
 	_intro.parallel().tween_method(_fly_ninja, 0.0, 1.0, 0.7).set_trans(Tween.TRANS_LINEAR)
 	_intro.tween_callback(_land_ninja)
@@ -105,16 +135,37 @@ func _draw_effects() -> void:
 func _start() -> void:
 	if _starting:
 		return
+	if CollectionProgress.has_save() or InputSettings.has_custom_settings() or DisplaySettings.has_custom_settings():
+		_new_game_dialog.popup_centered(Vector2i(620, 250))
+		_new_game_dialog.get_cancel_button().grab_focus.call_deferred()
+	else:
+		_begin(true)
+
+
+func _continue() -> void:
+	if CollectionProgress.has_save():
+		_begin(false)
+
+
+func _begin(new_game: bool) -> void:
+	if _starting:
+		return
+	if new_game and CollectionProgress.start_new_game() != OK:
+		_save_error.popup_centered(Vector2i(620, 230))
+		return
+	var destination := "res://scenes/tutorial.tscn" if new_game else "res://scenes/stage_select.tscn"
 	_starting = true
 	if DisplayServer.accessibility_should_reduce_animation() == 1:
-		get_tree().change_scene_to_file("res://scenes/stage_select.tscn")
+		get_tree().change_scene_to_file(destination)
 		return
 	_intro.kill()
 	if _breathing != null:
 		_breathing.kill()
 	_start_button.disabled = true
+	_continue_button.disabled = true
+	_demo_button.disabled = true
 	_ninja.play("jump")
 	var launch := create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	launch.tween_property(self, "_launch_progress", 1.0, 0.28)
 	launch.tween_property(_ninja, "position", _ninja.position + Vector2(320, -640), 0.28)
-	launch.chain().tween_callback(get_tree().change_scene_to_file.bind("res://scenes/stage_select.tscn"))
+	launch.chain().tween_callback(get_tree().change_scene_to_file.bind(destination))

@@ -141,6 +141,7 @@ func _test_gates() -> void:
 		gate._physics_process(0.5)
 		_vector(gate.position, Vector2(100, 350), "wait A")
 	gate.free()
+	player.position = Vector2(400, 350)
 	# A moving Area must trigger against a motionless CharacterBody.
 	player.position = Vector2(400, 350)
 	gate = load("res://scenes/gravity_gate.tscn").instantiate()

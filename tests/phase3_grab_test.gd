@@ -512,6 +512,7 @@ func _heavy_tests() -> void:
 	_near(player.jump_speed, 650, "jump export unchanged")
 	_near(player.wall_climb_speed, 230, "climb unchanged")
 	_near(player.wall_stamina_rest_rate, 1.0 / 3.0, "stamina unchanged")
+	Input.action_press("jump")
 	player._jump_buffer_left = 0.1
 	player._try_jump(false, true)
 	_near(player.velocity.y, -player.wall_jump_up_speed, "heavy does not reduce wall jump")
@@ -522,6 +523,7 @@ func _heavy_tests() -> void:
 	player._tick_dash(1.0 / 60.0, true)
 	_near(player.velocity.x, 600, "superdash horizontal momentum")
 	_near(player.velocity.y, -650, "superdash jump unchanged")
+	Input.action_release("jump")
 	_check(player.get_held_object() == object, "dash and superdash retain heavy")
 	player.velocity = Vector2.ZERO
 	player.release_grab()

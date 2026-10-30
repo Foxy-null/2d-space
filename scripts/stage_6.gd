@@ -160,8 +160,8 @@ func _load_room(index: int) -> void:
 	_projectiles.clear()
 	if is_instance_valid(room):
 		# Release old references before removing the old room's rigid bodies.
-		player.respawn(false)
-		enemy.respawn(false)
+		player.respawn(false, false)
+		enemy.respawn(false, false)
 		room.free()
 	room_index = index
 	room = ROOM.new()
@@ -427,10 +427,14 @@ func _game_over(reason := "捕獲されました") -> void:
 	if DisplayServer.accessibility_should_reduce_animation() != 1:
 		create_tween().tween_property(_fade, "color:a", 0.85, 1.0)
 	await get_tree().create_timer(1.2, true).timeout
+	var demo := get_node_or_null("/root/DemoMode")
+	if demo != null and demo.warning_active:
+		await demo.warning_dismissed
 	if not is_inside_tree() or completed or generation != _generation:
 		return
 	_game_over_pending = false
 	$PauseMenu.resume()
+	get_tree().paused = false
 	$PauseMenu.set_process_input(true)
 	$HUD/HelpButton.disabled = false
 	$HUD/PauseButton.disabled = false
@@ -554,6 +558,7 @@ func _complete(result: String) -> void:
 	if completed or _game_over_pending:
 		return
 	completed = true
+	get_node("/root/CollectionProgress").mark_cleared("chaser")
 	ending = result
 	player.controls_enabled = false
 	enemy.controls_enabled = false

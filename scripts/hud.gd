@@ -4,7 +4,10 @@ extends CanvasLayer
 @export var tutorial_mode := false
 @export var compact_mode := false
 var _tutorial_index := 0
+var _tutorial_hints_visible := false
 var _last_extra_count := -1
+var _compact_wanted_bottom := false
+var _compact_applied_bottom := false
 
 
 func _ready() -> void:
@@ -13,6 +16,8 @@ func _ready() -> void:
 	_on_carry_changed("NONE")
 	player.gravity_changed.connect(_on_gravity_changed)
 	player.resources_changed.connect(_on_resources_changed)
+	if compact_mode:
+		_apply_compact_layout(false)
 	_on_gravity_changed(player.gravity_direction < 0)
 	_on_resources_changed(player.get_wall_stamina(), player.wall_stamina_max, player.is_dash_ready(), player.is_air_jump_ready())
 	if tutorial_mode:
@@ -22,18 +27,24 @@ func _ready() -> void:
 
 func _on_gravity_changed(is_inverted: bool) -> void:
 	if compact_mode:
-		$Status.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT if is_inverted else Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_KEEP_SIZE, 24)
-		$Margin/Panel.size_flags_vertical = Control.SIZE_SHRINK_END if is_inverted else Control.SIZE_SHRINK_BEGIN
-		$Margin.add_theme_constant_override("margin_bottom", 104 if is_inverted else 0)
-		$PauseButton.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT if is_inverted else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 48 if is_inverted else 24)
-		$PauseButton.position.x = 24
-		if not is_inverted:
-			$PauseButton.position.y = 38
+		_compact_wanted_bottom = is_inverted
 		return
 	if tutorial_mode:
 		$Margin/Panel/Rows/Gravity.text = "重力：天井へ ↑" if is_inverted else "重力：床へ ↓"
 		return
 	$Margin/Panel/Rows/Gravity.text = "GRAVITY: UP" if is_inverted else "GRAVITY: DOWN"
+
+
+func _apply_compact_layout(bottom: bool) -> void:
+	_compact_applied_bottom = bottom
+	$Status.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT if bottom else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 24)
+	$Margin/Panel.size_flags_vertical = Control.SIZE_SHRINK_END if bottom else Control.SIZE_SHRINK_BEGIN
+	$Margin.add_theme_constant_override("margin_bottom", 104 if bottom else 0)
+	$PauseButton.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT if bottom else Control.PRESET_TOP_LEFT, Control.PRESET_MODE_KEEP_SIZE, 48 if bottom else 24)
+	$PauseButton.position.x = 24
+	if not bottom:
+		$PauseButton.position.y = 38
+		$Status.position.y = 90
 
 
 func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool, air_jump_ready: bool) -> void:
@@ -47,8 +58,8 @@ func _on_resources_changed(stamina: float, stamina_max: float, dash_ready: bool,
 			$Status/Rows/Resources.text += "　空中ジャンプ：1"
 		return
 	if tutorial_mode:
-		$Margin/Panel/Rows/Resources.text = "ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復"
-		if _tutorial_index >= 5:
+		$Margin/Panel/Rows/Resources.text = ("ダッシュ：使用可能" if dash_ready else "ダッシュ：着地で回復") if _tutorial_hints_visible else ("ダッシュ ●" if dash_ready else "ダッシュ ○")
+		if _tutorial_hints_visible and _tutorial_index >= 5:
 			var player := get_node(player_path) as PlayerController
 			$Margin/Panel/Rows/Resources.text += "　追加ジャンプ：%d" % player.get_available_extra_jump_count()
 		return
@@ -61,17 +72,20 @@ func _on_carry_changed(label: String) -> void:
 		$Margin/Panel/Rows/Carry.text = "保持：" + {"NONE": "なし", "OBJECT": "小さな箱", "HEAVY": "重い箱", "JUMP": "ジャンプ生物", "PARACHUTE": "傘の生物"}.get(label, label)
 
 
-func show_tutorial_room(index: int, title: String, controls: String, wall_enabled: bool, dash_available: bool, room_count: int = 16) -> void:
+func show_tutorial_room(index: int, title: String, controls: String, wall_enabled: bool, dash_available: bool, room_count: int = 16, hints_visible: bool = false) -> void:
 	_tutorial_index = index
+	_tutorial_hints_visible = hints_visible
 	$Margin/Panel/Rows/Title.text = "%02d / %02d　%s" % [index + 1, room_count, title] if index < room_count else "任意の練習　" + title
 	$Margin/Panel/Rows/Controls.text = controls
+	$Margin/Panel/Rows/Controls.visible = hints_visible
 	$Margin/Panel/Rows/WallControls.text = "やり直し：R / Start　　出口を越えると次の部屋へ"
-	$Margin/Panel/Rows/Gravity.visible = index >= 3
+	$Margin/Panel/Rows/WallControls.visible = hints_visible
+	$Margin/Panel/Rows/Gravity.visible = hints_visible and index >= 3
 	$Margin/Panel/Rows/StaminaLabel.text = "壁スタミナ（着地で回復）"
-	$Margin/Panel/Rows/StaminaLabel.visible = wall_enabled and index in [1, 8]
+	$Margin/Panel/Rows/StaminaLabel.visible = hints_visible and wall_enabled and index in [1, 8]
 	$Margin/Panel/Rows/Stamina.visible = wall_enabled and index in [1, 8]
 	$Margin/Panel/Rows/Resources.visible = dash_available
-	$Margin/Panel/Rows/Carry.visible = index >= 10
+	$Margin/Panel/Rows/Carry.visible = hints_visible and index >= 10
 	var player := get_node(player_path) as PlayerController
 	_on_resources_changed(player.get_wall_stamina(), player.wall_stamina_max, player.is_dash_ready(), player.is_air_jump_ready())
 	_on_carry_changed(player.get_held_object().carry_name if player.get_held_object() != null else "NONE")
@@ -92,12 +106,18 @@ func show_stage_room(index: int, title: String, hint: String, room_count: int) -
 
 
 func show_lesson_progress(text: String, done: bool) -> void:
-	$Margin/Panel/Rows/Objective.visible = true
+	$Margin/Panel/Rows/Objective.visible = not tutorial_mode or _tutorial_hints_visible
 	$Margin/Panel/Rows/Objective.text = text
 	$Margin/Panel/Rows/Objective.modulate = Color(0.55, 1, 0.75) if done else Color(1, 0.85, 0.55)
 
 
 func _process(_delta: float) -> void:
+	if compact_mode and _compact_wanted_bottom != _compact_applied_bottom:
+		var compact_player := get_node(player_path) as PlayerController
+		var screen_y := compact_player.get_global_transform_with_canvas().origin.y
+		# Leave room for the rotating player and held umbrella before moving the HUD.
+		if (_compact_wanted_bottom and screen_y <= 460.0) or (not _compact_wanted_bottom and screen_y >= 304.0):
+			_apply_compact_layout(_compact_wanted_bottom)
 	if not tutorial_mode or _tutorial_index < 5:
 		return
 	var player := get_node(player_path) as PlayerController

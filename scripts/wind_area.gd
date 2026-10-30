@@ -85,6 +85,9 @@ func _draw() -> void:
 	if direction.is_zero_approx():
 		return
 	var tint := Color(0.65, 0.88, 1.0, 0.55)
+	var arrow_points := PackedVector2Array()
+	var outline_colors := PackedColorArray()
+	var arrow_colors := PackedColorArray()
 	for i in 9:
 		var phase := fposmod(_time / 6.0 + float(i) / 9, 1.0)
 		var offset := Vector2(fposmod(i * 73.0, maxf(area_size.x - 20, 1)), fposmod(i * 97.0, maxf(area_size.y - 20, 1)))
@@ -93,7 +96,15 @@ func _draw() -> void:
 		else:
 			offset.y = (phase if direction.y > 0 else 1.0 - phase) * maxf(area_size.y - 20, 1)
 		var center := rect.position + Vector2(10, 10) + offset
-		ArtDraw.arrow(self, center - direction * 9, center + direction * 9, Color(tint, tint.a * sin(phase * PI)), 1.5)
+		var start := center - direction * 9
+		var end := center + direction * 9
+		arrow_points.append_array(PackedVector2Array([start, end, end - direction.rotated(0.7) * 9, end, end, end - direction.rotated(-0.7) * 9]))
+		var opacity := sin(phase * PI)
+		for _segment in 3:
+			outline_colors.append(Color(ArtDraw.INK, 0.35 * opacity))
+			arrow_colors.append(Color(tint, tint.a * opacity))
+	draw_multiline_colors(arrow_points, outline_colors, 3.5, true)
+	draw_multiline_colors(arrow_points, arrow_colors, 1.5, true)
 	var distance := absf(direction.x) * area_size.x / 2 + absf(direction.y) * area_size.y / 2
 	var fan := -direction * (distance - 16)
 	ArtDraw.ellipse(self, fan, Vector2(14, 14), Color("8e939f"))

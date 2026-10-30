@@ -33,16 +33,16 @@ func _run() -> void:
 				preview.player.position = Vector2(150, 100)
 				preview.player.velocity = Vector2.ZERO
 			await process_frame
-	change_scene_to_file("res://scenes/tutorial.tscn")
+	change_scene_to_file("res://scenes/stage_3.tscn")
 	await process_frame
 	await process_frame
-	var tutorial := current_scene
-	var goal: ArrivalSwitch = tutorial.rooms.get_child(0).get_node("Goal")
-	tutorial.player.position = goal.global_position + Vector2(0, -160)
-	tutorial.player.velocity = Vector2.ZERO
+	var stage3 := current_scene
+	var goal: ArrivalSwitch = stage3.rooms.get_child(0).get_node("Goal")
+	stage3.player.position = goal.global_position + Vector2(0, -160)
+	stage3.player.velocity = Vector2.ZERO
 	for frame in 180:
 		if frame == 60:
-			tutorial._mark("jump")
+			goal.set_progress(0, 1, "jump", "ジャンプ")
 		await process_frame
 	print("ART_MOTION_REVIEW_RECORDED")
 	quit()

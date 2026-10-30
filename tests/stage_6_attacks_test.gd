@@ -197,7 +197,7 @@ func _poses() -> void:
 	sprite._process(0.0)
 	_check(sprite.animation == &"defeated", "Ordinary damage still uses the defeated artwork")
 	enemy.stun_left = 0.0
-	enemy.respawn(false)
+	enemy.respawn(false, false)
 	await _step(2)
 
 

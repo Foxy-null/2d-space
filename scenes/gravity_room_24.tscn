@@ -1,0 +1,247 @@
+[gd_scene load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
+
+[ext_resource type="PackedScene" path="res://scenes/gravity_gate.tscn" id="gate"]
+
+[ext_resource type="PackedScene" path="res://scenes/arrival_switch.tscn" id="goal"]
+
+[ext_resource type="PackedScene" path="res://scenes/wind_area.tscn" id="wind"]
+
+[ext_resource type="PackedScene" path="res://scenes/parachute_creature.tscn" id="para"]
+
+[ext_resource type="PackedScene" path="res://scenes/scroll_collectible.tscn" id="scroll"]
+
+[ext_resource type="Script" path="res://scripts/scroll_marker.gd" id="mark"]
+
+[ext_resource type="PackedScene" path="res://scenes/spike_block.tscn" id="spike"]
+
+[ext_resource type="PackedScene" path="res://scenes/refill_crystal.tscn" id="refill"]
+
+[sub_resource type="RectangleShape2D" id="EntryFloorShape"]
+size = Vector2(600, 40)
+
+[sub_resource type="RectangleShape2D" id="WindRestShape"]
+size = Vector2(330, 40)
+
+[sub_resource type="RectangleShape2D" id="UpGateShape"]
+size = Vector2(140, 1100)
+
+[sub_resource type="RectangleShape2D" id="CeilingRestShape"]
+size = Vector2(320, 40)
+
+[sub_resource type="RectangleShape2D" id="DownGateShape"]
+size = Vector2(160, 180)
+
+[sub_resource type="RectangleShape2D" id="ExitFloorShape"]
+size = Vector2(1000, 40)
+
+[sub_resource type="RectangleShape2D" id="LowerBulkheadShape"]
+size = Vector2(100, 700)
+
+[sub_resource type="RectangleShape2D" id="ReturnBridgeShape"]
+size = Vector2(2304, 40)
+
+[sub_resource type="RectangleShape2D" id="ExitBarrierShape"]
+size = Vector2(28, 220)
+
+[sub_resource type="RectangleShape2D" id="ExitLintelShape"]
+size = Vector2(28, 1240)
+
+[sub_resource type="RectangleShape2D" id="RightBoundaryShape"]
+size = Vector2(28, 1800)
+
+[node name="Room24" type="Node2D"]
+metadata/exit_left = true
+metadata/room_width = 2304.0
+metadata/room_bottom = 1800.0
+metadata/parachute_room = true
+metadata/return_retract = PackedStringArray("UpGate", "DownGate", "LowerBulkhead", "LowerWallSpikes", "LowerEntrySpikes", "RestUndersideSpikes")
+
+[node name="EntryFloor" type="StaticBody2D" parent="."]
+position = Vector2(2004.0, 1700)
+
+[node name="Collision" type="CollisionShape2D" parent="EntryFloor"]
+shape = SubResource("EntryFloorShape")
+
+[node name="Visual" type="Polygon2D" parent="EntryFloor"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-300.0, -20.0, 300.0, -20.0, 300.0, 20.0, -300.0, 20.0)
+
+[node name="Updraft" parent="." instance=ExtResource("wind")]
+position = Vector2(1900, 1080)
+area_size = Vector2(280, 1440)
+wind_direction = Vector2(0, -1)
+wind_acceleration = 2400.0
+max_wind_speed = 600.0
+
+[node name="WindRest" type="StaticBody2D" parent="."]
+position = Vector2(1565.0, 920)
+
+[node name="Collision" type="CollisionShape2D" parent="WindRest"]
+shape = SubResource("WindRestShape")
+
+[node name="Visual" type="Polygon2D" parent="WindRest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-165.0, -20.0, 165.0, -20.0, 165.0, 20.0, -165.0, 20.0)
+
+[node name="UpGate" parent="." instance=ExtResource("gate")]
+position = Vector2(1300, 550)
+target_gravity = -1
+
+[node name="CollisionShape2D" parent="UpGate" index="0"]
+shape = SubResource("UpGateShape")
+
+[node name="CeilingRest" type="StaticBody2D" parent="."]
+position = Vector2(1160.0, 630)
+
+[node name="Collision" type="CollisionShape2D" parent="CeilingRest"]
+shape = SubResource("CeilingRestShape")
+
+[node name="Visual" type="Polygon2D" parent="CeilingRest"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-160.0, -20.0, 160.0, -20.0, 160.0, 20.0, -160.0, 20.0)
+
+[node name="DashCrystal" parent="." instance=ExtResource("refill")]
+position = Vector2(1100, 950)
+refill_kind = 0
+
+[node name="DownGate" parent="." instance=ExtResource("gate")]
+position = Vector2(1100, 1250)
+target_gravity = 1
+
+[node name="CollisionShape2D" parent="DownGate" index="0"]
+shape = SubResource("DownGateShape")
+
+[node name="Arrow" parent="DownGate" index="2"]
+offset_top = -46.0
+offset_bottom = 22.0
+
+[node name="ExitFloor" type="StaticBody2D" parent="."]
+position = Vector2(500.0, 1480)
+
+[node name="Collision" type="CollisionShape2D" parent="ExitFloor"]
+shape = SubResource("ExitFloorShape")
+
+[node name="Visual" type="Polygon2D" parent="ExitFloor"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-500.0, -20.0, 500.0, -20.0, 500.0, 20.0, -500.0, 20.0)
+
+[node name="LowerBulkhead" type="StaticBody2D" parent="."]
+position = Vector2(1300, 1450)
+
+[node name="Collision" type="CollisionShape2D" parent="LowerBulkhead"]
+shape = SubResource("LowerBulkheadShape")
+
+[node name="Visual" type="Polygon2D" parent="LowerBulkhead"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-50.0, -350.0, 50.0, -350.0, 50.0, 350.0, -50.0, 350.0)
+
+[node name="LowerWallSpikes" parent="." instance=ExtResource("spike")]
+position = Vector2(1250, 1450)
+rotation = 1.570796327
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 350.0
+stage_group = &"stage_three"
+room_number = 23
+
+[node name="LowerEntrySpikes" parent="." instance=ExtResource("spike")]
+position = Vector2(1350, 1450)
+rotation = -1.570796327
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 350.0
+stage_group = &"stage_three"
+room_number = 23
+
+[node name="RestUndersideSpikes" parent="." instance=ExtResource("spike")]
+position = Vector2(1565, 940)
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 165.0
+stage_group = &"stage_three"
+room_number = 23
+
+[node name="Scroll" parent="." instance=ExtResource("scroll")]
+position = Vector2(1600, 540)
+stage_id = "gravity"
+scroll_id = "folded_current_08"
+
+[node name="ScrollMark" type="Node2D" parent="."]
+position = Vector2(1740, 860)
+script = ExtResource("mark")
+
+[node name="Spawn" type="Marker2D" parent="."]
+position = Vector2(2232, 1654)
+
+[node name="Return" type="Marker2D" parent="."]
+position = Vector2(800, 1434)
+
+[node name="Parachute" parent="." instance=ExtResource("para")]
+position = Vector2(2082, 1650)
+
+
+[node name="Goal" parent="." instance=ExtResource("goal")]
+position = Vector2(700, 1460)
+mission_required = false
+
+[node name="ReturnBridge" type="StaticBody2D" parent="."]
+position = Vector2(1152.0, 1700)
+visible = false
+
+[node name="Collision" type="CollisionShape2D" parent="ReturnBridge"]
+shape = SubResource("ReturnBridgeShape")
+disabled = true
+
+[node name="Visual" type="Polygon2D" parent="ReturnBridge"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-1152.0, -20.0, 1152.0, -20.0, 1152.0, 20.0, -1152.0, 20.0)
+
+[node name="ExitBarrier" type="StaticBody2D" parent="."]
+position = Vector2(564, 1350)
+
+[node name="Collision" type="CollisionShape2D" parent="ExitBarrier"]
+shape = SubResource("ExitBarrierShape")
+
+[node name="Visual" type="Polygon2D" parent="ExitBarrier"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-14, -110, 14, -110, 14, 110, -14, 110)
+
+[node name="ExitLintel" type="StaticBody2D" parent="."]
+position = Vector2(564, 620)
+
+[node name="Collision" type="CollisionShape2D" parent="ExitLintel"]
+shape = SubResource("ExitLintelShape")
+
+[node name="Visual" type="Polygon2D" parent="ExitLintel"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-14, -620, 14, -620, 14, 620, -14, 620)
+
+[node name="RightBoundary" type="StaticBody2D" parent="."]
+position = Vector2(2324, 900.0)
+
+[node name="Collision" type="CollisionShape2D" parent="RightBoundary"]
+shape = SubResource("RightBoundaryShape")
+
+[node name="Visual" type="Polygon2D" parent="RightBoundary"]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-14.0, -900.0, 14.0, -900.0, 14.0, 900.0, -14.0, 900.0)
+
+[node name="PitWarning" parent="." instance=ExtResource("spike")]
+position = Vector2(1152.0, 1784)
+rotation = 3.141592654
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 1152.0
+stage_group = &"stage_three"
+room_number = 23
+
+[node name="TopSpikes" parent="." instance=ExtResource("spike")]
+position = Vector2(1152.0, 16)
+rotation = 0
+travel = Vector2(0, 0)
+ceiling_strip = true
+strip_half_width = 1152.0
+stage_group = &"stage_three"
+room_number = 23

@@ -1,6 +1,6 @@
 # ステージ6・追撃と防御の再調整
 
-作業先：`feat/hikariyamaseistage6overhaul`。mainへの反映なし。
+以下は `feat/hikariyamaseistage6overhaul` での初回調整時点の記録。現行の復帰条件とmain統合時の検証は[ステージ6の仕様](stage-6.md)を参照。
 
 ## 実装した変更
 

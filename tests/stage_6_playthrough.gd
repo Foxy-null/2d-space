@@ -151,9 +151,9 @@ func _play_room(number: int) -> bool:
 			print("Pilot did not acquire a weight")
 			return false
 		if not stage.player.is_on_floor() and stage.player._coyote_left > 0.0:
-			Input.action_press("jump")
+			FullJumpInput.press(stage.player)
 			await _step()
-			Input.action_release("jump")
+			FullJumpInput.release_after_apex(stage.player)
 			_jump_left = 14
 		if number == 2:
 			for point: Vector2 in stage.room.route:
@@ -169,9 +169,9 @@ func _play_room(number: int) -> bool:
 		if not await _navigate(stage.player.position + Vector2(100, 0), 120):
 			return false
 		await _step(25)
-		Input.action_press("jump")
+		FullJumpInput.press(stage.player)
 		await _step()
-		Input.action_release("jump")
+		FullJumpInput.release_after_apex(stage.player)
 	if number in [1, 11] and not await _acquire("OBJECT"):
 		return false
 	if number in [3, 7, 8, 10, 12]:
@@ -324,9 +324,6 @@ func _defeat_boss() -> bool:
 		if stage.completed:
 			return true
 		if not await _acquire("OBJECT"):
-			return false
-		# Fight under the fixed roof next to a ground-level box supply.
-		if not await _navigate(Vector2(950, 1294), 600):
 			return false
 		for frame in 300:
 			if stage._game_over_pending:
@@ -538,8 +535,8 @@ func _on_launch(body: Node) -> void:
 
 func _input(action: StringName, pressed: bool) -> void:
 	if pressed:
-		Input.action_press(action)
-	else:
+		FullJumpInput.press_action(action, stage.player)
+	elif action != &"jump" or not FullJumpInput.is_holding():
 		Input.action_release(action)
 
 func _release_movement() -> void:

@@ -14,6 +14,9 @@ func _run() -> void:
 	var gallery: Button = current_scene.get_node("Margin/Content/Gallery")
 	_check(gallery.global_position.y >= preview.get_global_rect().end.y, "The gallery is below the environment preview")
 	_check(gallery.get_global_rect().end.y < 704.0, "The gallery button stays inside the screen")
+	if OS.get_cmdline_user_args().has("--screenshots"):
+		RenderingServer.force_draw()
+		root.get_texture().get_image().save_png("res://docs/screenshots/stage-selection.png")
 	await _key(KEY_DOWN)
 	await _key(KEY_DOWN)
 	_check(root.gui_get_focus_owner() == gallery, "Directional navigation reaches the gallery")

@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain_art.gd" id="terrain"]
+
+[sub_resource type="RectangleShape2D" id="StepShape"]
+size = Vector2(32, 72)
+
+[node name="EntryStep" type="StaticBody2D"]
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+shape = SubResource("StepShape")
+
+[node name="Visual" type="Polygon2D" parent="."]
+script = ExtResource("terrain")
+polygon = PackedVector2Array(-16, -36, 16, -36, 16, 36, -16, 36)

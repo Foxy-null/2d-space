@@ -28,6 +28,8 @@ func _run() -> void:
 	await _test_walls()
 	await _test_jumps()
 	await _test_crystal()
+	await _test_crystal_retry()
+	await _test_crystal_fast_contact()
 	await _test_edge_cases()
 	_test_respawn()
 	print("PHASE1_MOVEMENT_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
@@ -168,6 +170,9 @@ func _test_dash() -> void:
 		_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color.TRANSPARENT, "landing restores original indigo")
 		await _step(3)
 		_check(player.is_air_jump_ready(), "remaining grounded preserves air jump")
+		player._dash_ready = false
+		await _step()
+		_check(player.is_dash_ready(), "ground contact refills dash without another landing")
 		player._jump_buffer_left = 0.1
 		player._try_jump(true, false)
 		_check(player.is_air_jump_ready(), "ground jump after landing preserves air jump")
@@ -289,21 +294,36 @@ func _test_walls() -> void:
 
 func _test_jumps() -> void:
 	for gravity in [1, -1]:
-		for during in [true, false]:
+		for delay in [1, 10, 15]:
 			await _reset(Vector2(400, 674 if gravity > 0 else 26), gravity)
 			await _step(2)
 			Input.action_press("move_right")
 			Input.action_press("dash")
 			await _step()
 			Input.action_release("dash")
-			if not during:
-				while player.is_dashing():
-					await _step()
+			await _step(delay - 1)
+			if delay > 1:
+				_check(not player.is_dashing() and player.is_dash_ready(), "grounded dash refills during end momentum")
 			Input.action_press("jump")
 			await _step()
 			_check(not player.is_dashing(), "superdash leaves dash state")
 			_near(player.velocity.y, -gravity * player.jump_speed, "superdash jump speed")
 			_near(player.velocity.x, player.dash_speed * player.dash_end_speed_ratio, "superdash momentum")
+			_check(not player.is_on_floor() and player.is_dash_ready(), "superdash jump refills dash g=%d delay=%d" % [gravity, delay])
+			_check(player.get_node("Visuals/Body").material.get_shader_parameter("outfit_color") == Color.TRANSPARENT, "superdash refill restores original indigo")
+			Input.action_release("jump")
+			Input.action_release("move_right")
+			Input.action_press("move_up" if gravity > 0 else "move_down")
+			Input.action_press("dash")
+			await _step()
+			_check(player.is_dashing() and not player.is_dash_ready(), "superdash permits one more air dash")
+			_near(player.velocity.y, -gravity * player.dash_speed, "refilled air dash uses chosen direction")
+			Input.action_release("dash")
+			while player.is_dashing():
+				await _step()
+			Input.action_press("dash")
+			await _step()
+			_check(not player.is_dashing() and not player.is_dash_ready(), "superdash does not grant unlimited air dashes")
 		await _reset(Vector2(400, 674 if gravity > 0 else 26), gravity)
 		await _step(2)
 		player.grant_air_jump()
@@ -348,7 +368,7 @@ func _test_jumps() -> void:
 	while player.is_dashing():
 		await _step()
 	await _step()
-	_check(not player.is_air_jump_ready() and player.velocity.y < -600, "dash jump buffer survives to air jump")
+	_check(not player.is_air_jump_ready() and player.velocity.y < -200 and player.velocity.y > -400, "released dash-buffered jump survives as a short air jump")
 
 
 func _test_crystal() -> void:
@@ -377,6 +397,7 @@ func _test_crystal() -> void:
 			_check(not crystal.visible, scene + " waits respawn time")
 			await _step(25)
 			_check(crystal.visible and not crystal.get_node("CollisionShape2D").disabled and crystal.monitoring, scene + " respawns after 2.5 seconds")
+			await _reset(Vector2(550, 350), gravity)
 			player._dash_ready = false
 			crystal.position = player.position
 			await _step(3)
@@ -422,6 +443,61 @@ func _test_respawn() -> void:
 	player.position.y = 1000
 	player._physics_process(STEP)
 	_check(player.position == player._spawn_position and player.velocity == Vector2.ZERO, "out-of-bounds respawn")
+
+
+func _test_crystal_retry() -> void:
+	var original_spawn: Vector2 = player.get("_spawn_position")
+	for scene in ["refill_crystal", "jump_crystal"]:
+		await _reset(Vector2(400, 350))
+		player.set_respawn_position(Vector2(100, 674))
+		var crystal: Area2D = load("res://scenes/" + scene + ".tscn").instantiate()
+		crystal.position = player.position
+		world.add_child(crystal)
+		var restore := Callable(crystal, "reset_for_respawn")
+		player.respawned.connect(restore)
+		await _step(2)
+		_check(not crystal.visible, scene + " is consumed by physical contact immediately before retry")
+		var key := InputEventKey.new()
+		key.keycode = KEY_R
+		key.physical_keycode = KEY_R
+		key.pressed = true
+		Input.parse_input_event(key)
+		await _step()
+		key.pressed = false
+		Input.parse_input_event(key)
+		await _step(3)
+		_check(player.position.distance_to(Vector2(100, 674)) < 2 and player.is_dash_ready() and not player.is_air_jump_ready(), scene + " actual R returns to the entrance without remote pickup effects")
+		_check(crystal.visible and crystal.monitoring and not crystal.get_node("CollisionShape2D").disabled, scene + " rejects the queued pre-retry enter and stays available")
+		player.respawned.disconnect(restore)
+		crystal.free()
+		player.set_respawn_position(original_spawn)
+
+
+func _test_crystal_fast_contact() -> void:
+	for scene in ["refill_crystal", "jump_crystal"]:
+		for gravity in [1, -1]:
+			var contacts := 0
+			for side in [50.0, 52.0, 53.0]:
+				for distance in [82.0, 86.0, 90.0, 94.0, 98.0]:
+					await _reset(Vector2(400, 350), gravity)
+					var crystal: Area2D = load("res://scenes/" + scene + ".tscn").instantiate()
+					crystal.position = player.position + Vector2(1, 1).normalized() * distance + Vector2(1, -1).normalized() * side
+					world.add_child(crystal)
+					var missed: Array[bool] = []
+					crystal.body_entered.connect(func(body):
+						if body == player:
+							missed.append(crystal.visible))
+					Input.action_press("move_right")
+					Input.action_press("move_down")
+					Input.action_press("dash")
+					await _step()
+					Input.action_release("dash")
+					await _step(14)
+					if not missed.is_empty():
+						contacts += missed.size()
+						_check(not missed.has(true) and not crystal.visible, "%s collects short diagonal-dash contacts g=%d side=%s distance=%s" % [scene, gravity, side, distance])
+					crystal.free()
+			_check(contacts > 0, scene + " short-contact fixture includes actual physics enter signals g=%d" % gravity)
 
 
 func _test_edge_cases() -> void:

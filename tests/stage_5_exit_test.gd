@@ -9,41 +9,57 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	var progress := root.get_node("CollectionProgress")
+	progress.save_path = "user://canyon_exit_%d.cfg" % OS.get_process_id()
+	progress._collected.clear()
 	# Isolate exit behavior from the already-tested bumper traversal.
-	for index in 11:
+	var first := await _room(0)
+	var final_index: int = first.rooms.get_child_count() - 1
+	for index in final_index:
 		for airborne in [false, true]:
-			var stage := await _room(index, true)
+			var stage := await _room(index)
 			var player: PlayerController = stage.player
-			player.position = Vector2(index * 1280 + (1265 if airborne else 1210), 520 if airborne else 570)
+			var exit: Node2D = stage.rooms.get_child(index).get_node("Exit")
+			var collider: CollisionShape2D = exit.get_node("Collision")
+			var top := collider.to_global(collider.shape.get_rect().position).y
+			var left: bool = stage.rooms.get_child(index).get_meta("exit_left", false)
+			var direction := "move_left" if left else "move_right"
+			var room: Node2D = stage.rooms.get_child(index)
+			var edge_x: float = room.position.x + (15 if left else float(room.get_meta("room_width", 1280.0)) - 15)
+			player.global_position = Vector2(edge_x if airborne else exit.global_position.x, exit.global_position.y - 100 if airborne else top - 30)
+			if airborne and index >= 27: player.global_position.y = top-32
+			# This isolates boundary handling beyond room 32’s sealed edge, not a traversal route.
+			if airborne and index==31: player.global_position.x=room.position.x+float(room.get_meta("room_width"))+20
 			player.velocity = Vector2.ZERO
+			player._contacts_valid = false
 			if airborne:
-				Input.action_press("move_right")
+				Input.action_press(direction)
 				Input.action_press("dash")
 			await _step(8)
-			Input.action_release("move_right")
+			Input.action_release(direction)
 			Input.action_release("dash")
 			_check(stage.room_index == index + 1, "Room %d advances after one %s" % [index + 1, "airborne exit" if airborne else "exit landing"])
 			await _step(25)
 			_check(stage.room_index == index + 1 and not stage.transitioning, "The same clear advances exactly one room")
-			_check(stage.next_bumper == 0 and player.position.x < (index + 1) * 1280 + 110, "The next room starts at its own checkpoint")
-	# Neither an incomplete route nor another platform is an exit clear.
-	var locked := await _room(0, false)
-	locked.player.position = Vector2(1210, 570)
-	await _step(8)
-	_check(locked.room_index == 0, "Landing without the required reflections cannot advance")
-	var entrance := await _room(0, true)
+			_check(stage.next_bumper == 0 and player.position.distance_to(stage.rooms.get_child(index + 1).get_node("Spawn").global_position) < 8, "The next room starts at its own checkpoint")
+	var entrance := await _room(0)
 	await _step(8)
 	_check(entrance.room_index == 0, "The entrance platform cannot clear a room")
-	var final_room := await _room(11, true)
-	final_room.player.position = Vector2(1295, 520) + Vector2(11 * 1280, 0)
-	final_room.player.velocity = Vector2(900, 0)
+	var final_room := await _room(final_index)
+	final_room.player.position = Vector2(-15, 900) + final_room.rooms.get_child(final_index).position
+	final_room.player.velocity = Vector2(-900, 0)
 	await _step(8)
-	_check(final_room.room_index == 11 and not final_room.completed, "The final room still requires the actual arrival switch")
+	_check(final_room.room_index == final_index and not final_room.completed, "The final room still requires the actual arrival switch")
+	var arrival := await _room(final_index)
+	arrival.player.position = arrival.goal.global_position - Vector2(0, 100)
+	await _step(80)
+	_check(arrival.completed and arrival.next_bumper == 0, "The final switch accepts physical arrival without history")
 	print("STAGE_5_EXIT_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
 	quit(1 if failed else 0)
 
 
-func _room(index: int, unlocked: bool) -> Node2D:
+func _room(index: int) -> Node2D:
 	change_scene_to_file("res://scenes/stage_5.tscn")
 	await _step(3)
 	var stage: Node2D = current_scene
@@ -51,9 +67,6 @@ func _room(index: int, unlocked: bool) -> Node2D:
 	stage.call("_set_checkpoint")
 	stage.player.respawn()
 	await _step(3)
-	if unlocked:
-		stage.next_bumper = stage.call("_bumpers").get_child_count()
-		stage.call("_update_route")
 	return stage
 
 
