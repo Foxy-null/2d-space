@@ -8,6 +8,7 @@ const CORAL := Color("fa765f")
 const CYAN := Color("35cce0")
 const MINT := Color("a9edbb")
 const VIOLET := Color("9367c4")
+const SCROLL := preload("res://assets/characters/scroll.png")
 
 
 static func polygon(canvas: CanvasItem, points: PackedVector2Array, fill: Color, width: float = 2.5) -> void:
@@ -69,11 +70,7 @@ static func footprints(canvas: CanvasItem, center: Vector2, scale: float = 1.0) 
 
 
 static func scroll(canvas: CanvasItem) -> void:
-	box(canvas, Rect2(-11, -16, 22, 32), CREAM, 1)
-	for y in [-19, 13]:
-		box(canvas, Rect2(-16, y, 32, 6), GOLD, 2)
-	for y in [-7, 0, 7]:
-		canvas.draw_line(Vector2(-5, y), Vector2(5, y), INK, 1.5, true)
+	canvas.draw_texture_rect(SCROLL, Rect2(-20, -20, 40, 40), false)
 
 
 static func cube_mark(canvas: CanvasItem, center: Vector2, scale: float = 1.0) -> void:
