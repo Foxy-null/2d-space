@@ -34,6 +34,7 @@ func _on_body_entered(body: Node) -> void:
 	_follower = body
 	_follower.respawned.connect(reset_for_respawn)
 	_safe_time = 0.0
+	GameAudio.scroll_touch.play()
 
 
 func _physics_process(delta: float) -> void:
@@ -58,6 +59,7 @@ func _secure() -> void:
 	if CollectionProgress.collect_scroll(stage_id, scroll_id) != OK:
 		return
 	_secured = true
+	GameAudio.scroll_collect.play()
 	modulate.a = 0.25
 	_stop_following()
 
