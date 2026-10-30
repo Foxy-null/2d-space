@@ -67,6 +67,7 @@ func _first_room() -> void:
 	change_scene_to_file("res://scenes/stage_5.tscn")
 	await _step(4)
 	stage = current_scene
+	await stage.get_node("StageIntro").tree_exited
 	player = stage.player
 	respawns = 0
 	bounces = 0

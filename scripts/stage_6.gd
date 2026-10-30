@@ -259,6 +259,8 @@ func _physics_process(delta: float) -> void:
 		_intro_panel.modulate.a = clampf(_intro_left / 0.4, 0.0, 1.0)
 		_update_camera()
 		_update_hud()
+		if _intro_left <= 0.0:
+			StageIntro.play(self, player, camera)
 		return
 	if _entry_left > 0.0:
 		_entry_left = maxf(0.0, _entry_left - delta)

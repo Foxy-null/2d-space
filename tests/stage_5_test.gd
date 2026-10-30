@@ -23,6 +23,7 @@ func _run() -> void:
 	current_scene.get_node("Margin/Content/Stages/Stage5").pressed.emit()
 	await _step(15)
 	stage = current_scene
+	await stage.get_node("StageIntro").tree_exited
 	player = stage.player
 	_check(stage.scene_file_path == "res://scenes/stage_5.tscn", "Stage 5 loads from selection")
 	_check(stage.rooms.get_child_count() == 34 and stage.TITLES.size() == 34, "Thirty-four named rooms are available")
@@ -102,6 +103,7 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.room_index == 0 and stage.next_bumper == 0 and not stage.completed, "Re-entry resets the course")
+	await stage.get_node("StageIntro").tree_exited
 	_check(not stage.get_node("Rooms/Room1").has_node("ExitLock"), "The first exit has no reflection-history lock")
 	# Isolated negative checks use positioning; the reachability proof above never does.
 	player.position = Vector2(820, 470)

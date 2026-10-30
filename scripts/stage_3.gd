@@ -84,6 +84,7 @@ func _ready() -> void:
 	player.respawn()
 	camera.make_current()
 	set_hints_visible(false)
+	StageIntro.play(self, player, camera)
 
 
 func set_hints_visible(value: bool) -> void:

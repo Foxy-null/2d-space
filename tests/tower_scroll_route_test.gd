@@ -12,6 +12,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_2.tscn")
 	await _step(6)
 	stage = current_scene
+	await stage.get_node("StageIntro").tree_exited
 	player = stage.player
 	scroll = stage.get_node("ScrollBranch/Scroll")
 	player.respawned.connect(func(): respawns += 1)

@@ -60,7 +60,7 @@ func _run() -> void:
 				Input.action_release("reset")
 				await _step(3)
 			checkpoint_restarted = false
-			while stage._intro_left > 0.0:
+			while stage._intro_left > 0.0 or stage.has_node("StageIntro"):
 				await _step()
 			_recent_launch = -100
 			for child in stage.room.get_children():

@@ -57,6 +57,7 @@ func _ready() -> void:
 	player.movement_action.connect(_on_movement)
 	InputSettings.bindings_changed.connect(_update_prompt)
 	_enter_room(0, false)
+	StageIntro.play(self, player, camera)
 
 
 func _build_room(index: int) -> void:

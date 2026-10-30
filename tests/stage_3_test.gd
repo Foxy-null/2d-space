@@ -30,6 +30,7 @@ func _run() -> void:
 	await _key(KEY_ENTER)
 	_check(current_scene.scene_file_path == "res://scenes/stage_3.tscn", "Keyboard selection must start stage 3")
 	stage = current_scene
+	await stage.get_node("StageIntro").tree_exited
 	player = stage.player
 	player.movement_action.connect(func(action: String): actions[action] = actions.get(action, 0) + 1)
 	player.gravity_changed.connect(func(inverted: bool): flips.append(-1 if inverted else 1))
@@ -283,6 +284,7 @@ func _run() -> void:
 	stage = current_scene
 	player = stage.player
 	_check(stage.room_index == 0 and stage.cleared.is_empty() and not stage.completed, "Re-selecting stage 3 starts fresh")
+	await stage.get_node("StageIntro").tree_exited
 	_check_hints(false)
 	_check_help(false)
 	_check(stage.get_node("HUD/PauseButton").focus_mode == Control.FOCUS_NONE, "Jump cannot focus the help trigger during gameplay")

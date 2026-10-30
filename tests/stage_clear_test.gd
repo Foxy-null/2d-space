@@ -14,6 +14,7 @@ func _run() -> void:
 		change_scene_to_file(path)
 		await _step(4)
 		var stage := current_scene
+		if stage.has_node("StageIntro"): await stage.get_node("StageIntro").tree_exited
 		var completion: Label = stage.get_node("HUD/Completion")
 		_check(not completion.visible and not completion.card.visible, "No clear card before completion")
 		await _key(KEY_ENTER)
@@ -67,6 +68,7 @@ func _run() -> void:
 		# Also exercise the actual Button's click route on each stage.
 		change_scene_to_file(path)
 		await _step(3)
+		if current_scene.has_node("StageIntro"): await current_scene.get_node("StageIntro").tree_exited
 		current_scene.set_physics_process(false)
 		completion = current_scene.get_node("HUD/Completion")
 		completion.show()
@@ -75,6 +77,7 @@ func _run() -> void:
 		_check(current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Return button works in stage %d" % number)
 		change_scene_to_file(path)
 		await _step(3)
+		if current_scene.has_node("StageIntro"): await current_scene.get_node("StageIntro").tree_exited
 		current_scene.set_physics_process(false)
 		current_scene.get_node("HUD/Completion").show()
 		await _step(2)

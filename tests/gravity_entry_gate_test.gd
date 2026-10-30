@@ -5,6 +5,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_3.tscn")
 	await _step(4)
 	stage = current_scene
+	await stage.get_node("StageIntro").tree_exited
 	player = stage.player
 	player.gravity_changed.connect(func(inverted: bool): flips.append(-1 if inverted else 1))
 	player.respawned.connect(func(): respawns += 1)

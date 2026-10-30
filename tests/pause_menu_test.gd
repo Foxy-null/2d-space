@@ -14,6 +14,7 @@ func _run() -> void:
 		change_scene_to_file("res://scenes/%s.tscn" % scene)
 		await _step(4)
 		var stage := current_scene
+		if stage.has_node("StageIntro"): await stage.get_node("StageIntro").tree_exited
 		var player: PlayerController = stage.get_node("Player")
 		var pause := stage.get_node("PauseMenu")
 		var final_goal: ArrivalSwitch = stage.get_node("Goal") if scene == "stage_2" else (stage.goal if scene == "stage_5" else null)
@@ -154,6 +155,7 @@ func _check_transitions() -> void:
 		change_scene_to_file("res://scenes/%s.tscn" % scene)
 		await _step(3)
 		var stage := current_scene
+		await stage.get_node("StageIntro").tree_exited
 		if scene in ["stage_4", "stage_5"]:
 			stage._transition_to_next()
 		else:
@@ -174,6 +176,7 @@ func _check_completion_input() -> void:
 	change_scene_to_file("res://scenes/stage_3.tscn")
 	await _step(3)
 	var stage := current_scene
+	await stage.get_node("StageIntro").tree_exited
 	var pause := stage.get_node("PauseMenu")
 	stage.get_node("HUD/Completion").show()
 	await _key(KEY_ESCAPE)

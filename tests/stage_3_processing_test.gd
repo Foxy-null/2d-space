@@ -17,6 +17,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_3.tscn")
 	await _step(4)
 	stage = current_scene
+	await stage.get_node("StageIntro").tree_exited
 	await _spike_drawing()
 	await _room_updates()
 	await _native_scroll_transfer()

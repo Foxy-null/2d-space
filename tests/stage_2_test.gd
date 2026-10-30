@@ -69,6 +69,7 @@ func _run() -> void:
 	await _step(4)
 	_check(current_scene.scene_file_path == "res://scenes/stage_2.tscn", "Stage 2 selection opens the tower")
 	stage = current_scene
+	await stage.get_node("StageIntro").tree_exited
 	player = stage.player
 	player.respawned.connect(func(): respawns += 1)
 	_check(stage.checkpoints.get_child_count() == 34, "Thirty-four checkpoints")
