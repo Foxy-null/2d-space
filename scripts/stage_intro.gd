@@ -1,8 +1,8 @@
 class_name StageIntro
 extends CanvasLayer
 
-const HOLD_TIME := 0.5
-const RETURN_TIME := 0.2
+const HOLD_TIME := 1.25
+const RETURN_TIME := 0.5
 const IRIS_RADIUS := 96.0
 
 var _player: PlayerController

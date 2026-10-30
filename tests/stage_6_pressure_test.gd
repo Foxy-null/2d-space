@@ -36,7 +36,7 @@ func _presentation() -> void:
 	_check(stage.room.entrance_wall.visible and stage.enemy.visuals.visible and stage.enemy.position.x > 0, "The first introduction keeps the enemy inside the room with the boundary wall intact")
 	_check(stage._intro_panel.get_child(0).text.contains("UMA妖怪エイリアン") and stage._intro_panel.get_child(0).text.contains("星間山荒・大赤斑"), "The introduction shows both enemy names")
 	_check(not stage.enemy.get_children().any(func(child): return child is Label and child.text == stage.enemy.ENEMY_NAME), "The individual name is not permanently displayed above the enemy")
-	await _step(210)
+	await _step(280)
 	_check(stage._intro_left <= 0.0 and stage.player.controls_enabled, "The introduction ends and restores movement")
 	stage._load_room(1)
 	await _step(2)
