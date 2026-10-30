@@ -12,7 +12,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	for scene in ["stage_2", "stage_3", "stage_4", "stage_5"]:
+	for scene in ["stage_3", "stage_4", "stage_5"]:
 		scene_name = scene
 		stage = load("res://scenes/%s.tscn" % scene).instantiate()
 		root.add_child(stage)
@@ -25,7 +25,6 @@ func _run() -> void:
 		await _step(4)
 		var goal: ArrivalSwitch
 		match scene:
-			"stage_2": goal = stage.get_node("Goal")
 			"stage_3": goal = stage.get_node("Rooms/Room1/Goal")
 			"stage_4":
 				stage.room_index = stage.rooms.get_child_count() - 1

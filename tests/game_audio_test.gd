@@ -64,7 +64,7 @@ func _run() -> void:
 		if index == 5:
 			current_scene.enemy.movement_action.emit("jump")
 			_check(not audio.jump.playing, "The chaser does not trigger the player's SE")
-		if index == 0:
+		if index in [0, 1]:
 			var pause_menu := current_scene.get_node("PauseMenu")
 			audio.menu_open.stop()
 			var escape := InputEventKey.new()
@@ -81,7 +81,7 @@ func _run() -> void:
 			current_scene.get_node("HUD/Completion").show()
 		_check(audio.music.stream == audio.CLEAR and audio.music.playing, "Showing stage %d clear UI replaces BGM with clear SE" % (index + 1))
 		var clear_playback: AudioStreamPlayback = audio.music.get_stream_playback()
-		if index == 0:
+		if index in [0, 1]:
 			current_scene._show_clear()
 		else:
 			current_scene.get_node("HUD/Completion").hide()
@@ -92,7 +92,7 @@ func _run() -> void:
 		await _real_time(0.4)
 		_check(audio.music.stream == quiet and audio.music.playing, "The actual finished signal starts the matching quiet BGM")
 		await _loop_end()
-		if index == 0:
+		if index in [0, 1]:
 			_check(paused, "Tutorial clear audio plays while gameplay is paused")
 			current_scene.player.respawn()
 			_check(not paused and audio.music.stream == normal, "Retrying the tutorial restores normal BGM")
@@ -106,7 +106,7 @@ func _run() -> void:
 			paused = false
 
 	await _scene("stage_2")
-	current_scene.get_node("HUD/Completion").show()
+	current_scene._show_clear()
 	audio.music.seek(audio.CLEAR.get_length() - 0.1)
 	await _scene("tutorial")
 	await _real_time(0.4)
@@ -117,7 +117,7 @@ func _run() -> void:
 	_check(audio.music.stream_paused, "The tutorial freezes music before a scene change")
 	await _scene("stage_2")
 	_check(audio.music.pitch_scale == 1.0 and not audio.music.stream_paused and audio.music.playing, "Leaving input wait starts the next stage's BGM at normal speed")
-	current_scene.get_node("HUD/Completion").show()
+	current_scene._show_clear()
 	_check(audio.music.stream == audio.CLEAR, "Re-entering a stage resets its clear SE guard")
 	await _scene("gallery")
 	_check(not audio.music.playing and not audio.jump.playing and not audio.dash.playing, "Leaving for an unscored scene stops the previous audio")

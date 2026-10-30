@@ -130,6 +130,14 @@ func play_clear() -> void:
 	_play_music(CLEAR)
 
 
+func set_quiet(value: bool) -> void:
+	if _cleared or get_tree().current_scene == null:
+		return
+	var family: String = STAGE_TRACKS.get(get_tree().current_scene.scene_file_path, "")
+	if not family.is_empty():
+		_play_music(TRACKS[family][1 if value else 0])
+
+
 func _play_music(stream: AudioStream) -> void:
 	music.pitch_scale = 1.0
 	music.stream_paused = false
