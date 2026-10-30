@@ -70,7 +70,7 @@ func _has_safe_landing() -> bool:
 	if absf(_follower.velocity.dot(_follower.up_direction)) > 1.0:
 		return false
 	var contact := KinematicCollision2D.new()
-	return _follower.test_move(_follower.global_transform, -_follower.up_direction, contact) and contact.get_collider() is StaticBody2D and contact.get_normal().dot(_follower.up_direction) > cos(_follower.floor_max_angle)
+	return _follower.test_move(_follower.global_transform, -_follower.up_direction, contact) and contact.get_collider() is StaticBody2D and not contact.get_collider().is_in_group("unstable_platform") and contact.get_normal().dot(_follower.up_direction) > cos(_follower.floor_max_angle)
 
 
 func reset_for_respawn() -> void:

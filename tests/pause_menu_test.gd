@@ -17,7 +17,7 @@ func _run() -> void:
 		if stage.has_node("StageIntro"): await stage.get_node("StageIntro").tree_exited
 		var player: PlayerController = stage.get_node("Player")
 		var pause := stage.get_node("PauseMenu")
-		var final_goal: ArrivalSwitch = stage.get_node("Goal") if scene == "stage_2" else (stage.goal if scene == "stage_5" else null)
+		var final_goal: ArrivalSwitch = stage.goal if scene == "stage_5" else null
 		if final_goal != null: _check(not final_goal.get_node("Bubble").visible, "Final arrivals start without an instruction bubble when hints are off")
 		_check(not paused and not pause.overlay.visible, scene + ": starts unpaused")
 		await _key(KEY_H)
@@ -81,7 +81,7 @@ func _run() -> void:
 		elif scene == "stage_3":
 			stage._set_room(1, false)
 		elif scene == "stage_2":
-			stage._set_checkpoint(2)
+			stage._enter_room(2, Vector2(350, 834))
 		elif scene in ["stage_4", "stage_5"]:
 			stage.room_index = 2
 			stage._set_checkpoint()
@@ -99,10 +99,10 @@ func _run() -> void:
 		await _click(pause.menu.get_node("Return"))
 		await _click(pause.confirmation.get_node("Return"))
 		_check(not paused and current_scene.scene_file_path == "res://scenes/stage_select.tscn", "Confirming returns to an unpaused selection screen")
-		if scene in ["stage_2", "stage_5"]:
+		if scene == "stage_5":
 			change_scene_to_file("res://scenes/%s.tscn" % scene)
 			await _step(4)
-			var reentered_goal: ArrivalSwitch = current_scene.get_node("Goal") if scene == "stage_2" else current_scene.goal
+			var reentered_goal: ArrivalSwitch = current_scene.goal
 			_check(not current_scene.hints_visible and not reentered_goal.get_node("Bubble").visible, "Reentering the actual stage restores the default instruction-free final arrival")
 	await _check_world_pause()
 	await _check_transitions()

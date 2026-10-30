@@ -27,6 +27,8 @@ func _transfer(scene: String, retry: bool) -> void:
 	change_scene_to_file("res://scenes/%s.tscn" % scene)
 	await _step(4)
 	var stage := current_scene
+	if stage.has_node("StageIntro"):
+		await stage.get_node("StageIntro").tree_exited
 	var player: PlayerController = stage.player
 	var id := scene + ("_retry" if retry else "_transfer")
 	var scroll := _pickup(stage, player, id)
@@ -50,6 +52,8 @@ func _backtrack(scene: String) -> void:
 	change_scene_to_file("res://scenes/%s.tscn" % scene)
 	await _step(4)
 	var stage := current_scene
+	if stage.has_node("StageIntro"):
+		await stage.get_node("StageIntro").tree_exited
 	stage.call("_on_arrival", 0)
 	await _step(2)
 	stage.call("_transition_to", 1)
