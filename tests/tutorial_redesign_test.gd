@@ -105,7 +105,7 @@ func _run() -> void:
 	# Low speed loses to the collapse before reaching the first gap.
 	before = respawns
 	_hold("move_right", 0.8)
-	await _until(func(): return respawns > before, 200, "slow running loses to the bridge collapse")
+	await _until(func(): return respawns > before, 260, "slow running loses to the bridge collapse")
 	_release()
 	_check(not stage.bridge.running and stage.bridge.front == 224.0, "Retry rebuilds the whole bridge")
 	for plank in stage.bridge.planks:
@@ -116,7 +116,7 @@ func _run() -> void:
 	await _step(3)
 	before = respawns
 	_hold("move_right")
-	await _until(func(): return respawns > before, 140, "Walking off the end dies without rescue")
+	await _until(func(): return respawns > before, 200, "Walking off the end dies without rescue")
 	_check(stage.phase == tutorial.Phase.RUN, "An invalid approach never enters input wait")
 	_release()
 	for invalid in ["vertical", "left", "short"]:
@@ -134,7 +134,7 @@ func _run() -> void:
 		if invalid == "vertical":
 			await _step(100)
 		else:
-			await _until(func(): return respawns > before, 180, invalid + " final jump is not rescued")
+			await _until(func(): return respawns > before, 240, invalid + " final jump is not rescued")
 		_check(stage.phase == tutorial.Phase.RUN, invalid + " final jump never enters input wait")
 		_release()
 	# The unskipped slowdown must also finish, and retry must clear its global stop.

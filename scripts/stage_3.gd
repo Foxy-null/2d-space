@@ -115,7 +115,8 @@ func _physics_process(delta: float) -> void:
 	elif left_entrance and room_index > 0:
 		_transition_to(room_index - 1)
 	elif player.global_position.y > float(rooms.get_child(room_index).get_meta("room_bottom", ROOM_SIZE.y)) + 52.0 or player.global_position.y < float(rooms.get_child(room_index).get_meta("room_top", 0.0)) - 52.0:
-		player.respawn()
+		player.die()
+		return
 	if room.get_meta("parachute_room", false):
 		var look_down := player.gravity_direction < 0 and not player.is_dashing() and (player.is_on_floor() or player.velocity.y > 0)
 		parachute_camera_lead = move_toward(parachute_camera_lead, 240.0 if look_down else -80.0, delta * 480.0)

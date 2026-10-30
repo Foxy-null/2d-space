@@ -1,6 +1,5 @@
 extends SceneTree
 
-const STAGE = preload("res://scripts/stage_6.gd")
 const PLAYER = preload("res://scenes/player.tscn")
 const BOX = preload("res://scenes/grabbable.tscn")
 var checks := 0
@@ -12,8 +11,9 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	_check(STAGE._segment_hits_rect(Vector2(-200, 0), Vector2(200, 0), Rect2(-10, -10, 20, 20)), "Fast crossings cannot skip projectile/hazard contact")
-	_check(not STAGE._segment_hits_rect(Vector2(-200, 40), Vector2(200, 40), Rect2(-10, -10, 20, 20)), "Near misses do not count as hits")
+	var stage_script := load("res://scripts/stage_6.gd")
+	_check(stage_script._segment_hits_rect(Vector2(-200, 0), Vector2(200, 0), Rect2(-10, -10, 20, 20)), "Fast crossings cannot skip projectile/hazard contact")
+	_check(not stage_script._segment_hits_rect(Vector2(-200, 40), Vector2(200, 40), Rect2(-10, -10, 20, 20)), "Near misses do not count as hits")
 	await _new_stage()
 	_check(stage.enemy is PlayerController, "Enemy shares the real player controller")
 	_check(stage.enemy.move_speed == stage.player.move_speed and stage.enemy.jump_speed == stage.player.jump_speed and stage.enemy.wall_stamina_max == stage.player.wall_stamina_max, "Initial enemy movement and stamina match the player")
@@ -263,21 +263,27 @@ func _fall_resets_room() -> void:
 	stage.room.set_entrance_intact(false)
 	_place(stage.player, Vector2(900, stage.room.size.y + 200))
 	stage._physics_process(0.0)
+	await _step(2)
+	stage.get_node("StageIntro").finish()
 	_check(stage.room_index == 1 and stage.player.position == stage.room.spawn, "A real fall keeps the checkpoint in the current room")
 	_check(stage.enemy.position == stage.room.enemy_spawn and stage.enemy.velocity == Vector2.ZERO and stage.enemy.gravity_direction == 1 and stage.enemy.stun_left == 0.0, "Fall recovery resets enemy position, momentum, gravity and stun")
 	_check(stage.enemy.get_held_object() == null and item.carrier == null and not stage.enemy.get("active"), "Fall recovery releases carried items and restarts pursuit")
-	_check(not stage.room.all_weight_doors_open() and stage.room.doors[0].body.visible and stage.room._elapsed == 0.0 and stage.room._supply_left == 0.0, "Falling resets weights, doors and room timers immediately")
+	_check(not stage.room.all_weight_doors_open() and stage.room.doors[0].body.visible and stage.room._elapsed == 0.0 and stage.room._supply_left == 0.0, "Falling resets weights, doors and room timers behind the iris")
 	_check(stage.player.get_wall_stamina() == 3.0 and stage.player.recovery_slow_left == 0.0 and stage.player.movement_slow_left == 0.0, "Falling also heals attack damage and status effects")
 	_check(stage.room.entrance_wall.visible and stage.room.breach_left == 0.0 and stage._entry_left == 0.9, "Retry restores the entrance wall and its breach sequence")
 	stage._respawn_grace = 0.0
 	stage.enemy.position += Vector2(100, 0)
 	_place(stage.player, stage.room.moving_hazards[0].current.get_center())
 	stage._physics_process(0.0)
+	await _step(2)
+	stage.get_node("StageIntro").finish()
 	_check(stage.player.position == stage.room.spawn and stage.enemy.position == stage.room.enemy_spawn and stage.room._elapsed == 0.0, "Moving-spike recovery resets the room too")
 	stage._respawn_grace = 0.0
 	stage.enemy.position += Vector2(100, 0)
 	_place(stage.player, stage.room.hazards[0].get_center())
 	stage._physics_process(0.0)
+	await _step(2)
+	stage.get_node("StageIntro").finish()
 	_check(stage.player.position == stage.room.spawn and stage.enemy.position == stage.room.enemy_spawn, "Fixed-spike recovery also resets the room")
 	stage.player.respawn()
 	await _step(3)
@@ -290,6 +296,8 @@ func _fall_resets_room() -> void:
 	stage.room.update_escape(true)
 	_place(stage.player, Vector2(900, stage.room.size.y + 200))
 	stage._physics_process(0.0)
+	await _step(2)
+	stage.get_node("StageIntro").finish()
 	_check(stage.defeat_hits == 0 and stage.escape_elapsed == 0.0 and not stage.room.key_collected and stage.room.keys_collected == 0 and stage.room.arrival.locked, "Falling resets final-room hits, time, keys and the escape gate")
 	stage.player.set_physics_process(true)
 	stage.enemy.set_physics_process(true)
@@ -449,6 +457,10 @@ func _new_stage() -> void:
 	await _step(4)
 	stage = current_scene
 	await _step(180)
+	var intro: Node = stage.get_node_or_null("StageIntro")
+	if intro != null:
+		intro.finish()
+	await _step(2)
 
 
 func _step(count := 1) -> void:

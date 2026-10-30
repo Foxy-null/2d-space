@@ -128,7 +128,7 @@ func _run() -> void:
 	_check(stage.camera.position.y < -3000, "Camera follows the ascent continuously")
 	# 落下・リトライで最新地点に復帰し、能力とクリスタルが回復する。
 	player.position.y = 1000
-	await _step(3)
+	await _step(35)
 	_check(stage.checkpoint_index == stage.checkpoints.get_child_count()-1 and player.position.distance_to(player._spawn_position)<3, "Fall returns to latest checkpoint")
 	_check(player.is_dash_ready() and player.get_wall_stamina() > 2.9, "Respawn restores movement resources")
 	var crystal := stage.get_node("Items/Item4")

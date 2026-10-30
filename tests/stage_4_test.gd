@@ -153,8 +153,8 @@ func verify_collision() -> void:
 	var before := deaths
 	player.global_position = hazard.global_position
 	player.velocity = Vector2.ZERO
-	await step(4)
-	check(deaths == before + 1 and stage.room_index == 4, "Contact causes exactly one immediate retry")
+	await step(33)
+	check(deaths == before + 1 and stage.room_index == 4, "Contact causes exactly one checkpoint retry")
 	check(absf(player.position.x - 5230) < 2, "Spike death keeps checkpoint")
 	check(hazard.elapsed < 0.1, "Death resets patrols")
 	player.global_position = hazard.global_position + Vector2(-65, 0)
@@ -164,6 +164,7 @@ func verify_collision() -> void:
 	Input.action_press("dash")
 	await step(6)
 	release()
+	await step(32)
 	check(deaths == before + 1, "Dash does not bypass lethal spikes")
 
 
@@ -254,5 +255,6 @@ func verify_ceiling() -> void:
 			Input.action_press("dash")
 			await step(2)
 			release()
+			await step(32)
 			check(deaths == before + 1, "Visible ceiling spikes stop upward movement inside the screen")
 			check(stage.room_index == section and absf(player.position.x - (room.position.x + room.entrance_x)) < 2, "Ceiling death returns to the same entrance")

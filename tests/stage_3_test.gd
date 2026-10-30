@@ -233,10 +233,10 @@ func _run() -> void:
 	_check(stage.completed and final_room.get_node("Goal").is_pressed(), "Retry keeps the actual final goal and completion")
 	player.set_gravity_direction(-1)
 	player.global_position.y = -60
-	await _step(3)
+	await _step(35)
 	_check(player.gravity_direction == 1 and player.position.y > 0, "Inverted falls reset to the current entrance")
 	player.global_position.y = float(final_room.get_meta("room_bottom"))+60
-	await _step(3)
+	await _step(35)
 	_check(stage.room_index == final_index and player.global_position.y < float(final_room.get_meta("room_bottom")), "Falling below the actual final room retries its entrance")
 	player.global_position.x = final_room.global_position.x + float(final_room.get_meta("room_width")) + 5
 	await _step(25)
@@ -529,7 +529,7 @@ func _fall_into_pit(edge_x: int) -> void:
 	await _step(3)
 	var respawns_before := respawns
 	_drive("move_right")
-	await _until(func(): return respawns > respawns_before, 180, "Walking into the actual pit must trigger a fall retry")
+	await _until(func(): return respawns > respawns_before, 210, "Walking into the actual pit must trigger a fall retry")
 	_release_inputs()
 	await _step(2)
 	_check(stage.room_index == room.get_index() and player.global_position.distance_to(room.get_node("Spawn").global_position) < 20, "A pit fall returns to the current entrance")
@@ -547,7 +547,7 @@ func _fall_into_ceiling_pit(edge_x: int) -> void:
 	await _step(3)
 	var respawns_before := respawns
 	_drive("move_right")
-	await _until(func(): return respawns > respawns_before, 240, "Walking into the ceiling pit without jumping or grabbing must cause a retry")
+	await _until(func(): return respawns > respawns_before, 270, "Walking into the ceiling pit without jumping or grabbing must cause a retry")
 	_release_inputs()
 	await _step(2)
 	_check(stage.room_index == room.get_index() and player.global_position.distance_to(room.get_node("Spawn").global_position) < 20, "A ceiling pit returns to the current entrance")

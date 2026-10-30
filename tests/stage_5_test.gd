@@ -125,10 +125,10 @@ func _run() -> void:
 	_check(not stage.target_marker.visible, "Retry keeps optional guides hidden")
 	for outside in [Vector2(400, -100), Vector2(400, 850), Vector2(-100, 550)]:
 		player.position = outside
-		await _step(3)
+		await _step(35)
 		_check(stage.room_index == 0 and _x() < 100, "The non-exit boundaries restore the current checkpoint")
 	player.position = Vector2(580, 100)
-	await _step(4)
+	await _step(35)
 	_check(_x() < 100 and stage.next_bumper == 0, "The red obstacle resets the room")
 	await _key(KEY_ESCAPE)
 	var pause := stage.get_node("PauseMenu")

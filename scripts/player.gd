@@ -87,6 +87,7 @@ const HORIZONTAL_WIND_RESPONSE_TIME := 0.36
 const MIN_HEADWIND_SPEED_RATIO := 0.1
 var controls_enabled := true
 var room_transfer_in_progress := false
+var _death_pending := false
 
 @onready var visuals: Node2D = $Visuals
 
@@ -199,7 +200,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			_refill_on_landing()
 	if use_default_respawn_bounds and (global_position.y < -260.0 or global_position.y > 980.0):
-		respawn()
+		die()
 	_notify_resources()
 
 
@@ -560,7 +561,20 @@ func set_respawn_position(location: Vector2) -> void:
 	_spawn_position = location
 
 
+func die() -> void:
+	if _death_pending or not is_inside_tree():
+		return
+	_death_pending = true
+	var stage := get_tree().current_scene
+	if stage != null and stage.has_node("PauseMenu"):
+		# StageIntro already types its player; load here to avoid a script cycle.
+		load("res://scripts/stage_intro.gd").play_death(stage, self)
+	else:
+		respawn()
+
+
 func respawn(room_transfer: bool = false, reset_objects := true) -> void:
+	_death_pending = false
 	_variable_jump_source = &""
 	room_transfer_in_progress = room_transfer
 	for object in _separating_objects.duplicate():
