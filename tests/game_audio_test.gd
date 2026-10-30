@@ -23,8 +23,9 @@ func _run() -> void:
 			_check(track.loop and is_zero_approx(track.loop_offset), "Every normal and quiet BGM loops from the beginning")
 	_check(audio.TITLE.loop, "Title BGM loops")
 
-	await _scene("start_screen")
-	_check(audio.music.stream == audio.TITLE and audio.music.playing, "Title starts its BGM")
+	await process_frame
+	_check(current_scene != null and current_scene.scene_file_path == "res://scenes/start_screen.tscn", "The game boots directly into the title without changing scenes")
+	_check(audio.music.stream == audio.TITLE and audio.music.playing, "Title starts its BGM on initial startup")
 	await _loop_end()
 	var title_playback: AudioStreamPlayback = audio.music.get_stream_playback()
 	audio.music.pitch_scale = 0.06

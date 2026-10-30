@@ -43,3 +43,17 @@ Use case: illustration-story. Asset type: transparent 2D game red Japanese umbre
 ```
 
 シートの実出力サイズは指定した目安と異なるため、実画像の2×2／2×1の区切りから取り込んでいる。透過余白の切り出しと拡大率は表示時に処理し、傘の開閉でも表示幅90pxと持ち手の接点を保つ。
+
+## 巻物
+
+ユーザー添付の巻物画像を参照し、組み込みの `image_gen` で `scroll.png` を生成した。`transparent_background = true`。緑の軸と縁、薄黄色の紙、黄色い星、赤い紐を再現し、背景の光線や忍者は除いた。
+
+`ArtDraw.scroll()` が同じ透過PNGを40×40pxで描画し、ステージ内の巻物・目印・ステージ選択のアイコンに使用する。
+
+```text
+Use case: background-extraction / precise-object-edit.
+Asset type: a single transparent PNG sprite for a 2D Japanese ninja platform game.
+Input image 1 is the mandatory subject reference. Reproduce ONLY the scroll in the attached reference faithfully, as if its original artist supplied a clean standalone sprite. Keep its exact diagonal orientation and distinctive asymmetrical silhouette: a thick olive/moss-green rolled cylinder along the LEFT side tilted down to the right, small pale gold spindle ends at the upper-left and bottom, a softly curved light creamy-yellow unfolded sheet expanding to the upper-right within a thick moss-green border, a single irregular rounded FIVE-point yellow star outlined dark gray near the middle of the sheet, and a thin coral-red cord emerging behind the upper-right edge and curving up and right in a long hook with a small teardrop end. Preserve the reference's simple flat hand-drawn cartoon shapes, slightly imperfect dark gray outlines, proportions and colors. The roll is a single flat olive-green cylinder, NOT two opposing rollers. The sheet is broad, waved and partly unrolled, NOT a rectangular book or a conventional vertical scroll. The star is a rounded irregular starfish-like shape, NOT a geometric star.
+Remove all other content from the reference: no ninja, hand, umbrella, blue background, motion lines, radiating light beams or translucent streaks. Reconstruct a uniformly colored complete scroll beneath the reference's light beams. No newly added decoration, writing, sparkles, shadows, floor, gradients or 3D rendering.
+Composition: whole scroll AND whole red cord fully visible, tightly centered with a small transparent margin, reference proportions preserved, output canvas about square. Actual alpha transparency, not a checkerboard painted into the background.
+```
