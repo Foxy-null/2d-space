@@ -72,6 +72,8 @@ func play_clear() -> void:
 
 
 func _play_music(stream: AudioStream) -> void:
+	music.pitch_scale = 1.0
+	music.stream_paused = false
 	if music.stream == stream and music.playing:
 		return
 	music.stop()

@@ -24,8 +24,11 @@ func _run() -> void:
 	_check(audio.music.stream == audio.TITLE and audio.music.playing, "Title starts its BGM")
 	await _loop_end()
 	var title_playback: AudioStreamPlayback = audio.music.get_stream_playback()
+	audio.music.pitch_scale = 0.06
+	audio.music.stream_paused = true
 	await _scene("stage_select")
 	_check(audio.music.get_stream_playback() == title_playback, "Selection keeps the title BGM playing without restarting")
+	_check(audio.music.pitch_scale == 1.0 and not audio.music.stream_paused, "A scene change restores music speed and playback even when the track stays the same")
 
 	var scenes := ["tutorial", "stage_2", "stage_3", "stage_4", "stage_5", "stage_6"]
 	var families := ["c", "a", "b", "c", "a", "b"]
@@ -90,7 +93,12 @@ func _run() -> void:
 	await _scene("tutorial")
 	await _real_time(0.4)
 	_check(audio.music.stream == audio.TRACKS.c[0], "Changing stages during clear SE cannot start the old quiet BGM")
+	current_scene._start_slow()
+	current_scene._process(0.2)
+	current_scene._wait_for_dash()
+	_check(audio.music.stream_paused, "The tutorial freezes music before a scene change")
 	await _scene("stage_2")
+	_check(audio.music.pitch_scale == 1.0 and not audio.music.stream_paused and audio.music.playing, "Leaving input wait starts the next stage's BGM at normal speed")
 	current_scene.get_node("HUD/Completion").show()
 	_check(audio.music.stream == audio.CLEAR, "Re-entering a stage resets its clear SE guard")
 	await _scene("gallery")
