@@ -84,11 +84,11 @@ func _natural_intro(scene: String) -> void:
 	_capture(scene + "-hold", intro)
 	Input.action_press("move_right")
 	var hold_frames := 0
-	while intro._holding and hold_frames < 35:
+	while intro._holding and hold_frames < 80:
 		_check(player.global_position == position_before, "Held movement cannot move the player during the hold")
 		await _step()
 		hold_frames += 1
-	_check(not intro._holding and intro._elapsed >= 0.5 and intro._elapsed < 0.53, "The hold lasts half a second")
+	_check(not intro._holding and intro._elapsed >= 1.25 and intro._elapsed < 1.28, "The hold lasts one and a quarter seconds")
 	_check(not paused and player.controls_enabled and intro.visible, "Controls unlock when the return begins, while the iris is still visible")
 	_check(stage.process_mode == mode_before, "The stage's original processing mode is restored")
 	await _step(4)
@@ -107,13 +107,13 @@ func _natural_intro(scene: String) -> void:
 	menu.resume()
 	Input.action_release("move_right")
 	var return_frames := 4
-	for frame in 20:
+	for frame in 35:
 		if not is_instance_valid(intro):
 			break
 		await _step()
 		return_frames += 1
-	_check(return_frames >= 11 and return_frames <= 13, "The return lasts approximately twelve frames at sixty fps")
-	_check(not is_instance_valid(intro) and not stage.has_node("StageIntro"), "The effect removes itself after the two-tenths return")
+	_check(return_frames >= 29 and return_frames <= 32, "The return takes thirty frames plus deferred removal at sixty fps (%s: %d)" % [scene, return_frames])
+	_check(not is_instance_valid(intro) and not stage.has_node("StageIntro"), "The effect removes itself after the half-second return")
 	_check(not paused and player.controls_enabled and root.get_camera_2d() == stage.camera, "Natural completion restores the normal camera and controls")
 	_check(stage.camera.zoom.is_equal_approx(Vector2.ONE), "The normal zoom is unchanged")
 	_capture(scene + "-finished")
