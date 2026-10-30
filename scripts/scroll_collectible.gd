@@ -24,7 +24,7 @@ func _draw() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
-	if _secured or is_instance_valid(_follower) or not body is PlayerController:
+	if _secured or is_instance_valid(_follower) or not body is PlayerController or not body.is_in_group("player"):
 		return
 	# Enter notifications can arrive after retry; check the player's current sweep.
 	var body_shape: CollisionShape2D = body.get_node("CollisionShape2D")

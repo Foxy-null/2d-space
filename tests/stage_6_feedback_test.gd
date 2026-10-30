@@ -69,6 +69,49 @@ func _run() -> void:
 	await _step(80)
 	_check(not paused and not stage._game_over_pending and stage._fade.material == null and not stage._message.visible, "The defeat overlay and iris clear on restart")
 	_check(stage._notice.text == "チェックポイントから再開" and stage.player.get_wall_stamina() == 3.0, "Checkpoint arrival is acknowledged with restored stamina")
+	for variant in 4:
+		stage.retry_room()
+		stage.player.position = Vector2(350, 400)
+		stage._previous_player = stage.player.position
+		stage.player._wall_stamina = 0.5
+		stage._respawn_grace = 0.0
+		await _step(2)
+		stage._spawn_needles(stage.player.position - Vector2(0, 90), directions, variant)
+		var shot = stage.room.needles.get_child(0)
+		shot.neutral_left = 0.0
+		shot.tracking_left = 0.0
+		stage._update_needles(0.3)
+		var cause: String = ["敵の長針", "敵の短針", "敵の追尾トゲ", "敵の灰の雨"][variant]
+		_check(stage._game_over_pending and stage._message.text.begins_with(cause + "でやられた"), "A real flying attack identifies its fatal damage source: " + cause)
+		_check(not stage._message.text.contains("スタミナ切れ"), "Attack defeat is never mislabeled as movement exhaustion")
+		await _step(80)
+	stage._respawn_grace = 0.0
+	stage.player._wall_stamina = 0.1
+	stage._damage_player(0.45, Vector2.ZERO, true)
+	_check(stage._message.text.begins_with("敵が残したトゲでやられた"), "A lethal embedded tip is distinguished from flying attacks and capture")
+	await _step(80)
+	for scene in ["grabbable", "heavy_object", "parachute_creature", "jump_creature"]:
+		stage.retry_room()
+		stage.enemy.position = Vector2(500, 400)
+		stage.player.position = Vector2(900, 400)
+		stage._previous_enemy = stage.enemy.position
+		stage._previous_player = stage.player.position
+		var item: Grabbable = load("res://scenes/" + scene + ".tscn").instantiate()
+		stage.room.get_node("Items").add_child(item)
+		var name: String = {"grabbable": "箱", "heavy_object": "重い箱", "parachute_creature": "傘", "jump_creature": "相棒"}[scene]
+		item.position = stage.enemy.position - Vector2(150, 0)
+		stage._on_release(item, true, stage.player)
+		item.position = stage.enemy.position + Vector2(150, 0)
+		stage._check_projectiles()
+		_check(stage.enemy.stun_left == 2.0 and stage._notice.text.begins_with(name + " 命中！"), "Enemy stun names the actual throwable: " + name)
+		item.position = stage.player.position - Vector2(150, 0)
+		stage._on_release(item, true, stage.enemy)
+		item.position = stage.player.position + Vector2(150, 0)
+		stage.player._wall_stamina = 0.5
+		stage._respawn_grace = 0.0
+		stage._check_projectiles()
+		_check(stage._message.text.begins_with("敵が投げた" + name + "でやられた"), "A thrown object also retains its identity on defeat: " + name)
+		await _step(80)
 	stage._load_room(10)
 	var latch: Dictionary = stage.room.doors.filter(func(entry): return entry.button.position.x > stage.room.size.x - 1000)[0]
 	var weight: Grabbable = stage.room.get_node("Items").get_children().filter(func(item): return item.carry_name == "HEAVY")[0]

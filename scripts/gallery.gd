@@ -2,7 +2,7 @@ extends Control
 
 const ENTRIES := [
 	{"name": "忍者ぶっとびくん", "category": "キャラクター", "image": "ninja", "text": "このゲームの主人公。ジャンプ・壁登り・ダッシュで星々の道を進みます。\n\n動きながら持つボタンを離すと投擲、止まって離すと足元へ置きます。横重力では↑↓で壁沿いを歩きます。"},
-	{"name": "星間山荒・大赤斑", "category": "UMA妖怪エイリアン", "image": "res://assets/enemies/star-mountain/idle.png", "text": "総称：UMA妖怪エイリアン\n個体名：星間山荒・大赤斑\n\n忍者より大きな、棘に耐性を持つ追跡者。見つけると追跡し、見失うと最後に見た場所を調べます。棘の壁も登れますが、箱の投擲では怯みます。\n\n離れると灰雲や山なりの長針、動く相手へは短針の連射など、状況で技を選びます。攻撃の構えと隙はメッセージで確認できます。"},
+	{"name": "星間山荒・大赤斑", "category": "UMA妖怪エイリアン", "image": "res://assets/enemies/star-mountain/idle.png", "text": "総称：UMA妖怪エイリアン\n個体名：星間山荒・大赤斑\n\n忍者より大きな、棘に耐性を持つ追跡者。見つけると追跡し、見失うと最後に見た場所を調べます。棘の壁も登れますが、投げた箱・傘・相棒が当たると怯みます。\n\n離れると灰雲や山なりの長針、動く相手へは短針の連射など、状況で技を選びます。攻撃の構えと隙はメッセージで確認できます。"},
 	{"name": "緑の相棒", "category": "キャラクター", "scene": "res://scenes/jump_creature.tscn", "text": "持つと追加ジャンプを使える相棒です。保持したまま着地すると力が戻ります。\n\n通常ジャンプの上昇が終わるころに追加ジャンプを使うと、遠い足場へ渡れます。"},
 	{"name": "赤い和傘", "category": "キャラクター・防御", "scene": "res://scenes/parachute_creature.tscn", "text": "持つと滑空し、上昇気流に乗れます。ステージ6では持っている間に傘が開き、頭上から来る針や灰の雨を防ぎます。\n\n横や下からの攻撃、地面に残った露出した棘先は防げません。ダッシュ中は傘が閉じるため、移動と防御を使い分けましょう。"},
 	{"name": "軽い箱", "category": "運搬・防御", "scene": "res://scenes/grabbable.tscn", "text": "運んでスイッチへ置いたり、敵へ投げて怯ませたりできます。敵の飛行針を受けると箱に刺さり、箱と一緒に動きます。\n\n地形に刺さった針の露出した先端へ投げると、先端を覆った固定足場になります。固定後の箱は持ち直せません。"},
@@ -18,6 +18,7 @@ const ENTRIES := [
 	{"name": "回復クリスタル", "category": "能力の回復", "scene": "res://scenes/refill_crystal.tscn", "text": "緑はダッシュ、紫は追加ジャンプを補います。足場と次の回復地点を見て、能力を使う順番を決めましょう。\n\n壁スタミナは着地や休息で回復します。敵の攻撃で回復低下中は、着地しても徐々に回復します。通常時は着地で即時全回復します。"},
 	{"name": "重量スイッチ", "category": "地形の仕掛け", "scene": "res://scenes/pressure_button.tscn", "text": "箱や重箱を置いて動かします。足りない重さでは扉が開きません。金の線が対応する扉や檻を示します。\n\n開く装置と閉じる装置があります。置いた箱を持ち去ると、条件を失うものもあります。"},
 	{"name": "到着スイッチと隔壁", "category": "部屋の出口", "scene": "res://scenes/arrival_switch.tscn", "text": "足跡の台へ着地し、押し込むと作動します。ステージ6の道中では隔壁が開くだけなので、その先の通路を走り抜けて次の部屋へ進みます。\n\n追跡者は背後の壁を破って追ってきます。最終部屋では条件を満たした到着台が逃走クリアになります。"},
+	{"name": "収集の巻物", "category": "収集要素", "scene": "res://scenes/scroll_collectible.tscn", "text": "各ステージで集められる巻物。触れると忍者についてきて、安全な地面や足場に着地すると取得が確定します。着地する前にやり直すと元の位置へ戻ります。\n\nステージ6では部屋1・4・6・8・10・13に計6本。寄り道して高い足場や屋根の上を探しましょう。クリアには必須ではありません。\n\n確定した巻物はやり直し・再起動でも残り、取得済みの絵は薄く表示されます。"},
 ]
 
 var entries: ItemList
@@ -117,6 +118,8 @@ func _select(index: int) -> void:
 	heading.text = "%s　/　%s" % [entry.category, entry.name]
 	heading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.text = entry.text
+	if entry.name == "収集の巻物":
+		description.text = "ステージ6の収集記録：%d / %d\n\n" % [CollectionProgress.get_count("chaser"), CollectionProgress.TOTALS.chaser] + description.text
 	description_scroll.scroll_vertical = 0
 	for child in preview_world.get_children():
 		child.free()

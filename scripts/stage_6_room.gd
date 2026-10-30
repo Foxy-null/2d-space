@@ -94,6 +94,7 @@ var entrance_wall: StaticBody2D
 var breach_left := 0.0
 var extension_block: SpikeBlock
 var spawn_area := Rect2()
+var scroll: ScrollCollectible
 
 
 func _ready() -> void:
@@ -343,6 +344,7 @@ func _ready() -> void:
 		platform.add_child(crack)
 	if number != FINAL_ROOM:
 		_build_extension()
+	_build_collection()
 	# Break a section of the enclosing wall when the enemy follows into the next room.
 	if number > 0:
 		enemy_spawn = Vector2(-50, spawn.y)
@@ -478,6 +480,34 @@ func _build_extension() -> void:
 			_crystal(Vector2(x + 555, y - 140), 0)
 			passage_route.assign([Vector2(x + 120, y - 26), Vector2(x + 310, y - 180), Vector2(x + 520, y - 120), Vector2(x + 680, y - 270)])
 	passage_route.append(passage_rect.get_center() - Vector2(0, 26))
+
+
+func _build_collection() -> void:
+	var x := size.x - 1000
+	var y := exit_position.y
+	var at: Vector2
+	match number:
+		0:
+			at = Vector2(x + 535, y - 260)
+		3:
+			_block(Rect2(x + 785, y - 220, 110, 24))
+			at = Vector2(x + 840, y - 275)
+		5:
+			_block(Rect2(x + 560, y - 330, 130, 24))
+			at = Vector2(x + 625, y - 390)
+		7:
+			at = Vector2(x + 525, y - 275)
+		9:
+			at = Vector2(x + 310, y - 185)
+		12:
+			at = Vector2(1285, 720)
+		_:
+			return
+	scroll = preload("res://scenes/scroll_collectible.tscn").instantiate()
+	scroll.stage_id = "chaser"
+	scroll.scroll_id = "room_%02d" % (number + 1)
+	scroll.position = at
+	add_child(scroll)
 
 
 func open_passage() -> void:

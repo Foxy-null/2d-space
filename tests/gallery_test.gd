@@ -23,7 +23,7 @@ func _run() -> void:
 	await _key(KEY_ENTER)
 	_check(current_scene.scene_file_path.ends_with("gallery.tscn"), "Accept opens the real gallery scene")
 	var catalogue = current_scene
-	_check(catalogue.entries.item_count == 17 and root.gui_get_focus_owner() == catalogue.entries, "All seventeen entries are accessible by keyboard")
+	_check(catalogue.entries.item_count == 18 and root.gui_get_focus_owner() == catalogue.entries, "All eighteen entries are accessible by keyboard")
 	await _key(KEY_DOWN)
 	_check(catalogue.heading.text.contains("UMA妖怪エイリアン") and catalogue.description.text.contains("星間山荒・大赤斑"), "The enemy's group and individual name can be read again")
 	if OS.get_cmdline_user_args().has("--screenshots"):

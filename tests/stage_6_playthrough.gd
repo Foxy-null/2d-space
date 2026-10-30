@@ -18,12 +18,16 @@ var _step_frames := 1
 var _sample_at := 30
 var _recent_launch := -100
 var _record_label := "full-escape"
-const OUTPUT := "res://deliverables/stage6-fatigue-update"
+const OUTPUT := "res://deliverables/stage6-collection-seal"
 
 func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
+	var progress := root.get_node("CollectionProgress")
+	progress.save_path = "user://stage6_playthrough_%d.cfg" % OS.get_process_id()
+	progress._collected.clear()
+	progress._cleared.clear()
 	change_scene_to_file("res://scenes/stage_6.tscn")
 	await process_frame
 	await _step(4)
@@ -113,6 +117,7 @@ func _run() -> void:
 			child.stop()
 	current_scene.queue_free()
 	await _step(3)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(progress.save_path))
 	OS.delay_msec(100) # Let the audio thread release the final arrival chime before shutdown.
 	await _step(3)
 	quit()

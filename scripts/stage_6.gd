@@ -24,6 +24,7 @@ var _world: Node2D
 var _backdrop: StageBackdrop
 var _status: Label
 var _stamina: ProgressBar
+var _collection: Label
 var _hint: Label
 var _help: PanelContainer
 var _message: Label
@@ -330,7 +331,7 @@ func _update_grab_hint() -> void:
 		bounds = Rect2(screen, Vector2.ZERO) if points.size() == 1 else bounds.expand(screen)
 	_grab_frame.points = points
 	_grab_outline.points = points
-	_grab_hint.text = "掴む：" + {"OBJECT": "箱", "HEAVY": "重い箱", "PARACHUTE": "傘", "JUMP": "相棒"}.get(_grab_target.carry_name, "物体")
+	_grab_hint.text = "掴む：" + _item_name(_grab_target)
 	_grab_hint.reset_size()
 	var bottom: float = ($HUD/Progress.position.y if $HUD/Progress.visible else _action.get_parent().position.y) - 8.0
 	var y := bounds.position.y - _grab_hint.size.y - 8.0
@@ -500,7 +501,7 @@ func _update_capture(delta: float) -> void:
 			_capture()
 
 
-func _game_over(reason := "捕獲されました") -> void:
+func _game_over(reason := "捕獲された") -> void:
 	if _game_over_pending or completed:
 		return
 	var generation := _generation
@@ -514,7 +515,7 @@ func _game_over(reason := "捕獲されました") -> void:
 	get_tree().paused = true
 	_feedback("", ArtDraw.GOLD, player.position, "defeat")
 	_notice.hide()
-	_message.text = ("捕獲された" if reason == "捕獲されました" else "スタミナ切れ") + "\n部屋 %02d のチェックポイントから再開" % (room_index + 1)
+	_message.text = reason + "\n部屋 %02d のチェックポイントから再開" % (room_index + 1)
 	_message.show()
 	_effect_left = 1.2
 	if DisplayServer.accessibility_should_reduce_animation() != 1:
@@ -546,7 +547,7 @@ func _game_over(reason := "捕獲されました") -> void:
 	_update_hud()
 
 
-func _damage_player(amount: float, impulse := Vector2.ZERO, ground_needle := false) -> void:
+func _damage_player(amount: float, impulse := Vector2.ZERO, ground_needle := false, cause := "敵のトゲ攻撃") -> void:
 	if completed or _game_over_pending or _hit_grace > 0.0 or _respawn_grace > 0.0:
 		return
 	if not ground_needle:
@@ -554,9 +555,10 @@ func _damage_player(amount: float, impulse := Vector2.ZERO, ground_needle := fal
 	player.apply_attack_damage(amount, ground_needle)
 	_hit_grace = 0.75
 	_had_condition = true
-	_feedback("残針に接触！ 減速・回復低下" if ground_needle else "被弾！ 回復低下", ArtDraw.CORAL, player.position, "ground" if ground_needle else "hurt")
+	cause = "敵が残したトゲ" if ground_needle else cause
+	_feedback("残針に接触！ 減速・回復低下" if ground_needle else cause + "に被弾！ 回復低下", ArtDraw.CORAL, player.position, "ground" if ground_needle else "hurt")
 	if player.get_wall_stamina() <= 0.0:
-		_game_over("攻撃でスタミナが尽きました")
+		_game_over(cause + "でやられた")
 
 
 func _on_release(object: Grabbable, thrown: bool, source: PlayerController) -> void:
@@ -606,14 +608,18 @@ func _check_projectiles() -> void:
 						_complete("決着成功")
 				if enemy.stun_left <= 0.0:
 					enemy.apply_stun(2.0)
-					_feedback("箱 命中！ 敵がひるんだ", ArtDraw.GOLD, enemy.position, "hit")
+					_feedback(_item_name(object) + " 命中！ 敵がひるんだ", ArtDraw.GOLD, enemy.position, "hit")
 			elif _hit_grace <= 0.0 and _respawn_grace <= 0.0:
-				_damage_player(player.wall_stamina_max / 3.0, (object.position - entry.previous).normalized() * 140)
+				_damage_player(player.wall_stamina_max / 3.0, (object.position - entry.previous).normalized() * 140, false, "敵が投げた" + _item_name(object))
 			_projectiles.remove_at(index)
 		elif object.linear_velocity.length() < 100.0:
 			_projectiles.remove_at(index)
 		else:
 			entry.previous = object.position
+
+
+static func _item_name(object: Grabbable) -> String:
+	return {"OBJECT": "箱", "HEAVY": "重い箱", "PARACHUTE": "傘", "JUMP": "相棒"}.get(object.carry_name, "道具")
 
 
 static func _segment_hits_rect(from: Vector2, to: Vector2, rect: Rect2) -> bool:
@@ -705,6 +711,7 @@ func _update_hud() -> void:
 	_status.text = "部屋 %02d/%02d　重力 %s　 %s　 ダッシュ %s　 追加ジャンプ %d　｜　%s" % [room_index + 1, ROOM.ROOM_COUNT, direction, capture_status, "可" if player.is_dash_ready() else "回復待ち", player.get_available_extra_jump_count(), pursuit]
 	_stamina.max_value = player.wall_stamina_max
 	_stamina.value = player.get_wall_stamina()
+	_collection.text = "巻物 %d/%d" % [CollectionProgress.get_count("chaser"), CollectionProgress.TOTALS.chaser]
 	_condition.text = "回復低下 %.1f秒" % player.recovery_slow_left if player.recovery_slow_left > 0.0 else ""
 	if player.movement_slow_left > 0.0:
 		_condition.text += "　減速 %.1f秒" % player.movement_slow_left
@@ -834,6 +841,8 @@ func _build_hud() -> void:
 	gauge.add_theme_constant_override("separation", 12)
 	gauge.add_child(_text("壁スタミナ", 16))
 	gauge.add_child(_stamina)
+	_collection = _text("", 16)
+	gauge.add_child(_collection)
 	rows.add_child(gauge)
 	var help_button := Button.new()
 	help_button.position = Vector2(1018, 16)
@@ -980,7 +989,7 @@ func _update_needles(delta: float) -> void:
 		var from: Vector2 = needle.flight_start + player.position - _previous_player
 		if _segment_hits_rect(from, needle.flight_end, _actor_rect(player).grow(3.0)):
 			if _hit_grace <= 0.0 and _respawn_grace <= 0.0:
-				_damage_player(player.wall_stamina_max / 3.0, (needle.flight_end - needle.flight_start).normalized() * 140.0)
+				_damage_player(player.wall_stamina_max / 3.0, (needle.flight_end - needle.flight_start).normalized() * 140.0, false, ["敵の長針", "敵の短針", "敵の追尾トゲ", "敵の灰の雨"][needle.variant])
 			needle.queue_free()
 		elif needle.blocked and not was_blocked:
 			blocked_shots += 1
