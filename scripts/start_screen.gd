@@ -19,6 +19,7 @@ var _save_error: AcceptDialog
 
 
 func _ready() -> void:
+	$AudioCredit.meta_clicked.connect(OS.shell_open)
 	DemoMode.bind_button(_demo_button)
 	_continue_button.disabled = not CollectionProgress.has_save()
 	_continue_button.pressed.connect(_continue)

@@ -59,7 +59,6 @@ var _grab_target: Grabbable
 var _condition: Label
 var _effects: Node2D
 var _effect_left := 0.0
-var _fade: ColorRect
 
 
 func _ready() -> void:
@@ -142,11 +141,6 @@ func _ready() -> void:
 	_condition = _text("", 18)
 	_condition.position = Vector2(28, 96)
 	$HUD.add_child(_condition)
-	_fade = ColorRect.new()
-	_fade.size = get_viewport_rect().size
-	_fade.color = Color(0.02, 0.03, 0.08, 0.0)
-	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	$HUD.add_child(_fade)
 	_effects = Node2D.new()
 	_effects.draw.connect(_draw_effects)
 	$HUD.add_child(_effects)
@@ -296,7 +290,7 @@ func _physics_process(delta: float) -> void:
 	if _game_over_pending:
 		return
 	if _out_of_course(player) or (_respawn_grace <= 0.0 and _touches_hazard(player, _previous_player)):
-		player.respawn()
+		player.die()
 		return
 	if _out_of_course(enemy) or _touches_hazard(enemy, _previous_enemy):
 		enemy.call("reset_pursuit", true)
@@ -322,7 +316,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_player_respawned() -> void:
-	if _loading or not is_instance_valid(room) or _game_over_pending:
+	if _loading or not is_instance_valid(room):
 		return
 	_generation += 1
 	_capture_pending = false
@@ -414,35 +408,11 @@ func _update_capture(delta: float) -> void:
 func _game_over(reason := "捕獲されました") -> void:
 	if _game_over_pending or completed:
 		return
-	var generation := _generation
 	_game_over_pending = true
 	_update_hud()
-	player.controls_enabled = false
-	enemy.controls_enabled = false
-	$PauseMenu.set_process_input(false)
-	$HUD/HelpButton.disabled = true
-	$HUD/PauseButton.disabled = true
-	get_tree().paused = true
 	_message.text = reason + "\nこの部屋のチェックポイントからやり直します"
 	_message.show()
-	_effect_left = 1.2
-	if DisplayServer.accessibility_should_reduce_animation() != 1:
-		create_tween().tween_property(_fade, "color:a", 0.85, 1.0)
-	await get_tree().create_timer(1.2, true).timeout
-	var demo := get_node_or_null("/root/DemoMode")
-	if demo != null and demo.warning_active:
-		await demo.warning_dismissed
-	if not is_inside_tree() or completed or generation != _generation:
-		return
-	_game_over_pending = false
-	$PauseMenu.resume()
-	get_tree().paused = false
-	$PauseMenu.set_process_input(true)
-	$HUD/HelpButton.disabled = false
-	$HUD/PauseButton.disabled = false
-	_fade.color.a = 0.0
-	player.respawn()
-	_update_hud()
+	player.die()
 
 
 func _damage_player(amount: float, impulse := Vector2.ZERO, ground_needle := false) -> void:
@@ -676,8 +646,7 @@ func _return_to_select() -> void:
 
 
 func retry_room() -> void:
-	if not _game_over_pending:
-		player.respawn()
+	player.respawn()
 
 
 func _draw_effects() -> void:

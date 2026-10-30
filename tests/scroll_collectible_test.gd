@@ -10,7 +10,7 @@ class LandingHazard extends Node:
 			grounded_time += delta
 			if grounded_time >= 0.2:
 				hits += 1
-				player.respawn.call_deferred()
+				player.die.call_deferred()
 
 
 var test_save := "user://scroll_collectible_test_%d.cfg" % OS.get_process_id()

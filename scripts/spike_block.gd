@@ -114,7 +114,7 @@ func _hit(player: PlayerController) -> void:
 	var stage := get_tree().get_first_node_in_group(stage_group)
 	if stage != null and stage.room_index == room_number and player.controls_enabled and not stage.transitioning:
 		player_hit.emit()
-		player.respawn()
+		player.die()
 	pending_hit = false
 
 

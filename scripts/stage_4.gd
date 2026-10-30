@@ -77,7 +77,8 @@ func _physics_process(delta: float) -> void:
 	var room := rooms.get_child(room_index)
 	var local_x: float = player.position.x - room.position.x
 	if player.position.y < -52 or player.position.y > rooms.get_child(room_index).room_height + 52 or local_x < -24 or (room.travel_direction == -1 and local_x > room.room_width + 24):
-		player.respawn()
+		player.die()
+		return
 	elif (local_x >= room.room_width - 20 if room.travel_direction == 1 else local_x <= 20) and room_index < rooms.get_child_count() - 1 and player.is_on_floor() and _carry_requirement_met():
 		_transition_to_next()
 	camera.position = camera.position.lerp(_camera_position(), 1.0 - exp(-8.0 * delta))

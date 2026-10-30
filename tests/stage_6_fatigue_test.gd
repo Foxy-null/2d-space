@@ -74,13 +74,14 @@ func _run() -> void:
 	stage._hit_grace = 0.0
 	stage._respawn_grace = 0.0
 	stage._damage_player(0.45, Vector2.ZERO, true)
+	await _step(2)
 	_check(stage._game_over_pending and paused and not actor.controls_enabled, "An actual hit at zero stamina starts a frozen defeat transition")
 	_check(stage._stamina.value == 0.0, "The defeat HUD shows the fatal stamina loss immediately")
 	await _step(80)
 	_check(current_scene == stage and stage.room_index == 6 and not paused, "Defeat resumes the same room instead of restarting the stage")
 	_check(actor.position == stage.room.spawn and actor.controls_enabled and not stage._game_over_pending, "The player resumes at the room checkpoint without another input")
 	_check(actor.get_wall_stamina() == actor.wall_stamina_max and actor.recovery_slow_left == 0.0 and actor.movement_slow_left == 0.0, "Defeat restores stamina and clears the attack conditions")
-	_check(stage._fade.color.a == 0.0 and not stage._message.visible and stage._stamina.value == actor.wall_stamina_max, "Defeat darkness and messages clear and the restored stamina is displayed")
+	_check(not stage.has_node("StageIntro") and not stage._message.visible and stage._stamina.value == actor.wall_stamina_max, "Defeat darkness and messages clear and the restored stamina is displayed")
 	_check(stage.get_node("PauseMenu").is_processing_input() and not stage.get_node("HUD/HelpButton").disabled and not stage.get_node("HUD/PauseButton").disabled, "Pause and help are usable again after defeat")
 	stage.set_help_visible(true)
 	_check(paused and stage.help_visible, "Help can actually open after the checkpoint restart")
@@ -117,7 +118,7 @@ func _run() -> void:
 		needle.stuck_left = 10.0
 		await _step()
 	_check(is_instance_valid(stage) and stage._game_over_pending, "Sustained contact drains faster than ground recovery and cannot be tanked indefinitely")
-	await _step(80)
+	await _step(65)
 	_check(current_scene == stage and not stage._game_over_pending and not paused and actor.controls_enabled, "Residual-needle defeat automatically resumes the current checkpoint")
 	_check(stage.room.needles.get_child_count() == 0 and actor.get_wall_stamina() == actor.wall_stamina_max and stage._respawn_grace > 0.0, "Checkpoint restart removes old needles and restores health with spawn protection")
 	print("STAGE_6_FATIGUE_TEST_OK (%d checks)" % checks)

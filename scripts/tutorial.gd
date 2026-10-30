@@ -227,7 +227,7 @@ func _queue_death() -> void:
 
 func _finish_death() -> void:
 	if _death_pending and phase == Phase.RUN:
-		player.respawn()
+		player.die()
 
 
 func _on_movement(action: String) -> void:
@@ -262,7 +262,7 @@ func _physics_process(delta: float) -> void:
 		return
 	var local := player.position - Vector2(TutorialLandscape.ORIGINS[room_index], 0)
 	if local.y > TutorialLandscape.HEIGHTS[room_index] - HALF_PLAYER.y or local.y < -160:
-		player.respawn()
+		player.die()
 		return
 	if local.x > TutorialLandscape.WIDTHS[room_index] and room_index < 2:
 		_enter_room(room_index + 1, false)

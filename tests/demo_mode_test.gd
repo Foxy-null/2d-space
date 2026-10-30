@@ -113,9 +113,11 @@ func _run() -> void:
 	current_scene._game_over()
 	await _step(90)
 	_check(demo.warning_active and paused and current_scene._game_over_pending, "The idle warning keeps Stage 6 defeat recovery paused")
+	demo.idle_timeout = 10.0
 	await _key(KEY_SPACE)
-	await _step(3)
+	await _step(65)
 	_check(not demo.warning_active and not paused and not current_scene._game_over_pending, "Dismissing the warning lets checkpoint recovery finish without leaving a stale pause")
+	demo.idle_timeout = 0.2
 	demo.warning_duration = 0.3
 	current_scene._game_over()
 	await _until(func(): return current_scene != null and current_scene.scene_file_path == "res://scenes/start_screen.tscn", 90, "Idle timeout can leave Stage 6 during defeat recovery")

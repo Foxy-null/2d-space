@@ -95,11 +95,13 @@ func _physics_process(delta: float) -> void:
 	var height := float(room.get_meta("room_height", 720.0))
 	var exit_left := bool(room.get_meta("exit_left", false))
 	if player.position.y < -52 or player.position.y > height + 52:
-		player.respawn()
+		player.die()
+		return
 	elif room_index < rooms.get_child_count() - 1 and (_landed_on_exit() or (local_x <= 0 if exit_left else local_x >= width)):
 		_transition_to_next()
 	elif local_x < -24 or local_x > width + 24:
-		player.respawn()
+		player.die()
+		return
 	if transitioning:
 		return
 	if width > ROOM_WIDTH or height > 720:
@@ -221,7 +223,7 @@ func _update_route() -> void:
 
 func _on_hazard(body: Node2D) -> void:
 	if body == player and not transitioning:
-		player.respawn()
+		player.die()
 
 
 func set_hints_visible(value: bool) -> void:

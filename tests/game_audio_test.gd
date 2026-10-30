@@ -18,6 +18,10 @@ func _run() -> void:
 	for effect in [audio.ui_move, audio.ui_select, audio.menu_open, audio.scroll_touch, audio.scroll_collect]:
 		_check(effect.stream.get_length() > 0.05 and effect.stream.get_length() < 0.5, "Interaction SE have no long trailing silence")
 		_check(effect.stream.loop_mode == AudioStreamWAV.LOOP_DISABLED, "Interaction SE play once")
+	for effect in [audio.IRIS_CLOSE, audio.IRIS_OPEN, audio.death.stream]:
+		_check(effect.loop_mode == AudioStreamWAV.LOOP_DISABLED, "Death and iris SE play once")
+	_check(is_equal_approx(audio.IRIS_CLOSE.get_length(), 0.3) and is_equal_approx(audio.IRIS_OPEN.get_length(), 0.5), "Iris sounds fit the closing and opening durations")
+	_check(audio.death.stream.get_length() > 0.15 and audio.death.stream.get_length() < 0.25, "Death is a short impact")
 	for family in ["a", "b", "c"]:
 		for track in audio.TRACKS[family]:
 			_check(track.loop and is_zero_approx(track.loop_offset), "Every normal and quiet BGM loops from the beginning")
@@ -120,9 +124,13 @@ func _run() -> void:
 	audio.ui_select.play()
 	audio.scroll_touch.play()
 	audio.scroll_collect.play()
+	audio.iris.stream = audio.IRIS_OPEN
+	audio.iris.play()
+	audio.death.play()
 	await _scene("stage_select")
 	_check(audio.ui_select.playing, "A confirmation sound survives the scene change")
 	_check(not audio.scroll_touch.playing and not audio.scroll_collect.playing, "Leaving a stage stops its scroll sounds")
+	_check(not audio.iris.playing and not audio.death.playing, "Leaving a stage stops its iris and death sounds")
 	audio.music.stop()
 	if not failed:
 		print("GAME_AUDIO_TEST_OK (%d checks)" % checks)

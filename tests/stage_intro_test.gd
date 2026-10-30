@@ -119,7 +119,7 @@ func _natural_intro(scene: String) -> void:
 	_capture(scene + "-finished")
 	player.respawn()
 	await _step(3)
-	_check(not stage.has_node("StageIntro") and not paused, "Death/checkpoint respawn does not replay the entrance")
+	_check(not stage.has_node("StageIntro") and not paused, "Manual/checkpoint respawn does not replay the entrance")
 
 
 func _check_view(intro: StageIntro, bounds: Rect2) -> void:

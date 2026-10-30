@@ -81,7 +81,8 @@ func _physics_process(delta: float) -> void:
 	var checkpoint_y: float = checkpoints.get_child(checkpoint_index).position.y
 	var checkpoint_fall_margin := 420.0 if checkpoint_index == 29 else 180.0
 	if player.position.y > minf(checkpoint_y + checkpoint_fall_margin, peak_y + SECTION_HEIGHT - 80.0):
-		player.respawn()
+		player.die()
+		return
 	var target_y := _camera_target_y()
 	camera.position.x = lerpf(camera.position.x, _camera_target_x(), 1.0 - exp(-8.0 * delta))
 	camera.position.y = lerpf(camera.position.y, target_y, 1.0 - exp(-8.0 * delta))

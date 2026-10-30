@@ -2,6 +2,8 @@ extends Node
 
 const TITLE := preload("res://assets/audio/title.mp3")
 const CLEAR := preload("res://assets/audio/clear.wav")
+const IRIS_CLOSE := preload("res://assets/audio/iris-close.wav")
+const IRIS_OPEN := preload("res://assets/audio/iris-open.wav")
 const STAGE_TRACKS := {
 	"res://scenes/tutorial.tscn": "c",
 	"res://scenes/stage_2.tscn": "a",
@@ -24,6 +26,8 @@ var ui_select := AudioStreamPlayer.new()
 var menu_open := AudioStreamPlayer.new()
 var scroll_touch := AudioStreamPlayer.new()
 var scroll_collect := AudioStreamPlayer.new()
+var iris := AudioStreamPlayer.new()
+var death := AudioStreamPlayer.new()
 var _ui_move_frame := -1
 var _quiet: AudioStream
 var _cleared := false
@@ -32,7 +36,7 @@ var _cleared := false
 func _ready() -> void:
 	# The first stage pauses gameplay during its clear screen and dash prompt.
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	for player in [music, jump, dash, ui_move, ui_select, menu_open, scroll_touch, scroll_collect]:
+	for player in [music, jump, dash, ui_move, ui_select, menu_open, scroll_touch, scroll_collect, iris, death]:
 		add_child(player)
 	jump.stream = preload("res://assets/audio/jump.wav")
 	dash.stream = preload("res://assets/audio/dash.wav")
@@ -41,6 +45,9 @@ func _ready() -> void:
 	menu_open.stream = preload("res://assets/audio/menu-open.wav")
 	scroll_touch.stream = preload("res://assets/audio/scroll-touch.wav")
 	scroll_collect.stream = preload("res://assets/audio/scroll-collect.wav")
+	death.stream = preload("res://assets/audio/death.wav")
+	iris.volume_db = -8.0
+	death.volume_db = -4.0
 	ui_move.volume_db = -4.0
 	menu_open.volume_db = -4.0
 	scroll_touch.volume_db = -4.0
@@ -84,6 +91,10 @@ func reset_scene() -> void:
 	dash.stop()
 	scroll_touch.stop()
 	scroll_collect.stop()
+	iris.stop()
+	death.stop()
+	iris.stream_paused = false
+	death.stream_paused = false
 	_cleared = false
 	_quiet = null
 	var scene := get_tree().current_scene
