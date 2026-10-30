@@ -17,6 +17,21 @@ const ARRIVAL = preload("res://scenes/arrival_switch.tscn")
 const SPIKE_BLOCK = preload("res://scenes/spike_block.tscn")
 const ROOM_COUNT := 13
 const FINAL_ROOM := ROOM_COUNT - 1
+const PASSAGE_TITLES := ["針受けの跳び石", "箱で開ける雨よけ扉", "重荷を先送る階段", "傘で渡る灰の煙道", "天井へ逃げる反転回廊", "反発リレー", "横重力で越える壁", "壁渡りの回廊", "相棒の二段跳び", "遮蔽の上下分岐", "追跡者をせき止める", "振り子の交差路"]
+const PASSAGE_HINTS := [
+	"箱を盾にして跳び石へ。壁に残った針へ箱を固定すると足場を増やせます。",
+	"予備の箱で奥の扉を開きます。開門用の箱を残し、雨よけの下を抜けましょう。",
+	"段差へ箱を先に投げ、自分は空身で追うと安全。上段から着地点を選べます。",
+	"傘を持って上昇気流へ。屋根の横へ回り込み、灰の雨を防ぎながら渡ります。",
+	"↑ゲートから天井へ逃げ、奥の↓ゲートで出口へ。上下の遮蔽を使い分けましょう。",
+	"床ばねから反発へ。勢いで上を渡る道と、中段の足場を使う道があります。",
+	"→ゲートで壁へ渡り、上端へ歩いて↓ゲートへ。荷物を置くと壁も登れます。",
+	"高さの違う壁を登って渡ります。壁の裏で追尾弾を受け、次の壁へ移りましょう。",
+	"相棒のジャンプと紫の追加ジャンプを一つずつ。中央の足場で力を戻せます。",
+	"屋根の下は灰を避け、上段は動く棘を越えられます。敵の攻撃で道を選びましょう。",
+	"扉を抜けた先の金の台に重箱を置くと背後が閉まります。上段へ逃げて差を広げましょう。",
+	"二つの棘は違う軌道で動きます。屋根の下で一拍待つか、上の足場から越えましょう。",
+]
 const MAX_NEEDLES := 640
 const MAX_FLYING_NEEDLES := 96
 
@@ -337,8 +352,6 @@ func _ready() -> void:
 	_block(Rect2(0, spawn.y + 26, 28, size.y - spawn.y + 174))
 	_floor(-180, 208, spawn.y + 26)
 	_block(Rect2(size.x - 28, 0, 28, size.y + 200))
-	if number != FINAL_ROOM:
-		_floor(exit_position.x - 120, size.x - exit_position.x + 120, exit_position.y)
 	exit_rect = Rect2(exit_position + Vector2(-58, -185), Vector2(116, 180))
 	arrival = ARRIVAL.instantiate()
 	arrival.name = "Arrival"
@@ -362,23 +375,109 @@ func _build_extension() -> void:
 	passage_gate.modulate = Color("ffd37d")
 	size.x += 1000
 	passage_rect = Rect2(size.x - 180, floor_y - 150, 100, 180)
-	var start := old_width + 40
-	_supply(LIGHT, Vector2(start + 60, floor_y - 40))
-	_supply(UMBRELLA, Vector2(start + 300, floor_y - 40))
-	_supply(CREATURE, Vector2(start + 650, floor_y - 40))
-	# A covered lower route trades speed for shelter; the upper route carries refills.
-	_platforms([Rect2(start + 200, floor_y - 160, 250, 28), Rect2(start + 500, floor_y - 230, 220, 28)])
-	_block(Rect2(start + 100, floor_y - 85, 100, 25))
-	_block(Rect2(start + 680, floor_y - 100, 28, 100))
-	_crystal(Vector2(start + 340, floor_y - 215), 0)
-	_crystal(Vector2(start + 590, floor_y - 285), 1)
-	if number % 3 == 1:
-		_spike_block(Vector2(start + 500, floor_y - 50), Vector2(0, -180), 4.8, 0.0)
-		extension_block = spike_blocks.back()
-	elif number % 3 == 2:
-		_spring(Vector2(start + 120, floor_y))
-		_bumper(Vector2(start + 780, floor_y - 260))
-	passage_route.assign([Vector2(old_width + 100, floor_y - 28), Vector2(start + 330, floor_y - 188), Vector2(start + 610, floor_y - 258), Vector2(start + 810, floor_y - 130), passage_rect.get_center() - Vector2(0, 26)])
+	var x := old_width
+	var y := floor_y
+	_floor(exit_position.x - 120, old_width - exit_position.x + 148, y)
+	match number:
+		0:
+			_floor(x, 260, y)
+			_floor(x + 440, 170, y)
+			_floor(x + 800, 200, y)
+			_block(Rect2(x + 430, y - 180, 22, 85))
+			_block(Rect2(x + 460, y - 200, 150, 24))
+			_supply(LIGHT, Vector2(x + 90, y - 40))
+			_crystal(Vector2(x + 705, y - 110), 0)
+			passage_route.assign([Vector2(x + 160, y - 26), Vector2(x + 355, y - 90), Vector2(x + 530, y - 26), Vector2(x + 720, y - 90)])
+		1:
+			_floor(x, 1000, y)
+			_supply(LIGHT, Vector2(x + 80, y - 40))
+			_weight_door(Vector2(x + 230, y), Rect2(x + 410, y - 190, 28, 190), 2.0)
+			_block(Rect2(x + 470, y - 125, 260, 25))
+			_block(Rect2(x + 735, y - 210, 110, 24))
+			passage_route.assign([Vector2(x + 80, y - 26), Vector2(x + 230, y - 26), Vector2(x + 510, y - 26), Vector2(x + 760, y - 26)])
+		2:
+			_floor(x, 280, y)
+			_floor(x + 280, 260, y - 65)
+			_floor(x + 540, 200, y - 130)
+			_floor(x + 740, 260, y)
+			_supply(HEAVY, Vector2(x + 90, y - 40))
+			_block(Rect2(x + 380, y - 250, 140, 24))
+			_crystal(Vector2(x + 670, y - 205), 1)
+			passage_route.assign([Vector2(x + 160, y - 26), Vector2(x + 370, y - 91), Vector2(x + 630, y - 156), Vector2(x + 810, y - 26)])
+		3:
+			_floor(x, 220, y)
+			_floor(x + 760, 240, y)
+			_block(Rect2(x + 475, y - 100, 130, 28))
+			_block(Rect2(x + 310, y - 245, 160, 24))
+			_supply(UMBRELLA, Vector2(x + 80, y - 40))
+			_wind(Rect2(x + 180, y - 390, 560, 440), Vector2.UP, 1900.0, 340.0)
+			passage_route.assign([Vector2(x + 100, y - 26), Vector2(x + 255, y - 170), Vector2(x + 540, y - 150), Vector2(x + 780, y - 90)])
+		4:
+			_floor(x, 1000, y)
+			_block(Rect2(x + 170, y - 260, 580, 26))
+			_block(Rect2(x + 370, y - 85, 140, 85))
+			_gate(Vector2(x + 130, y - 70), -1)
+			_gate(Vector2(x + 790, y - 150), 1)
+			_crystal(Vector2(x + 540, y - 190), 0)
+			passage_route.assign([Vector2(x + 130, y - 70), Vector2(x + 280, y - 208), Vector2(x + 660, y - 208), Vector2(x + 790, y - 150)])
+		5:
+			_floor(x, 220, y)
+			_floor(x + 800, 200, y)
+			_block(Rect2(x + 330, y - 80, 140, 28))
+			_block(Rect2(x + 600, y - 120, 140, 28))
+			_spring(Vector2(x + 150, y))
+			_bumper(Vector2(x + 355, y - 235))
+			_crystal(Vector2(x + 535, y - 270), 0)
+			_crystal(Vector2(x + 770, y - 185), 1)
+			passage_route.assign([Vector2(x + 150, y - 26), Vector2(x + 400, y - 110), Vector2(x + 670, y - 150), Vector2(x + 830, y - 26)])
+		6:
+			_floor(x, 1000, y)
+			_block(Rect2(x + 490, y - 230, 36, 230))
+			_block(Rect2(x + 526, y - 230, 170, 26))
+			_gate(Vector2(x + 150, y - 70), 2)
+			_gate(Vector2(x + 450, y - 275), 1)
+			_crystal(Vector2(x + 740, y - 200), 0)
+			passage_route.assign([Vector2(x + 150, y - 70), Vector2(x + 464, y - 120), Vector2(x + 450, y - 275), Vector2(x + 620, y - 260)])
+		7:
+			_floor(x, 1000, y)
+			_block(Rect2(x + 260, y - 130, 55, 130))
+			_block(Rect2(x + 500, y - 210, 55, 210))
+			_block(Rect2(x + 740, y - 140, 55, 140))
+			_crystal(Vector2(x + 615, y - 270), 1)
+			passage_route.assign([Vector2(x + 150, y - 26), Vector2(x + 280, y - 160), Vector2(x + 525, y - 240), Vector2(x + 770, y - 170)])
+		8:
+			_floor(x, 210, y)
+			_floor(x + 800, 200, y)
+			_block(Rect2(x + 460, y - 90, 140, 28))
+			_supply(CREATURE, Vector2(x + 80, y - 40))
+			_crystal(Vector2(x + 345, y - 170), 1)
+			_crystal(Vector2(x + 710, y - 175), 0)
+			passage_route.assign([Vector2(x + 100, y - 26), Vector2(x + 345, y - 170), Vector2(x + 530, y - 120), Vector2(x + 755, y - 100)])
+		9:
+			_floor(x, 1000, y)
+			_block(Rect2(x + 180, y - 120, 260, 26))
+			_block(Rect2(x + 500, y - 110, 100, 26))
+			_block(Rect2(x + 640, y - 195, 130, 26))
+			_supply(LIGHT, Vector2(x + 70, y - 40))
+			_hazard(Rect2(x + 580, y - 65, 40, 40), Vector2(140, 0), 4.0)
+			passage_route.assign([Vector2(x + 110, y - 26), Vector2(x + 375, y - 26), Vector2(x + 550, y - 140), Vector2(x + 705, y - 225), Vector2(x + 850, y - 100)])
+		10:
+			_floor(x, 1000, y)
+			_supply(HEAVY, Vector2(x + 390, y - 40))
+			_weight_door(Vector2(x + 520, y), Rect2(x + 290, y - 200, 28, 200), 8.0, true)
+			_block(Rect2(x + 600, y - 130, 130, 26))
+			_block(Rect2(x + 780, y - 205, 100, 26))
+			passage_route.assign([Vector2(x + 130, y - 26), Vector2(x + 390, y - 26), Vector2(x + 520, y - 26), Vector2(x + 670, y - 160)])
+		11:
+			_floor(x, 1000, y)
+			_block(Rect2(x + 240, y - 150, 150, 26))
+			_block(Rect2(x + 610, y - 240, 135, 26))
+			_spike_block(Vector2(x + 450, y - 210), Vector2(0, 155), 4.6, 0.0)
+			_spike_block(Vector2(x + 655, y - 60), Vector2(130, -125), 5.2, 0.5)
+			extension_block = spike_blocks.back()
+			_crystal(Vector2(x + 555, y - 140), 0)
+			passage_route.assign([Vector2(x + 120, y - 26), Vector2(x + 310, y - 180), Vector2(x + 520, y - 120), Vector2(x + 680, y - 270)])
+	passage_route.append(passage_rect.get_center() - Vector2(0, 26))
 
 
 func open_passage() -> void:

@@ -133,7 +133,7 @@ func _play_room(number: int) -> bool:
 			return await _defeat_boss()
 	# Solve the mandatory weight puzzles using the same carry/drop inputs.
 	for door in stage.room.doors:
-		if door.closes:
+		if door.closes or (number != stage.ROOM.FINAL_ROOM and door.button.position.x > stage.room.size.x - 1000):
 			continue
 		var heavy: bool = door.button.required_weight > 2.0
 		var supply: Vector2 = stage.room.supplies.filter(func(entry): return entry.scene == (stage.room.HEAVY if heavy else stage.room.LIGHT))[0].at
@@ -215,21 +215,8 @@ func _play_room(number: int) -> bool:
 			await _step()
 		if not stage.room.exit_open:
 			return false
-		var passage: Array = stage.room.passage_route.duplicate()
-		_ground_run = true
-		for i in passage.size():
-			if i == 2 and is_instance_valid(stage.room.extension_block):
-				_release_movement()
-				for frame in 360:
-					var spike: SpikeBlock = stage.room.extension_block
-					if spike.position.y > stage.room.exit_position.y - 100.0 and spike.position.y >= spike.previous_position.y:
-						await _step(12)
-						break
-					await _step()
-			if not await _navigate(passage[i], 900):
-				return false
-			if stage.room_index != number:
-				return true
+		if not await _play_passage():
+			return false
 		_ground_run = false
 		await _step(6)
 	if not stage.completed and stage.room_index == number:
@@ -238,6 +225,34 @@ func _play_room(number: int) -> bool:
 	return true
 
 
+
+
+func _play_passage() -> bool:
+	var number: int = stage.room_index
+	var passage: Array = stage.room.passage_route.duplicate()
+	_ground_run = number in [1, 2, 4, 7, 9, 10, 11]
+	if stage.player.get_held_object() != null:
+		_release()
+		await _step(4)
+	if number in [3, 8] and not await _acquire("PARACHUTE" if number == 3 else "JUMP"):
+		return false
+	for index in passage.size():
+		if not await _navigate(passage[index], 900):
+			return false
+		if stage.room_index != number:
+			return true
+		if number == 1 and index == 0:
+			if not await _acquire("OBJECT"):
+				return false
+		if number == 1 and index == 1:
+			_release_movement()
+			await _step(20)
+			_hold = false
+			Input.action_release("wall_grab")
+			await _step(30)
+	_release_movement()
+	await _step(6)
+	return stage.room_index != number
 
 
 func _acquire(kind: String) -> bool:
@@ -399,7 +414,7 @@ func _navigate(point: Vector2, maximum: int, strict := false) -> bool:
 			return false
 		if stage.completed:
 			return true
-		if stage.room_index != stage.ROOM.FINAL_ROOM and stage.room.exit_open and point.distance_to(stage.room.exit_position) < 200.0:
+		if stage.room_index != stage.ROOM.FINAL_ROOM and stage.room.exit_open and point.is_equal_approx(stage.room.exit_position - Vector2(0, 118)):
 			_release_movement()
 			return true
 		var actor: PlayerController = stage.player

@@ -13,7 +13,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_6.tscn")
 	await _step(4)
 	stage = current_scene
-	await _step(180)
+	await _step(300)
 	stage.set_physics_process(false)
 	stage.player.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
@@ -21,7 +21,7 @@ func _run() -> void:
 		stage._load_room(number)
 		_check(stage.room.route.size() >= 4 and not stage.room.attack_patterns.is_empty(), "All thirteen rooms have a route and attack selection")
 	stage._load_room(11)
-	_check(stage.room.spike_blocks.size() == 4, "The added room uses four actual stage-four spike blocks")
+	_check(stage.room.spike_blocks.size() == 6, "The added room uses four stage-four spike blocks and two more in its distinct exit course")
 	var spike: SpikeBlock = stage.room.spike_blocks[0]
 	stage.player.position = spike.position
 	stage.enemy.position = spike.position

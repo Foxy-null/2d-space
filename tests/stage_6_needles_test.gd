@@ -12,7 +12,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_6.tscn")
 	await _step(4)
 	stage = current_scene
-	await _step(180)
+	await _step(300)
 	stage.set_physics_process(false)
 	stage.enemy.set_physics_process(false)
 	stage.player.set_physics_process(false)
