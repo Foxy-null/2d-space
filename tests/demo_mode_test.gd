@@ -37,6 +37,7 @@ func _run() -> void:
 	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(6)
 	var select := current_scene
+	_check(demo.get_signal_connection_list("mode_changed").size() == 1, "Scene changes disconnect freed demo buttons")
 	var select_demo_btn: Button = select.get_node("DemoMode")
 	_check(select_demo_btn.text == "体験モード: ON", "Stage select button reflects current ON state")
 	_check(root.get_visible_rect().encloses(select_demo_btn.get_global_rect()), "Stage select demo button fits viewport")
@@ -79,6 +80,10 @@ func _run() -> void:
 	_check(not demo.warning_active and not demo.overlay.visible and not paused, "Pressing a key during warning dismisses it and resumes gameplay")
 	_check(current_scene.scene_file_path == "res://scenes/tutorial.tscn", "Player remains in the stage after responding to warning")
 
+	await _until(func(): return demo.warning_active, 90, "Warning appears before Escape response")
+	await _key(KEY_ESCAPE)
+	_check(not demo.warning_active and not paused and not current_scene.get_node("PauseMenu").overlay.visible, "Escape dismisses the warning without opening the pause menu")
+
 	await _until(func(): return demo.warning_active, 90, "Idle timeout triggers warning overlay again")
 	var slight_motion := InputEventMouseMotion.new()
 	slight_motion.relative = Vector2(1, 0)
@@ -91,6 +96,9 @@ func _run() -> void:
 	root.get_node("InputSettings").open_settings()
 	_check(paused and root.get_node("InputSettings").panel.visible, "Pause and input settings are open before timeout")
 	await _until(func(): return demo.warning_active, 90, "Warning still triggers while paused in settings")
+	await _key(KEY_ESCAPE)
+	_check(not demo.warning_active and paused and root.get_node("InputSettings").panel.visible, "Escape dismisses only the warning and preserves paused settings")
+	await _until(func(): return demo.warning_active, 90, "Warning returns after dismissing it over settings")
 	await _until(func(): return current_scene != null and current_scene.scene_file_path == "res://scenes/start_screen.tscn", 60, "Ignoring warning forces return to title screen")
 	_check(not demo.warning_active and not demo.overlay.visible, "Warning overlay closes upon returning to title")
 	_check(not paused and is_equal_approx(Engine.time_scale, 1.0), "Forced title return unpauses tree and restores time scale")

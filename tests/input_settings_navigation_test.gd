@@ -149,7 +149,7 @@ func _select() -> void:
 		await _key(KEY_F10)
 	change_scene_to_file("res://scenes/stage_select.tscn")
 	await _step(4)
-	current_scene.get_node("Starfield").motion_enabled = false
+	current_scene.get_node("Starfield").set_process(false)
 	current_scene.get_node("Starfield").elapsed = 0.0
 
 

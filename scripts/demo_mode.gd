@@ -41,6 +41,8 @@ var was_paused := false
 func _ready() -> void:
 	layer = 120
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Input reaches the last root child first, before pause and settings handlers.
+	get_tree().scene_changed.connect(get_parent().move_child.bind(self, -1))
 	_build_ui()
 
 
@@ -122,10 +124,9 @@ func bind_button(button: Button) -> void:
 	_apply_button_state(button)
 	if not button.pressed.is_connected(toggle):
 		button.pressed.connect(toggle)
-	mode_changed.connect(func(_is_enabled: bool):
-		if is_instance_valid(button):
-			_apply_button_state(button)
-	)
+	var update_button := _apply_button_state.bind(button).unbind(1)
+	mode_changed.connect(update_button)
+	button.tree_exiting.connect(mode_changed.disconnect.bind(update_button), CONNECT_ONE_SHOT)
 
 
 func _apply_button_state(button: Button) -> void:
