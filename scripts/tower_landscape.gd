@@ -1,18 +1,17 @@
 class_name TowerLandscape
 extends Node2D
 
-# Coordinates follow the original 2394 × 999 drawing; every room uses one scale.
-const SCALE := 1.7
-const ACTOR_SCALE := 0.65
-const PLAYER_HALF_HEIGHT := 26 * ACTOR_SCALE
+# Keep each drawing's proportions while covering at least one gameplay viewport.
+const VIEW_SIZE := Vector2(1280, 720)
+const PLAYER_HALF_HEIGHT := 26.0
 const REFERENCE_BOUNDS := [Rect2(73, 864, 215, 103), Rect2(264, 737, 178, 104), Rect2(368, 568, 276, 140), Rect2(689, 449, 277, 256), Rect2(816, 206, 423, 189), Rect2(1281, 207, 423, 189), Rect2(1649, 32, 271, 138), Rect2(127, 605, 216, 103), Rect2(1001, 565, 276, 140), Rect2(1736, 329, 423, 191)]
 const TITLES := ["ふもと", "バネと壁キック", "トゲの向こうへ", "崩れる足場", "星空の回廊", "バネをつないで", "ロケット", "回復の寄り道", "薄板の寄り道", "バンパーの寄り道"]
-const SCROLLS := {1: Vector2(124, 23) * SCALE, 7: Vector2(16, 32) * SCALE, 8: Vector2(250, 44) * SCALE, 9: Vector2(350, 56) * SCALE}
+const SCROLLS := {1: Vector2(124, 23), 7: Vector2(16, 32), 8: Vector2(250, 44), 9: Vector2(350, 56)}
 const SCROLL_IDS := {1: "spring_alcove", 7: "crystal_cavern", 8: "crumbling_cavern", 9: "bumper_cavern"}
-const BUMPER := Vector2(227.5, 140.5) * SCALE
-const ROCKET_RECT := Rect2(Vector2(204, 49) * SCALE, Vector2(45, 66) * SCALE)
-const ROCKET_APPROACH := 185 * SCALE
-const ROCKET_DOOR := 227 * SCALE
+const BUMPER := Vector2(227.5, 140.5)
+const ROCKET_RECT := Rect2(204, 49, 45, 66)
+const ROCKET_APPROACH := 185.0
+const ROCKET_DOOR := 227.0
 const SOIL := Color("999a9d")
 const INK := Color("30343e")
 const ROCKET := preload("res://assets/tutorial/rocket.png")
@@ -20,19 +19,24 @@ var room_index := 0
 
 
 static func size(index: int) -> Vector2:
-	return REFERENCE_BOUNDS[index].size * SCALE
+	return REFERENCE_BOUNDS[index].size * room_scale(index)
+
+
+static func room_scale(index: int) -> float:
+	var bounds: Vector2 = REFERENCE_BOUNDS[index].size
+	return maxf(VIEW_SIZE.x / bounds.x, VIEW_SIZE.y / bounds.y)
 
 
 static func origin(index: int) -> Vector2:
-	return Vector2(index * 6000.0, (REFERENCE_BOUNDS[index].position.y - REFERENCE_BOUNDS[0].position.y) * SCALE)
+	return Vector2(index * 6000.0, (REFERENCE_BOUNDS[index].position.y - REFERENCE_BOUNDS[0].position.y) * room_scale(0))
 
 
-static func foothold(x: float, y: float) -> Vector2:
-	return Vector2(x, y) * SCALE - Vector2(0, PLAYER_HALF_HEIGHT)
+static func foothold(index: int, x: float, y: float) -> Vector2:
+	return Vector2(x, y) * room_scale(index) - Vector2(0, PLAYER_HALF_HEIGHT)
 
 
 static func start() -> Vector2:
-	return foothold(13, 90)
+	return foothold(0, 13, 90)
 
 
 static func connections() -> Array:
@@ -40,7 +44,7 @@ static func connections() -> Array:
 	var links := [
 		[0, Rect2(178, -16, 37, 28), Vector2(190, 37), 1, Rect2(7, 102, 17, 25), Vector2(30, 92)],
 		[1, Rect2(149, -16, 29, 28), Vector2(128, 32), 2, Rect2(43, 138, 30, 25), Vector2(83, 127)],
-		[2, Rect2(274, 81, 27, 46), Vector2(255, 104), 3, Rect2(-25, 181, 27, 43), Vector2(15, 224)],
+		[2, Rect2(274, 81, 27, 46), Vector2(255, 104), 3, Rect2(-25, 181, 27, 43), Vector2(15, 222.6)],
 		[3, Rect2(135, -16, 108, 28), Vector2(113, 194), 4, Rect2(16, 187, 98, 25), Vector2(70, 173)],
 		[4, Rect2(421, 67, 27, 104), Vector2(390, 132), 5, Rect2(-25, 68, 27, 69), Vector2(18, 137)],
 		[5, Rect2(380, -16, 36, 28), Vector2(394, 138), 6, Rect2(12, 136, 44, 25), Vector2(70, 116)],
@@ -50,16 +54,17 @@ static func connections() -> Array:
 	]
 	for link in links:
 		for side in [0, 3]:
+			var scale := room_scale(link[side])
 			var exit: Rect2 = link[side + 1]
-			link[side + 1] = Rect2(exit.position * SCALE, exit.size * SCALE)
-			link[side + 2] = link[side + 2] * SCALE - Vector2(0, PLAYER_HALF_HEIGHT)
+			link[side + 1] = Rect2(exit.position * scale, exit.size * scale)
+			link[side + 2] = link[side + 2] * scale - Vector2(0, PLAYER_HALF_HEIGHT)
 	return links
 
 
 static func _polygon(points: Array) -> PackedVector2Array:
 	var result := PackedVector2Array()
 	for i in range(0, points.size(), 2):
-		result.append(Vector2(points[i], points[i + 1]) * SCALE)
+		result.append(Vector2(points[i], points[i + 1]))
 	return result
 
 
@@ -72,6 +77,7 @@ static func landforms(index: int) -> Array[PackedVector2Array]:
 			polygons.append(_polygon([215, 27, 202, 27, 200, 37, 173, 37, 173, 51, 185, 51, 185, 70, 198, 70, 198, 103, 215, 103]))
 			rectangles = [Rect2(49, 76, 26, 27), Rect2(93, 48, 23, 55)]
 		1:
+			rectangles = [Rect2(178, 0, 0.5, 104)]
 			polygons.append(_polygon([0, 0, 85, 0, 85, 36, 60, 36, 60, 24, 51, 24, 51, 13, 18, 12, 18, 29, 7, 30, 7, 92, 0, 92]))
 			polygons.append(_polygon([24, 92, 36, 92, 36, 84, 44, 84, 44, 104, 24, 104]))
 			polygons.append(_polygon([59, 73, 85, 73, 85, 95, 109, 95, 109, 83, 132, 83, 132, 70, 178, 70, 178, 104, 59, 104]))
@@ -111,6 +117,11 @@ static func landforms(index: int) -> Array[PackedVector2Array]:
 			rectangles = [Rect2(36, 60, 34, 3), Rect2(201, 45, 51, 5), Rect2(155, 162, 29, 5)]
 	for rect in rectangles:
 		polygons.append(_polygon([rect.position.x, rect.position.y, rect.end.x, rect.position.y, rect.end.x, rect.end.y, rect.position.x, rect.end.y]))
+	for p in polygons.size():
+		var polygon := polygons[p]
+		for i in polygon.size():
+			polygon[i] *= room_scale(index)
+		polygons[p] = polygon
 	return polygons
 
 
@@ -128,14 +139,14 @@ static func spikes(index: int) -> Array[Vector4]:
 		8: strips = [Vector4(108, 96, 38, 8), Vector4(194, 64, 36, 9), Vector4(108, 54, 36, -7), Vector4(198, 14, 32, -7)]
 		9: strips = [Vector4(36, 128, 39, 9), Vector4(75, 108, 28, 10)]
 	for i in strips.size():
-		strips[i] *= SCALE
+		strips[i] *= room_scale(index)
 	return strips
 
 
 static func spike_triangles(index: int) -> Array[PackedVector2Array]:
 	var result: Array[PackedVector2Array] = []
 	for strip in spikes(index):
-		var teeth := ceili(strip.z / (6 * SCALE))
+		var teeth := ceili(strip.z / (6 * room_scale(index)))
 		var width := strip.z / teeth
 		for i in teeth:
 			var x := strip.x + i * width
@@ -150,22 +161,24 @@ static func planks(index: int) -> Array[Rect2]:
 		5: boards = [Rect2(287, 145, 31, 8)]
 		8: boards = [Rect2(63, 102, 21, 4), Rect2(158, 101, 22, 5)]
 	for i in boards.size():
-		boards[i] = Rect2(boards[i].position * SCALE, boards[i].size * SCALE)
+		boards[i] = Rect2(boards[i].position * room_scale(index), boards[i].size * room_scale(index))
 	return boards
 
 
 static func springs(index: int) -> Array[Vector3]:
+	var scale := room_scale(index)
 	match index:
-		1: return [Vector3(160 * SCALE, 70 * SCALE, 900)]
-		5: return [Vector3(83 * SCALE, 134 * SCALE, 900), Vector3(199 * SCALE, 132 * SCALE, 1000)]
+		1: return [Vector3(160 * scale, 70 * scale, 1200)]
+		5: return [Vector3(83 * scale, 134 * scale, 900), Vector3(199 * scale, 132 * scale, 1100)]
 	return []
 
 
 static func crystals(index: int) -> Array[Vector2]:
+	var scale := room_scale(index)
 	match index:
-		2: return [Vector2(168, 67) * SCALE]
-		7: return [Vector2(61, 50) * SCALE, Vector2(112, 60) * SCALE]
-		8: return [Vector2(174, 37) * SCALE]
+		2: return [Vector2(168, 67) * scale]
+		7: return [Vector2(61, 50) * scale, Vector2(112, 60) * scale]
+		8: return [Vector2(174, 37) * scale]
 	return []
 
 
@@ -181,4 +194,5 @@ func _draw() -> void:
 		border.append(triangle[0])
 		draw_polyline(border, INK, 2, true)
 	if room_index == 6:
-		draw_texture_rect(ROCKET, ROCKET_RECT, false)
+		var scale := room_scale(6)
+		draw_texture_rect(ROCKET, Rect2(ROCKET_RECT.position * scale, ROCKET_RECT.size * scale), false)

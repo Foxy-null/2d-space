@@ -30,14 +30,14 @@ func _tower_retry(pause: int) -> void:
 	player = world.player
 	if world.has_node("StageIntro"):
 		await world.get_node("StageIntro").tree_exited
-	var entrance := TowerLandscape.foothold(135, 70)
+	var entrance := TowerLandscape.foothold(1, 150, 70)
 	world._enter_room(1, entrance)
 	await _step(6)
 	var launches := [0, 0]
 	var spring: Area2D = world.rooms.get_child(1).find_children("*", "Area2D", false, false).filter(func(node): return node.has_signal("launched"))[0]
 	spring.launched.connect(func(body):
 		launches[0] += 1
-		if body.position.x < spring.global_position.x - 50 * TowerLandscape.ACTOR_SCALE:
+		if body.position.x < spring.global_position.x - 50:
 			launches[1] += 1
 	)
 	Input.action_press("move_right")

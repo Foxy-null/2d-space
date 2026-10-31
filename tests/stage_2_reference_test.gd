@@ -24,7 +24,7 @@ func _initialize() -> void:
 				var painted := brightest - darkest < 0.08 and darkest > 0.35 and brightest < 0.9
 				var solid := false
 				for polygon in polygons:
-					if Geometry2D.is_point_in_polygon(Vector2(x, y) * TowerLandscape.SCALE, polygon):
+					if Geometry2D.is_point_in_polygon(Vector2(x, y) * TowerLandscape.room_scale(index), polygon):
 						solid = true
 						break
 				intersection += int(painted and solid)

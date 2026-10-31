@@ -2,7 +2,7 @@ extends Node2D
 
 enum Phase { RUN, WALK, BOARD, FADE, CLEAR_INTRO, CLEAR }
 const CLEAR_IMAGES := [preload("res://assets/ui/stage_1_clear/background.png"), preload("res://assets/ui/stage_1_clear/rocket.png"), preload("res://assets/ui/stage_1_clear/text.png")]
-const HINTS := ["壁を登り、トゲを越えて右上へ。", "右のバネから壁キックとダッシュで上へ。", "中央のトゲを越えて右へ。左には寄り道。", "青い板は乗ると崩れます。足場をつないで上へ。", "床と空中のトゲを見て、右へ渡ろう。", "バネの上昇から柱を越えて、右上へ。", "ロケットへ近づこう。", "空中でダッシュを回復して、巻物を持ち帰ろう。", "崩れる板を渡り、右上の巻物へ。", "赤いバンパーで跳ね、右上の巻物へ。"]
+const HINTS := ["壁を登り、トゲを越えて右上へ。", "右のバネから壁キックとダッシュで上へ。", "中央のトゲを越えて右へ。左には寄り道。", "青い板は乗ると崩れます。足場をつないで上へ。", "壁つかみ＋ジャンプで柱を越え、ダッシュで次の柱へ。", "バネの上昇から柱を越えて、右上へ。", "ロケットへ近づこう。", "空中でダッシュを回復して、巻物を持ち帰ろう。", "崩れる板を渡り、右上の巻物へ。", "赤いバンパーで跳ね、右上の巻物へ。"]
 
 var room_index := 0
 var connections := TowerLandscape.connections()
@@ -27,7 +27,6 @@ var _return_button: Button
 
 
 func _ready() -> void:
-	player.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
 	player.get_node("Camera2D").enabled = false
 	player.respawned.connect(_on_respawned)
 	rooms = Node2D.new()
@@ -39,7 +38,6 @@ func _ready() -> void:
 		_build_room(index)
 	camera = Camera2D.new()
 	camera.name = "Camera2D"
-	camera.zoom = Vector2.ONE * 1.6
 	camera.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(camera)
 	camera.make_current()
@@ -91,28 +89,26 @@ func _build_room(index: int) -> void:
 	for spring in TowerLandscape.springs(index):
 		var object := preload("res://scenes/spring.tscn").instantiate()
 		object.position = Vector2(spring.x, spring.y)
-		object.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
 		object.spring_speed = spring.z
 		room.add_child(object)
 	for location in TowerLandscape.crystals(index):
 		var crystal := preload("res://scenes/refill_crystal.tscn").instantiate()
 		crystal.set_script(preload("res://scripts/tower_refill_crystal.gd"))
 		crystal.position = location
-		crystal.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
 		room.add_child(crystal)
 	if TowerLandscape.SCROLLS.has(index):
 		var scroll := preload("res://scenes/scroll_collectible.tscn").instantiate() as ScrollCollectible
 		scroll.name = "Scroll"
-		scroll.position = TowerLandscape.SCROLLS[index]
-		scroll.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
+		scroll.position = TowerLandscape.SCROLLS[index] * TowerLandscape.room_scale(index)
 		scroll.stage_id = "tower"
 		scroll.scroll_id = TowerLandscape.SCROLL_IDS[index]
 		room.add_child(scroll)
 	if index == 9:
 		var bumper := preload("res://scenes/pinball_spring.tscn").instantiate()
 		bumper.name = "Bumper"
-		bumper.position = TowerLandscape.BUMPER
-		bumper.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
+		bumper.position = TowerLandscape.BUMPER * TowerLandscape.room_scale(index)
+		bumper.minimum_bounce_speed = 1450
+		bumper.maximum_bounce_speed = 1800
 		room.add_child(bumper)
 
 
@@ -212,7 +208,7 @@ func _physics_process(delta: float) -> void:
 	if _menu_active():
 		return
 	if phase == Phase.WALK:
-		var target := TowerLandscape.origin(6).x + TowerLandscape.ROCKET_DOOR
+		var target := TowerLandscape.origin(6).x + TowerLandscape.ROCKET_DOOR * TowerLandscape.room_scale(6)
 		player.velocity.x = minf(150, maxf(0, target - player.position.x) / delta)
 		player.velocity.y += player.gravity_acceleration * delta
 		player._move_player()
@@ -229,7 +225,7 @@ func _physics_process(delta: float) -> void:
 					return
 		if local.y > TowerLandscape.size(room_index).y + 60 or local.y < -100 or local.x < -80 or local.x > TowerLandscape.size(room_index).x + 80:
 			_queue_death()
-		elif room_index == 6 and local.x >= TowerLandscape.ROCKET_APPROACH and player.is_on_floor():
+		elif room_index == 6 and local.x >= TowerLandscape.ROCKET_APPROACH * TowerLandscape.room_scale(6) and player.is_on_floor():
 			phase = Phase.WALK
 			_phase_elapsed = 0
 			player.controls_enabled = false
