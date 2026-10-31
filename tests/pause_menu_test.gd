@@ -81,7 +81,7 @@ func _run() -> void:
 		elif scene == "stage_3":
 			stage._set_room(1, false)
 		elif scene == "stage_2":
-			stage._enter_room(2, Vector2(350, 834))
+			stage._enter_room(2, TowerLandscape.foothold(83, 127))
 		elif scene in ["stage_4", "stage_5"]:
 			stage.room_index = 2
 			stage._set_checkpoint()

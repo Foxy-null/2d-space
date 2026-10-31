@@ -30,6 +30,9 @@ def main():
         assert project.parent == Path(tempfile.gettempdir()).resolve()
         for folder in ('assets', 'scripts', 'scenes', 'tests'):
             shutil.copytree(source / folder, project / folder)
+        reference = Path('docs/stage-2-redesign/layout-reference.png')
+        (project / reference).parent.mkdir(parents=True)
+        shutil.copy2(source / reference, project / reference)
         original = (source / 'project.godot').read_text(encoding='utf-8')
         original = re.sub(r'config/name="[^"]*"', 'config/name="Codex 2D Space Validation"', original, count=1)
         run_id = uuid.uuid4().hex

@@ -5,6 +5,7 @@ const CLEAR_IMAGES := [preload("res://assets/ui/stage_1_clear/background.png"), 
 const HINTS := ["壁を登り、トゲを越えて右上へ。", "右のバネから壁キックとダッシュで上へ。", "中央のトゲを越えて右へ。左には寄り道。", "青い板は乗ると崩れます。足場をつないで上へ。", "床と空中のトゲを見て、右へ渡ろう。", "バネの上昇から柱を越えて、右上へ。", "ロケットへ近づこう。", "空中でダッシュを回復して、巻物を持ち帰ろう。", "崩れる板を渡り、右上の巻物へ。", "赤いバンパーで跳ね、右上の巻物へ。"]
 
 var room_index := 0
+var connections := TowerLandscape.connections()
 var phase := Phase.RUN
 var completed := false
 var hints_visible := false
@@ -26,6 +27,7 @@ var _return_button: Button
 
 
 func _ready() -> void:
+	player.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
 	player.get_node("Camera2D").enabled = false
 	player.respawned.connect(_on_respawned)
 	rooms = Node2D.new()
@@ -37,6 +39,7 @@ func _ready() -> void:
 		_build_room(index)
 	camera = Camera2D.new()
 	camera.name = "Camera2D"
+	camera.zoom = Vector2.ONE * 1.6
 	camera.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(camera)
 	camera.make_current()
@@ -49,7 +52,7 @@ func _ready() -> void:
 	backdrop.name = "Backdrop"
 	sky.add_child(backdrop)
 	_build_ui()
-	_enter_room(0, Vector2(100, 614))
+	_enter_room(0, TowerLandscape.start())
 	StageIntro.play(self, player, camera)
 
 
@@ -88,25 +91,28 @@ func _build_room(index: int) -> void:
 	for spring in TowerLandscape.springs(index):
 		var object := preload("res://scenes/spring.tscn").instantiate()
 		object.position = Vector2(spring.x, spring.y)
+		object.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
 		object.spring_speed = spring.z
 		room.add_child(object)
 	for location in TowerLandscape.crystals(index):
 		var crystal := preload("res://scenes/refill_crystal.tscn").instantiate()
+		crystal.set_script(preload("res://scripts/tower_refill_crystal.gd"))
 		crystal.position = location
+		crystal.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
 		room.add_child(crystal)
 	if TowerLandscape.SCROLLS.has(index):
 		var scroll := preload("res://scenes/scroll_collectible.tscn").instantiate() as ScrollCollectible
 		scroll.name = "Scroll"
 		scroll.position = TowerLandscape.SCROLLS[index]
+		scroll.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
 		scroll.stage_id = "tower"
 		scroll.scroll_id = TowerLandscape.SCROLL_IDS[index]
 		room.add_child(scroll)
 	if index == 9:
 		var bumper := preload("res://scenes/pinball_spring.tscn").instantiate()
 		bumper.name = "Bumper"
-		bumper.position = Vector2(1360, 690)
-		bumper.minimum_bounce_speed = 1200
-		bumper.maximum_bounce_speed = 1450
+		bumper.position = TowerLandscape.BUMPER
+		bumper.scale = Vector2.ONE * TowerLandscape.ACTOR_SCALE
 		room.add_child(bumper)
 
 
@@ -206,7 +212,7 @@ func _physics_process(delta: float) -> void:
 	if _menu_active():
 		return
 	if phase == Phase.WALK:
-		var target := TowerLandscape.origin(6).x + 1272
+		var target := TowerLandscape.origin(6).x + TowerLandscape.ROCKET_DOOR
 		player.velocity.x = minf(150, maxf(0, target - player.position.x) / delta)
 		player.velocity.y += player.gravity_acceleration * delta
 		player._move_player()
@@ -215,15 +221,15 @@ func _physics_process(delta: float) -> void:
 			_phase_elapsed = 0
 	elif phase == Phase.RUN:
 		var local := player.position - TowerLandscape.origin(room_index)
-		for connection in TowerLandscape.CONNECTIONS:
+		for connection in connections:
 			for side in [0, 3]:
 				if connection[side] == room_index and connection[side + 1].has_point(local):
 					var destination: int = 3 - side
 					_enter_room(connection[destination], connection[destination + 2])
 					return
-		if local.y > TowerLandscape.SIZES[room_index].y + 60 or local.y < -100 or local.x < -80 or local.x > TowerLandscape.SIZES[room_index].x + 80:
+		if local.y > TowerLandscape.size(room_index).y + 60 or local.y < -100 or local.x < -80 or local.x > TowerLandscape.size(room_index).x + 80:
 			_queue_death()
-		elif room_index == 6 and local.x >= 1030 and player.is_on_floor():
+		elif room_index == 6 and local.x >= TowerLandscape.ROCKET_APPROACH and player.is_on_floor():
 			phase = Phase.WALK
 			_phase_elapsed = 0
 			player.controls_enabled = false
@@ -285,8 +291,13 @@ func _update_camera() -> void:
 	if not is_instance_valid(camera):
 		return
 	var origin := TowerLandscape.origin(room_index)
-	var size: Vector2 = TowerLandscape.SIZES[room_index]
-	camera.position = Vector2(clampf(player.position.x, origin.x + 640, origin.x + size.x - 640), clampf(player.position.y, origin.y + 360, origin.y + size.y - 360))
+	var size := TowerLandscape.size(room_index)
+	var half_view := get_viewport_rect().size * 0.5 / camera.zoom
+	camera.position = origin + size * 0.5
+	if size.x > half_view.x * 2:
+		camera.position.x = clampf(player.position.x, origin.x + half_view.x, origin.x + size.x - half_view.x)
+	if size.y > half_view.y * 2:
+		camera.position.y = clampf(player.position.y, origin.y + half_view.y, origin.y + size.y - half_view.y)
 	camera.reset_smoothing()
 	set_hints_visible(hints_visible)
 

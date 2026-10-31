@@ -60,9 +60,11 @@ func _natural_intro(scene: String) -> void:
 	var player: PlayerController = stage.player
 	var position_before := player.global_position
 	var mode_before := intro._stage_mode
-	var normal_view := Rect2(stage.camera.global_position - Vector2(640, 360), Vector2(1280, 720))
+	var normal_zoom: Vector2 = stage.camera.zoom
+	var view_size := Vector2(1280, 720) / normal_zoom
+	var normal_view := Rect2(stage.camera.global_position - view_size * 0.5, view_size)
 	_check(paused and intro._holding and not player.controls_enabled, "The initial hold freezes the world and locks controls")
-	_check(intro._intro_camera.zoom.is_equal_approx(Vector2.ONE * 1.4), "The character starts enlarged by forty percent")
+	_check(intro._intro_camera.zoom.is_equal_approx(normal_zoom * 1.4), "The character starts enlarged by forty percent")
 	_check(intro.layer > stage.get_node("HUD").layer and intro.layer < stage.get_node("PauseMenu").layer, "The iris covers HUD and leaves pause above it")
 	_check_view(intro, normal_view)
 	var menu := stage.get_node("PauseMenu")
@@ -93,7 +95,7 @@ func _natural_intro(scene: String) -> void:
 	_check(stage.process_mode == mode_before, "The stage's original processing mode is restored")
 	await _step(4)
 	_check(player.position.x > position_before.x, "The player can move during the return")
-	_check(intro._intro_camera.zoom.x > 1.0 and intro._intro_camera.zoom.x < 1.4, "Zoom returns gradually")
+	_check(intro._intro_camera.zoom.x > normal_zoom.x and intro._intro_camera.zoom.x < normal_zoom.x * 1.4, "Zoom returns gradually")
 	var radius: float = intro._curtain.material.get_shader_parameter("radius")
 	_check(radius > StageIntro.IRIS_RADIUS, "The iris opens during the same return")
 	var center: Vector2 = intro._curtain.material.get_shader_parameter("center")
@@ -115,7 +117,7 @@ func _natural_intro(scene: String) -> void:
 	_check(return_frames >= 29 and return_frames <= 32, "The return takes thirty frames plus deferred removal at sixty fps (%s: %d)" % [scene, return_frames])
 	_check(not is_instance_valid(intro) and not stage.has_node("StageIntro"), "The effect removes itself after the half-second return")
 	_check(not paused and player.controls_enabled and root.get_camera_2d() == stage.camera, "Natural completion restores the normal camera and controls")
-	_check(stage.camera.zoom.is_equal_approx(Vector2.ONE), "The normal zoom is unchanged")
+	_check(stage.camera.zoom.is_equal_approx(normal_zoom), "The normal zoom is unchanged")
 	_capture(scene + "-finished")
 	player.respawn()
 	await _step(3)

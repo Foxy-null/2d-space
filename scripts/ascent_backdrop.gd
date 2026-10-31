@@ -21,7 +21,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if DisplayServer.accessibility_should_reduce_animation() != 1:
 		elapsed += delta
-	sky_progress = clampf((600.0 - stage.player.global_position.y) / 4300.0, 0, 1)
+	var start_height := TowerLandscape.start().y
+	var goal_height := TowerLandscape.origin(6).y + TowerLandscape.foothold(227, 115).y
+	sky_progress = clampf((start_height - stage.player.global_position.y) / (start_height - goal_height), 0, 1)
 	_sky.gradient.colors = PackedColorArray([
 		Color("73acf0").lerp(Color("080e24"), smoothstep(0, 1, sky_progress)),
 		Color("8abdee").lerp(Color("1c2949"), smoothstep(0, 1, sky_progress)),
@@ -37,7 +39,7 @@ func _draw() -> void:
 		var p := Vector2(star.x, fposmod(star.y + stage.camera.position.y * 0.035, 720))
 		draw_circle(p, star.z, Color(0.96, 0.97, 1, star.w * starlight))
 	for i in 3:
-		var p := Vector2(fposmod(180 + i * 440 + elapsed * 4, 1520) - 120, 260 + (i % 2) * 140 + (600 - stage.camera.position.y) * 0.15)
+		var p := Vector2(fposmod(180 + i * 440 + elapsed * 4, 1520) - 120, 260 + (i % 2) * 140 + (TowerLandscape.start().y - stage.camera.position.y) * 0.15)
 		var tint := Color(1, 1, 1, 0.55 * (1 - smoothstep(0.1, 0.6, sky_progress)))
 		for part in [Vector3(-36, 0, 28), Vector3(0, -14, 38), Vector3(38, 0, 30)]:
 			draw_circle(p + Vector2(part.x, part.y), part.z, tint)

@@ -26,12 +26,15 @@ func _run() -> void:
 	_check(radii.size() > 35 and xs.size() > 40, "Positions and sizes vary independently rather than repeating a grid")
 	stage.player.set_physics_process(false)
 	var last := -1.0
+	var entrances := [TowerLandscape.start()]
+	for link in stage.connections.slice(0, 6):
+		entrances.append(link[5])
 	for index in [0, 1, 2, 3, 4, 5, 6]:
-		stage._enter_room(index, Vector2(300, 400))
+		stage._enter_room(index, entrances[index])
 		backdrop._process(0)
 		_check(backdrop.sky_progress >= last, "The sky darkens with the actual room altitude")
 		last = backdrop.sky_progress
-	stage._enter_room(0, Vector2(100, 614))
+	stage._enter_room(0, TowerLandscape.start())
 	backdrop._process(0)
 	_check(backdrop.sky_progress < 0.01, "Returning downhill restores the bright low sky")
 	_check(backdrop.stars == stars, "Movement does not regenerate or shuffle stars")
