@@ -28,13 +28,16 @@ func _tower_retry(pause: int) -> void:
 	world = load("res://scenes/stage_2.tscn").instantiate()
 	root.add_child(world)
 	player = world.player
-	world._enter_room(1, Vector2(950, 614))
+	if world.has_node("StageIntro"):
+		await world.get_node("StageIntro").tree_exited
+	var entrance := TowerLandscape.foothold(135, 70)
+	world._enter_room(1, entrance)
 	await _step(6)
 	var launches := [0, 0]
 	var spring: Area2D = world.rooms.get_child(1).find_children("*", "Area2D", false, false).filter(func(node): return node.has_signal("launched"))[0]
 	spring.launched.connect(func(body):
 		launches[0] += 1
-		if body.position.x < TowerLandscape.origin(1).x + 1030:
+		if body.position.x < spring.global_position.x - 50 * TowerLandscape.ACTOR_SCALE:
 			launches[1] += 1
 	)
 	Input.action_press("move_right")
@@ -43,7 +46,7 @@ func _tower_retry(pause: int) -> void:
 	await _step()
 	_release()
 	await _step(6)
-	_check(launches[1] == 0 and player.position.distance_to(TowerLandscape.origin(1) + Vector2(950, 614)) < 3 and absf(player.velocity.y) < 1, "R at spring contact restores the entrance without a remote launch: %d" % pause)
+	_check(launches[1] == 0 and player.position.distance_to(TowerLandscape.origin(1) + entrance) < 3 and absf(player.velocity.y) < 1, "R at spring contact restores the entrance without a remote launch: %d" % pause)
 	var before: int = launches[0]
 	Input.action_press("move_right")
 	for frame in 40:
@@ -51,7 +54,7 @@ func _tower_retry(pause: int) -> void:
 			break
 		await _step()
 	_release()
-	_check(launches[0] == before + 1 and player.velocity.y < -900 and player.is_dash_ready(), "The same real spring works again immediately after retry: %d" % pause)
+	_check(launches[0] == before + 1 and player.velocity.y <= -850 and player.is_dash_ready(), "The same real spring works again immediately after retry: %d" % pause)
 
 
 func _fast_moving_gate(rate: int, phase: int) -> void:

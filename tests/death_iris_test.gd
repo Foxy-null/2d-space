@@ -98,6 +98,7 @@ func _death_sequence(scene: String) -> void:
 	var player: PlayerController = stage.player
 	var audio := root.get_node("GameAudio")
 	var spawn := player._spawn_position
+	var normal_zoom: Vector2 = stage.camera.zoom
 	player.position += Vector2(100, -60)
 	player.velocity = Vector2(250, -100)
 	player.set_gravity_direction(-1)
@@ -114,7 +115,7 @@ func _death_sequence(scene: String) -> void:
 	else:
 		intro = await _die()
 	_check(paused and not player.controls_enabled and resets == 0, "Death freezes the world before resetting: " + scene)
-	_check(root.get_camera_2d() == stage.camera and stage.camera.zoom == Vector2.ONE, "Death uses the normal camera without a close-up (%s current=%s normal=%s zoom=%s)" % [scene, root.get_camera_2d(), stage.camera, stage.camera.zoom])
+	_check(root.get_camera_2d() == stage.camera and stage.camera.zoom == normal_zoom, "Death uses the normal camera without a close-up (%s current=%s normal=%s zoom=%s)" % [scene, root.get_camera_2d(), stage.camera, stage.camera.zoom])
 	if capture_dir.is_empty():
 		_check(audio.death.playing and audio.iris.playing and audio.iris.stream == audio.IRIS_CLOSE, "Impact and closing sounds can overlap")
 		var playback: AudioStreamPlayback = audio.death.get_stream_playback()
@@ -146,7 +147,7 @@ func _death_sequence(scene: String) -> void:
 	_check(resets == 1 and player.global_position == spawn and player.gravity_direction == 1 and player.velocity == Vector2.ZERO, "The existing checkpoint reset runs exactly once behind black")
 	_check(player.get_wall_stamina() == player.wall_stamina_max, "Checkpoint reset restores movement resources")
 	_check(not paused and player.controls_enabled and not intro._holding, "Controls and the world resume at opening start")
-	_check(stage.camera.zoom == Vector2.ONE and root.get_camera_2d() == stage.camera, "Opening changes only the circle, with normal zoom and camera position")
+	_check(stage.camera.zoom == normal_zoom and root.get_camera_2d() == stage.camera, "Opening changes only the circle, with normal zoom and camera position")
 	_check(audio.iris.stream == audio.IRIS_OPEN and audio.iris.playing, "Opening uses the expanding sound")
 	intro._process(0.1)
 	_capture(scene + "-opening")

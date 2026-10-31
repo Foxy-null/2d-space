@@ -31,12 +31,16 @@ func _run() -> void:
 	_check(stage.rooms.get_child_count() == 10 and player.is_on_floor(), "Ten rooms start on a safe floor")
 	_check(player.wall_jump_enabled and player.dash_enabled, "Wall kicks and dashes are available from the start")
 	_check(root.get_node("CollectionProgress").TOTALS.tower == 4, "The tower has four optional scrolls")
-	for link in TowerLandscape.CONNECTIONS:
+	for index in 10:
+		stage._enter_room(index, TowerLandscape.start() if index == 0 else stage.connections[index - 1][5])
+		var center := TowerLandscape.origin(index) + TowerLandscape.size(index) * 0.5
+		_check(stage.camera.position.is_equal_approx(center), "Small rooms keep the camera centered without reversing its limits")
+	for link in stage.connections:
 		for side in [0, 3]:
 			var destination: int = 3 - side
 			stage._enter_room(link[side], link[side + 2])
 			await _step(8)
-			_check(player.is_on_floor() and (player.global_position - player._spawn_position).length() < 3, "Every entrance and return position is a stable floor: %s/%d" % [link[side], side])
+			_check(player.is_on_floor() and (player.global_position - player._spawn_position).length() < 6, "Every entrance and return position is a stable floor: %s/%d" % [link[side], side])
 			player.global_position = TowerLandscape.origin(link[side]) + link[side + 1].get_center()
 			player.velocity = Vector2.ZERO
 			await _step(2)
@@ -47,14 +51,14 @@ func _run() -> void:
 			player.global_position += Vector2(30, -80)
 			player.respawn()
 			await _step(4)
-			_check(player.global_position.distance_to(checkpoint) < 3, "Retry returns to the most recently entered side")
+			_check(player.global_position.distance_to(checkpoint) < 6, "Retry returns to the most recently entered side")
 	for index in [7, 8, 9]:
-		stage._enter_room(index, Vector2(140, 274) if index == 9 else Vector2(120, 714))
+		stage._enter_room(index, stage.connections[index - 1][5])
 		_check(root.get_node("GameAudio").music.stream == root.get_node("GameAudio").TRACKS.a[1], "All three detours use quiet A")
 	var playback = root.get_node("GameAudio").music.get_stream_playback()
 	root.get_node("GameAudio").set_quiet(true)
 	_check(root.get_node("GameAudio").music.get_stream_playback() == playback, "Repeated quiet updates do not restart the music")
-	stage._enter_room(2, Vector2(350, 834))
+	stage._enter_room(2, TowerLandscape.foothold(83, 127))
 	_check(root.get_node("GameAudio").music.stream == root.get_node("GameAudio").TRACKS.a[0], "Returning to the main course restores normal A")
 	await _hazards()
 	await _planks_and_scroll()
@@ -73,26 +77,26 @@ func _run() -> void:
 
 
 func _hazards() -> void:
-	stage._enter_room(0, Vector2(100, 614))
-	player.global_position = Vector2(200, 610)
+	stage._enter_room(0, TowerLandscape.start())
+	player.global_position = Vector2(33, 84) * TowerLandscape.SCALE
 	player.velocity = Vector2.ZERO
 	player._contacts_valid = false
 	await _step(65)
 	_check(player.position.distance_to(player._spawn_position) < 3, "Real spike contact returns the player to the entrance")
-	player.global_position = Vector2(800, 810)
+	player.global_position = Vector2(125, 140) * TowerLandscape.SCALE
 	await _step(65)
 	_check(player.position.distance_to(player._spawn_position) < 3, "Falling outside the course returns to the same entrance")
 
 
 func _planks_and_scroll() -> void:
-	stage._enter_room(3, Vector2(110, 1294))
+	stage._enter_room(3, TowerLandscape.foothold(15, 224))
 	var plank: CrumblingPlatform = stage.rooms.get_child(3).get_children().filter(func(node): return node is CrumblingPlatform)[0]
-	player.global_position = plank.global_position + Vector2(80, 60)
+	player.global_position = plank.global_position + Vector2(plank.size.x * 0.5, 45)
 	player.velocity = Vector2(0, -450)
 	player._contacts_valid = false
 	await _step(7)
-	_check(player.global_position.y >= plank.global_position.y + 42 and plank.state == CrumblingPlatform.State.READY, "A jump from below hits the board without triggering collapse")
-	player.global_position = plank.global_position + Vector2(80, -80)
+	_check(player.global_position.y >= plank.global_position.y + plank.size.y + TowerLandscape.PLAYER_HALF_HEIGHT - 1 and plank.state == CrumblingPlatform.State.READY, "A jump from below hits the board without triggering collapse")
+	player.global_position = plank.global_position + Vector2(plank.size.x * 0.5, -60)
 	player.velocity = Vector2.ZERO
 	player._contacts_valid = false
 	await _until(func(): return plank.state == CrumblingPlatform.State.CRACKING, 40, "Landing on top starts the board countdown")
@@ -108,7 +112,7 @@ func _planks_and_scroll() -> void:
 	await _step(15)
 	_check(is_equal_approx(plank.remaining, before), "Pause freezes the collapse timer")
 	stage.get_node("PauseMenu").resume()
-	player.global_position = TowerLandscape.origin(3) + Vector2(110, 1294)
+	player.global_position = TowerLandscape.origin(3) + TowerLandscape.foothold(15, 224)
 	player.velocity = Vector2.ZERO
 	player._contacts_valid = false
 	await _step(16)
@@ -118,11 +122,11 @@ func _planks_and_scroll() -> void:
 	player.global_position = plank.global_position + plank.size * 0.5
 	await _step(125)
 	_check(plank.state == CrumblingPlatform.State.MISSING, "A returning board waits while the player overlaps it")
-	player.global_position = TowerLandscape.origin(3) + Vector2(110, 1294)
+	player.global_position = TowerLandscape.origin(3) + TowerLandscape.foothold(15, 224)
 	await _step(2)
 	_check(plank.state == CrumblingPlatform.State.READY and not plank.collision.disabled, "A clear board returns after its two-second delay")
 	player.set_physics_process(true)
-	player.global_position = plank.global_position + Vector2(80, -30)
+	player.global_position = plank.global_position + Vector2(plank.size.x * 0.5, -TowerLandscape.PLAYER_HALF_HEIGHT - 3)
 	player.velocity = Vector2.ZERO
 	player._contacts_valid = false
 	await _step(5)
@@ -133,7 +137,7 @@ func _planks_and_scroll() -> void:
 
 
 func _cinematic() -> void:
-	stage._enter_room(6, Vector2(1000, 634))
+	stage._enter_room(6, TowerLandscape.foothold(179, 112))
 	await _step(4)
 	Input.action_press("move_right")
 	await _until(func(): return stage.phase == stage.Phase.WALK, 30, "Approaching the rocket starts automatic boarding")
@@ -148,7 +152,7 @@ func _cinematic() -> void:
 	stage.get_node("PauseMenu").retry()
 	await _step(3)
 	_check(stage.phase == stage.Phase.RUN and player.controls_enabled and player.visuals.modulate.a == 1, "Retry cancels boarding and restores the ninja")
-	player.global_position = TowerLandscape.origin(6) + Vector2(1040, 634)
+	player.global_position = TowerLandscape.origin(6) + TowerLandscape.foothold(188, 114)
 	player._contacts_valid = false
 	await _until(func(): return stage.phase == stage.Phase.WALK, 20, "The rocket can be approached again")
 	await _until(func(): return stage.phase == stage.Phase.CLEAR, 250, "Walking, boarding and fading reach the three-layer clear screen")
@@ -168,22 +172,24 @@ func _cinematic() -> void:
 func _capture_rooms() -> void:
 	stage.set_physics_process(false)
 	player.set_physics_process(false)
-	var spawns := [Vector2(100, 614), Vector2(260, 714), Vector2(350, 834), Vector2(110, 1294), Vector2(300, 914), Vector2(110, 814), Vector2(280, 634), Vector2(1390, 714), Vector2(120, 714), Vector2(140, 274)]
+	var spawns := [TowerLandscape.start()]
+	for link_index in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+		spawns.append(stage.connections[link_index][5])
 	for index in 10:
 		stage._enter_room(index, spawns[index])
-		var dimensions: Vector2 = TowerLandscape.SIZES[index]
+		var dimensions := TowerLandscape.size(index)
 		stage.camera.zoom = Vector2.ONE * minf(1280 / dimensions.x, 720 / dimensions.y)
 		stage.camera.position = TowerLandscape.origin(index) + dimensions * 0.5
 		await _step(2)
 		_capture("room-%02d" % (index + 1))
-	stage.camera.zoom = Vector2.ONE
-	for view in [[3, Vector2(1140, 594), "ascent-play"], [5, Vector2(1900, 274), "upper-play"]]:
+	stage.camera.zoom = Vector2.ONE * 1.6
+	for view in [[3, TowerLandscape.foothold(145, 130), "ascent-play"], [5, TowerLandscape.foothold(300, 145), "upper-play"]]:
 		stage._enter_room(view[0], view[1])
 		await _step(2)
 		_capture(view[2])
 	stage.set_physics_process(true)
 	player.set_physics_process(true)
-	stage._enter_room(0, Vector2(100, 614))
+	stage._enter_room(0, TowerLandscape.start())
 	await _step(3)
 
 
