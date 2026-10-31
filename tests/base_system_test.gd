@@ -114,10 +114,10 @@ func _assert_wall_actions(player: PlayerController) -> void:
 		await physics_frame
 	_check(player.global_position.y < climb_start_y, "Wall climb did not move upward")
 
-	player.set("_jump_buffer_left", player.jump_buffer_time)
-	await physics_frame
 	Input.action_release("move_up")
 	Input.action_release("wall_grab")
+	player.set("_jump_buffer_left", player.jump_buffer_time)
+	await physics_frame
 	_check(absf(player.velocity.x) >= player.wall_jump_speed - 1.0, "Wall jump did not push away from the wall")
 
 	player.respawn()

@@ -44,6 +44,7 @@ var _parachute_grace_left := 0.0
 @export var wall_stamina_max := 3.0
 @export var wall_stamina_climb_rate := 1.0
 @export var wall_stamina_rest_rate := 1.0 / 3.0
+@export var wall_climb_jump_cost := 0.5
 @export var dash_speed := 900.0
 @export var dash_duration := 0.15
 @export var dash_end_speed_ratio := 2.0 / 3.0
@@ -62,6 +63,7 @@ var _buffered_jump_source := &"jump"
 var _variable_jump_source := &""
 var _spawn_position := Vector2.ZERO
 var _wall_grabbing := false
+var _wall_climb_jumping := false
 var _last_wall_normal := Vector2.ZERO
 var _wall_stamina := 3.0
 var _grab_exhausted := false
@@ -126,6 +128,8 @@ func _physics_process(delta: float) -> void:
 	# Dash starts before release so a simultaneous release inherits dash velocity.
 	var tangent := get_walk_axis()
 	var down := get_gravity_vector()
+	if grounded or velocity.dot(down) >= 0.0:
+		_wall_climb_jumping = false
 	var input_axis := get_movement_input().dot(tangent)
 	if absf(input_axis) > 0.1:
 		facing_direction = 1 if input_axis > 0.0 else -1
@@ -141,7 +145,7 @@ func _physics_process(delta: float) -> void:
 				wall_normal = collision.get_normal()
 				on_wall = true
 				break
-	var wants_wall_grab := wall_actions_enabled and _pressed("wall_grab") and on_wall and get_held_object() == null
+	var wants_wall_grab := wall_actions_enabled and _pressed("wall_grab") and on_wall and get_held_object() == null and not _wall_climb_jumping
 	if _just_pressed("jump") or (abs(gravity_direction) == 1 and not wants_wall_grab and not is_dashing() and not (dash_enabled and _pressed("dash")) and _just_pressed("jump_up")):
 		_jump_buffer_left = jump_buffer_time
 		_buffered_jump_source = &"jump" if _just_pressed("jump") else &"jump_up"
@@ -205,6 +209,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _start_dash(grounded: bool) -> void:
+	_wall_climb_jumping = false
 	_variable_jump_source = &""
 	_impact_frame = -2
 	var direction := get_movement_input()
@@ -257,7 +262,14 @@ func _try_jump(grounded: bool, on_wall: bool) -> void:
 			velocity += down * (-get_effective_jump_speed() - velocity.dot(down))
 			movement_action.emit("jump")
 	elif wall_actions_enabled and wall_jump_enabled and on_wall:
-		velocity = get_wall_normal() * wall_jump_speed - down * wall_jump_up_speed
+		var moving_away := get_movement_input().dot(get_walk_axis()) * get_wall_normal().dot(get_walk_axis()) > 0.1
+		if _wall_grabbing and not moving_away:
+			velocity = -down * get_effective_jump_speed()
+			_wall_climb_jumping = true
+			_wall_stamina = maxf(0.0, _wall_stamina - wall_climb_jump_cost)
+			_grab_exhausted = _wall_stamina <= 0.0
+		else:
+			velocity = get_wall_normal() * wall_jump_speed - down * wall_jump_up_speed
 		movement_action.emit("wall_jump")
 	elif _air_jump_ready:
 		_air_jump_ready = false
@@ -304,6 +316,7 @@ func refill_movement_resources() -> void:
 
 
 func launch_from_spring(launch_velocity: Vector2) -> void:
+	_wall_climb_jumping = false
 	_variable_jump_source = &""
 	_parachute_grace_left = parachute_launch_grace
 	_dash_left = 0.0
@@ -515,6 +528,7 @@ func _just_pressed(action: StringName) -> bool:
 
 
 func apply_stun(duration: float, impulse := Vector2.ZERO, stamina_damage := 0.0) -> void:
+	_wall_climb_jumping = false
 	stun_left = maxf(stun_left, duration)
 	if stamina_damage > 0.0:
 		_wall_stamina = maxf(0.0, _wall_stamina - stamina_damage)
@@ -540,6 +554,7 @@ func set_gravity_direction(direction: int) -> void:
 	if direction not in [-2, -1, 1, 2] or direction == gravity_direction:
 		return
 	gravity_direction = direction
+	_wall_climb_jumping = false
 	var down := get_gravity_vector()
 	_variable_jump_source = &""
 	if not is_dashing():
@@ -574,6 +589,7 @@ func die() -> void:
 
 
 func respawn(room_transfer: bool = false, reset_objects := true) -> void:
+	_wall_climb_jumping = false
 	_death_pending = false
 	_variable_jump_source = &""
 	room_transfer_in_progress = room_transfer

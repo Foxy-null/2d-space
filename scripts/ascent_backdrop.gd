@@ -22,7 +22,7 @@ func _process(delta: float) -> void:
 	if DisplayServer.accessibility_should_reduce_animation() != 1:
 		elapsed += delta
 	var start_height := TowerLandscape.start().y
-	var goal_height := TowerLandscape.origin(6).y + TowerLandscape.foothold(227, 115).y
+	var goal_height := TowerLandscape.origin(6).y + TowerLandscape.foothold(6, 227, 115).y
 	sky_progress = clampf((start_height - stage.player.global_position.y) / (start_height - goal_height), 0, 1)
 	_sky.gradient.colors = PackedColorArray([
 		Color("73acf0").lerp(Color("080e24"), smoothstep(0, 1, sky_progress)),

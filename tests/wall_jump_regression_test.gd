@@ -24,6 +24,8 @@ func _run() -> void:
 	wall.position = Vector2(820, 350)
 	world.add_child(wall)
 	player = load("res://scenes/player.tscn").instantiate()
+	# Repeated cycles must not trigger the unrelated default stage death bounds.
+	player.use_default_respawn_bounds = false
 	world.add_child(player)
 	player.set_physics_process(false)
 	player.movement_action.connect(func(action: String): actions.append(action))
