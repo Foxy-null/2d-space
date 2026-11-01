@@ -121,9 +121,8 @@ func load_progress() -> void:
 
 func start_new_game() -> Error:
 	var inputs := get_node("/root/InputSettings")
-	var display := get_node("/root/DisplaySettings")
 	var files: Dictionary = {}
-	for path in [save_path, inputs.save_path, display.save_path]:
+	for path in [save_path, inputs.save_path]:
 		files[path] = FileAccess.get_file_as_bytes(path) if FileAccess.file_exists(path) else null
 	var old_scrolls := _collected.duplicate(true)
 	var old_clears := _cleared.duplicate()
@@ -131,16 +130,12 @@ func start_new_game() -> Error:
 	var old_bindings: Dictionary = {}
 	for action in inputs.ACTIONS:
 		old_bindings[action] = InputMap.action_get_events(action).duplicate(true)
-	var old_size: Vector2i = display.windowed_size
-	var old_fullscreen: bool = display.is_fullscreen()
 	var error := _commit({}, [])
 	if error == OK:
 		error = inputs.restore_defaults()
 	if error == OK:
-		error = display.restore_defaults()
-	if error == OK:
 		return OK
-	# The three existing save files are one New Game operation, including memory.
+	# Progress and input settings are one New Game operation, including memory.
 	for path in files:
 		if files[path] == null:
 			if FileAccess.file_exists(path):
@@ -156,11 +151,6 @@ func start_new_game() -> Error:
 		InputMap.action_erase_events(action)
 		for event in old_bindings[action]:
 			InputMap.action_add_event(action, event)
-	display.windowed_size = old_size
-	if display.available:
-		display._restore_window()
-		if old_fullscreen:
-			get_window().mode = Window.MODE_FULLSCREEN
 	inputs.bindings_changed.emit()
 	progress_changed.emit()
 	return error

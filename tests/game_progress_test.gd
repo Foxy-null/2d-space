@@ -14,7 +14,25 @@ func _run() -> void:
 	var inputs = root.get_node("InputSettings")
 	var display = root.get_node("DisplaySettings")
 	_check(not progress.has_save(), "Missing progress disables Continue")
-	_check(progress.start_new_game() == OK and progress.has_save(), "New Game creates a resumable zero-progress save")
+	var display_config := ConfigFile.new()
+	display_config.set_value("display", "windowed_size", Vector2i(1024, 640))
+	display_config.set_value("display", "fullscreen", true)
+	_check(display_config.save(display.save_path) == OK, "Custom display preferences are saved")
+	display.windowed_size = Vector2i(1024, 640)
+	if display.available:
+		display.load_settings()
+		await _step(24)
+		_check(display.is_fullscreen(), "New Game starts from an actual fullscreen window")
+	var display_mode := root.mode
+	var display_file := FileAccess.get_file_as_string(display.save_path)
+	change_scene_to_file("res://scenes/start_screen.tscn")
+	await _step(4)
+	var title := current_scene
+	title._start()
+	_check(not title._new_game_dialog.visible and title._starting, "Display preferences alone do not require reset confirmation")
+	await _step(30)
+	_check(current_scene.scene_file_path == "res://scenes/tutorial.tscn" and progress.has_save(), "First New Game creates a resumable save and starts Stage 1")
+	_check(root.mode == display_mode and display.windowed_size == Vector2i(1024, 640) and FileAccess.get_file_as_string(display.save_path) == display_file, "First New Game preserves the display mode, window size, and saved preferences")
 	_check(progress.collect_scroll("tutorial", progress.TUTORIAL_SCROLL) == OK, "New tutorial scroll saves")
 	_check(progress.mark_cleared("tutorial") == OK, "Clear saves at the actual stage endpoint")
 	_check(progress.mark_cleared("chaser") == OK, "Stage 6 clear is accepted by the shared save")
@@ -34,20 +52,21 @@ func _run() -> void:
 	var custom := InputEventKey.new()
 	custom.physical_keycode = KEY_C
 	inputs.set_keyboard_binding("dash", 0, custom)
-	display.windowed_size = Vector2i(1024, 640)
-	_check(inputs.has_custom_settings() and display.has_custom_settings(), "Changed input and display settings trigger New Game confirmation")
+	_check(inputs.has_custom_settings(), "Changed input settings require New Game confirmation")
 	var old_input_path: String = inputs.save_path
 	inputs.save_path = "user://missing-parent/input.cfg"
 	var saved := FileAccess.get_file_as_string(progress.save_path)
 	_check(progress.start_new_game() != OK, "Failure in a settings save rejects the complete reset")
 	_check(progress.is_cleared("tutorial") and progress.get_count("tutorial") == 1 and progress.get_count("tower") == 1, "Failed reset restores progress in memory")
 	_check(FileAccess.get_file_as_string(progress.save_path) == saved, "Failed reset preserves the original progress file")
-	_check(inputs.keyboard_events("dash")[0].physical_keycode == KEY_C and display.windowed_size == Vector2i(1024, 640), "Failed reset also restores input and display state")
+	_check(inputs.keyboard_events("dash")[0].physical_keycode == KEY_C, "Failed reset restores input settings")
+	_check(root.mode == display_mode and display.windowed_size == Vector2i(1024, 640) and FileAccess.get_file_as_string(display.save_path) == display_file, "Failed reset leaves display state and saved preferences unchanged")
 	inputs.save_path = old_input_path
 	_check(progress.start_new_game() == OK, "Full reset commits successfully")
 	_check(not progress.is_cleared("tutorial") and progress.get_count("tutorial") == 0 and progress.get_count("tower") == 0, "Reset clears every stage and collectible")
 	_check(not progress.is_cleared("chaser"), "New Game also resets Stage 6")
-	_check(not inputs.has_custom_settings() and not display.has_custom_settings(), "Reset includes input and display settings")
+	_check(not inputs.has_custom_settings(), "Reset includes input settings")
+	_check(root.mode == display_mode and display.windowed_size == Vector2i(1024, 640) and FileAccess.get_file_as_string(display.save_path) == display_file, "Successful reset leaves display state and saved preferences unchanged")
 	reloaded = Progress.new()
 	reloaded.load_progress()
 	_check(reloaded.has_save() and not reloaded.is_cleared("tutorial") and reloaded.get_count("tower") == 0, "Restart sees the fresh run, not old progress")
@@ -79,7 +98,7 @@ func _run() -> void:
 	progress.mark_cleared("tower")
 	change_scene_to_file("res://scenes/start_screen.tscn")
 	await _step(100)
-	var title := current_scene
+	title = current_scene
 	title._start()
 	_check(title._new_game_dialog.visible and progress.is_cleared("tower"), "New Game asks before deleting existing data")
 	title._new_game_dialog.canceled.emit()
@@ -95,6 +114,12 @@ func _run() -> void:
 	title._new_game_dialog.confirmed.emit()
 	await _step(30)
 	_check(current_scene.scene_file_path == "res://scenes/tutorial.tscn" and not progress.is_cleared("tower"), "Confirmed reset starts Stage 1 with every clear removed")
+	_check(root.mode == display_mode and display.windowed_size == Vector2i(1024, 640) and FileAccess.get_file_as_string(display.save_path) == display_file, "Confirmed New Game preserves fullscreen and saved window dimensions")
+	if display.available:
+		display.toggle_fullscreen()
+		await _step(4)
+		_check(not display.is_fullscreen() and root.size == Vector2i(1024, 640), "Leaving fullscreen after New Game restores the saved window size")
+		_check(progress.start_new_game() == OK and root.mode == Window.MODE_WINDOWED and root.size == Vector2i(1024, 640), "Windowed New Game also preserves custom dimensions")
 	print("GAME_PROGRESS_TEST_%s (%d checks)" % ["FAILED" if failed else "OK", checks])
 	quit(1 if failed else 0)
 
