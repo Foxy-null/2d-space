@@ -31,7 +31,7 @@ func _ready() -> void:
 	(_continue_button if not _continue_button.disabled else _start_button).grab_focus.call_deferred()
 	_new_game_dialog = ConfirmationDialog.new()
 	_new_game_dialog.title = "はじめから"
-	_new_game_dialog.dialog_text = "クリア状況・巻物・操作設定・画面設定を\nすべて初期化して、ステージ1から始めます。"
+	_new_game_dialog.dialog_text = "クリア状況・巻物・操作設定を\n初期化して、ステージ1から始めます。"
 	_new_game_dialog.ok_button_text = "初期化してはじめる"
 	_new_game_dialog.cancel_button_text = "戻る"
 	_new_game_dialog.confirmed.connect(_begin.bind(true))
@@ -136,7 +136,7 @@ func _draw_effects() -> void:
 func _start() -> void:
 	if _starting:
 		return
-	if CollectionProgress.has_save() or InputSettings.has_custom_settings() or DisplaySettings.has_custom_settings():
+	if CollectionProgress.has_save() or InputSettings.has_custom_settings():
 		_new_game_dialog.popup_centered(Vector2i(620, 250))
 		_new_game_dialog.get_cancel_button().grab_focus.call_deferred()
 	else:
